@@ -1,9 +1,7 @@
 package com.diipl.moviebeam.ui.login
 
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,7 +12,6 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.login.LoginResponse
 import com.diipl.moviebeam.utils.RegexUtils.isValidEmail
 import com.diipl.moviebeam.utils.SingleEvent
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 
@@ -35,11 +32,11 @@ class LoginViewModel : ViewModel() {
         val isUsernameValid = isValidEmail(userName)
         val isPassWordValid = passWord.trim().length > 4
         if (isUsernameValid && !isPassWordValid) {
-            loginLiveDataPrivate.value = Resource.DataError(R.string.invalid_password)
+            loginLiveDataPrivate.value = Resource.DataError(code = R.string.invalid_password)
         } else if (!isUsernameValid && isPassWordValid) {
-            loginLiveDataPrivate.value = Resource.DataError(R.string.invalid_username)
+            loginLiveDataPrivate.value = Resource.DataError(code = R.string.invalid_username)
         } else if (!isUsernameValid && !isPassWordValid) {
-            loginLiveDataPrivate.value = Resource.DataError(R.string.invalid_username_and_password)
+            loginLiveDataPrivate.value = Resource.DataError(code = R.string.invalid_username_and_password)
         } else {
             viewModelScope.launch {
                 loginLiveDataPrivate.value = Resource.Loading()

@@ -11,6 +11,6 @@
     <string name="invalid_password">Password must be >4 characters</string>
     <string name="invalid_username_and_password">please check your username and password</string>
     <string name="add_to_favorite">Add to favorite</string>
-
     <string name="server_error">Server Error</string>
+    <string name="fetch_weather_data">Fetch Weather Data</string>
 </resources>

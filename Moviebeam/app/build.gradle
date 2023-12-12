@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.dagger.hilt.android'
 }
 apply plugin: 'kotlin-kapt'
 
@@ -25,10 +26,13 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+
 
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
@@ -42,8 +46,8 @@ android {
 dependencies {
 
     def retrofitVersion = "2.9.0"
+    def hiltVersion = "2.42"
 
-    implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-scalars:$retrofitVersion")
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 
@@ -54,19 +58,37 @@ dependencies {
     implementation 'androidx.leanback:leanback:1.0.0'
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.activity:activity-ktx:1.3.1'
 
     //android support
     implementation "androidx.appcompat:appcompat:1.6.1"
+
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+
     // LiveData
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
     implementation "com.google.android.material:material:1.1.0-alpha06"
 
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.activity:activity-ktx:1.3.1'
+    // retrofit
+    implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
+    implementation("com.squareup.retrofit2:converter-scalars:$retrofitVersion")
+    implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
+
+    //okhttp
+    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
+
+    // hilt
+    implementation ("com.google.dagger:hilt-android:$hiltVersion")
+    kapt ("com.google.dagger:hilt-android-compiler:$hiltVersion")
+
+    // Coroutines
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     kapt 'com.android.databinding:compiler:3.1.4'
 
