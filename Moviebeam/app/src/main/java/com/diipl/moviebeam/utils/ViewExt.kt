@@ -1,21 +1,16 @@
 package com.diipl.moviebeam.utils
 
 import android.app.Service
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.annotation.DrawableRes
-import androidx.appcompat.widget.AppCompatEditText
-import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.text.PrecomputedTextCompat
-import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.diipl.moviebeam.R
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -93,6 +88,16 @@ fun View.showToast(
             }
         }
     })
+}
+
+fun ImageView.loadImagesWithGlideExt(url: String) {
+    if (url!=null){
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.app_icon_your_company)
+            .into(this)
+    }
 }
 
 
