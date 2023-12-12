@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.login
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
 import com.diipl.moviebeam.data.Resource
@@ -10,6 +9,7 @@ import com.diipl.moviebeam.data.dto.login.LoginResponse
 import com.diipl.moviebeam.databinding.LoginActivityBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.home.HomeActivity
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.*
 import com.google.android.material.snackbar.Snackbar.*
 
@@ -37,10 +37,12 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun doLogin() {
-        loginViewModel.doLogin(
-            binding.username.text.trim().toString(),
-            binding.password.text.toString()
-        )
+//        loginViewModel.doLogin(
+//            binding.username.text.trim().toString(),
+//            binding.password.text.toString()
+//        )
+        val int = Intent(this, MainMenuActivity::class.java)
+        startActivity(int)
     }
 
     private fun handleLoginResult(status: Resource<LoginResponse>) {

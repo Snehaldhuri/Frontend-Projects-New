@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginRight="10dp"
+        android:text="Guests will be the first to experience the simply prepared American dishes, the comfort of traditional foods utilizing the grill and rotisserie, recognizing the trend toward healthy choices. The warm, solid and slightly rustic grill seamlessly transitions from morning cooked-to-order breakfast to an a la carte grill experience for lunch and dinner."
+        android:textColor="#EBEBEB"
+        android:textAlignment="viewStart"
+        android:textSize="17sp"
+        android:padding="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/Hotelguideline"
+        tools:ignore="MissingConstraints" />
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/help"
+        tools:ignore="MissingConstraints"
+        android:layout_margin="15dp"
+        app:layout_constraintStart_toStartOf="@id/Hotelguideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/Hotelguideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintGuide_percent="0.5"
+        android:orientation="vertical"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

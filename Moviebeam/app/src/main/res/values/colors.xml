@@ -5,4 +5,10 @@
     <color name="search_opaque">#ffaa3f</color>
     <color name="selected_background">#ffaa3f</color>
     <color name="default_background">#3d3d3d</color>
+    <color name="yellow">#FFC107</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="carousel_focused">#FFFFFF</color>
+    <color name="carousel_not_focused">#C0C0C0</color>
+    <color name="menu_list_bg">#616161</color>
 </resources>
