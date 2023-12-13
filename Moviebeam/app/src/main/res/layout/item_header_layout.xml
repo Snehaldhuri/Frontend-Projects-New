@@ -13,7 +13,7 @@
 
     <include
         layout="@layout/item_weather_time_date_row"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_57"
         app:layout_constraintEnd_toEndOf="parent"
@@ -38,9 +38,9 @@
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="@dimen/dp_32"
         android:text="Hotel Info"
-        android:textSize="30sp"
+        android:textSize="@dimen/sp_30"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/img_hotel_logo"

@@ -9,20 +9,6 @@ import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 
 class LoginFragment : Fragment() {
-    // Define a companion object to provide a newInstance method
-    companion object {
-        private const val ARG_TITLE = "title"
-
-        // Create a new instance of the fragment with arguments
-        fun newInstance(title: String): LoginFragment {
-            val fragment = LoginFragment()
-            val args = Bundle()
-            args.putString(ARG_TITLE, title)
-            fragment.arguments = args
-            return fragment
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {

@@ -29,8 +29,8 @@
 
     <ImageView
         android:id="@+id/img_hotel_logo"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
         android:adjustViewBounds="true"
         android:contentDescription="Hotel Logo"
         app:layout_constraintDimensionRatio="1.49:1"
@@ -42,17 +42,17 @@
         android:id="@+id/txt_greeting"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
+        android:layout_margin="@dimen/dp_20"
         android:text="Hotel Info"
-        android:textSize="18sp"
+        android:textSize="@dimen/sp_18"
         app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/img_hotel_logo" />
 
     <ImageView
         android:id="@+id/img_weather_image"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:layout_marginEnd="@dimen/dp_16"
         android:adjustViewBounds="true"
         android:contentDescription="Weather Image"
         app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_10"
@@ -64,9 +64,9 @@
         android:id="@+id/txt_temperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="@dimen/dp_32"
         android:text="Temperature"
-        android:textSize="12sp"
+        android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@+id/txt_time"
         app:layout_constraintEnd_toStartOf="@+id/txt_time" />
@@ -75,9 +75,9 @@
         android:id="@+id/txt_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="@dimen/dp_32"
         android:text="Time"
-        android:textSize="12sp"
+        android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_10"
         app:layout_constraintEnd_toStartOf="@+id/txt_date" />
@@ -87,7 +87,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Date"
-        android:textSize="12sp"
+        android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@+id/txt_time"
         app:layout_constraintEnd_toStartOf="@+id/guideLine_vertical_95" />
@@ -121,10 +121,10 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_200"
         android:background="@color/menu_list_bg"
-        android:padding="8dp"
+        android:padding="@dimen/dp_8"
         app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_5"
         app:layout_constraintBottom_toBottomOf="@+id/guideLine_horizontal_95"
         app:layout_constraintEnd_toEndOf="@+id/guideLine_vertical_95"

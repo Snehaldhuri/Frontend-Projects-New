@@ -5,18 +5,26 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.service.RetrofitClient
 import com.diipl.moviebeam.utils.ApiResponseUtil
 import com.diipl.moviebeam.utils.SingleEvent
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainMenuViewModel : ViewModel() {
+@HiltViewModel
+class MainMenuViewModel @Inject constructor(
+    private val movieBeamRepository: MovieBeamRepository
+) : ViewModel() {
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
@@ -38,46 +46,37 @@ class MainMenuViewModel : ViewModel() {
     }
 
     fun fetchWeatherData(ua: String) {
-        viewModelScope.launch {
-            _weatherLiveData.value = Resource.Loading()
-            val resp = RetrofitClient.createLgRestService().getWeather(ua)
-            val response = ApiResponseUtil().getResponseAsObject(resp, WeatherResponse::class)
+        viewModelScope.launch(Dispatchers.IO) {
+            _weatherLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getWeatherData(ua)
             if (response == null) {
-                _weatherLiveData.value = Resource.DataError(R.string.server_error)
-                Log.i("Success Response", "Failed")
+                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _weatherLiveData.value = Resource.Success(response)
-                Log.i("Success Response", response.toString())
+                _weatherLiveData.postValue( Resource.Success(response))
             }
         }
     }
 
-    fun fetchThemeDetails(ua: String) {
+    private fun fetchThemeDetails(ua: String) {
         viewModelScope.launch {
-            _themeLiveData.value = Resource.Loading()
-            val resp = RetrofitClient.createLgRestService().getTheme(ua)
-            val response = ApiResponseUtil().getResponseAsObject(resp, ThemeResponse::class)
+            _themeLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getThemeDetails(ua)
             if (response == null) {
-                _themeLiveData.value = Resource.DataError(R.string.server_error)
-                Log.i("Success Response", "Failed")
+                _themeLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
-                _themeLiveData.value = Resource.Success(response)
-                Log.i("Success Response", response.toString())
+                _themeLiveData.postValue(Resource.Success(response))
             }
         }
     }
 
     fun fetchDateTime(ua: String) {
         viewModelScope.launch {
-            _dateTimeLiveData.value = Resource.Loading()
-            val resp = RetrofitClient.createLgRestService().getDateTime(ua)
-            val response = ApiResponseUtil().getResponseAsObject(resp, DateTimeResponse::class)
+            _dateTimeLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getDateTimeData(ua)
             if (response == null) {
-                _dateTimeLiveData.value = Resource.DataError(R.string.server_error)
-                Log.i("Success Response", "Failed")
+                _dateTimeLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
-                _dateTimeLiveData.value = Resource.Success(response)
-                Log.i("Success Response", response.toString())
+                _dateTimeLiveData.postValue(Resource.Success(response))
             }
         }
     }
@@ -88,7 +87,7 @@ class MainMenuViewModel : ViewModel() {
             val resp = RetrofitClient.createAccountSetupService().getAccountSetupDetails(cmd, ua, mode)
             val response = ApiResponseUtil().getResponseAsObject(resp, AccountSetupResponse::class)
             if (response == null) {
-                _accountSetupLiveData.value = Resource.DataError(R.string.server_error)
+                _accountSetupLiveData.value = Resource.DataError(code = R.string.server_error)
                 Log.i("Success Response", "Failed")
             } else {
                 _accountSetupLiveData.value = Resource.Success(response)

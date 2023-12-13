@@ -7,9 +7,13 @@ import androidx.leanback.widget.FocusHighlight
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
+import com.diipl.moviebeam.data.dto.hotelservice.Service
+import com.diipl.moviebeam.data.dto.hotelservice.Services
 
 
-class CarouselListFragment: RowsSupportFragment() {
+class CarouselListFragment(): RowsSupportFragment() {
+
+    private var serviceList:List<Service>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupRows()
@@ -22,7 +26,7 @@ class CarouselListFragment: RowsSupportFragment() {
         // Example Row 1
         val header1 = HeaderItem(0, "Row 1")
         val row1Adapter = createCardRow()
-        rowsAdapter.add(ListRow(header1, row1Adapter))
+        rowsAdapter.add(ListRow(row1Adapter))
 
         // Set the adapter
         adapter = rowsAdapter
@@ -32,11 +36,13 @@ class CarouselListFragment: RowsSupportFragment() {
         val adapter = ArrayObjectAdapter(MyCardPresenter())
 
         // Add cards to the row
-        for (i in 0..4) {
-            // Assuming CardItem is a custom data model class
-            val cardItem = CardItem("Any discussion of service and amenities at The Highpoint Hotel must begin with our personal and perceptive Highpoint Attach signature service. Available to any guest of our Manhattan luxury New York hotel 24 hours a day, an Attach offers everything from personal and business assistance to custom-stocked kitchens and personalized business cards and stationary. It's the very definition of sophistication without pretension, attention without intrusion, and service without boundaries. $i")
-            adapter.add(cardItem)
+        serviceList?.forEach {
+            adapter.add(it)
         }
         return adapter
+    }
+
+    fun bindData(serviceList: List<Service>?){
+        this.serviceList = serviceList
     }
 }

@@ -30,8 +30,9 @@ import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class HotelInfoActivity : BaseActivity() {
     private val hotelInfoViewModel: HotelInfoViewModel by viewModels()
     private lateinit var binding: ActivityHotelInfoBinding
@@ -63,7 +64,7 @@ class HotelInfoActivity : BaseActivity() {
             is Resource.Success -> {
                 Glide.with(this).load(hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName).into(binding.header.imgHotelLogo)
                 loadBg(hotelInfoViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                binding.loaderView.toInvisible()
+//                binding.loaderView.toInvisible()
             }
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
@@ -87,21 +88,30 @@ class HotelInfoActivity : BaseActivity() {
                             }
                         }
                         else -> {
-                            tabMap[service.categoryName] = TabListObj(1, null, service)
+                            tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
                             tabs.add(service.categoryName)
                         }
                     }
                 }
 
                 val adapter = HotelInfoTabAdapter(tabs){
+                    val transaction = supportFragmentManager.beginTransaction()
                     when(tabMap[it]?.serviceType){
                         1 -> {
-
+//                            val mBundle = Bundle()
+//                            mBundle.putString("title",it)
+                            val carousel = CarouselListFragment()
+                            carousel.bindData(tabMap[it]?.serviceList)
+                            transaction.replace(R.id.fragment_container_carousel, carousel)
                         }
                         else -> {
-
+//                            val mBundle = Bundle()
+//                            mBundle.putString("title",it)
+                            val mFragment = LoginFragment()
+                            transaction.replace(R.id.fragment_container_carousel, mFragment)
                         }
                     }
+                    transaction.commit()
                     /*when(it.title){
                         "Business center"->{
                             val mBundle = Bundle()

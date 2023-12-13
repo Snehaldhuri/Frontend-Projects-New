@@ -28,15 +28,17 @@ import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainMenuActivity : BaseActivity() {
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private lateinit var binding: ActivityMainMenuBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
-        binding.recyclerView.adapter = MainMenuBtnAdapter(getBtnList())
+        /*binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
+        binding.recyclerView.adapter = MainMenuBtnAdapter(getBtnList())*/
 
     }
 
@@ -82,6 +84,17 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
+
+                val startColor = mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                val endColor = mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
+                val adapter = MainMenuBtnAdapter()
+                adapter.itemList = getBtnList()
+                if (startColor != null && endColor!=null) {
+                    adapter.setGradientColor(startColor,endColor)
+                }
+                binding.recyclerView.adapter = adapter
+
                 Glide.with(this).load(mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName).into(binding.imgHotelLogo)
                 loadBg(mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()

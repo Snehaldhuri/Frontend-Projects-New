@@ -37,8 +37,8 @@
     <include
         android:id="@+id/header"
         layout="@layout/item_header_layout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
         app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_16"
         app:layout_constraintEnd_toStartOf="@+id/guideLine_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_5"
@@ -52,27 +52,52 @@
         app:layout_constraintGuide_percent="0.29"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_marginTop="10dp"
         android:id="@+id/recyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_94"
         app:layout_constraintEnd_toEndOf="@id/guideLine_vertical_29"
         app:layout_constraintStart_toStartOf="@id/guideLine_vertical_5"
-        app:layout_constraintTop_toTopOf="@id/guideLine_horizontal_16"
-        app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_94"/>
+        app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_27" />
 
+    <Button
+        android:id="@+id/button_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"
+        app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_27"
+        app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_5"
+        app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_16" />
+
+    <TextView
+        android:id="@+id/tvImageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_10"
+        android:text="Title Text"
+        android:textColor="@color/black"
+        android:textSize="@dimen/sp_20"
+        app:layout_constraintBottom_toBottomOf="@+id/guideLine_horizontal_27"
+       app:layout_constraintTop_toBottomOf="@+id/guideLine_horizontal_16"
+        app:layout_constraintStart_toEndOf="@+id/guideLine_vertical_29" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideLine_horizontal_27"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="111dp" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container_carousel"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="10dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:nextFocusLeft="@id/recyclerView"
         app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_94"
         app:layout_constraintEnd_toStartOf="@+id/guideLine_vertical_95"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_29"
-        app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_16"
-        android:nextFocusLeft="@id/recyclerView"/>
+        app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_27" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideLine_horizontal_94"

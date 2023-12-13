@@ -14,6 +14,8 @@ import androidx.core.content.ContextCompat
 import androidx.leanback.widget.Presenter
 import com.bumptech.glide.Glide
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.hotelservice.Service
+import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
 
 class MyCardPresenter : Presenter() {
@@ -51,19 +53,20 @@ class MyCardPresenter : Presenter() {
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any) {
-        if (item is CardItem) {
-            val cardItem: CardItem = item
+        if (item is Service) {
+            val service: Service = item
             val cardView = viewHolder.view
 
             // Set card content
-            cardView.findViewById<TextView>(R.id.card_content).text = cardItem.title
+            cardView.findViewById<TextView>(R.id.card_content).text = service.description
+            cardView.findViewById<TextView>(R.id.card_title).text = service.title
             // Customize other card attributes as needed
             val imageview = cardView.findViewById<ImageView>(R.id.card_image)
 
-            val url = "https://stb.moviebeam.com:1930/LG/LgImgServlet?imageName=15/20078/20078_0_1.png&imageType=service&accountId=7107"
-            Glide.with(viewHolder.view?.context!!)
-                .load(url)
-                .into(imageview!!)
+           /* Glide.with(viewHolder.view?.context!!)
+                .load(service.serviceImageList[0])
+                .into(imageview!!)*/
+            imageview.loadImagesWithGlideExt(service.serviceImageList[0])
         }
     }
 

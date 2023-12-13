@@ -8,6 +8,22 @@ interface ApiService {
 
     @GET("content/weather")
     suspend fun getWeather(
-        @Query("UA") ua:String
-    ):Response<String>
+        @Query("UA") ua: String
+    ): Response<String>
+
+    @GET("content/hotelServices")
+    suspend fun getHotelServices(
+        @Query("accountId") accountId: Int
+    ): Response<String>
+
+    @GET("hotel/theme")
+    suspend fun getThemeDetails(
+        @Query("UA") ua: String
+    ): Response<String>
+
+    @GET("hotel/datetime")
+    suspend fun getDateTime(
+        @Query("UA") ua: String
+    ): Response<String>
+
 }
