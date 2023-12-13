@@ -65,20 +65,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Back"
+        android:background="@drawable/btn_bg_gradient_default"
         app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_27"
         app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_5"
         app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_16" />
 
     <TextView
-        android:id="@+id/tvImageTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/dp_10"
         android:text="Title Text"
         android:textColor="@color/black"
         android:textSize="@dimen/sp_20"
-        app:layout_constraintBottom_toBottomOf="@+id/guideLine_horizontal_27"
-       app:layout_constraintTop_toBottomOf="@+id/guideLine_horizontal_16"
+        app:layout_constraintBaseline_toBaselineOf="@+id/button_back"
         app:layout_constraintStart_toEndOf="@+id/guideLine_vertical_29" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -86,7 +85,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="111dp" />
+        app:layout_constraintGuide_percent="0.27" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container_carousel"
