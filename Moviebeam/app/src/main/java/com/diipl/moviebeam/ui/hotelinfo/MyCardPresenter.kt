@@ -26,7 +26,7 @@ class MyCardPresenter(private val onItemClicked: ((String)) -> Unit) : Presenter
 
         view.isFocusable = true
         view.setOnFocusChangeListener { it, b ->
-            onItemClicked(it.findViewById<TextView>(R.id.card_title).text.toString())
+            onItemClicked(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
             if(b){
                 it.findViewById<CardView>(R.id.card).background.setTint(Color.parseColor(focusedColor))
             }else{
@@ -45,9 +45,7 @@ class MyCardPresenter(private val onItemClicked: ((String)) -> Unit) : Presenter
             val service: Service = item
             val cardView = viewHolder.view
             // Set card content
-            cardView.findViewById<TextView>(R.id.card_content).text = service.description.replace("<br>","", true)
-            cardView.findViewById<TextView>(R.id.card_title).text = service.title
-            cardView.findViewById<TextView>(R.id.tv_card_content).text = service.description
+            cardView.findViewById<TextView>(R.id.tv_card_content).text = service.description.replace("<br>","", true)
             cardView.findViewById<TextView>(R.id.tv_card_title).text = service.title
             // Customize other card attributes as needed
             val imageview = cardView.findViewById<ImageView>(R.id.iv_card_image)
