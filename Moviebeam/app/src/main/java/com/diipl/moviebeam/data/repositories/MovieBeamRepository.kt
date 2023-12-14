@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.data.repositories
 
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -25,4 +26,7 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         return remoteDataSource.getDateTimeData(ua)
     }
 
+    suspend fun getAccountSetupDetails(cmd: String, ua: String, mode: String): AccountSetupResponse? {
+        return remoteDataSource.getAccountSetupDetails(cmd,ua,mode)
+    }
 }

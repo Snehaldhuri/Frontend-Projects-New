@@ -2,9 +2,7 @@ package com.diipl.moviebeam.ui.hotelinfo
 
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Color
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -12,7 +10,6 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.leanback.widget.Presenter
-import com.bumptech.glide.Glide
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
@@ -58,10 +55,10 @@ class MyCardPresenter : Presenter() {
             val cardView = viewHolder.view
 
             // Set card content
-            cardView.findViewById<TextView>(R.id.card_content).text = service.description
-            cardView.findViewById<TextView>(R.id.card_title).text = service.title
+            cardView.findViewById<TextView>(R.id.tv_card_content).text = service.description
+            cardView.findViewById<TextView>(R.id.tv_card_title).text = service.title
             // Customize other card attributes as needed
-            val imageview = cardView.findViewById<ImageView>(R.id.card_image)
+            val imageview = cardView.findViewById<ImageView>(R.id.iv_card_image)
 
            /* Glide.with(viewHolder.view?.context!!)
                 .load(service.serviceImageList[0])

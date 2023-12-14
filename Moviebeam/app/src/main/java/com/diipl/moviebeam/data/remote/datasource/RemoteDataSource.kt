@@ -1,10 +1,12 @@
 package com.diipl.moviebeam.data.remote.datasource
 
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.remote.services.ApiService
+import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
+import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
@@ -12,35 +14,43 @@ import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
     private val networkUtils: NetworkUtils,
-    private val apiService: ApiService
+    private val lgRestApiService: LgRestApiService,
+    private val accountSetupApiService: AccountSetupApiService
 ) : NetworkHandler(networkUtils){
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {
         val result = safeAPiCall {
-            apiService.getWeather(ua)
+            lgRestApiService.getWeather(ua)
         }
         return ApiResponseParsing().getResponseAsObject(result.data, WeatherResponse::class)
     }
 
     suspend fun getHotelServiceInfo(accountId: Int): HotelServiceResponse? {
         val result = safeAPiCall {
-            apiService.getHotelServices(accountId)
+            lgRestApiService.getHotelServices(accountId)
         }
         return ApiResponseParsing().getResponseAsObject(result.data, HotelServiceResponse::class)
     }
 
     suspend fun getThemeDetails(ua: String): ThemeResponse? {
         val result = safeAPiCall {
-            apiService.getThemeDetails(ua)
+            lgRestApiService.getThemeDetails(ua)
         }
         return ApiResponseParsing().getResponseAsObject(result.data, ThemeResponse::class)
     }
 
     suspend fun getDateTimeData(ua: String): DateTimeResponse? {
         val result = safeAPiCall {
-            apiService.getDateTime(ua)
+            lgRestApiService.getDateTime(ua)
         }
         return ApiResponseParsing().getResponseAsObject(result.data, DateTimeResponse::class)
+    }
+
+    suspend fun getAccountSetupDetails(cmd: String, ua: String, mode: String): AccountSetupResponse? {
+        val result = safeAPiCall {
+            accountSetupApiService.getAccountSetupDetails(cmd, ua, mode)
+        }
+        return ApiResponseParsing().getResponseAsObject(result.data,AccountSetupResponse::class)
     }
 
 }

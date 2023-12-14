@@ -10,11 +10,9 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
-import com.diipl.moviebeam.service.RetrofitClient
-import com.diipl.moviebeam.utils.ApiResponseUtil
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -82,15 +80,16 @@ class MainMenuViewModel @Inject constructor(
     }
 
     fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
-        viewModelScope.launch {
-            _accountSetupLiveData.value = Resource.Loading()
-            val resp = RetrofitClient.createAccountSetupService().getAccountSetupDetails(cmd, ua, mode)
-            val response = ApiResponseUtil().getResponseAsObject(resp, AccountSetupResponse::class)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _accountSetupLiveData.postValue(Resource.Loading())
+
+            val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
             if (response == null) {
-                _accountSetupLiveData.value = Resource.DataError(code = R.string.server_error)
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
                 Log.i("Success Response", "Failed")
             } else {
-                _accountSetupLiveData.value = Resource.Success(response)
+                _accountSetupLiveData.postValue( Resource.Success(response))
                 Log.i("Success Response", response.toString())
             }
         }

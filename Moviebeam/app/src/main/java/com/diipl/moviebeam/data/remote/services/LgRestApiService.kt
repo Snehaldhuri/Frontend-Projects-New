@@ -4,7 +4,7 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface ApiService {
+interface LgRestApiService {
 
     @GET("content/weather")
     suspend fun getWeather(

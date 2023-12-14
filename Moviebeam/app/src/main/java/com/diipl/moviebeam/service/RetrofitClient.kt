@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.service
 
+import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 
@@ -16,12 +17,12 @@ object RetrofitClient {
         return retrofit.create(LgRestApiService::class.java)
     }
 
-    fun createAccountSetupService(): AccountSetupService{
+    fun createAccountSetupService(): AccountSetupApiService {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL_ACCOUNT_SETUP)
             .addConverterFactory(ScalarsConverterFactory.create())
             .build()
-        return retrofit.create(AccountSetupService::class.java)
+        return retrofit.create(AccountSetupApiService::class.java)
     }
 
 }

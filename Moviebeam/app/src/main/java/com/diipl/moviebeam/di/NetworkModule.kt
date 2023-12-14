@@ -2,7 +2,8 @@ package com.diipl.moviebeam.di
 
 import androidx.databinding.ktx.BuildConfig
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.data.remote.services.ApiService
+import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
+import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,6 +13,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -37,15 +39,29 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+    @Named(Constants.LG_REST)
+    fun provideRetrofitLGREST(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .addConverterFactory(ScalarsConverterFactory.create())
-        .baseUrl(Constants.BASE_URL)
+        .baseUrl(Constants.BASE_URL_LG_REST)
+        .client(okHttpClient)
+        .build()
+
+    @Singleton
+    @Provides
+    @Named(Constants.ACCOUNT_SETUP)
+    fun provideRetrofitAccountSetup(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .baseUrl(Constants.BASE_URL_ACCOUNT_SETUP)
         .client(okHttpClient)
         .build()
 
     @Provides
-    fun provideApiService(retrofit: Retrofit): ApiService =
-        retrofit.create(ApiService::class.java)
+    fun provideLgRestApiService( @Named(Constants.LG_REST) retrofit: Retrofit): LgRestApiService =
+        retrofit.create(LgRestApiService::class.java)
+
+    @Provides
+    fun provideACCOUNTSETUPApiService(@Named(Constants.ACCOUNT_SETUP) retrofit: Retrofit): AccountSetupApiService =
+        retrofit.create(AccountSetupApiService::class.java)
 
 
 }
