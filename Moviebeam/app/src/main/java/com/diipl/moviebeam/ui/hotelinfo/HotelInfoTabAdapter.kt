@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 import android.content.Context
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ class HotelInfoTabAdapter(private val itemList: List<String>, private var onItem
     RecyclerView.Adapter<HotelInfoTabAdapter.MyViewHolder>() {
 
     var cont: Context? = null
+    private var gradientDrawable: GradientDrawable? = null
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(R.id.textView)
@@ -39,19 +41,20 @@ class HotelInfoTabAdapter(private val itemList: List<String>, private var onItem
             Toast.makeText(cont, "Button : ${item}", Toast.LENGTH_SHORT).show()
         }
 
-//        holder.card.setOnClickListener {
-//            onItemClicked(itemList[position])
-//        }
-
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 onItemClicked(itemList[position])
-                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_focus)
+                holder.card.background = gradientDrawable
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
     }
+
+    fun setGradientDrawable(gradient: GradientDrawable){
+        gradientDrawable = gradient
+    }
+
 }

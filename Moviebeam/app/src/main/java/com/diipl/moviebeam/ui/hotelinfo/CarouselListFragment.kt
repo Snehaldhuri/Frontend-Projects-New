@@ -11,7 +11,7 @@ import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.data.dto.hotelservice.Services
 
 
-class CarouselListFragment(): RowsSupportFragment() {
+class CarouselListFragment(private val onItemClicked: ((String)) -> Unit): RowsSupportFragment() {
 
     private var serviceList:List<Service>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +33,7 @@ class CarouselListFragment(): RowsSupportFragment() {
     }
 
     private fun createCardRow(): ArrayObjectAdapter {
-        val adapter = ArrayObjectAdapter(MyCardPresenter())
+        val adapter = ArrayObjectAdapter(MyCardPresenter(onItemClicked))
 
         // Add cards to the row
         serviceList?.forEach {

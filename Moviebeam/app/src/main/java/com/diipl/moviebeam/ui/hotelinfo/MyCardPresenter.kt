@@ -15,7 +15,7 @@ import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
 
-class MyCardPresenter : Presenter() {
+class MyCardPresenter(private val onItemClicked: ((String)) -> Unit) : Presenter() {
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
 
         val defaultColor = "#C0C0C0"
@@ -26,43 +26,32 @@ class MyCardPresenter : Presenter() {
 
         view.isFocusable = true
         view.setOnFocusChangeListener { it, b ->
+            onItemClicked(it.findViewById<TextView>(R.id.card_title).text.toString())
             if(b){
                 it.findViewById<CardView>(R.id.card).background.setTint(Color.parseColor(focusedColor))
-                it.setBackgroundColor(ContextCompat.getColor(parent.context, android.R.color.transparent));
             }else{
                 it.findViewById<CardView>(R.id.card).background.setTint(Color.parseColor(defaultColor))
             }
         }
-//        view.nextFocusLeftId
-//        view.navi
-
 
         val params = view.layoutParams
         params.width = getWidthInPercent(parent.context, 30)
         params.height = getHeightInPercent(parent.context, 60)
-
-//        val cardView = ImageCardView(parent.context)
         return ViewHolder(view)
-    }
-
-    fun dpFromPx(context: Context, px: Float): Float {
-        return px / context.resources.displayMetrics.density
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any) {
         if (item is Service) {
             val service: Service = item
             val cardView = viewHolder.view
-
             // Set card content
+            cardView.findViewById<TextView>(R.id.card_content).text = service.description.replace("<br>","", true)
+            cardView.findViewById<TextView>(R.id.card_title).text = service.title
             cardView.findViewById<TextView>(R.id.tv_card_content).text = service.description
             cardView.findViewById<TextView>(R.id.tv_card_title).text = service.title
             // Customize other card attributes as needed
             val imageview = cardView.findViewById<ImageView>(R.id.iv_card_image)
 
-           /* Glide.with(viewHolder.view?.context!!)
-                .load(service.serviceImageList[0])
-                .into(imageview!!)*/
             imageview.loadImagesWithGlideExt(service.serviceImageList[0])
         }
     }
@@ -71,12 +60,12 @@ class MyCardPresenter : Presenter() {
         // Clean up resources when the view is unbound
     }
 
-    fun getWidthInPercent(context: Context, percent: Int): Int {
+    private fun getWidthInPercent(context: Context, percent: Int): Int {
         val width = context.resources.displayMetrics.widthPixels ?: 0
         return (width * percent) / 100
     }
 
-    fun getHeightInPercent(context: Context, percent: Int): Int {
+    private fun getHeightInPercent(context: Context, percent: Int): Int {
         val width = context.resources.displayMetrics.heightPixels ?: 0
         return (width * percent) / 100
     }

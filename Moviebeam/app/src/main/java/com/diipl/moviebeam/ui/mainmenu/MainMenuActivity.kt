@@ -157,17 +157,17 @@ class MainMenuActivity : BaseActivity() {
 
     private fun getBtnList(): List<BtnModel> {
         val list = mutableListOf(
-            BtnModel(R.drawable.program_guide_icon, "Program Guide"),
-            BtnModel(R.drawable.video_on_demand_icon, "Movies & More"),
-            BtnModel(R.drawable.showtime_icon, "Showtime"),
-            BtnModel(R.drawable.casting_icon, "Casting"),
-            BtnModel(R.drawable.app_world_icon, "Apps"),
-            BtnModel(R.drawable.guestservices_icon, "Guest Services"),
-            BtnModel(R.drawable.hotelservices_icon, "Hotel Info"),
-            BtnModel(R.drawable.crackle_white_icon, "Crackle"),
-            BtnModel(R.drawable.crackle_white_icon, "In Room Dining"),
-            BtnModel(R.drawable.crackle_white_icon, "Local Attraction"),
-            BtnModel(R.drawable.fooddelivery_icon, "Food Delivery")
+            BtnModel("prgGuide", R.drawable.program_guide_icon, "Program Guide"),
+            BtnModel("vod", R.drawable.video_on_demand_icon, "Movies & More"),
+            BtnModel("showtimes", R.drawable.showtime_icon, "Showtime"),
+            BtnModel("casting", R.drawable.casting_icon, "Casting"),
+            BtnModel("apps", R.drawable.app_world_icon, "Apps"),
+            BtnModel("guestServices", R.drawable.guestservices_icon, "Guest Services"),
+            BtnModel("hotelServices", R.drawable.hotelservices_icon, "Hotel Info"),
+            BtnModel("crackleDefault", R.drawable.crackle_white_icon, "Crackle"),
+            BtnModel("inRoomDining", R.drawable.crackle_white_icon, "In Room Dining"),
+            BtnModel("lam", R.drawable.crackle_white_icon, "Local Attraction"),
+            BtnModel("foodDelivery", R.drawable.fooddelivery_icon, "Food Delivery")
         )
         return list
     }

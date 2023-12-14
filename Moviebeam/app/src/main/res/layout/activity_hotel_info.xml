@@ -61,7 +61,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_27" />
 
     <Button
-        android:id="@+id/button_back"
+        android:id="@+id/btn_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Back"
@@ -71,13 +71,15 @@
         app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_16" />
 
     <TextView
+        android:id="@+id/tv_service_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/dp_10"
-        android:text="Title Text"
+        android:text=""
         android:textColor="@color/black"
-        android:textSize="@dimen/sp_20"
-        app:layout_constraintBaseline_toBaselineOf="@+id/button_back"
+        android:textSize="@dimen/sp_25"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btn_back"
         app:layout_constraintStart_toEndOf="@+id/guideLine_vertical_29" />
 
     <androidx.constraintlayout.widget.Guideline

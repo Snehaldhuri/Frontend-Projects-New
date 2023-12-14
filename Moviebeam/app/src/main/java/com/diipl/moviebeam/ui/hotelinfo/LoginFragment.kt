@@ -9,9 +9,12 @@ import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 
 class LoginFragment : Fragment() {
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
+//        Log.i("Title", arguments?.getString("title")?:"")
         return inflater.inflate(
             R.layout.layout_login, container, false
         )

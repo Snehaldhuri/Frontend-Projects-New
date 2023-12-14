@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.hotelinfo
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
@@ -36,6 +37,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class HotelInfoActivity : BaseActivity() {
     private val hotelInfoViewModel: HotelInfoViewModel by viewModels()
     private lateinit var binding: ActivityHotelInfoBinding
+    private var gradientStartColor = "#85bf08"
+    private var gradientEndColor = "#0ca654"
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
@@ -52,7 +55,16 @@ class HotelInfoActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        binding.btnBack.setOnFocusChangeListener { view, b ->
+            if(b){
+                binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
+            }else{
+                binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+        binding.btnBack.setOnClickListener {
+            finish()
+        }
         binding.recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
 
@@ -62,6 +74,12 @@ class HotelInfoActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
+                hotelInfoViewModel.themeLiveData.value?.data?.gradientColor?.let {
+                    gradientStartColor = it
+                }
+                hotelInfoViewModel.themeLiveData.value?.data?.spotLightColor?.let{
+                    gradientEndColor = it
+                }
                 Glide.with(this).load(hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName).into(binding.header.imgHotelLogo)
                 loadBg(hotelInfoViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
 //                binding.loaderView.toInvisible()
@@ -98,108 +116,38 @@ class HotelInfoActivity : BaseActivity() {
                     val transaction = supportFragmentManager.beginTransaction()
                     when(tabMap[it]?.serviceType){
                         1 -> {
-//                            val mBundle = Bundle()
-//                            mBundle.putString("title",it)
-                            val carousel = CarouselListFragment()
+                            binding.tvServiceTitle.text = tabMap[it]?.serviceList?.get(0)?.title
+                            val carousel = CarouselListFragment{title->
+                                binding.tvServiceTitle.text = title
+                            }
                             carousel.bindData(tabMap[it]?.serviceList)
                             transaction.replace(R.id.fragment_container_carousel, carousel)
                         }
                         else -> {
-//                            val mBundle = Bundle()
-//                            mBundle.putString("title",it)
-                            val mFragment = LoginFragment()
-                            transaction.replace(R.id.fragment_container_carousel, mFragment)
+                            binding.tvServiceTitle.text = it
+                            val bundle = Bundle()
+                            bundle.putString("title", it)
+                            tabMap[it]?.service?.description?.let { desc->
+                            bundle.putString("desc", desc)
+                            }
+                            tabMap[it]?.service?.serviceImageList?.get(0)?.let {url->
+                            bundle.putString("imgUrl", url)
+                            }
+                            val fragment = HotelServiceInfoFragment()
+                            fragment.arguments = bundle
+                            transaction.replace(R.id.fragment_container_carousel, fragment)
                         }
                     }
                     transaction.commit()
-                    /*when(it.title){
-                        "Business center"->{
-                            val mBundle = Bundle()
-                            mBundle.putString("title",it.title)
-                            val list = CarouselListFragment()
-                            val transaction = supportFragmentManager.beginTransaction()
-                            transaction.replace(R.id.fragment_container_carousel, list)
-                            transaction.commit()
-                        }
-                        "Mini Bar"->{
-                            val mBundle = Bundle()
-                            mBundle.putString("title",it.title)
-                            val mFragment = LoginFragment()
-                            val transaction =supportFragmentManager.beginTransaction()
-                            transaction.replace(R.id.fragment_container_carousel, mFragment)
-                            transaction.commit()
-                        }
-                        "Meetings"->{
-                            val mBundle = Bundle()
-                            mBundle.putString("title",it.title)
-                            val list = CarouselListFragment()
-                            val transaction = supportFragmentManager.beginTransaction()
-                            transaction.replace(R.id.fragment_container_carousel, list)
-                            transaction.commit()
-                        }
-                        "In room Dining"->{
-                            val mBundle = Bundle()
-                            mBundle.putString("title",it.title)
-                            val mFragment = LoginFragment()// Assuming 'tab' is a TextView in your holder
-                            val transaction =supportFragmentManager.beginTransaction()
-                            transaction.replace(R.id.fragment_container_carousel, mFragment)
-                            transaction.commit()
-                        }
-                        "Home"->{
-                            val mBundle = Bundle()
-                            mBundle.putString("title",it.title)
-                            val mFragment = LoginFragment()
-                            val transaction =supportFragmentManager.beginTransaction()
-                            mFragment.arguments=mBundle
-                            transaction.replace(R.id.fragment_container_carousel, mFragment)
-                            transaction.commit()
-                        }
-                        "Help & Info"->{
-                            val mBundle = Bundle()
-                            mBundle.putString("title",it.title)
-                            val mFragment = LoginFragment()// Assuming 'tab' is a TextView in your holder
-                            val transaction =supportFragmentManager.beginTransaction()
-                            transaction.replace(R.id.fragment_container_carousel, mFragment)
-                            transaction.commit()
-                        }
-                        "Hotel Info"->{
-                            val mBundle = Bundle()
-                            mBundle.putString("title",it.title)
-                            val mFragment = LoginFragment()
-                            val transaction =supportFragmentManager.beginTransaction()
-                            mFragment.arguments=mBundle
-                            transaction.replace(R.id.fragment_container_carousel, mFragment)
-                            transaction.commit()
-                        }
-
-                    }*/
                 }
+                adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
                 binding.recyclerView.adapter = adapter
-
-
-//                Log.i("Filterr", tab.toString())
-//                Log.i("Success", hotelInfoViewModel.hotelServiceLiveData.value?.data?.toString()?:"")
                 binding.loaderView.toInvisible()
             }
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
             }
         }
-    }
-
-    private fun getBtnList(): List<HotelInfoBtnModel>{
-        val list = mutableListOf(
-            HotelInfoBtnModel("Business center"),
-            HotelInfoBtnModel( "Mini Bar"),
-            HotelInfoBtnModel( "Meetings"),
-            HotelInfoBtnModel( "In room Dining"),
-            HotelInfoBtnModel("Home"),
-            HotelInfoBtnModel( "Help & Info"),
-            HotelInfoBtnModel( "Hotel Info"),
-            HotelInfoBtnModel( "Crackle"),
-            HotelInfoBtnModel( "2nd crackle")
-        )
-        return list
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
@@ -221,6 +169,21 @@ class HotelInfoActivity : BaseActivity() {
                 }
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
+    }
+
+    private fun getGradient(startColor: String, endColor: String): GradientDrawable{
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+        )
+
+        gradientDrawable.cornerRadius = 20f
+
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
     }
 
 }
