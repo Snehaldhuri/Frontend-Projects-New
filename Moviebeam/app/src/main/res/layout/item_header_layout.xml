@@ -12,6 +12,7 @@
         app:layout_constraintGuide_percent="0.57" />
 
     <include
+        android:id="@+id/header_weather_time_"
         layout="@layout/item_weather_time_date_row"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"

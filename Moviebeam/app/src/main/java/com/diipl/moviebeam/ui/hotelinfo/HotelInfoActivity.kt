@@ -17,9 +17,11 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -43,6 +45,8 @@ class HotelInfoActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(hotelInfoViewModel.themeLiveData, ::handleThemeResponse)
+        observe(hotelInfoViewModel.dateTimeLiveData, ::handleDateTimeResponse)
+        observe(hotelInfoViewModel.weatherLiveData, ::handleWeatherResponse)
         observeSnackBarMessages(hotelInfoViewModel.showSnackBar)
         observeToast(hotelInfoViewModel.showToast)
     }
@@ -142,6 +146,43 @@ class HotelInfoActivity : BaseActivity() {
                 }
                 adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
                 binding.recyclerView.adapter = adapter
+                binding.loaderView.toInvisible()
+            }
+            else -> {
+                status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                var temperature = hotelInfoViewModel.weatherLiveData.value?.data?.tempCondition
+                temperature?.let {
+                    if(it.contains("&deg C")){
+                        temperature = it.replace("&deg C", " \u2103")
+                    }else{
+                        temperature = it.replace("&deg F", " \u2109")
+                    }
+                }
+                binding.header.headerWeatherTime.txtTemperature.text = temperature
+                Glide.with(this).load(hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud).into(binding.header.headerWeatherTime.imgWeatherImage)
+                binding.loaderView.toInvisible()
+            }
+            else -> {
+                status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                binding.header.headerWeatherTime.txtDate.text = hotelInfoViewModel.dateTimeLiveData.value?.data?.date
+                binding.header.headerWeatherTime.txtTime.text = hotelInfoViewModel.dateTimeLiveData.value?.data?.time
+//                Log.i("SIze Calculator :", "${binding.time.textSize} - ${binding.time.textSizeUnit}")
                 binding.loaderView.toInvisible()
             }
             else -> {

@@ -57,7 +57,7 @@ class MainMenuViewModel @Inject constructor(
     }
 
     private fun fetchThemeDetails(ua: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _themeLiveData.postValue(Resource.Loading())
             val response = movieBeamRepository.getThemeDetails(ua)
             if (response == null) {
@@ -69,7 +69,7 @@ class MainMenuViewModel @Inject constructor(
     }
 
     fun fetchDateTime(ua: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _dateTimeLiveData.postValue(Resource.Loading())
             val response = movieBeamRepository.getDateTimeData(ua)
             if (response == null) {
