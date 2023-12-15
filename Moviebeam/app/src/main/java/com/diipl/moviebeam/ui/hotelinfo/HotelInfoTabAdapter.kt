@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
+import android.content.Intent
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
@@ -11,13 +12,13 @@ import com.diipl.moviebeam.R
 
 class HotelInfoTabAdapter(
     private val itemList: List<String>,
-    private var onItemClicked: ((String)) -> Unit
+    private var onItemFocused: ((String)) -> Unit
 ) :
     RecyclerView.Adapter<HotelInfoTabAdapter.MyViewHolder>() {
     private var gradientDrawable: GradientDrawable? = null
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val textView: TextView = itemView.findViewById(R.id.textView)
+        val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
         val card: ConstraintLayout = itemView.findViewById(R.id.card1)
     }
 
@@ -36,10 +37,20 @@ class HotelInfoTabAdapter(
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                onItemClicked(itemList[position])
+                onItemFocused(itemList[position])
                 holder.card.background = gradientDrawable
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+        if (holder.textView.text == "Help & Info") {
+            holder.card.setOnClickListener {
+                holder.card.context.startActivity(
+                    Intent(
+                        holder.card.context,
+                        HelpInfoActivity::class.java
+                    )
+                )
             }
         }
     }

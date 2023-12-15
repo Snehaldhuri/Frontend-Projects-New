@@ -15,7 +15,7 @@ import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
 
-class MyCardPresenter(private val onItemClicked: ((String)) -> Unit) : Presenter() {
+class MyCardPresenter(private val onItemFocused: ((String)) -> Unit) : Presenter() {
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
 
         val defaultColor = "#C0C0C0"
@@ -26,7 +26,7 @@ class MyCardPresenter(private val onItemClicked: ((String)) -> Unit) : Presenter
 
         view.isFocusable = true
         view.setOnFocusChangeListener { it, b ->
-            onItemClicked(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
+            onItemFocused(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
 
             if (b) {
                 it.findViewById<CardView>(R.id.card).background.setTint(

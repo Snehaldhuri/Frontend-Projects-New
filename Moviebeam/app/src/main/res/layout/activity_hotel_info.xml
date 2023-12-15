@@ -8,41 +8,41 @@
     tools:context=".ui.hotelinfo.HotelInfoActivity">
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideLine_horizontal_10"
+        android:id="@+id/gl_horizontal_10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.1" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideLine_vertical_5"
+        android:id="@+id/gl_vertical_5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.052" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideLine_vertical_95"
+        android:id="@+id/gl_vertical_95"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.95" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideLine_horizontal_16"
+        android:id="@+id/gl_horizontal_16"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.1685" />
 
     <include
-        android:id="@+id/header"
+        android:id="@+id/layout_header"
         layout="@layout/item_header_layout"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
-        app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_16"
-        app:layout_constraintEnd_toStartOf="@+id/guideLine_vertical_95"
-        app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_5"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_16"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -58,10 +58,10 @@
         android:layout_height="@dimen/dp_0"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_94"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toEndOf="@id/guideLine_vertical_29"
-        app:layout_constraintStart_toStartOf="@id/guideLine_vertical_5"
-        app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_27" />
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
     <Button
         android:id="@+id/btn_back"
@@ -70,9 +70,9 @@
         android:background="@drawable/btn_bg_gradient_default"
         android:text="Back"
         android:textColor="@color/text_color_primary"
-        app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_27"
-        app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_5"
-        app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_16" />
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
     <TextView
         android:id="@+id/tv_service_title"
@@ -87,7 +87,7 @@
         app:layout_constraintStart_toEndOf="@+id/guideLine_vertical_29" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideLine_horizontal_27"
+        android:id="@+id/gl_horizontal_27"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -98,14 +98,14 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:nextFocusLeft="@id/recyclerView"
-        app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_94"
-        app:layout_constraintEnd_toStartOf="@+id/guideLine_vertical_95"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_29"
-        app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_27" />
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideLine_horizontal_94"
+        android:id="@+id/gl_horizontal_94"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"

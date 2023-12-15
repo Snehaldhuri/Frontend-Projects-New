@@ -9,12 +9,13 @@
     android:focusable="true"
     android:padding="@dimen/dp_20"
     android:layout_marginTop="@dimen/dp_1"
+    android:background="@drawable/btn_bg_gradient_default"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/tv_tabInfo"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         android:textColor="#fff"

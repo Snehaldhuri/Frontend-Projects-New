@@ -39,6 +39,7 @@ object Constants {
     const val IN_ROOM_DINING = "In Room Dining"
     const val LOCAL_ATTRACTION = "Local Attraction"
     const val FOOD_DELIVERY = "Food Delivery"
+    const val HELP_INFO = "Help & Info"
 
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),

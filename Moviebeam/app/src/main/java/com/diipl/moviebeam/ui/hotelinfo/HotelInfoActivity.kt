@@ -1,18 +1,23 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
@@ -20,6 +25,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.mainmenu.MainMenuBtnAdapter
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
@@ -82,9 +88,8 @@ class HotelInfoActivity : BaseActivity() {
                 }
                 Glide.with(this)
                     .load(hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.header.imgHotelLogo)
+                    .into(binding.layoutHeader.imgHotelLogo)
                 loadBg(hotelInfoViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-//                binding.loaderView.toInvisible()
             }
 
             else -> {
@@ -108,13 +113,14 @@ class HotelInfoActivity : BaseActivity() {
                                 tabs.add(it.title)
                             }
                         }
-
                         else -> {
                             tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
                             tabs.add(service.categoryName)
                         }
                     }
                 }
+                tabs.add(Constants.HELP_INFO)
+                tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
 
                 val adapter = HotelInfoTabAdapter(tabs) {
                     val transaction = supportFragmentManager.beginTransaction()
@@ -127,8 +133,7 @@ class HotelInfoActivity : BaseActivity() {
                             carousel.bindData(tabMap[it]?.serviceList)
                             transaction.replace(R.id.fragment_container_carousel, carousel)
                         }
-
-                        else -> {
+                        2 -> {
                             binding.tvServiceTitle.text = it
                             val bundle = Bundle()
                             bundle.putString("title", it)
@@ -138,6 +143,15 @@ class HotelInfoActivity : BaseActivity() {
                             tabMap[it]?.service?.serviceImageList?.get(0)?.let { url ->
                                 bundle.putString("imgUrl", url)
                             }
+                            val fragment = HotelServiceInfoFragment()
+                            fragment.arguments = bundle
+                            transaction.replace(R.id.fragment_container_carousel, fragment)
+                        }
+                        else -> {
+                            binding.tvServiceTitle.text = it
+                            val bundle = Bundle()
+                            bundle.putString("title", it)
+                            bundle.putString("desc", hotelInfoViewModel.accountSetupLiveData.value?.data?.address)
                             val fragment = HotelServiceInfoFragment()
                             fragment.arguments = bundle
                             transaction.replace(R.id.fragment_container_carousel, fragment)
@@ -168,8 +182,8 @@ class HotelInfoActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.header.headerWeatherTime.weather.txtTemperature.text = temperature
-                binding.header.headerWeatherTime.weather.imgWeatherImage.loadImagesWithGlideExt(
+                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage.loadImagesWithGlideExt(
                     hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
                 )
                 binding.loaderView.toInvisible()
@@ -185,9 +199,9 @@ class HotelInfoActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.header.headerWeatherTime.txtDate.text =
+                binding.layoutHeader.headerWeatherTime.txtDate.text =
                     hotelInfoViewModel.dateTimeLiveData.value?.data?.date
-                binding.header.headerWeatherTime.txtTime.text =
+                binding.layoutHeader.headerWeatherTime.txtTime.text =
                     hotelInfoViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentHotelServiceInfoBinding
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.toInvisible
@@ -42,7 +43,11 @@ class HotelServiceInfoFragment : Fragment() {
         } else {
             binding.tvServiceDesc.text = description.replace("<br/>", "", true)
         }
-        binding.ivServiceImg.loadImagesWithGlideExt(serviceImgUrl)
+        if (serviceImgUrl != "null") {
+            binding.ivServiceImg.loadImagesWithGlideExt(serviceImgUrl)
+        }else{
+            binding.ivServiceImg.setBackgroundResource(R.drawable.help)
+        }
         return binding.root
     }
 
