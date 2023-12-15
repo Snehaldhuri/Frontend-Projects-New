@@ -54,7 +54,7 @@
         app:layout_constraintVertical_bias="0.2" />
 
     <RelativeLayout
-        android:id="@+id/loader_view"
+        android:id="@+id/pb_loader"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clickable="true"

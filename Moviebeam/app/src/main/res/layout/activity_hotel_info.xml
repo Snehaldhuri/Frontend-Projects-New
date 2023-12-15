@@ -35,6 +35,28 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.1685" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideLine_vertical_29"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.29"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideLine_horizontal_27"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.27" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideLine_horizontal_94"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.94"/>
+
+
     <include
         android:id="@+id/layout_header"
         layout="@layout/item_header_layout"
@@ -52,8 +74,9 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.29" />
 
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/rv_hotel_info_header"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:focusable="true"
@@ -63,10 +86,17 @@
         app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
+
     <Button
         android:id="@+id/btn_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/back"
+        android:gravity="center_vertical"
+        android:drawablePadding="@dimen/dp_10"
+        android:drawableStart="@drawable/back_button_image"
+        android:textColor="@color/home_menu_title"
+        android:fontFamily="@font/manrope_bold_700"
         android:background="@drawable/btn_bg_gradient_default"
         android:text="Back"
         android:textColor="@color/text_color_primary"
@@ -97,6 +127,9 @@
         android:id="@+id/fragment_container_carousel"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
+        android:nextFocusLeft="@id/rv_menu_button"
+        app:layout_constraintBottom_toTopOf="@+id/guideLine_horizontal_94"
+        app:layout_constraintEnd_toStartOf="@+id/guideLine_vertical_95"
         android:nextFocusLeft="@id/recyclerView"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
@@ -104,6 +137,10 @@
         app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_29"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
+
+
+    <ProgressBar
+        android:id="@+id/pb_loader"
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_94"
         android:layout_width="wrap_content"
@@ -116,12 +153,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clickable="true"
-        android:visibility="gone">
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true" />
-    </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

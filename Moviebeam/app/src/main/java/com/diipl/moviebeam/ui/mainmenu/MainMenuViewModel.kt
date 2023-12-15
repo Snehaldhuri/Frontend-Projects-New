@@ -16,6 +16,8 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,10 +39,53 @@ class MainMenuViewModel @Inject constructor(
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
     init {
-        fetchWeatherData("17205KKXLKF626")
+        /*fetchWeatherData("17205KKXLKF626")
         fetchThemeDetails("17205KKXLKF626")
-        fetchDateTime("17205KKXLKF626")
+        fetchDateTime("17205KKXLKF626")*/
+        fetchAllApi("ACTIVATE", "17205KKXLKF626", "JSON")
         fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
+    }
+
+    fun fetchAllApi(cmd: String,ua: String,mode: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            _weatherLiveData.postValue(Resource.Loading())
+            _themeLiveData.postValue(Resource.Loading())
+            _dateTimeLiveData.postValue(Resource.Loading())
+            _accountSetupLiveData.postValue(Resource.Loading())
+
+
+            val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
+            val themeApiResponse = async {movieBeamRepository.getThemeDetails(ua) }
+            val dateTimeApiResponse = async { movieBeamRepository.getDateTimeData(ua) }
+            val accountSetupApiResponse = async {  movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)}
+
+
+            val result = awaitAll(weatherApiResponse,themeApiResponse,dateTimeApiResponse,accountSetupApiResponse)
+
+            if (result[0] == null) {
+                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            } else {
+                _weatherLiveData.postValue( Resource.Success(result[0] as WeatherResponse))
+            }
+
+            if (result[1] == null) {
+                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            } else {
+                _themeLiveData.postValue( Resource.Success(result[1] as ThemeResponse))
+            }
+
+            if (result[2] == null) {
+                _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            } else {
+                _dateTimeLiveData.postValue( Resource.Success(result[2] as DateTimeResponse))
+            }
+
+            if (result[3] == null) {
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            } else {
+                _accountSetupLiveData.postValue( Resource.Success(result[3] as AccountSetupResponse))
+            }
+        }
     }
 
     fun fetchWeatherData(ua: String) {

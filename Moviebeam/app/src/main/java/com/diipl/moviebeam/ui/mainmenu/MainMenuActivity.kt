@@ -1,7 +1,5 @@
 package com.diipl.moviebeam.ui.mainmenu
 
-import android.content.Intent
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -18,6 +16,7 @@ import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.utils.SingleEvent
@@ -59,7 +58,7 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 var temperature = mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
                 temperature?.let {
@@ -69,6 +68,11 @@ class MainMenuActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
+                binding.tvTemperature.text = temperature
+                Glide.with(this)
+                    .load(mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
+                    .into(binding.ivWeather)
+                binding.pbLoader.toInvisible()
                 binding.txtTemperature.text = temperature
                 Glide.with(this)
                     .load(mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
@@ -84,11 +88,25 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+
+                val startColor = mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                val endColor = mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
+                val adapter = MainMenuBtnAdapter()
+                adapter.itemList = getBtnList()
+                if (startColor != null && endColor != null) {
+                    adapter.setGradientColor(startColor, endColor)
                 mainMenuViewModel.themeLiveData.value?.data?.gradientColor?.let {
                     gradientStartColor = it
                 }
+                binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
+                binding.rvMenuButton.adapter = adapter
+
+                Glide.with(this)
+                    .load(mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName)
+                    .into(binding.ivHotelLogo)
                 mainMenuViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
                 }
@@ -96,7 +114,7 @@ class MainMenuActivity : BaseActivity() {
                     .load(mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName)
                     .into(binding.imgHotelLogo)
                 loadBg(mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                binding.loaderView.toInvisible()
+                binding.pbLoader.toInvisible()
             }
 
             else -> {
@@ -107,8 +125,12 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+                binding.tvDate.text = mainMenuViewModel.dateTimeLiveData.value?.data?.date
+                binding.tvTime.text = mainMenuViewModel.dateTimeLiveData.value?.data?.time
+//                Log.i("SIze Calculator :", "${binding.time.textSize} - ${binding.time.textSizeUnit}")
+                binding.pbLoader.toInvisible()
                 binding.txtDate.text = mainMenuViewModel.dateTimeLiveData.value?.data?.date
                 binding.txtTime.text = mainMenuViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
@@ -122,8 +144,11 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+                binding.tvGreeting.text = mainMenuViewModel.accountSetupLiveData.value?.data?.hotelInfo
+             //   binding.tvGreeting.setTextColor(Color.parseColor("#FFC107"))
+                binding.pbLoader.toInvisible()
                 binding.txtGreeting.text =
                     mainMenuViewModel.accountSetupLiveData.value?.data?.hotelInfo
                 binding.txtGreeting.setTextColor(Color.parseColor("#FFC107"))

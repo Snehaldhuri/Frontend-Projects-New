@@ -47,7 +47,7 @@ class LoginActivity : BaseActivity() {
 
     private fun handleLoginResult(status: Resource<LoginResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> status.data?.let {
                 navigateToMainScreen()
             }

@@ -65,7 +65,7 @@ class HomeActivity : BaseActivity() {
                     Log.d("Weather Image", "handleWeatherResponse: $it")
                 }
                 /*Glide.with(this).load(mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud).into(binding.weatherImage)
-                binding.loaderView.toInvisible()*/
+                binding.pbLoader.toInvisible()*/
                 binding.progressBar.toGone()
             }
             is Resource.DataError -> {

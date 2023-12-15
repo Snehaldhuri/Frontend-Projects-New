@@ -15,6 +15,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
@@ -72,13 +73,14 @@ class HotelInfoActivity : BaseActivity() {
         }
         binding.recyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.rvHotelInfoHeader.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
 
     }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 hotelInfoViewModel.themeLiveData.value?.data?.gradientColor?.let {
                     gradientStartColor = it
@@ -89,7 +91,9 @@ class HotelInfoActivity : BaseActivity() {
                 Glide.with(this)
                     .load(hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName)
                     .into(binding.layoutHeader.imgHotelLogo)
+                Glide.with(this).load(hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName).into(binding.layoutHeader.ivHotelLogo)
                 loadBg(hotelInfoViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
+//                binding.pbLoader.toInvisible()
             }
 
             else -> {
@@ -100,7 +104,7 @@ class HotelInfoActivity : BaseActivity() {
 
     private fun handleHotelServiceResponse(status: Resource<HotelServiceResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 val tabMap = mutableMapOf<String, TabListObj>()
                 val tabs = mutableListOf<String>()
@@ -160,8 +164,8 @@ class HotelInfoActivity : BaseActivity() {
                     transaction.commit()
                 }
                 adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
-                binding.recyclerView.adapter = adapter
-                binding.loaderView.toInvisible()
+                binding.rvHotelInfoHeader.adapter = adapter
+                binding.pbLoader.toInvisible()
             }
 
             else -> {
@@ -172,7 +176,7 @@ class HotelInfoActivity : BaseActivity() {
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 var temperature = hotelInfoViewModel.weatherLiveData.value?.data?.tempCondition
                 temperature?.let {
@@ -187,6 +191,9 @@ class HotelInfoActivity : BaseActivity() {
                     hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
                 )
                 binding.loaderView.toInvisible()
+                binding.layoutHeader.layoutWeatherTime.tvTemperature.text = temperature
+                Glide.with(this).load(hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud).into(binding.layoutHeader.layoutWeatherTime.ivWeather)
+                binding.pbLoader.toInvisible()
             }
 
             else -> {
@@ -197,8 +204,12 @@ class HotelInfoActivity : BaseActivity() {
 
     private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+                binding.layoutHeader.layoutWeatherTime.tvDate.text = hotelInfoViewModel.dateTimeLiveData.value?.data?.date
+                binding.layoutHeader.layoutWeatherTime.tvTime.text = hotelInfoViewModel.dateTimeLiveData.value?.data?.time
+//                Log.i("SIze Calculator :", "${binding.time.textSize} - ${binding.time.textSizeUnit}")
+                binding.pbLoader.toInvisible()
                 binding.layoutHeader.headerWeatherTime.txtDate.text =
                     hotelInfoViewModel.dateTimeLiveData.value?.data?.date
                 binding.layoutHeader.headerWeatherTime.txtTime.text =

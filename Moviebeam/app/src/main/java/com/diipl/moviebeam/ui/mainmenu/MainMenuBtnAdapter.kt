@@ -12,11 +12,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 
+class MainMenuBtnAdapter() : RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
 class MainMenuBtnAdapter(
     private var onMenuItemClicked: (String) -> Unit
 ) :
     RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
 
+    var cont: Context? = null
+
+    private var startColor = "#85bf08"
+    private var endColor = "#0ca654"
     var startColor = ""
     var endColor = ""
 
@@ -24,6 +29,9 @@ class MainMenuBtnAdapter(
 
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
+        val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
+        val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
         val imageView: ImageView = itemView.findViewById(R.id.imageView)
         val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
         val card: ConstraintLayout = itemView.findViewById(R.id.card1)
@@ -32,6 +40,10 @@ class MainMenuBtnAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
+        cont = parent.context
+        view.setOnClickListener {
+            parent.context.startActivity(Intent(parent.context, HotelInfoActivity::class.java))
+        }
         return MyViewHolder(view)
     }
 
