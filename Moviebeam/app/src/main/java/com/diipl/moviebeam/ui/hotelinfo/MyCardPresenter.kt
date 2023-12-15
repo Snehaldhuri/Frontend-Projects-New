@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
 import androidx.leanback.widget.Presenter
+import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
@@ -27,11 +27,26 @@ class MyCardPresenter(private val onItemClicked: ((String)) -> Unit) : Presenter
         view.isFocusable = true
         view.setOnFocusChangeListener { it, b ->
             onItemClicked(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
-            if(b){
-                it.findViewById<CardView>(R.id.card).background.setTint(Color.parseColor(focusedColor))
-            }else{
-                it.findViewById<CardView>(R.id.card).background.setTint(Color.parseColor(defaultColor))
+
+            if (b) {
+                it.findViewById<CardView>(R.id.card).background.setTint(
+                    Color.parseColor(
+                        focusedColor
+                    )
+                )
+            } else {
+                it.findViewById<CardView>(R.id.card).background.setTint(
+                    Color.parseColor(
+                        defaultColor
+                    )
+                )
             }
+        }
+
+
+
+        view.setOnClickListener {
+            parent.rootView.findViewById<RecyclerView>(R.id.recyclerView)
         }
 
         val params = view.layoutParams
@@ -45,7 +60,8 @@ class MyCardPresenter(private val onItemClicked: ((String)) -> Unit) : Presenter
             val service: Service = item
             val cardView = viewHolder.view
             // Set card content
-            cardView.findViewById<TextView>(R.id.tv_card_content).text = service.description.replace("<br>","", true)
+            cardView.findViewById<TextView>(R.id.tv_card_content).text =
+                service.description.replace("<br>", "", true)
             cardView.findViewById<TextView>(R.id.tv_card_title).text = service.title
             // Customize other card attributes as needed
             val imageview = cardView.findViewById<ImageView>(R.id.iv_card_image)

@@ -38,6 +38,8 @@ class HotelInfoViewModel @Inject constructor(
     init {
         fetchHotelServiceInfo(7107)
         fetchThemeDetails("17205KKXLKF626")
+        fetchWeatherData("17205KKXLKF626")
+        fetchDateTime("17205KKXLKF626")
     }
 
     private fun fetchHotelServiceInfo(accountId: Int) {
@@ -47,7 +49,7 @@ class HotelInfoViewModel @Inject constructor(
             if (response == null) {
                 _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _hotelServiceLiveData.postValue( Resource.Success(response))
+                _hotelServiceLiveData.postValue(Resource.Success(response))
             }
         }
     }
@@ -72,7 +74,7 @@ class HotelInfoViewModel @Inject constructor(
             if (response == null) {
                 _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _weatherLiveData.postValue( Resource.Success(response))
+                _weatherLiveData.postValue(Resource.Success(response))
             }
         }
     }

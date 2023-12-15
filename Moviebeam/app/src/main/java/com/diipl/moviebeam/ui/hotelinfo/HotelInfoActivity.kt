@@ -5,28 +5,23 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.btn.HotelInfoBtnModel
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
-import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -60,16 +55,17 @@ class HotelInfoActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.btnBack.setOnFocusChangeListener { view, b ->
-            if(b){
+            if (b) {
                 binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
-            }else{
+            } else {
                 binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         binding.btnBack.setOnClickListener {
             finish()
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.recyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
 
     }
@@ -81,13 +77,16 @@ class HotelInfoActivity : BaseActivity() {
                 hotelInfoViewModel.themeLiveData.value?.data?.gradientColor?.let {
                     gradientStartColor = it
                 }
-                hotelInfoViewModel.themeLiveData.value?.data?.spotLightColor?.let{
+                hotelInfoViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                Glide.with(this).load(hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName).into(binding.header.imgHotelLogo)
+                Glide.with(this)
+                    .load(hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName)
+                    .into(binding.header.imgHotelLogo)
                 loadBg(hotelInfoViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
 //                binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
             }
@@ -101,14 +100,15 @@ class HotelInfoActivity : BaseActivity() {
                 val tabMap = mutableMapOf<String, TabListObj>()
                 val tabs = mutableListOf<String>()
                 val response = hotelInfoViewModel.hotelServiceLiveData.value?.data
-                for (service in response?.servicesList!!){
-                    when(service.categoryName){
+                for (service in response?.servicesList!!) {
+                    when (service.categoryName) {
                         "All" -> {
                             service.serviceList.forEach {
                                 tabMap[it.title] = TabListObj(2, it, null)
                                 tabs.add(it.title)
                             }
                         }
+
                         else -> {
                             tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
                             tabs.add(service.categoryName)
@@ -116,26 +116,27 @@ class HotelInfoActivity : BaseActivity() {
                     }
                 }
 
-                val adapter = HotelInfoTabAdapter(tabs){
+                val adapter = HotelInfoTabAdapter(tabs) {
                     val transaction = supportFragmentManager.beginTransaction()
-                    when(tabMap[it]?.serviceType){
+                    when (tabMap[it]?.serviceType) {
                         1 -> {
                             binding.tvServiceTitle.text = tabMap[it]?.serviceList?.get(0)?.title
-                            val carousel = CarouselListFragment{title->
+                            val carousel = CarouselListFragment { title ->
                                 binding.tvServiceTitle.text = title
                             }
                             carousel.bindData(tabMap[it]?.serviceList)
                             transaction.replace(R.id.fragment_container_carousel, carousel)
                         }
+
                         else -> {
                             binding.tvServiceTitle.text = it
                             val bundle = Bundle()
                             bundle.putString("title", it)
-                            tabMap[it]?.service?.description?.let { desc->
-                            bundle.putString("desc", desc)
+                            tabMap[it]?.service?.description?.let { desc ->
+                                bundle.putString("desc", desc)
                             }
-                            tabMap[it]?.service?.serviceImageList?.get(0)?.let {url->
-                            bundle.putString("imgUrl", url)
+                            tabMap[it]?.service?.serviceImageList?.get(0)?.let { url ->
+                                bundle.putString("imgUrl", url)
                             }
                             val fragment = HotelServiceInfoFragment()
                             fragment.arguments = bundle
@@ -148,6 +149,7 @@ class HotelInfoActivity : BaseActivity() {
                 binding.recyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
             }
@@ -160,16 +162,19 @@ class HotelInfoActivity : BaseActivity() {
             is Resource.Success -> {
                 var temperature = hotelInfoViewModel.weatherLiveData.value?.data?.tempCondition
                 temperature?.let {
-                    if(it.contains("&deg C")){
+                    if (it.contains("&deg C")) {
                         temperature = it.replace("&deg C", " \u2103")
-                    }else{
+                    } else {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.header.headerWeatherTime.txtTemperature.text = temperature
-                Glide.with(this).load(hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud).into(binding.header.headerWeatherTime.imgWeatherImage)
+                binding.header.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.header.headerWeatherTime.weather.imgWeatherImage.loadImagesWithGlideExt(
+                    hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
+                )
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
             }
@@ -180,11 +185,13 @@ class HotelInfoActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.header.headerWeatherTime.txtDate.text = hotelInfoViewModel.dateTimeLiveData.value?.data?.date
-                binding.header.headerWeatherTime.txtTime.text = hotelInfoViewModel.dateTimeLiveData.value?.data?.time
-//                Log.i("SIze Calculator :", "${binding.time.textSize} - ${binding.time.textSizeUnit}")
+                binding.header.headerWeatherTime.txtDate.text =
+                    hotelInfoViewModel.dateTimeLiveData.value?.data?.date
+                binding.header.headerWeatherTime.txtTime.text =
+                    hotelInfoViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
             }
@@ -199,20 +206,22 @@ class HotelInfoActivity : BaseActivity() {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    private fun loadBg(imgUrl: String?){
+    private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
                 override fun onResourceReady(
                     resource: Drawable,
                     transition: Transition<in Drawable?>?
                 ) {
+                    resource.alpha = 120
                     binding.root.background = resource
                 }
+
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
 
-    private fun getGradient(startColor: String, endColor: String): GradientDrawable{
+    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))

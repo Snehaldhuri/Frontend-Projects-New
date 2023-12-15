@@ -9,7 +9,6 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -51,7 +50,7 @@ class MainMenuViewModel @Inject constructor(
             if (response == null) {
                 _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _weatherLiveData.postValue( Resource.Success(response))
+                _weatherLiveData.postValue(Resource.Success(response))
             }
         }
     }
@@ -90,29 +89,11 @@ class MainMenuViewModel @Inject constructor(
                 _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
                 Log.i("Success Response", "Failed")
             } else {
-                _accountSetupLiveData.postValue( Resource.Success(response))
+                _accountSetupLiveData.postValue(Resource.Success(response))
                 Log.i("Success Response", response.toString())
             }
         }
     }
-
-    val list = mutableListOf(
-        BtnModel("prgGuide", R.drawable.program_guide_icon, "Program Guide"),
-        BtnModel("vod", R.drawable.video_on_demand_icon, "Movies & More"),
-        BtnModel("showtimes", R.drawable.showtime_icon, "Showtime"),
-        BtnModel("casting", R.drawable.casting_icon, "Casting"),
-        BtnModel("apps", R.drawable.app_world_icon, "Apps"),
-        BtnModel("guestServices", R.drawable.guestservices_icon, "Guest Services"),
-        BtnModel("hotelServices", R.drawable.hotelservices_icon, "Hotel Info"),
-        BtnModel("crackleDefault", R.drawable.crackle_white_icon, "Crackle"),
-        BtnModel("inRoomDining", R.drawable.crackle_white_icon, "In Room Dining"),
-        BtnModel("lam", R.drawable.crackle_white_icon, "Local Attraction"),
-        BtnModel("foodDelivery", R.drawable.fooddelivery_icon, "Food Delivery")
-    )
-
-//    private fun getButtonList(): List<BtnModel>{
-//
-//    }
 
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
     val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate

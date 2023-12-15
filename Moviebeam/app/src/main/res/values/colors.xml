@@ -11,4 +11,6 @@
     <color name="carousel_focused">#FFFFFF</color>
     <color name="carousel_not_focused">#C0C0C0</color>
     <color name="menu_list_bg">#616161</color>
+    <color name="text_color_primary">#EBEBEB</color>
+    <color name="text_color_secondary">#101010</color>
 </resources>

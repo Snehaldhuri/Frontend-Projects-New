@@ -4,50 +4,62 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/img_weather_image"
+    <!--    <ImageView-->
+    <!--        android:id="@+id/img_weather_image"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:adjustViewBounds="true"-->
+    <!--        android:contentDescription="Weather Image"-->
+    <!--        android:src="@drawable/weather_static"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <!--    <TextView-->
+    <!--        android:id="@+id/txt_temperature"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="@dimen/dp_0"-->
+    <!--        android:text="Temperature"-->
+    <!--        android:textSize="@dimen/sp_12"-->
+    <!--        android:textStyle="bold"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toStartOf="@+id/txt_time"-->
+    <!--        app:layout_constraintStart_toEndOf="@+id/img_weather_image"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <include
+        android:id="@+id/weather"
+        layout="@layout/weather_row"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/dp_16"
-        android:adjustViewBounds="true"
-        android:src="@drawable/weather_static"
-        android:contentDescription="Weather Image"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/txt_temperature"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/txt_temperature"
-        android:layout_width="@dimen/dp_135"
-        android:layout_height="wrap_content"
-        android:text="Temperature"
-        android:textSize="@dimen/sp_12"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/img_weather_image"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/txt_time"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/txt_time"
-        android:layout_width="@dimen/dp_135"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/dp_32"
         android:text="Time"
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/txt_date"
-        app:layout_constraintStart_toEndOf="@+id/txt_temperature"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/weather"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/txt_date"
-        android:layout_width="@dimen/dp_135"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Date"
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/txt_time"
         app:layout_constraintTop_toTopOf="parent" />
 

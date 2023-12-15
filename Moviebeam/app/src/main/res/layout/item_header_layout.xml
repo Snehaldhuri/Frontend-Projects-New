@@ -16,18 +16,18 @@
         layout="@layout/item_weather_time_date_row"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_57"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintStart_toStartOf="@+id/guideLine_vertical_57"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/img_hotel_logo"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:scaleType="fitXY"
+        android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:contentDescription="Hotel Logo"
+        android:scaleType="fitXY"
         android:src="@drawable/logo_static"
         app:flow_verticalAlign="center"
         app:layout_constraintDimensionRatio="1.49:1"

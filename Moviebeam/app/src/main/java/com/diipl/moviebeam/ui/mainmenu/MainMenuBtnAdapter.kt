@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.mainmenu
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -10,16 +9,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 
-class MainMenuBtnAdapter() :
+class MainMenuBtnAdapter(
+    private var onMenuItemClicked: (String) -> Unit
+) :
     RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
-
-    var cont: Context? = null
 
     var startColor = ""
     var endColor = ""
@@ -30,16 +28,12 @@ class MainMenuBtnAdapter() :
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.imageView)
         val textView: TextView = itemView.findViewById(R.id.textView)
-        val card : ConstraintLayout = itemView.findViewById(R.id.card1)
+        val card: ConstraintLayout = itemView.findViewById(R.id.card1)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
-        cont = parent.context
-        view.setOnClickListener{
-            parent.context.startActivity(Intent(parent.context, HotelInfoActivity::class.java))
-        }
         return MyViewHolder(view)
     }
 
@@ -59,6 +53,9 @@ class MainMenuBtnAdapter() :
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
+        }
+        holder.card.setOnClickListener {
+            onMenuItemClicked(item.btnId)
         }
 
     }
@@ -81,8 +78,8 @@ class MainMenuBtnAdapter() :
         cardView.background = gradientDrawable
     }
 
-    fun setGradientColor(startColor:String,endColor :String){
-        this.startColor=startColor
+    fun setGradientColor(startColor: String, endColor: String) {
+        this.startColor = startColor
         this.endColor = endColor
     }
 

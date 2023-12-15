@@ -7,22 +7,21 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.R
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInvisible
@@ -34,11 +33,11 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainMenuActivity : BaseActivity() {
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private lateinit var binding: ActivityMainMenuBinding
+    private var gradientStartColor = "#85bf08"
+    private var gradientEndColor = "#0ca654"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        /*binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
-        binding.recyclerView.adapter = MainMenuBtnAdapter(getBtnList())*/
 
     }
 
@@ -64,16 +63,19 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 var temperature = mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
                 temperature?.let {
-                    if(it.contains("&deg C")){
+                    if (it.contains("&deg C")) {
                         temperature = it.replace("&deg C", " \u2103")
-                    }else{
+                    } else {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
                 binding.txtTemperature.text = temperature
-                Glide.with(this).load(mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud).into(binding.imgWeatherImage)
+                Glide.with(this)
+                    .load(mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
+                    .into(binding.imgWeatherImage)
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
@@ -84,21 +86,19 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-
-                val startColor = mainMenuViewModel.themeLiveData.value?.data?.gradientColor
-                val endColor = mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
-                binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
-                val adapter = MainMenuBtnAdapter()
-                adapter.itemList = getBtnList()
-                if (startColor != null && endColor!=null) {
-                    adapter.setGradientColor(startColor,endColor)
+                mainMenuViewModel.themeLiveData.value?.data?.gradientColor?.let {
+                    gradientStartColor = it
                 }
-                binding.recyclerView.adapter = adapter
-
-                Glide.with(this).load(mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName).into(binding.imgHotelLogo)
+                mainMenuViewModel.themeLiveData.value?.data?.spotLightColor?.let {
+                    gradientEndColor = it
+                }
+                Glide.with(this)
+                    .load(mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName)
+                    .into(binding.imgHotelLogo)
                 loadBg(mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
@@ -111,9 +111,9 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 binding.txtDate.text = mainMenuViewModel.dateTimeLiveData.value?.data?.date
                 binding.txtTime.text = mainMenuViewModel.dateTimeLiveData.value?.data?.time
-//                Log.i("SIze Calculator :", "${binding.time.textSize} - ${binding.time.textSizeUnit}")
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
@@ -124,10 +124,34 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.txtGreeting.text = mainMenuViewModel.accountSetupLiveData.value?.data?.hotelInfo
+                binding.txtGreeting.text =
+                    mainMenuViewModel.accountSetupLiveData.value?.data?.hotelInfo
                 binding.txtGreeting.setTextColor(Color.parseColor("#FFC107"))
+                val btnListFromApi: List<String>? =
+                    mainMenuViewModel.accountSetupLiveData.value?.data?.buttonsList?.map {
+                        it.buttonName
+                    }
+                val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
+                    btnListFromApi?.contains(it.btnId) == true
+                }
+                binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
+                val adapter = MainMenuBtnAdapter { btnId ->
+                    when (btnId) {
+                        Constants.HOTEL_SERVICES_ID -> {
+                            startActivity(Intent(this, HotelInfoActivity::class.java))
+                        }
+                        else -> {
+
+                        }
+                    }
+                }
+                adapter.itemList = btnModelList
+                adapter.setGradientColor(gradientStartColor, gradientEndColor)
+                binding.recyclerView.adapter = adapter
+
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
@@ -142,7 +166,7 @@ class MainMenuActivity : BaseActivity() {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    private fun loadBg(imgUrl: String?){
+    private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
                 override fun onResourceReady(
@@ -151,25 +175,9 @@ class MainMenuActivity : BaseActivity() {
                 ) {
                     binding.root.background = resource
                 }
+
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
-    }
-
-    private fun getBtnList(): List<BtnModel> {
-        val list = mutableListOf(
-            BtnModel("prgGuide", R.drawable.program_guide_icon, "Program Guide"),
-            BtnModel("vod", R.drawable.video_on_demand_icon, "Movies & More"),
-            BtnModel("showtimes", R.drawable.showtime_icon, "Showtime"),
-            BtnModel("casting", R.drawable.casting_icon, "Casting"),
-            BtnModel("apps", R.drawable.app_world_icon, "Apps"),
-            BtnModel("guestServices", R.drawable.guestservices_icon, "Guest Services"),
-            BtnModel("hotelServices", R.drawable.hotelservices_icon, "Hotel Info"),
-            BtnModel("crackleDefault", R.drawable.crackle_white_icon, "Crackle"),
-            BtnModel("inRoomDining", R.drawable.crackle_white_icon, "In Room Dining"),
-            BtnModel("lam", R.drawable.crackle_white_icon, "Local Attraction"),
-            BtnModel("foodDelivery", R.drawable.fooddelivery_icon, "Food Delivery")
-        )
-        return list
     }
 
 }
