@@ -16,6 +16,11 @@ interface LgRestApiService {
         @Query("accountId") accountId: Int
     ): Response<String>
 
+    @GET("content/localAttraction")
+    suspend fun getLocalAttraction(
+        @Query("UA") ua: String
+    ): Response<String>
+
     @GET("hotel/theme")
     suspend fun getThemeDetails(
         @Query("UA") ua: String

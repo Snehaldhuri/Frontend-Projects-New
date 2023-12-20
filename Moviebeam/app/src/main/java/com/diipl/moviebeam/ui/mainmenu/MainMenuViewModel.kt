@@ -40,7 +40,7 @@ class MainMenuViewModel @Inject constructor(
         fetchWeatherData("17205KKXLKF626")
         fetchThemeDetails("17205KKXLKF626")
         fetchDateTime("17205KKXLKF626")
-        fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
+        fetchAccountSetupDetails("ACTIVATE", "14508KKMH0K299", "JSON")
     }
 
     fun fetchWeatherData(ua: String) {

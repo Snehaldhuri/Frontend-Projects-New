@@ -4,18 +4,18 @@
     <value>
       <entry key="app">
         <State>
-    <targetSelectedWithDropDown>
-      <Target>
-        <type value="QUICK_BOOT_TARGET" />
-        <deviceKey>
-          <Key>
-            <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\siddheshh\.android\avd\Television_4K_API_34.avd" />
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="C:\Users\snehal.dhuri\.android\avd\Television_720p_API_30.avd" />
                 </Key>
               </deviceKey>
             </Target>
           </targetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2023-12-08T05:38:59.732604800Z" />
+          <timeTargetWasSelectedWithDropDown value="2023-12-18T06:26:36.785519700Z" />
         </State>
       </entry>
     </value>
