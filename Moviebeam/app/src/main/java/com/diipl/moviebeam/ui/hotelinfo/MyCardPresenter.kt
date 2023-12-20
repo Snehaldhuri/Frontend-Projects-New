@@ -9,7 +9,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.leanback.widget.Presenter
-import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
@@ -43,12 +42,6 @@ class MyCardPresenter(private val onItemFocused: ((String)) -> Unit) : Presenter
             }
         }
 
-
-
-        view.setOnClickListener {
-            parent.rootView.findViewById<RecyclerView>(R.id.recyclerView)
-        }
-
         val params = view.layoutParams
         params.width = getWidthInPercent(parent.context, 30)
         params.height = getHeightInPercent(parent.context, 60)
@@ -68,6 +61,7 @@ class MyCardPresenter(private val onItemFocused: ((String)) -> Unit) : Presenter
 
             imageview.loadImagesWithGlideExt(service.serviceImageList[0])
         }
+
     }
 
     override fun onUnbindViewHolder(viewHolder: ViewHolder) {

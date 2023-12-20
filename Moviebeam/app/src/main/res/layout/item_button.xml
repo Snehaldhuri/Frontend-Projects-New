@@ -12,20 +12,6 @@
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent">
-    android:clickable="true"
-    android:focusable="true"
-    android:padding="@dimen/dp_8">
-
-    <ImageView
-        android:id="@+id/iv_menu_icon"
-        android:layout_width="@dimen/dp_0"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/dp_8"
-        android:contentDescription="Menu Button Image"
-        android:src="@drawable/app_world_icon"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_40"
@@ -34,24 +20,30 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.4" />
 
-    <TextView
-        android:id="@+id/tv_menu_title"
-        android:id="@+id/tv_tabInfo"
+    <ImageView
+        android:id="@+id/iv_menu_icon"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_8"
         android:layout_marginEnd="@dimen/dp_8"
+        android:contentDescription="@string/menu_button_image"
+        android:src="@drawable/app_world_icon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_40"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_menu_title"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_8"
+        android:fontFamily="@font/manrope_bold_700"
         android:textAlignment="viewStart"
         android:textColor="@color/home_menu_title"
         android:textSize="@dimen/sp_20"
-        android:fontFamily="@font/manrope_bold_700"
-        android:padding="@dimen/dp_10"
-        android:textAlignment="viewStart"
-        android:textColor="#fff"
-        android:textSize="@dimen/sp_20"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/iv_menu_icon"
-        app:layout_constraintTop_toTopOf="parent" />
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_40"
         app:layout_constraintTop_toTopOf="parent" />

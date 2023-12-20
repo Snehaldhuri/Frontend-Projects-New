@@ -43,7 +43,7 @@ class MainMenuViewModel @Inject constructor(
         fetchThemeDetails("17205KKXLKF626")
         fetchDateTime("17205KKXLKF626")*/
         fetchAllApi("ACTIVATE", "17205KKXLKF626", "JSON")
-        fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
+     //   fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
     }
 
     fun fetchAllApi(cmd: String,ua: String,mode: String){

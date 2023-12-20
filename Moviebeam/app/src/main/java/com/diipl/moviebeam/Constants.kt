@@ -12,6 +12,12 @@ object Constants {
     const val SERVER_ERROR = "Server Error"
     const val LG_REST = "LG_REST"
     const val ACCOUNT_SETUP = "ACCOUNT_SETUP"
+    const val HELP_INFO = "Help & Info"
+    const val SYSTEM_INFO = "System Info"
+    const val HOTEL_INFORMATION = "Hotel Information"
+    const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
+    const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
+
 
     //Home Page Menu Button Id
     const val PRG_GUIDE_ID = "prgGuide"
@@ -39,7 +45,7 @@ object Constants {
     const val IN_ROOM_DINING = "In Room Dining"
     const val LOCAL_ATTRACTION = "Local Attraction"
     const val FOOD_DELIVERY = "Food Delivery"
-    const val HELP_INFO = "Help & Info"
+
 
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),

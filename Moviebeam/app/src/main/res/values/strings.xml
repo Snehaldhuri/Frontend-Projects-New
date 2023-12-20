@@ -18,4 +18,6 @@
     <string name="hotel_logo">Hotel Logo</string>
     <string name="weather_image">Weather Image</string>
     <string name="back">Back</string>
+    <string name="menu_button_image">Menu Button Image</string>
+    <string name="hotel_information">Hotel Information</string>
 </resources>

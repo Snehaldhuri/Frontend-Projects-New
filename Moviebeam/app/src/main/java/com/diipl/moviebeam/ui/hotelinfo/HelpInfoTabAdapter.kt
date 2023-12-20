@@ -1,33 +1,31 @@
-package com.diipl.moviebeam.ui.mainmenu
+package com.diipl.moviebeam.ui.hotelinfo
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.btn.BtnModel
 
-class MainMenuBtnAdapter(private var onMenuItemClicked: (String) -> Unit) :
-    RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
+class HelpInfoTabAdapter(
+    private val itemList: List<String>
+) :
+    RecyclerView.Adapter<HelpInfoTabAdapter.MyViewHolder>() {
 
-    private var startColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var endColor = Constants.DEFAULTGRADIENTENDCOLOR
-    var itemList: List<BtnModel> = mutableListOf()
+    private var startColor = "#85bf08"
+    private var endColor = "#0ca654"
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
-        val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
-        val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
+        val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
+        val card: ConstraintLayout = itemView.findViewById(R.id.card1)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.hotel_info_tab, parent, false)
         return MyViewHolder(view)
     }
 
@@ -36,20 +34,14 @@ class MainMenuBtnAdapter(private var onMenuItemClicked: (String) -> Unit) :
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 
-        holder.imageView.setImageResource(item.imageResId)
-        holder.textView.text = item.title
-
+        holder.textView.text = item
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 fetchGradientColorsFromApi(holder.card)
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
-        }
-        holder.card.setOnClickListener {
-            onMenuItemClicked(item.btnId)
         }
     }
 
@@ -71,5 +63,3 @@ class MainMenuBtnAdapter(private var onMenuItemClicked: (String) -> Unit) :
     }
 
 }
-
-
