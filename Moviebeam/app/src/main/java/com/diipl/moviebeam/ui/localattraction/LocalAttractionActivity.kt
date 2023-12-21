@@ -74,7 +74,7 @@ class LocalAttractionActivity : BaseActivity() {
                 val response = localAttractionViewModel.localAttractionLiveData.value?.data
                 Glide.with(this)
                     .load(localAttractionViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.imgHotelLogo)
+                    .into(binding.layoutHeader.ivHotelLogo)
                 loadBg(localAttractionViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 val adapter = LocalAttractionAdapter {
                     val cardAdapter = LaCardAdapter {

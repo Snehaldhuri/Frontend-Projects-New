@@ -35,8 +35,7 @@
             android:name=".ui.hotelinfo.HelpInfoActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+ />
         <activity
             android:name=".ui.hotelinfo.HotelInfoActivity"
             android:exported="false"
