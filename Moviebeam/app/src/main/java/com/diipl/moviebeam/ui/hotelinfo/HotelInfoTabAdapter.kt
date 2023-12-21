@@ -12,7 +12,7 @@ import com.diipl.moviebeam.R
 
 class HotelInfoTabAdapter(
     private val itemList: List<String>,
-    private var onItemFocused: ((String)) -> Unit
+    private var onItemFocused: (String, View) -> Unit
 ) :
     RecyclerView.Adapter<HotelInfoTabAdapter.MyViewHolder>() {
     private var gradientDrawable: GradientDrawable? = null
@@ -35,9 +35,9 @@ class HotelInfoTabAdapter(
 
         holder.textView.text = item
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
+        holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                onItemFocused(itemList[position])
+                onItemFocused(itemList[position], view)
                 holder.card.background = gradientDrawable
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)

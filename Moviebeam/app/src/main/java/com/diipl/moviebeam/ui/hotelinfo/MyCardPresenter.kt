@@ -3,26 +3,28 @@ package com.diipl.moviebeam.ui.hotelinfo
 
 import android.content.Context
 import android.graphics.Color
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.leanback.widget.Presenter
-import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
 
-class MyCardPresenter(private val onItemFocused: ((String)) -> Unit) : Presenter() {
+class MyCardPresenter(
+    private val onItemFocused: (String) -> Unit,
+    private val onLeftKeyPressed: (String) -> Unit
+) : Presenter() {
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
 
         val defaultColor = "#C0C0C0"
         val focusedColor = "#FFFFFF"
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.carousel_card, parent, false)
-
 
         view.isFocusable = true
         view.setOnFocusChangeListener { it, b ->
@@ -41,13 +43,17 @@ class MyCardPresenter(private val onItemFocused: ((String)) -> Unit) : Presenter
                     )
                 )
             }
+            view.setOnKeyListener { _, keycode, keyEvent ->
+                if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                    when (keycode) {
+                        KeyEvent.KEYCODE_DPAD_LEFT ->
+                            onLeftKeyPressed(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
+                    }
+                }
+                false
+            }
         }
 
-
-
-        view.setOnClickListener {
-            parent.rootView.findViewById<RecyclerView>(R.id.recyclerView)
-        }
 
         val params = view.layoutParams
         params.width = getWidthInPercent(parent.context, 30)
@@ -56,6 +62,7 @@ class MyCardPresenter(private val onItemFocused: ((String)) -> Unit) : Presenter
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any) {
+
         if (item is Service) {
             val service: Service = item
             val cardView = viewHolder.view

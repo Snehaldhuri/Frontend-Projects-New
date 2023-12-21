@@ -9,7 +9,10 @@ import androidx.leanback.widget.ListRowPresenter
 import com.diipl.moviebeam.data.dto.hotelservice.Service
 
 
-class CarouselListFragment(private val onItemFocused: ((String)) -> Unit) : RowsSupportFragment() {
+class CarouselListFragment(
+    private val onItemFocused: ((String)) -> Unit,
+    private val onLeftKeyPressed: (String) -> Unit
+) : RowsSupportFragment() {
 
     private var serviceList: List<Service>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +33,7 @@ class CarouselListFragment(private val onItemFocused: ((String)) -> Unit) : Rows
     }
 
     private fun createCardRow(): ArrayObjectAdapter {
-        val adapter = ArrayObjectAdapter(MyCardPresenter(onItemFocused))
+        val adapter = ArrayObjectAdapter(MyCardPresenter(onItemFocused, onLeftKeyPressed))
 
         // Add cards to the row
         serviceList?.forEach { adapter.add(it) }

@@ -41,7 +41,7 @@ class HotelInfoViewModel @Inject constructor(
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
     init {
-        fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
+        fetchAccountSetupDetails("ACTIVATE", "14508KKMH0K299", "JSON")
         fetchHotelServiceInfo(7107)
         fetchThemeDetails("17205KKXLKF626")
         fetchWeatherData("17205KKXLKF626")

@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.GridLayoutManager
@@ -54,8 +55,8 @@ class HotelInfoActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityHotelInfoBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        setContentView(binding.root)
+        binding.layoutHeader.title.text = intent.extras?.getString("title")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,6 +114,7 @@ class HotelInfoActivity : BaseActivity() {
                                 tabs.add(it.title)
                             }
                         }
+
                         else -> {
                             tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
                             tabs.add(service.categoryName)
@@ -122,17 +124,23 @@ class HotelInfoActivity : BaseActivity() {
                 tabs.add(Constants.HELP_INFO)
                 tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
 
-                val adapter = HotelInfoTabAdapter(tabs) {
+                val adapter = HotelInfoTabAdapter(tabs) { it, view ->
+
                     val transaction = supportFragmentManager.beginTransaction()
                     when (tabMap[it]?.serviceType) {
                         1 -> {
                             binding.tvServiceTitle.text = tabMap[it]?.serviceList?.get(0)?.title
-                            val carousel = CarouselListFragment { title ->
+                            val carousel = CarouselListFragment({ title ->
                                 binding.tvServiceTitle.text = title
-                            }
+                            }, { title ->
+                                if (tabMap[it]?.serviceList?.get(0)?.title == title) {
+                                    view.requestFocus()
+                                }
+                            })
                             carousel.bindData(tabMap[it]?.serviceList)
                             transaction.replace(R.id.fragment_container_carousel, carousel)
                         }
+
                         2 -> {
                             binding.tvServiceTitle.text = it
                             val bundle = Bundle()
@@ -147,11 +155,15 @@ class HotelInfoActivity : BaseActivity() {
                             fragment.arguments = bundle
                             transaction.replace(R.id.fragment_container_carousel, fragment)
                         }
+
                         else -> {
                             binding.tvServiceTitle.text = it
                             val bundle = Bundle()
                             bundle.putString("title", it)
-                            bundle.putString("desc", hotelInfoViewModel.accountSetupLiveData.value?.data?.address)
+                            bundle.putString(
+                                "desc",
+                                hotelInfoViewModel.accountSetupLiveData.value?.data?.address
+                            )
                             val fragment = HotelServiceInfoFragment()
                             fragment.arguments = bundle
                             transaction.replace(R.id.fragment_container_carousel, fragment)
