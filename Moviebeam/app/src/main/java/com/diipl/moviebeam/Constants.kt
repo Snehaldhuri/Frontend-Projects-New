@@ -26,6 +26,11 @@ object Constants {
     const val LOCAL_ATTRACTION_ID = "lam"
     const val FOOD_DELIVERY_ID = "foodDelivery"
 
+    //Movies page menu button list
+    const val MOVIE_RENTALS_ID = "Movie Rentals"
+    const val FREE_VOD_ID = "Free Movies"
+    const val ADULT_DAY_PASS_ID = "Adult Day Pass"
+    const val ADULT_ID = "Adult"
 
     //Home Page Menu Button Title
     const val PROGRAM_GUIDE = "Program Guide"
@@ -54,9 +59,6 @@ object Constants {
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
-
-
-
 }
 
 const val SPLASH_DELAY = 3000

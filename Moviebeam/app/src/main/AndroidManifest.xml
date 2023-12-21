@@ -21,10 +21,13 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.movies.MoviesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity
             android:name=".ui.localattraction.LocalAttractionActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
-            />
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.hotelinfo.HelpInfoActivity"
             android:exported="false"
