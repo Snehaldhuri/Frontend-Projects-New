@@ -3,6 +3,7 @@ package com.diipl.moviebeam.di
 import androidx.databinding.ktx.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
+import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import dagger.Module
 import dagger.Provides
@@ -55,6 +56,15 @@ object NetworkModule {
         .client(okHttpClient)
         .build()
 
+    @Singleton
+    @Provides
+    @Named(Constants.ASSET)
+    fun provideRetrofitAsset(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .baseUrl(Constants.BASE_URL_ASSET)
+        .client(okHttpClient)
+        .build()
+
     @Provides
     fun provideLgRestApiService( @Named(Constants.LG_REST) retrofit: Retrofit): LgRestApiService =
         retrofit.create(LgRestApiService::class.java)
@@ -62,6 +72,10 @@ object NetworkModule {
     @Provides
     fun provideACCOUNTSETUPApiService(@Named(Constants.ACCOUNT_SETUP) retrofit: Retrofit): AccountSetupApiService =
         retrofit.create(AccountSetupApiService::class.java)
+
+    @Provides
+    fun provideAssetApiService(@Named(Constants.ASSET) retrofit: Retrofit): AssetApiService =
+        retrofit.create(AssetApiService::class.java)
 
 
 }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.guestservice.MakeMyRoomFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_50"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_50"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5"/>
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dp_16"
+        android:text="Select Date and Time for Housekeeping to arive"
+        android:textSize="@dimen/sp_18"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/layout_date_time_selector"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_50" />
+
+    <include
+        android:id="@+id/layout_date_time_selector"
+        layout="@layout/date_time_selector_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_50"
+        app:layout_constraintBottom_toBottomOf="@id/gl_horizontal_50"/>
+
+    <Button
+        android:id="@+id/btn_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Cancel"
+        android:layout_marginTop="@dimen/dp_16"
+        android:background="@drawable/btn_bg_gradient_default"
+        app:layout_constraintTop_toBottomOf="@id/layout_date_time_selector"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintStart_toStartOf="@+id/layout_date_time_selector" />
+
+    <Button
+        android:id="@+id/btn_ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/OK"
+        android:layout_marginTop="@dimen/dp_16"
+        android:background="@drawable/btn_bg_gradient_default"
+        app:layout_constraintTop_toBottomOf="@id/layout_date_time_selector"
+        app:layout_constraintStart_toEndOf="@+id/gl_vertical_50"
+        app:layout_constraintEnd_toEndOf="@+id/layout_date_time_selector" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
