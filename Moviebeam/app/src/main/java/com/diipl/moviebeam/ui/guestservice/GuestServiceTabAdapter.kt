@@ -9,7 +9,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
@@ -23,9 +22,9 @@ class GuestServiceTabAdapter(
     private var itemList: List<GsBtnModel> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.imageView)
-        val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
-        val card: ConstraintLayout = itemView.findViewById(R.id.card)
+        val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
+        val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
+        val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
     }
 
     override fun onCreateViewHolder(

@@ -45,7 +45,7 @@ class GuestServiceActivity : BaseActivity() {
     override fun initViewBinding() {
         binding = ActivityGuestServiceBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.layoutHeader.title.text = intent.extras?.getString("title")
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         binding.btnBack.setOnClickListener { finish() }
         binding.rvTabLayout.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -73,7 +73,7 @@ class GuestServiceActivity : BaseActivity() {
                 binding.btnBack.setOnFocusChangeListener(::handleBackClick)
                 binding.rvTabLayout.requestFocus()
                 guestServiceViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(guestServiceViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
             }
@@ -96,9 +96,9 @@ class GuestServiceActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
                 guestServiceViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage.loadImagesWithGlideExt(
+                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
                     )
                 }
@@ -114,9 +114,9 @@ class GuestServiceActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.layoutHeader.headerWeatherTime.txtDate.text =
+                binding.layoutHeader.layoutWeatherTime.tvDate.text =
                     guestServiceViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.headerWeatherTime.txtTime.text =
+                binding.layoutHeader.layoutWeatherTime.tvTime.text =
                     guestServiceViewModel.dateTimeLiveData.value?.data?.time
             }
 
@@ -137,9 +137,9 @@ class GuestServiceActivity : BaseActivity() {
                 }
                 val transaction = supportFragmentManager.beginTransaction()
                 val adapter = GuestServiceTabAdapter { view, service ->
-                    view.findViewById<ImageView>(R.id.imageView)
+                    view.findViewById<ImageView>(R.id.iv_menu_icon)
                         .setBackgroundResource(service.spotlightImage)
-                    view.findViewById<TextView>(R.id.tv_tabInfo)
+                    view.findViewById<TextView>(R.id.tv_menu_title)
                         .setTextColor(Color.parseColor(Constants.COLOR_WHITE))
                     binding.tvServiceTitle.text = service.categoryName
                     when (service.btnId) {

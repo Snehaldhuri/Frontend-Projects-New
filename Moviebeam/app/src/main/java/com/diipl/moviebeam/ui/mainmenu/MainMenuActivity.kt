@@ -145,7 +145,7 @@ class MainMenuActivity : BaseActivity() {
                 val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
                     btnListFromApi?.contains(it.btnId) == true
                 }
-                binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
+                binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
                 val adapter = MainMenuBtnAdapter { btn ->
                     val bundle = Bundle()
                     bundle.putString("title", btn.title)

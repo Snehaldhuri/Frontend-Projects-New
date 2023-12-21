@@ -52,7 +52,7 @@ class HotelInfoActivity : BaseActivity() {
     override fun initViewBinding() {
         binding = ActivityHotelInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.layoutHeader.title.text = intent.extras?.getString("title")
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,7 +120,7 @@ class HotelInfoActivity : BaseActivity() {
                 tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
 
                 val adapter = HotelInfoTabAdapter(itemList = tabs,
-                    onItemFocused = {it,view ->
+                    onItemFocused = { it, view ->
 
                         val transaction = supportFragmentManager.beginTransaction()
                         when (tabMap[it]?.serviceType) {
@@ -181,7 +181,7 @@ class HotelInfoActivity : BaseActivity() {
                         }
                         transaction.commit()
                     },
-                    onHelpInfoTabClick = { it, pos,view ->
+                    onHelpInfoTabClick = { it, pos, view ->
                         val fragment = HelpInfoFragment() {
                             if (it) {
                                 isHelpinfoScreen = false
@@ -191,7 +191,7 @@ class HotelInfoActivity : BaseActivity() {
                                 binding.btnBack.toVisible()
                                 binding.layoutHeader.tvTitle.text = Constants.HOTEL_INFORMATION
                                 view.requestFocus()
-                             //   binding.rvHotelInfoHeader.layoutManager?.scrollToPosition(pos)
+                                //   binding.rvHotelInfoHeader.layoutManager?.scrollToPosition(pos)
 
                             }
                         }
