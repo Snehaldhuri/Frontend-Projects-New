@@ -21,6 +21,7 @@ import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
@@ -153,6 +154,9 @@ class MainMenuActivity : BaseActivity() {
                     when (btn.btnId) {
                         Constants.HOTEL_SERVICES_ID -> {
                             intent = Intent(this, HotelInfoActivity::class.java)
+                        }
+                        Constants.LOCAL_ATTRACTION_ID -> {
+                            startActivity(Intent(this, LocalAttractionActivity::class.java))
                         }
 
                         Constants.GUEST_SERVICES_ID -> {

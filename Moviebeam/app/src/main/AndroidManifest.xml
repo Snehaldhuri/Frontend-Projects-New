@@ -23,6 +23,11 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.localattraction.LocalAttractionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            />
+        <activity
             android:name=".ui.guestservice.GuestServiceActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
