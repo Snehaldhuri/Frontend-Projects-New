@@ -120,15 +120,19 @@ class HotelInfoActivity : BaseActivity() {
                 tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
 
                 val adapter = HotelInfoTabAdapter(itemList = tabs,
-                    onItemFocused = {
+                    onItemFocused = {it,view ->
 
                         val transaction = supportFragmentManager.beginTransaction()
                         when (tabMap[it]?.serviceType) {
                             1 -> {
                                 binding.tvHeaderTitle.text = tabMap[it]?.serviceList?.get(0)?.title
-                                val carousel = CarouselListFragment { title ->
+                                val carousel = CarouselListFragment({ title ->
                                     binding.tvHeaderTitle.text = title
-                                }
+                                }, { title ->
+                                    if (tabMap[it]?.serviceList?.get(0)?.title == title) {
+                                        view.requestFocus()
+                                    }
+                                })
                                 carousel.bindData(tabMap[it]?.serviceList)
                                 transaction.replace(R.id.fragment_container_carousel, carousel)
                             }
@@ -177,7 +181,7 @@ class HotelInfoActivity : BaseActivity() {
                         }
                         transaction.commit()
                     },
-                    onHelpInfoTabClick = { it, pos ->
+                    onHelpInfoTabClick = { it, pos,view ->
                         val fragment = HelpInfoFragment() {
                             if (it) {
                                 isHelpinfoScreen = false
@@ -186,7 +190,9 @@ class HotelInfoActivity : BaseActivity() {
                                 binding.tvHeaderTitle.toVisible()
                                 binding.btnBack.toVisible()
                                 binding.layoutHeader.tvTitle.text = Constants.HOTEL_INFORMATION
-                                binding.rvHotelInfoHeader.layoutManager?.scrollToPosition(pos)
+                                view.requestFocus()
+                             //   binding.rvHotelInfoHeader.layoutManager?.scrollToPosition(pos)
+
                             }
                         }
                         supportFragmentManager.beginTransaction()
@@ -203,6 +209,7 @@ class HotelInfoActivity : BaseActivity() {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvHotelInfoHeader.adapter = adapter
+                binding.tvHeaderTitle.text = tabs[0].toString()
                 binding.pbLoader.toInvisible()
             }
 

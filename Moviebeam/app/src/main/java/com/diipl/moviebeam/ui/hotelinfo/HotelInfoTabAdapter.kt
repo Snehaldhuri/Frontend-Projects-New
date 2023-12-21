@@ -13,8 +13,8 @@ import com.diipl.moviebeam.R
 
 class HotelInfoTabAdapter(
     private val itemList: List<String>,
-    private var onItemFocused: ((String)) -> Unit,
-    private var onHelpInfoTabClick: ((String), (Int)) -> Unit
+    private var onItemFocused: ((String),View) -> Unit,
+    private var onHelpInfoTabClick: ((String), (Int),View) -> Unit
 ) :
     RecyclerView.Adapter<HotelInfoTabAdapter.MyViewHolder>() {
 
@@ -40,9 +40,9 @@ class HotelInfoTabAdapter(
 
         holder.textView.text = item
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
+        holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                onItemFocused(itemList[position])
+                onItemFocused(itemList[position],view)
                 fetchGradientColorsFromApi(holder.card)
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
@@ -50,8 +50,8 @@ class HotelInfoTabAdapter(
         }
         if (holder.textView.text == Constants.HELP_INFO) {
             holder.card.setOnClickListener {
-                onItemFocused(itemList[position])
-                onHelpInfoTabClick(itemList[position], position)
+                onItemFocused(itemList[position],it)
+                onHelpInfoTabClick(itemList[position], position,it)
 
             }
 

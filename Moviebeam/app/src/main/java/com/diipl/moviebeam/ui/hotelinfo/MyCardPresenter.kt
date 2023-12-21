@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.hotelinfo
 
 import android.content.Context
 import android.graphics.Color
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -14,7 +15,7 @@ import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
 
-class MyCardPresenter(private val onItemFocused: ((String)) -> Unit) : Presenter() {
+class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val onLeftKeyPressed: (String) -> Unit) : Presenter() {
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
 
         val defaultColor = "#C0C0C0"
@@ -39,6 +40,15 @@ class MyCardPresenter(private val onItemFocused: ((String)) -> Unit) : Presenter
                         defaultColor
                     )
                 )
+            }
+            view.setOnKeyListener { _, keycode, keyEvent ->
+                if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                    when (keycode) {
+                        KeyEvent.KEYCODE_DPAD_LEFT ->
+                            onLeftKeyPressed(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
+                    }
+                }
+                false
             }
         }
 
