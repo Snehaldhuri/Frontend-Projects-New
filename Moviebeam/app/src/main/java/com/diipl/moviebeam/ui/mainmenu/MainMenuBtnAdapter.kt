@@ -13,7 +13,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 
 class MainMenuBtnAdapter(
-    private var onMenuItemClicked: (String) -> Unit
+    private var onMenuItemClicked: (BtnModel) -> Unit
 ) :
     RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
 
@@ -26,7 +26,7 @@ class MainMenuBtnAdapter(
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.imageView)
         val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
-        val card: ConstraintLayout = itemView.findViewById(R.id.card1)
+        val card: ConstraintLayout = itemView.findViewById(R.id.card)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -53,7 +53,7 @@ class MainMenuBtnAdapter(
             }
         }
         holder.card.setOnClickListener {
-            onMenuItemClicked(item.btnId)
+            onMenuItemClicked(item)
         }
 
     }
