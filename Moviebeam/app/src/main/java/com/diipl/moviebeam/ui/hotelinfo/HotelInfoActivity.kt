@@ -51,8 +51,8 @@ class HotelInfoActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityHotelInfoBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        setContentView(binding.root)
+        binding.layoutHeader.title.text = intent.extras?.getString("title")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

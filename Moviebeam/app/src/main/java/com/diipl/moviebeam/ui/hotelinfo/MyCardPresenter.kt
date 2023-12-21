@@ -23,7 +23,6 @@ class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.carousel_card, parent, false)
 
-
         view.isFocusable = true
         view.setOnFocusChangeListener { it, b ->
             onItemFocused(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
@@ -52,6 +51,7 @@ class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val
             }
         }
 
+
         val params = view.layoutParams
         params.width = getWidthInPercent(parent.context, 30)
         params.height = getHeightInPercent(parent.context, 60)
@@ -59,6 +59,7 @@ class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any) {
+
         if (item is Service) {
             val service: Service = item
             val cardView = viewHolder.view

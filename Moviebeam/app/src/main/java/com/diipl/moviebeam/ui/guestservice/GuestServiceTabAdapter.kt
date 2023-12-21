@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.mainmenu
+package com.diipl.moviebeam.ui.guestservice
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -11,24 +11,27 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
-class MainMenuBtnAdapter(
-    private var onMenuItemClicked: (BtnModel) -> Unit
-) :
-    RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
+class GuestServiceTabAdapter(
+    private var onMenuItemClicked: (View, GsBtnModel) -> Unit
+) : RecyclerView.Adapter<GuestServiceTabAdapter.MyViewHolder>() {
 
-    private var startColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var endColor = Constants.DEFAULTGRADIENTENDCOLOR
-    var itemList: List<BtnModel> = mutableListOf()
+    private var startColor = ""
+    private var endColor = ""
+
+    private var itemList: List<GsBtnModel> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
-        val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
-        val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
+        val imageView: ImageView = itemView.findViewById(R.id.imageView)
+        val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
+        val card: ConstraintLayout = itemView.findViewById(R.id.card)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
         return MyViewHolder(view)
     }
@@ -38,24 +41,25 @@ class MainMenuBtnAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 
-        holder.imageView.setImageResource(item.imageResId)
-        holder.textView.text = item.title
+        holder.imageView.setImageResource(item.defaultImage)
+        holder.textView.text = item.categoryName
 
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                fetchGradientColorsFromApi(holder.card)
+                setFocus(holder.card)
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         holder.card.setOnClickListener {
-            onMenuItemClicked(item)
+            onMenuItemClicked(it, item)
+//            it.setBackgroundColor(Color.parseColor("#EBEBEB"))
         }
     }
 
-    private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
+    private fun setFocus(cardView: ConstraintLayout) {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -67,11 +71,13 @@ class MainMenuBtnAdapter(
         cardView.background = gradientDrawable
     }
 
+    fun setButtonList(btnList: List<GsBtnModel>){
+        itemList = btnList
+    }
+
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor
         this.endColor = endColor
     }
 
 }
-
-

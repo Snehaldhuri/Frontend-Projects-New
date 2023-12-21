@@ -20,4 +20,15 @@
     <string name="back">Back</string>
     <string name="menu_button_image">Menu Button Image</string>
     <string name="hotel_information">Hotel Information</string>
+    <string name="OK">Ok</string>
+    <string name="Cancel">Cancel</string>
+    <string name="status">Status</string>
+    <string name="gate">Gate</string>
+    <string name="terminal">Terminal</string>
+    <string name="time">Time</string>
+    <string name="airlines">Airlines</string>
+    <string name="destination">Destination</string>
+    <string name="flight_no">Flight No</string>
+    <string name="switch_to_departure">Switch to Departure</string>
+    <string name="switch_to_arrival">Switch to Arrival</string>
 </resources>

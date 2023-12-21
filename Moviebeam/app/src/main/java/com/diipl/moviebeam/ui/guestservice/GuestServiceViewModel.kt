@@ -1,6 +1,5 @@
-package com.diipl.moviebeam.ui.hotelinfo
+package com.diipl.moviebeam.ui.guestservice
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,7 +9,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
@@ -21,12 +20,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HotelInfoViewModel @Inject constructor(
+class GuestServiceViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
-
-    private val _hotelServiceLiveData = MutableLiveData<Resource<HotelServiceResponse>>()
-    val hotelServiceLiveData: LiveData<Resource<HotelServiceResponse>> get() = _hotelServiceLiveData
 
     private val _themeLiveData = MutableLiveData<Resource<ThemeResponse>>()
     val themeLiveData: LiveData<Resource<ThemeResponse>> get() = _themeLiveData
@@ -41,30 +37,16 @@ class HotelInfoViewModel @Inject constructor(
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
     init {
+        val ua = "17205KKXLKF626"
+        fetchThemeDetails(ua)
         fetchAccountSetupDetails("ACTIVATE", "14508KKMH0K299", "JSON")
-        fetchHotelServiceInfo(7107)
-        fetchThemeDetails("17205KKXLKF626")
-        fetchWeatherData("17205KKXLKF626")
-        fetchDateTime("17205KKXLKF626")
+        fetchWeatherData(ua)
+        fetchDateTime(ua)
     }
 
-    private fun fetchHotelServiceInfo(accountId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _hotelServiceLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getHotelServiceInfo(accountId)
-            if (response == null) {
-                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _hotelServiceLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
-
+    private fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _accountSetupLiveData.postValue(Resource.Loading())
-
             val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
             if (response == null) {
                 _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
@@ -86,7 +68,7 @@ class HotelInfoViewModel @Inject constructor(
         }
     }
 
-    fun fetchWeatherData(ua: String) {
+    private fun fetchWeatherData(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _weatherLiveData.postValue(Resource.Loading())
             val response = movieBeamRepository.getWeatherData(ua)
@@ -98,7 +80,7 @@ class HotelInfoViewModel @Inject constructor(
         }
     }
 
-    fun fetchDateTime(ua: String) {
+    private fun fetchDateTime(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _dateTimeLiveData.postValue(Resource.Loading())
             val response = movieBeamRepository.getDateTimeData(ua)
@@ -119,5 +101,6 @@ class HotelInfoViewModel @Inject constructor(
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
     }
+
 
 }

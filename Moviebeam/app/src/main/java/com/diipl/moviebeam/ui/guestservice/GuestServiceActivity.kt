@@ -1,0 +1,257 @@
+package com.diipl.moviebeam.ui.guestservice
+
+import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.activity.viewModels
+import androidx.lifecycle.LiveData
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
+import com.diipl.moviebeam.data.dto.btn.GsBtnModel
+import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
+import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.setupSnackbar
+import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toVisible
+import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
+class GuestServiceActivity : BaseActivity() {
+    private val guestServiceViewModel: GuestServiceViewModel by viewModels()
+    private lateinit var binding: ActivityGuestServiceBinding
+
+    private var gradientStartColor = "#010101"
+    private var gradientEndColor = "#EFEFEF"
+
+    override fun initViewBinding() {
+        binding = ActivityGuestServiceBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.layoutHeader.title.text = intent.extras?.getString("title")
+        binding.btnBack.setOnClickListener { finish() }
+        binding.rvTabLayout.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+    }
+
+    override fun observeViewModel() {
+        observe(guestServiceViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(guestServiceViewModel.themeLiveData, ::handleThemeResponse)
+        observe(guestServiceViewModel.dateTimeLiveData, ::handleDateTimeResponse)
+        observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+        observeSnackBarMessages(guestServiceViewModel.showSnackBar)
+        observeToast(guestServiceViewModel.showToast)
+    }
+
+    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                guestServiceViewModel.themeLiveData.value?.data?.gradientColor?.let {
+                    gradientStartColor = it
+                }
+                guestServiceViewModel.themeLiveData.value?.data?.spotLightColor?.let {
+                    gradientEndColor = it
+                }
+                binding.btnBack.setOnFocusChangeListener(::handleBackClick)
+                binding.rvTabLayout.requestFocus()
+                guestServiceViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
+                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                }
+                loadBg(guestServiceViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
+            }
+
+            else -> {
+                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                var temperature = guestServiceViewModel.weatherLiveData.value?.data?.tempCondition
+                temperature?.let {
+                    if (it.contains("&deg C")) {
+                        temperature = it.replace("&deg C", " \u2103")
+                    } else {
+                        temperature = it.replace("&deg F", " \u2109")
+                    }
+                }
+                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                guestServiceViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
+                    binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage.loadImagesWithGlideExt(
+                        it
+                    )
+                }
+            }
+
+            else -> {
+                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                binding.layoutHeader.headerWeatherTime.txtDate.text =
+                    guestServiceViewModel.dateTimeLiveData.value?.data?.date
+                binding.layoutHeader.headerWeatherTime.txtTime.text =
+                    guestServiceViewModel.dateTimeLiveData.value?.data?.time
+            }
+
+            else -> {
+                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
+                    .value?.data?.gsButtonsList?.map { it.buttonName }
+                val gsBtnModelList: List<GsBtnModel> = Constants.GUEST_SERVICE_BUTTON_LIST.filter {
+                    gsBtnListFromApi?.contains(it.btnId) == true
+                }
+                val transaction = supportFragmentManager.beginTransaction()
+                val adapter = GuestServiceTabAdapter { view, service ->
+                    view.findViewById<ImageView>(R.id.imageView)
+                        .setBackgroundResource(service.spotlightImage)
+                    view.findViewById<TextView>(R.id.tv_tabInfo)
+                        .setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    binding.tvServiceTitle.text = service.categoryName
+                    when (service.btnId) {
+                        Constants.CONCIERGE_ID -> {
+                            binding.fvTabContent.toInvisible()
+//                            transaction.replace(R.id.fv_tab_content, )
+                            val conciergeListFromApi: List<Int>? =
+                                guestServiceViewModel.accountSetupLiveData
+                                    .value?.data?.conciergeList?.map { concierge -> concierge.serviceId }
+                            val conciergeModelList: List<ConciergeBtnModel> =
+                                Constants.CONCIERGE_BUTTON_LIST.filter { concierge ->
+                                    conciergeListFromApi?.contains(concierge.serviceId) == true
+                                }
+                            binding.rvTabContent.toVisible()
+                            binding.rvTabContent.layoutManager = GridLayoutManager(this, 4)
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val conciergeAdapter = ConciergeAdapter { service ->
+                                binding.tvServiceTitle.text = service.categoryName
+                                when (service.serviceId) {
+                                    1 -> {
+                                        val fragment = MakeMyRoomFragment()
+                                        val dateTimeResponse =
+                                            guestServiceViewModel.dateTimeLiveData.value?.data
+                                        dateTimeResponse?.let { date ->
+                                            fragment.setDate(
+                                                date.hour,
+                                                date.date.substring(0, 3),
+                                                date.day,
+                                                date.month,
+                                                date.year
+                                            )
+                                        }
+                                        transaction.replace(R.id.fv_tab_content, fragment)
+                                        binding.rvTabContent.toInvisible()
+                                        transaction.commit()
+                                    }
+                                }
+                            }
+
+                            conciergeAdapter.setButtonList(conciergeModelList)
+                            conciergeAdapter.setGradientColor(gradientStartColor, gradientEndColor)
+                            binding.rvTabContent.adapter = conciergeAdapter
+
+                        }
+
+                        Constants.FLIGHT_STATUS_ID -> {
+                            binding.rvTabContent.toInvisible()
+                            val fragment =
+                                FlightStatusFragment()
+                            guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
+                                fragment.setAirportList(airports)
+                            }
+                            fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            transaction.commit()
+                        }
+                    }
+                }
+                adapter.setButtonList(gsBtnModelList)
+                adapter.setGradientColor(gradientStartColor, gradientEndColor)
+
+                binding.rvTabLayout.adapter = adapter
+                binding.loaderView.toInvisible()
+            }
+
+            else -> {
+                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun loadBg(imgUrl: String?) {
+        Glide.with(this).load(imgUrl)
+            .into(object : CustomTarget<Drawable?>() {
+                override fun onResourceReady(
+                    resource: Drawable,
+                    transition: Transition<in Drawable?>?
+                ) {
+                    resource.alpha = 120
+                    binding.root.background = resource
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
+    }
+
+    private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
+        binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
+    }
+
+    private fun observeToast(event: LiveData<SingleEvent<Any>>) {
+        binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
+    }
+
+    private fun getGradient(): GradientDrawable {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
+        )
+        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
+    }
+
+    private fun handleBackClick(view: View, focus: Boolean) {
+        if (focus) {
+            view.background = getGradient()
+        } else {
+            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+        }
+    }
+
+}

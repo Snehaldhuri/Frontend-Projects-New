@@ -8,6 +8,7 @@
     <color name="yellow">#FFC107</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
     <color name="carousel_focused">#FFFFFF</color>
     <color name="carousel_not_focused">#C0C0C0</color>
     <color name="menu_list_bg">#616161</color>
@@ -16,6 +17,13 @@
     <color name="home_page_greeting_text_color">#FFB81A</color>
     <color name="text_color_primary">#EBEBEB</color>
     <color name="text_color_secondary">#101010</color>
+
+    //flight status
+    <color name="flight_status_header">#00BFBA</color>
+    <color name="flight_status_green">#008000</color>
+    <color name="flight_status_orange">#FFA500</color>
+    <color name="flight_status_yellow">#FFFF00</color>
+
     <color name="semiTransparentBlackColor">#60000000</color>
 
 </resources>

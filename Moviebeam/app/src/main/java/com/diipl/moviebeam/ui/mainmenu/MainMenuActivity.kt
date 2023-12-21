@@ -19,6 +19,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
@@ -144,16 +145,27 @@ class MainMenuActivity : BaseActivity() {
                 val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
                     btnListFromApi?.contains(it.btnId) == true
                 }
-                binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
-                val adapter = MainMenuBtnAdapter { btnId ->
-                    when (btnId) {
+                binding.recyclerView.layoutManager = GridLayoutManager(this, 4)
+                val adapter = MainMenuBtnAdapter { btn ->
+                    val bundle = Bundle()
+                    bundle.putString("title", btn.title)
+                    var intent: Intent? = null
+                    when (btn.btnId) {
                         Constants.HOTEL_SERVICES_ID -> {
-                            startActivity(Intent(this, HotelInfoActivity::class.java))
+                            intent = Intent(this, HotelInfoActivity::class.java)
+                        }
+
+                        Constants.GUEST_SERVICES_ID -> {
+                            intent = Intent(this, GuestServiceActivity::class.java)
                         }
 
                         else -> {
 
                         }
+                    }
+                    intent?.let {
+                        it.putExtras(bundle)
+                        startActivity(it)
                     }
                 }
                 adapter.itemList = btnModelList
