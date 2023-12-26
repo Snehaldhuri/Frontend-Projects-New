@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,32 +15,35 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.movies.GenreDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.localattraction.LaCardAdapter
-import com.diipl.moviebeam.ui.localattraction.LocalAttractionAdapter
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.math.log
 
 @AndroidEntryPoint
 class MoviesActivity : BaseActivity()  {
 
     private lateinit var binding: ActivityMoviesBinding
+
     private var gradientStartColor = "#85bf08"
     private var gradientEndColor = "#0ca654"
+//
+//    private val samplePremiumContentList: List<ContentDto> by lazy {
+//        listOf(
+//            ContentDto(id = 1, title = "Movie 1", genre1 = "Action"),
+//            ContentDto(id = 2, title = "Movie 2", genre1 = "Drama"),
+//            ContentDto(id = 3, title = "Movie 3", genre1 = "Comedy"),
+//        )
+//    }
 
-    private val list = mutableListOf(
-        BtnModel(Constants.MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, Constants.MOVIE_RENTALS_ID),
-        BtnModel(Constants.FREE_VOD_ID, R.drawable.video_on_demand_icon, Constants.FREE_VOD_ID),
-        BtnModel(Constants.ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, Constants.ADULT_DAY_PASS_ID),
-        BtnModel(Constants.ADULT_ID, R.drawable.adult, Constants.ADULT_ID),
-    )
+    private val list: List<BtnModel> = Constants.MOVIES_PAGE_MENU_BUTTON_LIST
+
     private val MoviesViewModel: MoviesViewModel by viewModels()
 
     override fun observeViewModel() {
@@ -70,17 +72,11 @@ class MoviesActivity : BaseActivity()  {
         binding.btnBack.setOnClickListener {
             finish()
         }
-        binding.recyclerView.layoutManager =
+        binding.rvRentalMovies.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
-        setupRecyclerView()
-    }
-    private fun setupRecyclerView() {
-        val recyclerView: RecyclerView = binding.menuRecyclerView
-        recyclerView.layoutManager = LinearLayoutManager(this)
-
     }
     private fun handleMoviesServiceResponse(status: Resource<MoviesResponse>) {
         when (status) {
@@ -91,20 +87,61 @@ class MoviesActivity : BaseActivity()  {
                     .load(MoviesViewModel.themeLiveData.value?.data?.themeLogoFileName)
                     .into(binding.layoutHeader.imgHotelLogo)
                 loadBg(MoviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                val adapter = MoviesBtnAdapter(list){
+                val adapter = MoviesBtnAdapter(list){ btnId ->
+                    when (btnId) {
 
-                    val cardAdapter = MoviesCardAdapter {
-//                        Log.i("Movies5", "handleWeatherResponse: $it")
+                        Constants.MOVIE_RENTALS_ID -> {
+
+//                            val premiumContentList = response?.premiumContentList ?: response?.premiumContentList
+                            binding.rvRentalMovies.layoutManager =
+                                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+                            val genreAdapter = MoviesGenreAdapter()
+//                            genreAdapter.setGenreList(response?.premiumGenreList ?: emptyList(), response?.premiumContentList ?: emptyList())
+                            genreAdapter.setGenreList((response?.premiumGenreList ?: emptyList()) as List<GenreDto>, response?.premiumContentList ?: emptyList())
+                            binding.rvRentalMovies.adapter = genreAdapter
+//                            val cardAdapter = MoviesCardAdapter {
+//
+//                            }
+//                            cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
+//
+//                            binding.recyclerView.adapter = cardAdapter
+
+                        }
+                        Constants.FREE_MOVIES_ID -> {
+//                            val cardAdapter = MoviesCardAdapter {
+//
+//                            }
+//                            cardAdapter.setContentList(response?.freeContentList ?: emptyList())
+//
+//                            binding.recyclerView.adapter = cardAdapter
+                        }
+                        Constants.ADULT_DAY_PASS_ID -> {
+//                            val cardAdapter = MoviesCardAdapter {
+//
+//                            }
+//                            val adultDayList = response?.premiumContentList?.filter{ it.genre1 == "Adult Daypass" }
+//                            cardAdapter.setContentList(adultDayList ?: emptyList())
+//                            binding.recyclerView.adapter = cardAdapter
+                        }
+                        Constants.ADULT_ID -> {
+//                            val cardAdapter = MoviesCardAdapter {
+//
+//                            }
+//                            val adultList = response?.premiumContentList?.filter{ it.genre1 == "Adult" }
+//                            cardAdapter.setContentList(adultList ?: emptyList())
+//                            binding.recyclerView.adapter = cardAdapter
+                        }
+                        else -> {
+
+                        }
                     }
-//                    cardAdapter.setList(it)
-//                    cardAdapter.set(
-//                        getGradient(
-//                            gradientStartColor,
-//                            gradientEndColor
-//                        )
-//                    )
-                    binding.recyclerView.adapter = cardAdapter
                 }
+//                val cardAdapter = MoviesCardAdapter {
+//
+//                }
+//                cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
+//
+//                binding.recyclerView.adapter = cardAdapter
 
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 binding.menuRecyclerView.adapter = adapter

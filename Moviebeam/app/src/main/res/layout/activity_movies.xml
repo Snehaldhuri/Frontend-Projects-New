@@ -63,8 +63,19 @@
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
 
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/recyclerView"-->
+<!--        android:layout_width="@dimen/dp_0"-->
+<!--        android:layout_height="@dimen/dp_0"-->
+<!--        android:focusable="true"-->
+<!--        android:focusableInTouchMode="true"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_60"-->
+<!--        app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"-->
+<!--        app:layout_constraintStart_toStartOf="@id/gl_vertical_29"-->
+<!--        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_22" />-->
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/rv_rental_movies"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:focusable="true"
@@ -72,7 +83,7 @@
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
-        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_22" />
 
     <Button
         android:id="@+id/btn_back"
@@ -103,6 +114,19 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.27" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_22"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.22" />
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_60"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.60" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_94"

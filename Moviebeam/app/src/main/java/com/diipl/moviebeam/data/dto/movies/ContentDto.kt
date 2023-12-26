@@ -1,6 +1,6 @@
 package com.diipl.moviebeam.data.dto.movies
 
-data class PremiumContent(
+data class ContentDto(
     val actor: String,
     val contentType: String,
     val contentTypeId: Int,
