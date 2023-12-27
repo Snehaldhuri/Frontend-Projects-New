@@ -4,6 +4,8 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
+import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.datasource.RemoteDataSource
@@ -43,6 +45,14 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         mode: String
     ): FlightStatusResponse? {
         return remoteDataSource.getFlightStatus(cmd, ua, callType, apCode, mode)
+    }
+
+    suspend fun getNewsHeader(ua: String, languageId: Int): NewsHeaderResponse? {
+        return remoteDataSource.getNewsHeader(ua, languageId)
+    }
+
+    suspend fun getNewsDetails(newsId: Int): NewsResponse? {
+        return remoteDataSource.getNewsDetails(newsId)
     }
 
 }

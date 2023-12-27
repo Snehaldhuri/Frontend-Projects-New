@@ -3,10 +3,10 @@ package com.diipl.moviebeam.ui.guestservice
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,6 +24,11 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.guestservice.concierge.ConciergeAdapter
+import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
+import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
+import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
+import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
@@ -135,17 +140,12 @@ class GuestServiceActivity : BaseActivity() {
                 val gsBtnModelList: List<GsBtnModel> = Constants.GUEST_SERVICE_BUTTON_LIST.filter {
                     gsBtnListFromApi?.contains(it.btnId) == true
                 }
-                val transaction = supportFragmentManager.beginTransaction()
                 val adapter = GuestServiceTabAdapter { view, service ->
-                    view.findViewById<ImageView>(R.id.imageView)
-                        .setBackgroundResource(service.spotlightImage)
-                    view.findViewById<TextView>(R.id.tv_tabInfo)
-                        .setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+
                     binding.tvServiceTitle.text = service.categoryName
                     when (service.btnId) {
                         Constants.CONCIERGE_ID -> {
                             binding.fvTabContent.toInvisible()
-//                            transaction.replace(R.id.fv_tab_content, )
                             val conciergeListFromApi: List<Int>? =
                                 guestServiceViewModel.accountSetupLiveData
                                     .value?.data?.conciergeList?.map { concierge -> concierge.serviceId }
@@ -155,11 +155,11 @@ class GuestServiceActivity : BaseActivity() {
                                 }
                             binding.rvTabContent.toVisible()
                             binding.rvTabContent.layoutManager = GridLayoutManager(this, 4)
-                            val transaction = supportFragmentManager.beginTransaction()
-                            val conciergeAdapter = ConciergeAdapter { service ->
-                                binding.tvServiceTitle.text = service.categoryName
-                                when (service.serviceId) {
+                            val conciergeAdapter = ConciergeAdapter { conciergeService ->
+                                binding.tvServiceTitle.text = conciergeService.categoryName
+                                when (conciergeService.serviceId) {
                                     1 -> {
+                                        val transaction = supportFragmentManager.beginTransaction()
                                         val fragment = MakeMyRoomFragment()
                                         val dateTimeResponse =
                                             guestServiceViewModel.dateTimeLiveData.value?.data
@@ -187,8 +187,14 @@ class GuestServiceActivity : BaseActivity() {
 
                         Constants.FLIGHT_STATUS_ID -> {
                             binding.rvTabContent.toInvisible()
-                            val fragment =
-                                FlightStatusFragment()
+                            val transaction = supportFragmentManager.beginTransaction()
+
+                            val fragment = FlightStatusFragment {
+//                                view.setBackgroundResource(R.drawable.btn_bg_gradient_focus)
+//                                binding.rvTabLayout.requestFocus()
+                                view.requestFocus()
+
+                            }
                             guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
                                 fragment.setAirportList(airports)
                             }
@@ -196,9 +202,28 @@ class GuestServiceActivity : BaseActivity() {
                             transaction.replace(R.id.fv_tab_content, fragment)
                             transaction.commit()
                         }
+
+                        Constants.WEATHER_ID -> {
+                            binding.rvTabContent.toInvisible()
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = WeatherFragment()
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            transaction.commit()
+
+                        }
+
+                        Constants.NEWS_ID -> {
+                            binding.rvTabContent.toInvisible()
+                            binding.fvTabContent
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = NewsFragment()
+                            fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            transaction.commit()
+                        }
                     }
                 }
-                adapter.setButtonList(gsBtnModelList)
+                adapter.setButtonList(ArrayList(gsBtnModelList.map { it.copy() }))
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
 
                 binding.rvTabLayout.adapter = adapter
@@ -214,12 +239,15 @@ class GuestServiceActivity : BaseActivity() {
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
+                @RequiresApi(Build.VERSION_CODES.O)
                 override fun onResourceReady(
                     resource: Drawable,
                     transition: Transition<in Drawable?>?
                 ) {
                     resource.alpha = 120
+//                    resource.setTint(Color.argb(0.2f, 0f, 0f, 0f))
                     binding.root.background = resource
+//                    binding.root.setBackgroundColor(Color.argb(0.6f, 0f, 0f, 0f))
                 }
 
                 override fun onLoadCleared(placeholder: Drawable?) {}

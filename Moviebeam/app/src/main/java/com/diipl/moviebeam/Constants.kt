@@ -127,6 +127,15 @@ object Constants {
 
     //Colors
     const val COLOR_WHITE = "#FFFFFF"
+    const val COLOR_BLACK = "#000000"
+    const val COLOR_YELLOW = "#FFFF00"
+    const val COLOR_ORANGE = "#FFA500"
+    const val COLOR_GREEN = "#008000"
+
+    //Weather
+    const val SYMBOL_DEGREE_CELSIUS = " \u2103"
+    const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
+
 
 }
 

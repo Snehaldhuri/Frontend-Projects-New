@@ -26,4 +26,15 @@ interface LgRestApiService {
         @Query("UA") ua: String
     ): Response<String>
 
+    @GET("content/newsHeader")
+    suspend fun getNewsHeader(
+        @Query("UA") ua: String,
+        @Query("languageId") languageId: Int
+    ): Response<String>
+
+    @GET("content/news")
+    suspend fun getNewsDetails(
+        @Query("newsId") newsId: Int
+    ): Response<String>
+
 }
