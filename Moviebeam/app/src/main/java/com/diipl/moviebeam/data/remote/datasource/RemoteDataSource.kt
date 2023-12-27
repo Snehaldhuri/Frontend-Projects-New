@@ -6,6 +6,8 @@ import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
+import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
@@ -85,6 +87,20 @@ class RemoteDataSource @Inject constructor(
             assetApiService.getFlightStatus(cmd, ua, callType, apCode, mode)
         }
         return ApiResponseParsing().getResponseAsObject(result.data, FlightStatusResponse::class)
+    }
+
+    suspend fun getNewsHeader(ua: String, languageId: Int): NewsHeaderResponse? {
+        val result = safeAPiCall {
+            lgRestApiService.getNewsHeader(ua, languageId)
+        }
+        return ApiResponseParsing().getResponseAsObject(result.data, NewsHeaderResponse::class)
+    }
+
+    suspend fun getNewsDetails(newsId: Int): NewsResponse? {
+        val result = safeAPiCall {
+            lgRestApiService.getNewsDetails(newsId)
+        }
+        return ApiResponseParsing().getResponseAsObject(result.data, NewsResponse::class)
     }
 
 }

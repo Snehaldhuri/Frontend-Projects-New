@@ -31,4 +31,14 @@
     <string name="flight_no">Flight No</string>
     <string name="switch_to_departure">Switch to Departure</string>
     <string name="switch_to_arrival">Switch to Arrival</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="humidity">Humidity</string>
+    <string name="dev_point">Dev Point</string>
+    <string name="sunset">Sunset</string>
+    <string name="visibility">Visibility</string>
+    <string name="wind">Wind</string>
+    <string name="high">High :</string>
+    <string name="low">Low :</string>
+    <string name="details">Details</string>
+    <string name="headlines">Headlines</string>
 </resources>

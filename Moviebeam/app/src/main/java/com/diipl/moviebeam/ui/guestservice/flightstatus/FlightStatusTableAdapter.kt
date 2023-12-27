@@ -1,19 +1,22 @@
-package com.diipl.moviebeam.ui.guestservice
+package com.diipl.moviebeam.ui.guestservice.flightstatus
 
 import android.content.Context
 import android.graphics.Color
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.flightstatus.Flight
 
 class FlightStatusTableAdapter(
-    private var onFlightFocused: (View, Boolean) -> Unit
+    private var onFlightFocused: (View, Boolean) -> Unit,
+    private val onLeftKeyPressed: () -> Unit
 ) : RecyclerView.Adapter<FlightStatusTableAdapter.MyViewHolder>() {
 
     private var itemList: List<Flight> = mutableListOf()
@@ -35,6 +38,17 @@ class FlightStatusTableAdapter(
         view.setOnFocusChangeListener { focusedView, focus ->
             onFlightFocused(focusedView, focus)
         }
+        view.setOnKeyListener { _, keycode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keycode) {
+                    KeyEvent.KEYCODE_DPAD_LEFT ->{
+                        onLeftKeyPressed()
+                    }
+                }
+            }
+                false
+        }
+
         val params = view.layoutParams
         params.height = getHeightInPercent(parent.context, 7)
         return MyViewHolder(view)
@@ -66,19 +80,19 @@ class FlightStatusTableAdapter(
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
         when (color) {
             "yellow" -> {
-                textView.setTextColor(Color.parseColor("#FFFF00"))
+                textView.setTextColor(Color.parseColor(Constants.COLOR_YELLOW))
             }
 
             "orange" -> {
-                textView.setTextColor(Color.parseColor("#FFA500"))
+                textView.setTextColor(Color.parseColor(Constants.COLOR_ORANGE))
             }
 
             "green" -> {
-                textView.setTextColor(Color.parseColor("#008000"))
+                textView.setTextColor(Color.parseColor(Constants.COLOR_GREEN))
             }
 
             else -> {
-                textView.setTextColor(Color.parseColor("#FFFFFF"))
+                textView.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
             }
 
         }
