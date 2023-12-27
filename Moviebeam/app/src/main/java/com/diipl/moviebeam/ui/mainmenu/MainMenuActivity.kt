@@ -75,11 +75,6 @@ class MainMenuActivity : BaseActivity() {
                     .load(mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
                     .into(binding.ivWeather)
                 binding.pbLoader.toInvisible()
-                binding.tvTemperature.text = temperature
-                Glide.with(this)
-                    .load(mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
-                    .into(binding.ivWeather)
-                binding.pbLoader.toInvisible()
             }
 
             else -> {

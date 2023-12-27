@@ -20,4 +20,12 @@
     <string name="back">Back</string>
     <string name="menu_button_image">Menu Button Image</string>
     <string name="hotel_information">Hotel Information</string>
+
+    <string name="theme_success">Theme Success</string>
+    <string name="account_setup_success">Account Setup Success</string>
+    <string name="weather_success">Weather Success</string>
+    <string name="date_time_success">Date Time Success</string>
+
+
+
 </resources>
