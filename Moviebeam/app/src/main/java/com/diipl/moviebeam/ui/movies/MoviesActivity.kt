@@ -73,49 +73,14 @@ class MoviesActivity : BaseActivity()  {
         binding.parentRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
-//        addDataToList()
-//        val listAdapter = ParentAdapter()
-//        binding.parentRecyclerView.adapter = listAdapter
-
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
-    }
-    private fun addDataToList(){
-        val childItems1= ArrayList<ChildItem>()
-        childItems1.add(ChildItem("rt", R.drawable.casting_icon))
-        childItems1.add(ChildItem("ferd", R.drawable.logo_static))
-        childItems1.add(ChildItem("fg", R.drawable.adult))
-        childItems1.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
-        childItems1.add(ChildItem("fdgsdf", R.drawable.casting_icon))
-
-       parentList.add(ParentItem("Game Development" , R.drawable.adult , childItems1))
-
-        val childItems2= ArrayList<ChildItem>()
-        childItems2.add(ChildItem("rt", R.drawable.casting_icon))
-        childItems2.add(ChildItem("ferd", R.drawable.logo_static))
-        childItems2.add(ChildItem("fg", R.drawable.adult))
-        childItems2.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
-        childItems2.add(ChildItem("fdgsdf", R.drawable.casting_icon))
-
-        parentList.add(ParentItem("Android" , R.drawable.adult , childItems2))
-
-        val childItems3= ArrayList<ChildItem>()
-        childItems3.add(ChildItem("rt", R.drawable.casting_icon))
-        childItems3.add(ChildItem("ferd", R.drawable.logo_static))
-        childItems3.add(ChildItem("fg", R.drawable.adult))
-        childItems3.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
-        childItems3.add(ChildItem("fdgsdf", R.drawable.casting_icon))
-
-        parentList.add(ParentItem("c Development" , R.drawable.adult , childItems3))
-
     }
     private fun handleMoviesServiceResponse(status: Resource<MoviesResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 val response = MoviesViewModel.moviesLiveData.value?.data
-
-//                Log.d("TAG11", "handleMoviesServiceResponse: ${genreMap.keys}")
 
                 Glide.with(this)
                     .load(MoviesViewModel.themeLiveData.value?.data?.themeLogoFileName)
@@ -138,23 +103,6 @@ class MoviesActivity : BaseActivity()  {
                             val parentAdapter =ParentAdapter()
                             parentAdapter.setMovieList(genreMap)
                             binding.parentRecyclerView.adapter = parentAdapter
-//                            val adapter = ParentAdapter(parentList)
-//                            binding.parentRecyclerView.adapter = adapter
-
-//                            val premiumContentList = response?.premiumContentList ?: response?.premiumContentList
-//                            binding.rvRentalMovies.layoutManager =
-//                                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-//                            val genreAdapter = MoviesGenreAdapter()
-////                            genreAdapter.setGenreList(response?.premiumGenreList ?: emptyList(), response?.premiumContentList ?: emptyList())
-//                            genreAdapter.setGenreList((response?.premiumGenreList ?: emptyList()) as List<GenreDto>, response?.premiumContentList ?: emptyList())
-//                            binding.rvRentalMovies.adapter = genreAdapter
-//                            val cardAdapter = MoviesCardAdapter {
-//
-//                            }
-//                            cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
-//
-//                            binding.parentRecyclerView.adapter = cardAdapter
-
                         }
                         Constants.FREE_MOVIES_ID -> {
                             val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
@@ -170,20 +118,8 @@ class MoviesActivity : BaseActivity()  {
                             val parentAdapter =ParentAdapter()
                             parentAdapter.setMovieList(genreMap)
                             binding.parentRecyclerView.adapter = parentAdapter
-//                            val cardAdapter = MoviesCardAdapter {
-//
-//                            }
-//                            cardAdapter.setContentList(response?.freeContentList ?: emptyList())
-//
-//                            binding.recyclerView.adapter = cardAdapter
                         }
                         Constants.ADULT_DAY_PASS_ID -> {
-//                            val cardAdapter = MoviesCardAdapter {
-//
-//                            }
-//                            val adultDayList = response?.premiumContentList?.filter{ it.genre1 == "Adult Daypass" }
-//                            cardAdapter.setContentList(adultDayList ?: emptyList())
-//                            binding.recyclerView.adapter = cardAdapter
                         }
                         Constants.ADULT_ID -> {
                             val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
@@ -199,24 +135,13 @@ class MoviesActivity : BaseActivity()  {
                             val parentAdapter =ParentAdapter()
                             parentAdapter.setMovieList(genreMap)
                             binding.parentRecyclerView.adapter = parentAdapter
-//                            val cardAdapter = MoviesCardAdapter {
-//
-//                            }
-//                            val adultList = response?.premiumContentList?.filter{ it.genre1 == "Adult" }
-//                            cardAdapter.setContentList(adultList ?: emptyList())
-//                            binding.recyclerView.adapter = cardAdapter
+
                         }
                         else -> {
 
                         }
                     }
                 }
-//                val listAdapter = ParentAdapter(parentList)
-//                binding.parentRecyclerView.adapter = listAdapter
-//                val cardAdapter = MoviesCardAdapter {
-//
-//                }
-//                cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
                 val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
                 response?.premiumContentList?.forEach{
                     if(genreMap[it.genre1] != null){

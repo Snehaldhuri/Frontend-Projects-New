@@ -5,16 +5,15 @@
     android:id="@+id/cv_movie_card"
     android:layout_width="100dp"
     android:layout_height="match_parent"
-    app:cardElevation="20dp"
-    app:cardCornerRadius="10dp"
-    android:layout_marginRight= "5dp"
     app:cardBackgroundColor="@android:color/transparent"
-    app:contentPadding="10dp"
     app:cardPreventCornerOverlap="true"
+    app:cardElevation="0dp"
+    app:contentPadding="5dp"
     >
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="5dp"
         >
 
         <ImageView
