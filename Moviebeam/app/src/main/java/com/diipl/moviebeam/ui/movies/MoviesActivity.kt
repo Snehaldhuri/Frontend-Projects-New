@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +16,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.movies.GenreDto
+import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -33,19 +34,12 @@ class MoviesActivity : BaseActivity()  {
 
     private var gradientStartColor = "#85bf08"
     private var gradientEndColor = "#0ca654"
-//
-//    private val samplePremiumContentList: List<ContentDto> by lazy {
-//        listOf(
-//            ContentDto(id = 1, title = "Movie 1", genre1 = "Action"),
-//            ContentDto(id = 2, title = "Movie 2", genre1 = "Drama"),
-//            ContentDto(id = 3, title = "Movie 3", genre1 = "Comedy"),
-//        )
-//    }
 
     private val list: List<BtnModel> = Constants.MOVIES_PAGE_MENU_BUTTON_LIST
 
     private val MoviesViewModel: MoviesViewModel by viewModels()
 
+    private val parentList = ArrayList<ParentItem>()
     override fun observeViewModel() {
         observe(MoviesViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(MoviesViewModel.themeLiveData, ::handleThemeResponse)
@@ -72,17 +66,69 @@ class MoviesActivity : BaseActivity()  {
         binding.btnBack.setOnClickListener {
             finish()
         }
-        binding.rvRentalMovies.layoutManager =
+
+        val parentRecyclerView: RecyclerView = binding.parentRecyclerView
+        parentRecyclerView.setHasFixedSize(true)
+        binding.parentRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
+//        addDataToList()
+//        val listAdapter = ParentAdapter()
+//        binding.parentRecyclerView.adapter = listAdapter
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
+    }
+    private fun addDataToList(){
+        val childItems1= ArrayList<ChildItem>()
+        childItems1.add(ChildItem("rt", R.drawable.casting_icon))
+        childItems1.add(ChildItem("ferd", R.drawable.logo_static))
+        childItems1.add(ChildItem("fg", R.drawable.adult))
+        childItems1.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
+        childItems1.add(ChildItem("fdgsdf", R.drawable.casting_icon))
+
+       parentList.add(ParentItem("Game Development" , R.drawable.adult , childItems1))
+
+        val childItems2= ArrayList<ChildItem>()
+        childItems2.add(ChildItem("rt", R.drawable.casting_icon))
+        childItems2.add(ChildItem("ferd", R.drawable.logo_static))
+        childItems2.add(ChildItem("fg", R.drawable.adult))
+        childItems2.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
+        childItems2.add(ChildItem("fdgsdf", R.drawable.casting_icon))
+
+        parentList.add(ParentItem("Android" , R.drawable.adult , childItems2))
+
+        val childItems3= ArrayList<ChildItem>()
+        childItems3.add(ChildItem("rt", R.drawable.casting_icon))
+        childItems3.add(ChildItem("ferd", R.drawable.logo_static))
+        childItems3.add(ChildItem("fg", R.drawable.adult))
+        childItems3.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
+        childItems3.add(ChildItem("fdgsdf", R.drawable.casting_icon))
+
+        parentList.add(ParentItem("c Development" , R.drawable.adult , childItems3))
+
     }
     private fun handleMoviesServiceResponse(status: Resource<MoviesResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 val response = MoviesViewModel.moviesLiveData.value?.data
+                val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                response?.premiumContentList?.forEach{
+//                    if(it.genre1 == "New Releases"){
+//                        genreMap.put("1",it)
+//                    }
+                    if(genreMap[it.genre1] != null){
+                        genreMap[it.genre1]?.add(it)
+                    }else{
+                        val movieList = mutableListOf<ContentDto>()
+                        movieList.add(it)
+                        genreMap[it.genre1] = movieList
+                    }
+                }
+                Log.d("TAG11", "handleMoviesServiceResponse: ${genreMap.keys}")
+                val parentAdapter =ParentAdapter()
+                parentAdapter.setMovieList(genreMap)
                 Glide.with(this)
                     .load(MoviesViewModel.themeLiveData.value?.data?.themeLogoFileName)
                     .into(binding.layoutHeader.imgHotelLogo)
@@ -91,20 +137,22 @@ class MoviesActivity : BaseActivity()  {
                     when (btnId) {
 
                         Constants.MOVIE_RENTALS_ID -> {
+//                            val adapter = ParentAdapter(parentList)
+//                            binding.parentRecyclerView.adapter = adapter
 
 //                            val premiumContentList = response?.premiumContentList ?: response?.premiumContentList
-                            binding.rvRentalMovies.layoutManager =
-                                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-                            val genreAdapter = MoviesGenreAdapter()
-//                            genreAdapter.setGenreList(response?.premiumGenreList ?: emptyList(), response?.premiumContentList ?: emptyList())
-                            genreAdapter.setGenreList((response?.premiumGenreList ?: emptyList()) as List<GenreDto>, response?.premiumContentList ?: emptyList())
-                            binding.rvRentalMovies.adapter = genreAdapter
+//                            binding.rvRentalMovies.layoutManager =
+//                                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+//                            val genreAdapter = MoviesGenreAdapter()
+////                            genreAdapter.setGenreList(response?.premiumGenreList ?: emptyList(), response?.premiumContentList ?: emptyList())
+//                            genreAdapter.setGenreList((response?.premiumGenreList ?: emptyList()) as List<GenreDto>, response?.premiumContentList ?: emptyList())
+//                            binding.rvRentalMovies.adapter = genreAdapter
 //                            val cardAdapter = MoviesCardAdapter {
 //
 //                            }
 //                            cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
 //
-//                            binding.recyclerView.adapter = cardAdapter
+//                            binding.parentRecyclerView.adapter = cardAdapter
 
                         }
                         Constants.FREE_MOVIES_ID -> {
@@ -136,12 +184,14 @@ class MoviesActivity : BaseActivity()  {
                         }
                     }
                 }
+//                val listAdapter = ParentAdapter(parentList)
+//                binding.parentRecyclerView.adapter = listAdapter
 //                val cardAdapter = MoviesCardAdapter {
 //
 //                }
 //                cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
-//
-//                binding.recyclerView.adapter = cardAdapter
+
+                binding.parentRecyclerView.adapter = parentAdapter
 
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 binding.menuRecyclerView.adapter = adapter
