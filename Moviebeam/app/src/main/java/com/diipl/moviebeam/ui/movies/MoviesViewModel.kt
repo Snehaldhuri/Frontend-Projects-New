@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.localattraction
+package com.diipl.moviebeam.ui.movies
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -11,6 +11,7 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
@@ -20,11 +21,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
-class LocalAttractionViewModel @Inject constructor(
+class MoviesViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
-
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
@@ -38,27 +39,25 @@ class LocalAttractionViewModel @Inject constructor(
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
-
-    private val _localAttractionLiveData = MutableLiveData<Resource<LocalAttractionResponse>>()
-    val localAttractionLiveData: LiveData<Resource<LocalAttractionResponse>> get() = _localAttractionLiveData
-
+    private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
+    val moviesLiveData: LiveData<Resource<MoviesResponse>> get() = _moviesLiveData
 
     init {
-        fetchLocalAttractionInfo("17205KKXLKF626")
+        fetchMoviesInfo("17205KKXLKF626")
         fetchThemeDetails("17205KKXLKF626")
         fetchWeatherData("17205KKXLKF626")
         fetchDateTime("17205KKXLKF626")
         fetchAccountSetupDetails("ACTIVATE", "14508KKMH0K299", "JSON")
     }
 
-    private fun fetchLocalAttractionInfo(ua: String) {
+    private fun fetchMoviesInfo(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            _localAttractionLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getLocalAttractionInfo(ua)
+            _moviesLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getMoviesInfo(ua)
             if (response == null) {
-                _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _localAttractionLiveData.postValue(Resource.Success(response))
+                _moviesLiveData.postValue(Resource.Success(response))
             }
         }
     }
@@ -71,10 +70,10 @@ class LocalAttractionViewModel @Inject constructor(
                 _themeLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
                 _themeLiveData.postValue(Resource.Success(response))
+
             }
         }
     }
-
     fun fetchDateTime(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _dateTimeLiveData.postValue(Resource.Loading())
@@ -113,10 +112,15 @@ class LocalAttractionViewModel @Inject constructor(
         }
     }
 
+    private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
+    val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
+
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
+    val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
     }
+
 
 }

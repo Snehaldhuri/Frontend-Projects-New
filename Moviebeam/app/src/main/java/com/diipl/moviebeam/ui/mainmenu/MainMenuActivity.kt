@@ -22,6 +22,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
+import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
@@ -157,6 +158,9 @@ class MainMenuActivity : BaseActivity() {
                         }
                         Constants.LOCAL_ATTRACTION_ID -> {
                             startActivity(Intent(this, LocalAttractionActivity::class.java))
+                        }
+                        Constants.VOD_ID -> {
+                            startActivity(Intent(this, MoviesActivity::class.java))
                         }
 
                         Constants.GUEST_SERVICES_ID -> {

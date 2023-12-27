@@ -36,7 +36,6 @@ object Constants {
     const val LOCAL_ATTRACTION_ID = "lam"
     const val FOOD_DELIVERY_ID = "foodDelivery"
 
-
     //Home Page Menu Button Title
     const val PROGRAM_GUIDE = "Program Guide"
     const val MOVIES_MORE = "Movies & More"
@@ -51,6 +50,18 @@ object Constants {
     const val FOOD_DELIVERY = "Food Delivery"
 
 
+    //Movies page menu button Id
+    const val MOVIE_RENTALS_ID = "movieRentals"
+    const val FREE_MOVIES_ID = "freeMovies"
+    const val ADULT_DAY_PASS_ID = "adultDayPass"
+    const val ADULT_ID = "adult"
+
+    //Movies page menu button list
+    const val MOVIE_RENTALS = "Movie Rentals"
+    const val FREE_VOD = "Free Movies"
+    const val ADULT_DAY_PASS = "Adult Day Pass"
+    const val ADULT = "Adult"
+
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),
@@ -64,8 +75,12 @@ object Constants {
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
-
-
+    val MOVIES_PAGE_MENU_BUTTON_LIST = listOf(
+        BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
+        BtnModel(FREE_MOVIES_ID, R.drawable.video_on_demand_icon, FREE_VOD),
+        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
+        BtnModel(ADULT_ID, R.drawable.adult, ADULT),
+    )
 
     //Guest Service Button Id
     const val WEATHER_ID = "weather"
@@ -135,7 +150,6 @@ object Constants {
 
     //Colors
     const val COLOR_WHITE = "#FFFFFF"
-
 }
 
 const val SPLASH_DELAY = 3000
