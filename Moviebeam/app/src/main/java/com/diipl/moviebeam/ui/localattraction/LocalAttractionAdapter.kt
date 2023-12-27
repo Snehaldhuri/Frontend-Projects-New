@@ -41,9 +41,6 @@ class LocalAttractionAdapter(private var onItemClicked: ((LAServices)) -> Unit) 
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
-        if(position==0){
-            holder.card.requestFocus()
-        }
         holder.textView.text = item.categoryName
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 

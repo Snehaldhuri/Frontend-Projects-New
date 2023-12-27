@@ -68,6 +68,7 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:focusable="true"
+        android:background="@android:color/transparent"
         android:focusableInTouchMode="true"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"

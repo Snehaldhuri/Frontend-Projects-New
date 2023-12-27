@@ -187,14 +187,15 @@ class GuestServiceActivity : BaseActivity() {
 
                         Constants.FLIGHT_STATUS_ID -> {
                             binding.rvTabContent.toInvisible()
+                            val transaction1 = supportFragmentManager.beginTransaction()
                             val fragment =
                                 FlightStatusFragment()
                             guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
                                 fragment.setAirportList(airports)
                             }
                             fragment.setGradientColor(gradientStartColor, gradientEndColor)
-                            transaction.replace(R.id.fv_tab_content, fragment)
-                            transaction.commit()
+                            transaction1.replace(R.id.fv_tab_content, fragment)
+                            transaction1.commit()
                         }
                     }
                 }

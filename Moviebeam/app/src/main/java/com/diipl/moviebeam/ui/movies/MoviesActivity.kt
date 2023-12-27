@@ -51,6 +51,7 @@ class MoviesActivity : BaseActivity()  {
     override fun initViewBinding() {
         binding = ActivityMoviesBinding.inflate(layoutInflater)
         val view = binding.root
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         setContentView(view)
     }
 

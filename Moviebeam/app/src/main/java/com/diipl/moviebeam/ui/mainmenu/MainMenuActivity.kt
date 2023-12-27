@@ -157,10 +157,10 @@ class MainMenuActivity : BaseActivity() {
                             intent = Intent(this, HotelInfoActivity::class.java)
                         }
                         Constants.LOCAL_ATTRACTION_ID -> {
-                            startActivity(Intent(this, LocalAttractionActivity::class.java))
+                            intent = Intent(this, LocalAttractionActivity::class.java)
                         }
                         Constants.VOD_ID -> {
-                            startActivity(Intent(this, MoviesActivity::class.java))
+                            intent = Intent(this, MoviesActivity::class.java)
                         }
 
                         Constants.GUEST_SERVICES_ID -> {
