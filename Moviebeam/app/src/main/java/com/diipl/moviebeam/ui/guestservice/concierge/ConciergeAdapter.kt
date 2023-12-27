@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.guestservice
+package com.diipl.moviebeam.ui.guestservice.concierge
 
 import android.content.Context
 import android.graphics.Color
@@ -13,7 +13,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
-import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 class ConciergeAdapter(
     private var onMenuItemClicked: (ConciergeBtnModel) -> Unit

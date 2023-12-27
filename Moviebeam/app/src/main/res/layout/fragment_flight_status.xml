@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.guestservice.FlightStatusFragment">
+    tools:context=".ui.guestservice.flightstatus.FlightStatusFragment">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_5"
@@ -37,6 +37,7 @@
         android:spinnerMode="dropdown"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        android:overlapAnchor="false"
         app:layout_constraintBottom_toTopOf="@id/gl_horizontal_5"
         app:layout_constraintStart_toEndOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="parent" />

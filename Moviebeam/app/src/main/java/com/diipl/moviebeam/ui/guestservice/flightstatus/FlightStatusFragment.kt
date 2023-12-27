@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.guestservice
+package com.diipl.moviebeam.ui.guestservice.flightstatus
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -25,7 +25,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class FlightStatusFragment : BaseFragment(), AdapterView.OnItemSelectedListener {
+class FlightStatusFragment(
+    private val onLeftKeyPressed: () -> Unit
+) : BaseFragment(), AdapterView.OnItemSelectedListener {
 
     private val flightStatusViewModel: FlightStatusViewModel by activityViewModels()
     private var _binding: FragmentFlightStatusBinding? = null
@@ -55,7 +57,15 @@ class FlightStatusFragment : BaseFragment(), AdapterView.OnItemSelectedListener 
 
         _binding = FragmentFlightStatusBinding.inflate(inflater, container, false)
 
-
+//        binding.layoutFlightStatusTable.rvTableContent.setOnKeyListener { _, keycode, keyEvent ->
+//            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+//                when (keycode) {
+//                    KeyEvent.KEYCODE_DPAD_LEFT ->
+//                        onLeftKeyPressed()
+//                }
+//            }
+//            false
+//        }
 
         return binding.root
     }
@@ -100,6 +110,17 @@ class FlightStatusFragment : BaseFragment(), AdapterView.OnItemSelectedListener 
                 view.findViewById<TextView>(R.id.tv_title).isSelected = false
             }
         }
+//        dropdown.setOnKeyListener { _, keycode, keyEvent ->
+//            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+//                when (keycode) {
+//                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
+////                        onLeftKeyPressed(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
+////                        Log.d("TAG22", "onViewCreated: Working")
+////                    onLeftKeyPressed()
+//                }
+//            }
+//            false
+//        }
 //        binding.spAirport.requestFocus()
     }
 
@@ -112,7 +133,7 @@ class FlightStatusFragment : BaseFragment(), AdapterView.OnItemSelectedListener 
                         LinearLayoutManager(this.context)
 
                     val tableAdapter =
-                        FlightStatusTableAdapter(onFlightFocused = ::handleFlightStatusFocus)
+                        FlightStatusTableAdapter(onFlightFocused = ::handleFlightStatusFocus, onLeftKeyPressed= onLeftKeyPressed)
                     tableAdapter.setFlightList(it)
                     binding.layoutFlightStatusTable.rvTableContent.adapter = tableAdapter
                 }

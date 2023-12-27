@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.guestservice
+package com.diipl.moviebeam.ui.guestservice.flightstatus
 
 import android.util.Log
 import androidx.lifecycle.LiveData
