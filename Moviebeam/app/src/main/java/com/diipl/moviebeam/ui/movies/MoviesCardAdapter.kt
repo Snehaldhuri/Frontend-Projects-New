@@ -19,8 +19,8 @@ class MoviesCardAdapter(private val onMoviesMenuItemClicked: (Int) -> Unit) :
     private val itemList: MutableList<Any> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.iv_movie_image)
-        val textView: TextView = itemView.findViewById(R.id.tv_movie_name)
+        val imageView: ImageView = itemView.findViewById(R.id.childLogoIv)
+        val textView: TextView = itemView.findViewById(R.id.childTitleTv)
         val frontCard: CardView = itemView.findViewById(R.id.cv_movie_card)
 
         init {

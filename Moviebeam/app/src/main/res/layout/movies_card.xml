@@ -18,7 +18,7 @@
         >
 
         <ImageView
-            android:id="@+id/iv_movie_image"
+            android:id="@+id/childLogoIv"
             android:layout_width="100dp"
             android:layout_height="140dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -27,12 +27,12 @@
             tools:ignore="MissingConstraints" />
 
         <TextView
-            android:id="@+id/tv_movie_name"
+            android:id="@+id/childTitleTv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="15sp"
             android:textColor="@color/white"
-            app:layout_constraintTop_toBottomOf="@id/iv_movie_image"
+            app:layout_constraintTop_toBottomOf="@id/childLogoIv"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

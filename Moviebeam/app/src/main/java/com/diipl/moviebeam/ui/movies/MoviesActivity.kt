@@ -18,6 +18,7 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.movies.PremiumGenre
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
@@ -113,22 +114,9 @@ class MoviesActivity : BaseActivity()  {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 val response = MoviesViewModel.moviesLiveData.value?.data
-                val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
-                response?.premiumContentList?.forEach{
-//                    if(it.genre1 == "New Releases"){
-//                        genreMap.put("1",it)
-//                    }
-                    if(genreMap[it.genre1] != null){
-                        genreMap[it.genre1]?.add(it)
-                    }else{
-                        val movieList = mutableListOf<ContentDto>()
-                        movieList.add(it)
-                        genreMap[it.genre1] = movieList
-                    }
-                }
-                Log.d("TAG11", "handleMoviesServiceResponse: ${genreMap.keys}")
-                val parentAdapter =ParentAdapter()
-                parentAdapter.setMovieList(genreMap)
+
+//                Log.d("TAG11", "handleMoviesServiceResponse: ${genreMap.keys}")
+
                 Glide.with(this)
                     .load(MoviesViewModel.themeLiveData.value?.data?.themeLogoFileName)
                     .into(binding.layoutHeader.imgHotelLogo)
@@ -137,6 +125,19 @@ class MoviesActivity : BaseActivity()  {
                     when (btnId) {
 
                         Constants.MOVIE_RENTALS_ID -> {
+                            val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                            response?.premiumContentList?.forEach{
+                                if(genreMap[it.genre1] != null){
+                                    genreMap[it.genre1]?.add(it)
+                                }else{
+                                        val movieList = mutableListOf<ContentDto>()
+                                        movieList.add(it)
+                                        genreMap[it.genre1] = movieList
+                                }
+                            }
+                            val parentAdapter =ParentAdapter()
+                            parentAdapter.setMovieList(genreMap)
+                            binding.parentRecyclerView.adapter = parentAdapter
 //                            val adapter = ParentAdapter(parentList)
 //                            binding.parentRecyclerView.adapter = adapter
 
@@ -156,6 +157,19 @@ class MoviesActivity : BaseActivity()  {
 
                         }
                         Constants.FREE_MOVIES_ID -> {
+                            val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                            response?.freeContentList?.forEach{
+                                if(genreMap[it.genre1] != null){
+                                    genreMap[it.genre1]?.add(it)
+                                }else{
+                                    val movieList = mutableListOf<ContentDto>()
+                                    movieList.add(it)
+                                    genreMap[it.genre1] = movieList
+                                }
+                            }
+                            val parentAdapter =ParentAdapter()
+                            parentAdapter.setMovieList(genreMap)
+                            binding.parentRecyclerView.adapter = parentAdapter
 //                            val cardAdapter = MoviesCardAdapter {
 //
 //                            }
@@ -172,6 +186,19 @@ class MoviesActivity : BaseActivity()  {
 //                            binding.recyclerView.adapter = cardAdapter
                         }
                         Constants.ADULT_ID -> {
+                            val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                            response?.premiumContentList?.forEach{
+                                if(genreMap[it.genre1] != null){
+                                    genreMap[it.genre1]?.add(it)
+                                }else{
+                                    val movieList = mutableListOf<ContentDto>()
+                                    movieList.add(it)
+                                    genreMap[it.genre1] = movieList
+                                }
+                            }
+                            val parentAdapter =ParentAdapter()
+                            parentAdapter.setMovieList(genreMap)
+                            binding.parentRecyclerView.adapter = parentAdapter
 //                            val cardAdapter = MoviesCardAdapter {
 //
 //                            }
@@ -190,7 +217,18 @@ class MoviesActivity : BaseActivity()  {
 //
 //                }
 //                cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
-
+                val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                response?.premiumContentList?.forEach{
+                    if(genreMap[it.genre1] != null){
+                        genreMap[it.genre1]?.add(it)
+                    }else{
+                        val movieList = mutableListOf<ContentDto>()
+                        movieList.add(it)
+                        genreMap[it.genre1] = movieList
+                    }
+                }
+                val parentAdapter =ParentAdapter()
+                parentAdapter.setMovieList(genreMap)
                 binding.parentRecyclerView.adapter = parentAdapter
 
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)

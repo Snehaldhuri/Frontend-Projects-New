@@ -20,6 +20,7 @@ class ChildAdapter(private val childList: List<ContentDto>) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.child_item, parent, false)
+        view.isFocusable = true
         return ChildViewHolder(view)
     }
 
@@ -28,7 +29,7 @@ class ChildAdapter(private val childList: List<ContentDto>) :
     }
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
-        holder.logo.loadImagesWithGlideExt(childList[position].imagePathSushi)
+        holder.logo.loadImagesWithGlideExt(childList[position].secImagePathSushi)
         holder.title.text = childList[position].movieName
     }
 

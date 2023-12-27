@@ -21,7 +21,7 @@ class ParentAdapter :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParentViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.parent_item ,parent,false)
-        view.isFocusable=true
+        view.isFocusable = true
         return ParentViewHolder(view)
     }
 
