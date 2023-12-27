@@ -127,10 +127,10 @@ class LocalAttractionActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
                 Glide.with(this)
                     .load(localAttractionViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
-                    .into(binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage)
+                    .into(binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather)
                 binding.loaderView.toInvisible()
             }
 
@@ -152,7 +152,7 @@ class LocalAttractionActivity : BaseActivity() {
                 }
                 Glide.with(this)
                     .load(localAttractionViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.imgHotelLogo)
+                    .into(binding.layoutHeader.ivHotelLogo)
                 loadBg(localAttractionViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
             }
@@ -167,8 +167,8 @@ class LocalAttractionActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.layoutHeader.headerWeatherTime.txtDate.text = localAttractionViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.headerWeatherTime.txtTime.text = localAttractionViewModel.dateTimeLiveData.value?.data?.time
+                binding.layoutHeader.layoutWeatherTime.tvDate.text = localAttractionViewModel.dateTimeLiveData.value?.data?.date
+                binding.layoutHeader.layoutWeatherTime.tvTime.text = localAttractionViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 

@@ -119,7 +119,7 @@ class MoviesActivity : BaseActivity()  {
 
                 Glide.with(this)
                     .load(MoviesViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.imgHotelLogo)
+                    .into(binding.layoutHeader.ivHotelLogo)
                 loadBg(MoviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 val adapter = MoviesBtnAdapter(list){ btnId ->
                     when (btnId) {
@@ -254,10 +254,10 @@ class MoviesActivity : BaseActivity()  {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
                 Glide.with(this)
                     .load(MoviesViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
-                    .into(binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage)
+                    .into(binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather)
                 binding.loaderView.toInvisible()
             }
 
@@ -279,7 +279,7 @@ class MoviesActivity : BaseActivity()  {
                 }
                 Glide.with(this)
                     .load(MoviesViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.imgHotelLogo)
+                    .into(binding.layoutHeader.ivHotelLogo)
                 loadBg(MoviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
             }
@@ -294,8 +294,8 @@ class MoviesActivity : BaseActivity()  {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.layoutHeader.headerWeatherTime.txtDate.text = MoviesViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.headerWeatherTime.txtTime.text = MoviesViewModel.dateTimeLiveData.value?.data?.time
+                binding.layoutHeader.layoutWeatherTime.tvDate.text = MoviesViewModel.dateTimeLiveData.value?.data?.date
+                binding.layoutHeader.layoutWeatherTime.tvTime.text = MoviesViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 
