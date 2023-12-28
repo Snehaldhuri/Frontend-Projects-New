@@ -34,6 +34,7 @@ class LaCardAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.la_carousel, parent, false)
+        view.isClickable = true
 
         view.findViewById<CardView>(R.id.front_card).background.setTint(
             Color.parseColor(
@@ -52,7 +53,6 @@ class LaCardAdapter(
                 scaleAnimatorSet.playTogether(scaleX, scaleY)
                 scaleAnimatorSet.start()
             } else {
-//                it.findViewById<CardView>(R.id.front_card).background = null
                 it.scaleX = 1.0f
                 it.scaleY = 1.0f
             }
