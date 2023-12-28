@@ -23,19 +23,19 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideOkHttpClient() : OkHttpClient = if (BuildConfig.DEBUG) {
+    fun provideOkHttpClient(): OkHttpClient = if (BuildConfig.DEBUG) {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .readTimeout(Constants.API_TIME_OUT_IN_SEC,TimeUnit.SECONDS)
-            .connectTimeout(Constants.API_TIME_OUT_IN_SEC,TimeUnit.SECONDS)
+            .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
+            .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
             .build()
     } else
         OkHttpClient
             .Builder()
-            .readTimeout(Constants.API_TIME_OUT_IN_SEC,TimeUnit.SECONDS)
-            .connectTimeout(Constants.API_TIME_OUT_IN_SEC,TimeUnit.SECONDS)
+            .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
+            .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
             .build()
 
     @Singleton
@@ -66,7 +66,7 @@ object NetworkModule {
         .build()
 
     @Provides
-    fun provideLgRestApiService( @Named(Constants.LG_REST) retrofit: Retrofit): LgRestApiService =
+    fun provideLgRestApiService(@Named(Constants.LG_REST) retrofit: Retrofit): LgRestApiService =
         retrofit.create(LgRestApiService::class.java)
 
     @Provides

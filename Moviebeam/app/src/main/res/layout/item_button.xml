@@ -43,6 +43,7 @@
         android:textAlignment="viewStart"
         android:textColor="@color/home_menu_title"
         android:textSize="@dimen/sp_17"
+        android:textSize="@dimen/sp_20"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_40"

@@ -20,22 +20,23 @@ class MoviesBtnAdapter(
     var startColor = ""
     var endColor = ""
 
-//    var freeContentList: List<FreeContent> = mutableListOf()
-
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
         val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
         val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
     }
     override fun onCreateViewHolder( parent: ViewGroup, viewType: Int ): MoviesBtnAdapter.MyViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
+
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
+        val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
+        layoutParams.setMargins(0, 0, 0, 3)
+        view.layoutParams = layoutParams
         return MyViewHolder(view)
+
     }
 
     override fun onBindViewHolder(holder: MoviesBtnAdapter.MyViewHolder, position: Int) {
         val item = itemList[position]
-//        val contentItem = freeContentList[position]
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
 
@@ -51,20 +52,9 @@ class MoviesBtnAdapter(
         holder.card.setOnClickListener {
             onMoviesMenuItemClicked(item.btnId)
 
-//        holder.card.setOnClickListener {
-//            val freeContentList = getFreeContentListForItem(item)
-//            onMoviesMenuItemClicked(freeContentList)
-//        }
+         }
     }
-    }
-//    private fun getFreeContentListForItem(item: BtnModel): List<FreeContent> {
-//        // Implement logic to retrieve freeContentList based on the item
-//        // Replace the following line with your actual implementation
-//        return listOf() // Placeholder; replace with actual logic
-//    }
-//    fun setFreeContentList(freeContentList: List<FreeContent>) {
-//        // Your implementation here
-//    }
+
     override fun getItemCount(): Int =  itemList.size
 
     private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
@@ -80,7 +70,6 @@ class MoviesBtnAdapter(
         gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
 
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-
 
         cardView.background = gradientDrawable
     }

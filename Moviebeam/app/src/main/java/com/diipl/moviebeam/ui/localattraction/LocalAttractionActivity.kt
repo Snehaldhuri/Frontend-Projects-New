@@ -12,6 +12,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.databinding.ActivityLocalAttractionBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -93,6 +94,69 @@ class LocalAttractionActivity : BaseActivity() {
                 adapter.setItemList(response?.servicesList!!)
                 adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
                 binding.recyclerView.adapter = adapter
+                binding.loaderView.toInvisible()
+            }
+
+            else -> {
+                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                var temperature = localAttractionViewModel.weatherLiveData.value?.data?.tempCondition
+                temperature?.let {
+                    if (it.contains("&deg C")) {
+                        temperature = it.replace("&deg C", " \u2103")
+                    } else {
+                        temperature = it.replace("&deg F", " \u2109")
+                    }
+                }
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
+                Glide.with(this)
+                    .load(localAttractionViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
+                    .into(binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather)
+                binding.loaderView.toInvisible()
+            }
+
+            else -> {
+                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                localAttractionViewModel.themeLiveData.value?.data?.gradientColor?.let {
+                    gradientStartColor = it
+                }
+                localAttractionViewModel.themeLiveData.value?.data?.spotLightColor?.let {
+                    gradientEndColor = it
+                }
+                Glide.with(this)
+                    .load(localAttractionViewModel.themeLiveData.value?.data?.themeLogoFileName)
+                    .into(binding.layoutHeader.ivHotelLogo)
+                loadBg(localAttractionViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
+                binding.loaderView.toInvisible()
+            }
+
+            else -> {
+                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Success -> {
+                binding.layoutHeader.layoutWeatherTime.tvDate.text = localAttractionViewModel.dateTimeLiveData.value?.data?.date
+                binding.layoutHeader.layoutWeatherTime.tvTime.text = localAttractionViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 

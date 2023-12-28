@@ -1,11 +1,12 @@
 package com.diipl.moviebeam.ui.movies
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -18,18 +19,19 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
-import com.diipl.moviebeam.data.dto.movies.PremiumGenre
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MoviesActivity : BaseActivity()  {
+class MoviesActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMoviesBinding
 
@@ -38,14 +40,14 @@ class MoviesActivity : BaseActivity()  {
 
     private val list: List<BtnModel> = Constants.MOVIES_PAGE_MENU_BUTTON_LIST
 
-    private val MoviesViewModel: MoviesViewModel by viewModels()
+    private val moviesViewModel: MoviesViewModel by viewModels()
+    private val movieDetailFragment: MovieDetailFragment = MovieDetailFragment()
 
-    private val parentList = ArrayList<ParentItem>()
     override fun observeViewModel() {
-        observe(MoviesViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(MoviesViewModel.themeLiveData, ::handleThemeResponse)
-        observe(MoviesViewModel.dateTimeLiveData, ::handleDateTimeResponse)
-        observe(MoviesViewModel.moviesLiveData, ::handleMoviesServiceResponse)
+        observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(moviesViewModel.themeLiveData, ::handleThemeResponse)
+        observe(moviesViewModel.dateTimeLiveData, ::handleDateTimeResponse)
+        observe(moviesViewModel.moviesLiveData, ::handleMoviesServiceResponse)
     }
 
     override fun initViewBinding() {
@@ -66,7 +68,12 @@ class MoviesActivity : BaseActivity()  {
             }
         }
         binding.btnBack.setOnClickListener {
-            finish()
+            if (binding.fcvMovieDetail.isVisible) {
+                binding.fcvMovieDetail.toInvisible()
+                binding.parentRecyclerView.toVisible()
+            } else {
+                finish()
+            }
         }
 
         val parentRecyclerView: RecyclerView = binding.parentRecyclerView
@@ -74,180 +81,125 @@ class MoviesActivity : BaseActivity()  {
         binding.parentRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
-//        addDataToList()
-//        val listAdapter = ParentAdapter()
-//        binding.parentRecyclerView.adapter = listAdapter
-
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
     }
-    private fun addDataToList(){
-        val childItems1= ArrayList<ChildItem>()
-        childItems1.add(ChildItem("rt", R.drawable.casting_icon))
-        childItems1.add(ChildItem("ferd", R.drawable.logo_static))
-        childItems1.add(ChildItem("fg", R.drawable.adult))
-        childItems1.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
-        childItems1.add(ChildItem("fdgsdf", R.drawable.casting_icon))
 
-       parentList.add(ParentItem("Game Development" , R.drawable.adult , childItems1))
-
-        val childItems2= ArrayList<ChildItem>()
-        childItems2.add(ChildItem("rt", R.drawable.casting_icon))
-        childItems2.add(ChildItem("ferd", R.drawable.logo_static))
-        childItems2.add(ChildItem("fg", R.drawable.adult))
-        childItems2.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
-        childItems2.add(ChildItem("fdgsdf", R.drawable.casting_icon))
-
-        parentList.add(ParentItem("Android" , R.drawable.adult , childItems2))
-
-        val childItems3= ArrayList<ChildItem>()
-        childItems3.add(ChildItem("rt", R.drawable.casting_icon))
-        childItems3.add(ChildItem("ferd", R.drawable.logo_static))
-        childItems3.add(ChildItem("fg", R.drawable.adult))
-        childItems3.add(ChildItem("rdsght", R.drawable.adult_day_pass_black))
-        childItems3.add(ChildItem("fdgsdf", R.drawable.casting_icon))
-
-        parentList.add(ParentItem("c Development" , R.drawable.adult , childItems3))
-
-    }
     private fun handleMoviesServiceResponse(status: Resource<MoviesResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                val response = MoviesViewModel.moviesLiveData.value?.data
-
-//                Log.d("TAG11", "handleMoviesServiceResponse: ${genreMap.keys}")
-
-                Glide.with(this)
-                    .load(MoviesViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.ivHotelLogo)
-                loadBg(MoviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                val adapter = MoviesBtnAdapter(list){ btnId ->
+                val response = moviesViewModel.moviesLiveData.value?.data
+                moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                }
+                loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
+                val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                response?.premiumContentList?.forEach {
+                    if (it.genre1 != "Adult") {
+                        if (genreMap[it.genre1] != null) {
+                            genreMap[it.genre1]?.add(it)
+                        } else {
+                            val movieList = mutableListOf<ContentDto>()
+                            movieList.add(it)
+                            genreMap[it.genre1] = movieList
+                        }
+                    }
+                }
+                val adapter = MoviesBtnAdapter(list) { btnId ->
+                    binding.fcvMovieDetail.toInvisible()
+                    binding.parentRecyclerView.toVisible()
                     when (btnId) {
 
                         Constants.MOVIE_RENTALS_ID -> {
-                            val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
-                            response?.premiumContentList?.forEach{
-                                if(genreMap[it.genre1] != null){
-                                    genreMap[it.genre1]?.add(it)
-                                }else{
+                            val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
+
+                            parentAdapter.setMovieList(genreMap)
+                            binding.parentRecyclerView.adapter = parentAdapter
+                        }
+
+                        Constants.FREE_MOVIES_ID -> {
+                            val freeGenreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                            response?.freeContentList?.forEach {
+                                if (freeGenreMap[it.genre1] != null) {
+                                    freeGenreMap[it.genre1]?.add(it)
+                                } else {
+                                    val movieList = mutableListOf<ContentDto>()
+                                    movieList.add(it)
+                                    freeGenreMap[it.genre1] = movieList
+                                }
+                            }
+                            val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
+                            parentAdapter.setMovieList(freeGenreMap)
+                            binding.parentRecyclerView.adapter = parentAdapter
+                        }
+
+                        Constants.ADULT_DAY_PASS_ID -> {
+                            val adultGenreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                            response?.premiumContentList?.forEach {
+                                if (it.genre1 == "Adult") {
+                                    if (adultGenreMap[it.genre1] != null) {
+                                        adultGenreMap[it.genre1]?.add(it)
+                                    } else {
                                         val movieList = mutableListOf<ContentDto>()
                                         movieList.add(it)
-                                        genreMap[it.genre1] = movieList
+                                        adultGenreMap[it.genre1] = movieList
+                                    }
                                 }
                             }
-                            val parentAdapter =ParentAdapter()
-                            parentAdapter.setMovieList(genreMap)
+                            val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
+                            parentAdapter.setMovieList(adultGenreMap)
                             binding.parentRecyclerView.adapter = parentAdapter
-//                            val adapter = ParentAdapter(parentList)
-//                            binding.parentRecyclerView.adapter = adapter
+                        }
 
-//                            val premiumContentList = response?.premiumContentList ?: response?.premiumContentList
-//                            binding.rvRentalMovies.layoutManager =
-//                                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-//                            val genreAdapter = MoviesGenreAdapter()
-////                            genreAdapter.setGenreList(response?.premiumGenreList ?: emptyList(), response?.premiumContentList ?: emptyList())
-//                            genreAdapter.setGenreList((response?.premiumGenreList ?: emptyList()) as List<GenreDto>, response?.premiumContentList ?: emptyList())
-//                            binding.rvRentalMovies.adapter = genreAdapter
-//                            val cardAdapter = MoviesCardAdapter {
-//
-//                            }
-//                            cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
-//
-//                            binding.parentRecyclerView.adapter = cardAdapter
-
-                        }
-                        Constants.FREE_MOVIES_ID -> {
-                            val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
-                            response?.freeContentList?.forEach{
-                                if(genreMap[it.genre1] != null){
-                                    genreMap[it.genre1]?.add(it)
-                                }else{
-                                    val movieList = mutableListOf<ContentDto>()
-                                    movieList.add(it)
-                                    genreMap[it.genre1] = movieList
-                                }
-                            }
-                            val parentAdapter =ParentAdapter()
-                            parentAdapter.setMovieList(genreMap)
-                            binding.parentRecyclerView.adapter = parentAdapter
-//                            val cardAdapter = MoviesCardAdapter {
-//
-//                            }
-//                            cardAdapter.setContentList(response?.freeContentList ?: emptyList())
-//
-//                            binding.recyclerView.adapter = cardAdapter
-                        }
-                        Constants.ADULT_DAY_PASS_ID -> {
-//                            val cardAdapter = MoviesCardAdapter {
-//
-//                            }
-//                            val adultDayList = response?.premiumContentList?.filter{ it.genre1 == "Adult Daypass" }
-//                            cardAdapter.setContentList(adultDayList ?: emptyList())
-//                            binding.recyclerView.adapter = cardAdapter
-                        }
                         Constants.ADULT_ID -> {
-                            val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
-                            response?.premiumContentList?.forEach{
-                                if(genreMap[it.genre1] != null){
-                                    genreMap[it.genre1]?.add(it)
-                                }else{
-                                    val movieList = mutableListOf<ContentDto>()
-                                    movieList.add(it)
-                                    genreMap[it.genre1] = movieList
+                            val adultGenreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                            response?.premiumContentList?.forEach {
+                                if (it.genre1 == "Adult") {
+                                    if (adultGenreMap[it.genre1] != null) {
+                                        adultGenreMap[it.genre1]?.add(it)
+                                    } else {
+                                        val movieList = mutableListOf<ContentDto>()
+                                        movieList.add(it)
+                                        adultGenreMap[it.genre1] = movieList
+                                    }
                                 }
                             }
-                            val parentAdapter =ParentAdapter()
-                            parentAdapter.setMovieList(genreMap)
+                            val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
+                            parentAdapter.setMovieList(adultGenreMap)
                             binding.parentRecyclerView.adapter = parentAdapter
-//                            val cardAdapter = MoviesCardAdapter {
-//
-//                            }
-//                            val adultList = response?.premiumContentList?.filter{ it.genre1 == "Adult" }
-//                            cardAdapter.setContentList(adultList ?: emptyList())
-//                            binding.recyclerView.adapter = cardAdapter
                         }
-                        else -> {
 
-                        }
                     }
                 }
-//                val listAdapter = ParentAdapter(parentList)
-//                binding.parentRecyclerView.adapter = listAdapter
-//                val cardAdapter = MoviesCardAdapter {
-//
-//                }
-//                cardAdapter.setContentList(response?.premiumContentList ?: emptyList())
-                val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
-                response?.premiumContentList?.forEach{
-                    if(genreMap[it.genre1] != null){
-                        genreMap[it.genre1]?.add(it)
-                    }else{
-                        val movieList = mutableListOf<ContentDto>()
-                        movieList.add(it)
-                        genreMap[it.genre1] = movieList
-                    }
+                // TODO Movies Details Logic
+                val transition = supportFragmentManager.beginTransaction()
+                transition.replace(R.id.fcv_movie_detail, movieDetailFragment)
+                transition.commit()
+                binding.fcvMovieDetail.toInvisible()
+                val parentAdapter = ParentAdapter {
+                    movieDetailFragment.setMovieDetails(it)
+                    binding.parentRecyclerView.toInvisible()
+                    binding.fcvMovieDetail.toVisible()
                 }
-                val parentAdapter =ParentAdapter()
                 parentAdapter.setMovieList(genreMap)
                 binding.parentRecyclerView.adapter = parentAdapter
-
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 binding.menuRecyclerView.adapter = adapter
-
                 binding.loaderView.toInvisible()
             }
 
             else -> {
-                status.errorCode?.let { MoviesViewModel.showToastMessage(getString(it)) }
+                status.errorCode?.let { moviesViewModel.showToastMessage(getString(it)) }
             }
         }
     }
+
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                var temperature = MoviesViewModel.weatherLiveData.value?.data?.tempCondition
+                var temperature = moviesViewModel.weatherLiveData.value?.data?.tempCondition
                 temperature?.let {
                     if (it.contains("&deg C")) {
                         temperature = it.replace("&deg C", " \u2103")
@@ -256,14 +208,16 @@ class MoviesActivity : BaseActivity()  {
                     }
                 }
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
-                Glide.with(this)
-                    .load(MoviesViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
-                    .into(binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather)
+                moviesViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
+                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
+                        it
+                    )
+                }
                 binding.loaderView.toInvisible()
             }
 
             else -> {
-                status.errorCode?.let { MoviesViewModel.showToastMessage(getString(it)) }
+                status.errorCode?.let { moviesViewModel.showToastMessage(getString(it)) }
             }
         }
     }
@@ -272,21 +226,22 @@ class MoviesActivity : BaseActivity()  {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                MoviesViewModel.themeLiveData.value?.data?.gradientColor?.let {
+                moviesViewModel.themeLiveData.value?.data?.gradientColor?.let {
                     gradientStartColor = it
                 }
-                MoviesViewModel.themeLiveData.value?.data?.spotLightColor?.let {
+                moviesViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                Glide.with(this)
-                    .load(MoviesViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.ivHotelLogo)
-                loadBg(MoviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
+                movieDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
+                moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                }
+                loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
             }
 
             else -> {
-                status.errorCode?.let { MoviesViewModel.showToastMessage(getString(it)) }
+                status.errorCode?.let { moviesViewModel.showToastMessage(getString(it)) }
             }
         }
     }
@@ -295,13 +250,15 @@ class MoviesActivity : BaseActivity()  {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text = MoviesViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text = MoviesViewModel.dateTimeLiveData.value?.data?.time
+                binding.layoutHeader.layoutWeatherTime.tvDate.text =
+                    moviesViewModel.dateTimeLiveData.value?.data?.date
+                binding.layoutHeader.layoutWeatherTime.tvTime.text =
+                    moviesViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 
             else -> {
-                status.errorCode?.let { MoviesViewModel.showToastMessage(getString(it)) }
+                status.errorCode?.let { moviesViewModel.showToastMessage(getString(it)) }
             }
         }
     }
@@ -320,6 +277,7 @@ class MoviesActivity : BaseActivity()  {
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
+
     private fun getGradient(startColor: String, endColor: String): GradientDrawable {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
@@ -334,4 +292,18 @@ class MoviesActivity : BaseActivity()  {
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
     }
+
+    private fun onMovieClick(movie: ContentDto) {
+        movieDetailFragment.setMovieDetails(movie)
+        binding.parentRecyclerView.toInvisible()
+        binding.fcvMovieDetail.toVisible()
+    }
+
+    fun gotoExoPlayerActivity(movieDetails : ContentDto){
+        val intent = Intent(this,ExoPlayerActivity ::class.java)
+        intent.putExtra(Constants.TRAILER_URL, movieDetails.trailerVideoPath)
+        startActivity(intent)
+    }
+
+
 }
