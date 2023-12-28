@@ -16,6 +16,7 @@ class ParentAdapter(
     RecyclerView.Adapter<ParentAdapter.ParentViewHolder>() {
 
         private var movieList:MutableList<List<ContentDto>> = mutableListOf()
+        var genreToDisplay: String? = null
 
     inner class ParentViewHolder(itemView:View) : RecyclerView.ViewHolder(itemView){
         val titleTv: TextView = itemView.findViewById(R.id.parentTitleTv)
@@ -24,7 +25,6 @@ class ParentAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParentViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.parent_item ,parent,false)
-        view.isFocusable = true
         return ParentViewHolder(view)
     }
 
@@ -47,10 +47,13 @@ class ParentAdapter(
         val list:MutableList<List<ContentDto>> = mutableListOf()
         map.keys.forEach{
             map[it]?.let {genre->
-                list.add(genre)
+                if (genreToDisplay == null || it == genreToDisplay) {
+                    list.add(genre)
+                }
             }
         }
         movieList = list
+
     }
 
 
