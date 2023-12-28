@@ -26,6 +26,11 @@ interface LgRestApiService {
         @Query("UA") ua: String
     ): Response<String>
 
+    @GET("content/showTimeReleases")
+    suspend fun getShowtime(
+        @Query("UA") ua: String
+    ): Response<String>
+
     @GET("hotel/theme")
     suspend fun getThemeDetails(
         @Query("UA") ua: String

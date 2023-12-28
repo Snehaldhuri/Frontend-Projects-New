@@ -22,6 +22,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -147,6 +148,9 @@ class MainMenuActivity : BaseActivity() {
                         }
                         Constants.VOD_ID -> {
                             startActivity(Intent(this, MoviesActivity::class.java))
+                        }
+                        Constants.SHOWTIMES_ID -> {
+                            startActivity(Intent(this, ShowtimeActivity::class.java))
                         }
                         else -> {
 

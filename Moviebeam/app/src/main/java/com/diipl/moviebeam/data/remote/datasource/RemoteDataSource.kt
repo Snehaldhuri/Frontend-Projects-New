@@ -5,6 +5,7 @@ import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
@@ -45,6 +46,12 @@ class RemoteDataSource @Inject constructor(
             lgRestApiService.getMovies(ua)
         }
         return ApiResponseParsing().getResponseAsObject(result.data, MoviesResponse::class)
+    }
+    suspend fun getShowtimeInfo(ua: String): ShowTimeResponse? {
+        val result = safeAPiCall {
+            lgRestApiService.getShowtime(ua)
+        }
+        return ApiResponseParsing().getResponseAsObject(result.data, ShowTimeResponse::class)
     }
     suspend fun getThemeDetails(ua: String): ThemeResponse? {
         val result = safeAPiCall {
