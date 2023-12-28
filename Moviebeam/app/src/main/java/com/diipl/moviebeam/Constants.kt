@@ -71,6 +71,16 @@ object Constants {
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
+
+    const val MOVIE_URL = "http://d3rh9vbn3pp0qe.cloudfront.net/41177_T.m2t"
+
+
+    const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
+    const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
+    const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
+    const val TRAILER_URL = "trailer_url"
+
+
     val MOVIES_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
         BtnModel(FREE_MOVIES_ID, R.drawable.video_on_demand_icon, FREE_VOD),

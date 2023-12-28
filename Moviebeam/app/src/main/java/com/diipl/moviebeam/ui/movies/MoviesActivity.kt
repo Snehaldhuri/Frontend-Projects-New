@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.movies
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -22,6 +23,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -88,7 +90,7 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 val response = moviesViewModel.moviesLiveData.value?.data
                 moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
@@ -204,9 +206,9 @@ class MoviesActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
                 moviesViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage.loadImagesWithGlideExt(
+                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
                     )
                 }
@@ -231,7 +233,7 @@ class MoviesActivity : BaseActivity() {
                 }
                 movieDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
                 moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
@@ -247,9 +249,9 @@ class MoviesActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.layoutHeader.headerWeatherTime.txtDate.text =
+                binding.layoutHeader.layoutWeatherTime.tvDate.text =
                     moviesViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.headerWeatherTime.txtTime.text =
+                binding.layoutHeader.layoutWeatherTime.tvTime.text =
                     moviesViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
@@ -294,6 +296,12 @@ class MoviesActivity : BaseActivity() {
         movieDetailFragment.setMovieDetails(movie)
         binding.parentRecyclerView.toInvisible()
         binding.fcvMovieDetail.toVisible()
+    }
+
+    fun gotoExoPlayerActivity(movieDetails : ContentDto){
+        val intent = Intent(this,ExoPlayerActivity ::class.java)
+        intent.putExtra(Constants.TRAILER_URL, movieDetails.trailerVideoPath)
+        startActivity(intent)
     }
 
 

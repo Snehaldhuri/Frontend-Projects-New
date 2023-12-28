@@ -22,21 +22,33 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ui.home.DataStoreActivity"
-            android:name=".ui.movies.MoviesActivity"
+            android:name=".ui.exoplayer.ExoPlayerActivity"
             android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity
+            android:name=".ui.home.DataStoreActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
             android:name=".ui.localattraction.LocalAttractionActivity"
             android:exported="false"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.hotelinfo.HelpInfoActivity"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
+
         <activity
-            android:name=".ui.hotelinfo.HelpInfoActivity"
+            android:name=".ui.hotelinfo.HotelInfoActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".ui.movies.MoviesActivity"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
@@ -49,13 +61,11 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
 
-            <!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
-            -->
         </activity>
         <activity
             android:name=".ui.login.LoginActivity"
@@ -70,11 +80,11 @@
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
-            <intent-filter>
+            <!--<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
+            </intent-filter>-->
         </activity>
         <activity
             android:name=".ui.splash.SplashActivity"

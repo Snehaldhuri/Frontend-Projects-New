@@ -19,12 +19,20 @@ class MovieDetailFragment : Fragment() {
     private var movie: ContentDto? = null
     private var gradient: GradientDrawable? = null
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.btnWatchTrailer.setOnClickListener {
+            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1) }
+        }
     }
 
     fun setMovieDetails(movie: ContentDto) {
