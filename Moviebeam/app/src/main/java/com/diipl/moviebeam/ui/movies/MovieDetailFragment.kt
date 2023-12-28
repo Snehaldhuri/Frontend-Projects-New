@@ -1,7 +1,7 @@
 package com.diipl.moviebeam.ui.movies
 
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,19 +17,13 @@ class MovieDetailFragment : Fragment() {
     val binding get() = _binding!!
 
     private var movie: ContentDto? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private var gradient: GradientDrawable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
-//        movie?.secImagePathPoster?.let {
-//            binding.ivMovieImage.loadImagesWithGlideExt(it)
-//        }
         return binding.root
     }
 
@@ -44,6 +38,25 @@ class MovieDetailFragment : Fragment() {
         binding.tvCast.text = movie.actor
         binding.tvDirector.text = movie.director
         binding.btnRentNow.text = getString(R.string.rent_now, movie.qos, movie.price.toString())
+        binding.btnRentNow.setOnFocusChangeListener { view, isFocused ->
+            if (isFocused) {
+                view.background = gradient
+            } else {
+                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+        binding.btnWatchTrailer.setOnFocusChangeListener { view, isFocused ->
+            if (isFocused) {
+                view.background = gradient
+            } else {
+                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+        binding.btnRentNow.requestFocus()
+    }
+
+    fun setGradient(gradient: GradientDrawable) {
+        this.gradient = gradient
     }
 
 }

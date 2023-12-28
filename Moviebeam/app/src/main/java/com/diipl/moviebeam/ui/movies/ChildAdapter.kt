@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.movies
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,15 +22,15 @@ class ChildAdapter(
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val logo: ImageView = itemView.findViewById(R.id.childLogoIv)
         val title: TextView = itemView.findViewById(R.id.childTitleTv)
+        val movieview: CardView = itemView.findViewById(R.id.cv_movie_card)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.child_item, parent, false)
         view.isFocusable = true
         view.isClickable = true
+
         view.setOnFocusChangeListener { it, hasFocus ->
-        val item = childList[position]
-        holder.title.setText("$ " + childList[position].price.toString())
             val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.1f)
             val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.1f)
 
@@ -42,26 +41,25 @@ class ChildAdapter(
             if (hasFocus) {
                 scaleAnimatorSet.start()
             } else {
-                scaleAnimatorSet?.cancel()
+                scaleAnimatorSet.cancel()
                 it.scaleX = 1.0f
                 it.scaleY = 1.0f
             }
         }
-        holder.movieview.setOnClickListener {
-            onItemClicked(item)
-        }
-
         return ChildViewHolder(view)
     }
 
-    override fun getItemCount(): Int {
-        return childList.size
-    }
+    override fun getItemCount(): Int = childList.size
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
-        holder.logo.loadImagesWithGlideExt(childList[position].secImagePathSushi)
-        holder.title.setText("$ "+ childList[position].price.toString())
+        val item = childList[position]
+        holder.logo.loadImagesWithGlideExt(item.secImagePathSushi)
+        holder.title.text =
+            holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
 
+        holder.movieview.setOnClickListener {
+            onItemClicked(item)
+        }
     }
 
 }
