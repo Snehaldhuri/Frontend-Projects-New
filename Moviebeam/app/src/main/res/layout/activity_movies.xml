@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.movies.MoviesActivity">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.052" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_95"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_16"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1685" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_29"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.29" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_75"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.8" />
+
+    <include
+        android:id="@+id/layout_header"
+        layout="@layout/item_header_layout"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_16"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
+        app:layout_constraintTop_toTopOf="parent" />\
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/menuRecyclerView"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_29"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/parentRecyclerView"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_20" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fcv_movie_detail"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_75"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_20" />
+
+    <!--    <androidx.recyclerview.widget.RecyclerView-->
+    <!--        android:id="@+id/rv_rental_movies"-->
+    <!--        android:layout_width="@dimen/dp_0"-->
+    <!--        android:layout_height="@dimen/dp_0"-->
+    <!--        android:focusable="true"-->
+    <!--        android:focusableInTouchMode="true"-->
+    <!--        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"-->
+    <!--        app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"-->
+    <!--        app:layout_constraintStart_toStartOf="@id/gl_vertical_29"-->
+    <!--        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_22" />-->
+
+    <Button
+        android:id="@+id/btn_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_bg_gradient_default"
+        android:text="Back"
+        android:textColor="@color/text_color_primary"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
+
+    <TextView
+        android:id="@+id/tv_service_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_10"
+        android:text=""
+        android:textColor="@color/text_color_primary"
+        android:textSize="@dimen/sp_25"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btn_back"
+        app:layout_constraintStart_toEndOf="@+id/gl_vertical_29" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_27"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.27" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_20"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.20" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_60"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.60" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_94"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.94" />
+
+    <RelativeLayout
+        android:id="@+id/loader_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+    </RelativeLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
