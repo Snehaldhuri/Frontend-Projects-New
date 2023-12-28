@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.movies
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,8 +14,11 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
-class ChildAdapter(private val childList: List<ContentDto>) :
-    RecyclerView.Adapter<ChildAdapter.ChildViewHolder>(){
+class ChildAdapter(
+    private val childList: List<ContentDto>,
+    private var onItemClicked: (ContentDto) -> Unit
+) :
+    RecyclerView.Adapter<ChildAdapter.ChildViewHolder>() {
 
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val logo: ImageView = itemView.findViewById(R.id.childLogoIv)
@@ -25,7 +29,7 @@ class ChildAdapter(private val childList: List<ContentDto>) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.child_item, parent, false)
         view.isFocusable = true
-
+        view.isClickable = true
         return ChildViewHolder(view)
 
     }
@@ -35,9 +39,9 @@ class ChildAdapter(private val childList: List<ContentDto>) :
     }
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
+        val item = childList[position]
         holder.logo.loadImagesWithGlideExt(childList[position].secImagePathSushi)
-        holder.title.setText("$ "+ childList[position].price.toString())
-
+        holder.title.setText("$ " + childList[position].price.toString())
 
         holder.movieview.setOnFocusChangeListener { it, hasFocus ->
             if (hasFocus) {
@@ -52,6 +56,9 @@ class ChildAdapter(private val childList: List<ContentDto>) :
                 it.scaleX = 1.0f
                 it.scaleY = 1.0f
             }
+        }
+        holder.movieview.setOnClickListener {
+            onItemClicked(item)
         }
     }
 
