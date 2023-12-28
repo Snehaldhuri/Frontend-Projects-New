@@ -14,6 +14,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityLocalAttractionBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.observe
@@ -31,6 +32,8 @@ class LocalAttractionActivity : BaseActivity() {
     private val localAttractionViewModel: LocalAttractionViewModel by viewModels()
     override fun observeViewModel() {
         observe(localAttractionViewModel.localAttractionLiveData, ::handleLAServiceResponse)
+        observe(localAttractionViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(localAttractionViewModel.dateTimeLiveData, ::handleDateTimeResponse)
     }
 
     override fun initViewBinding() {
@@ -91,6 +94,7 @@ class LocalAttractionActivity : BaseActivity() {
                     )
                     binding.laCardCarousel.adapter = cardAdapter
                 }
+
                 adapter.setItemList(response?.servicesList!!)
                 adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
                 binding.recyclerView.adapter = adapter
@@ -119,29 +123,6 @@ class LocalAttractionActivity : BaseActivity() {
                 Glide.with(this)
                     .load(localAttractionViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
                     .into(binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather)
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                localAttractionViewModel.themeLiveData.value?.data?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                localAttractionViewModel.themeLiveData.value?.data?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
-                Glide.with(this)
-                    .load(localAttractionViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.ivHotelLogo)
-                loadBg(localAttractionViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
             }
 

@@ -25,7 +25,7 @@
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_30"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.2" />
+        app:layout_constraintWidth_percent="0.22" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="@dimen/dp_0"
@@ -65,6 +65,8 @@
             android:fontFamily="@font/manrope_regular_400"
             android:text="The story of American scientist, J. Robert Oppenheimer, and his role in the development of the atomic bomb."
             android:textColor="@color/white"
+            android:maxLines="3"
+            android:ellipsize="end"
             android:textSize="@dimen/sp_18"
             app:layout_constraintBottom_toTopOf="@+id/tv_cast_title"
             app:layout_constraintEnd_toEndOf="parent"

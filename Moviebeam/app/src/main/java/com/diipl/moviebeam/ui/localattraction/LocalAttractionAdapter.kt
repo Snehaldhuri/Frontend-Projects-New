@@ -28,7 +28,6 @@ class LocalAttractionAdapter(private var onItemClicked: ((LAServices)) -> Unit) 
             LayoutInflater.from(parent.context).inflate(R.layout.hotel_info_tab, parent, false)
 
         val params = view.layoutParams
-
         params.width = getWidthInPercent(parent.context, 23)
         params.height = getHeightInPercent(parent.context, 13)
 

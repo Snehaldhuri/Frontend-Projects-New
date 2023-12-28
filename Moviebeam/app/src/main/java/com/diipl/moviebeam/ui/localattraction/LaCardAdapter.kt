@@ -35,8 +35,6 @@ class LaCardAdapter(
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.la_carousel, parent, false)
 
-        view.isClickable = true
-
         view.findViewById<CardView>(R.id.front_card).background.setTint(
             Color.parseColor(
                 defaultColor

@@ -35,6 +35,9 @@ class GuestServiceTabAdapter(
         viewType: Int
     ): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
+        val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
+        layoutParams.setMargins(0, 0, 0, 3)
+        view.layoutParams = layoutParams
         return MyViewHolder(view)
     }
 

@@ -21,10 +21,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
-        <activity
-            android:name=".ui.movies.MoviesActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+
         <activity
             android:name=".ui.localattraction.LocalAttractionActivity"
             android:exported="false"
@@ -40,7 +37,6 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
- />
         <activity
             android:name=".ui.hotelinfo.HotelInfoActivity"
             android:exported="false"
@@ -48,6 +44,12 @@
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.movies.MoviesActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+        <activity
+            android:name=".ui.exoplayer.ExoPlayerActivity"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
