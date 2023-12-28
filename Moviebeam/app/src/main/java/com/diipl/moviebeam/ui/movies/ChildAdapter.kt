@@ -19,15 +19,30 @@ class ChildAdapter(private val childList: List<ContentDto>) :
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val logo: ImageView = itemView.findViewById(R.id.childLogoIv)
         val title: TextView = itemView.findViewById(R.id.childTitleTv)
-        val movieview: CardView = itemView.findViewById(R.id.cv_movie_card)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.child_item, parent, false)
         view.isFocusable = true
 
-        return ChildViewHolder(view)
+        view.setOnFocusChangeListener { it, hasFocus ->
+            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.1f)
+            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.1f)
 
+            val scaleAnimatorSet = AnimatorSet()
+            scaleAnimatorSet.duration = 200
+            scaleAnimatorSet.playTogether(scaleX, scaleY)
+
+            if (hasFocus) {
+                scaleAnimatorSet.start()
+            } else {
+                scaleAnimatorSet?.cancel()
+                it.scaleX = 1.0f
+                it.scaleY = 1.0f
+            }
+        }
+
+        return ChildViewHolder(view)
     }
 
     override fun getItemCount(): Int {
@@ -38,21 +53,6 @@ class ChildAdapter(private val childList: List<ContentDto>) :
         holder.logo.loadImagesWithGlideExt(childList[position].secImagePathSushi)
         holder.title.setText("$ "+ childList[position].price.toString())
 
-
-        holder.movieview.setOnFocusChangeListener { it, hasFocus ->
-            if (hasFocus) {
-                val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.1f)
-                val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.1f)
-
-                val scaleAnimatorSet = AnimatorSet()
-                scaleAnimatorSet.duration = 200
-                scaleAnimatorSet.playTogether(scaleX, scaleY)
-                scaleAnimatorSet.start()
-            } else {
-                it.scaleX = 1.0f
-                it.scaleY = 1.0f
-            }
-        }
     }
 
 }

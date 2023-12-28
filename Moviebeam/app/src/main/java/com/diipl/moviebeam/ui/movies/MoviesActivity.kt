@@ -120,22 +120,36 @@ class MoviesActivity : BaseActivity()  {
                             binding.parentRecyclerView.adapter = parentAdapter
                         }
                         Constants.ADULT_DAY_PASS_ID -> {
-                        }
-                        Constants.ADULT_ID -> {
                             val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
-                            response?.premiumContentList?.forEach{
-                                if(genreMap[it.genre1] != null){
+                            response?.premiumContentList?.forEach {
+                                if (genreMap[it.genre1] != null) {
                                     genreMap[it.genre1]?.add(it)
-                                }else{
+                                } else {
                                     val movieList = mutableListOf<ContentDto>()
                                     movieList.add(it)
                                     genreMap[it.genre1] = movieList
                                 }
                             }
-                            val parentAdapter =ParentAdapter()
+                            val parentAdapter = ParentAdapter()
+                            parentAdapter.genreToDisplay = "Adult"
                             parentAdapter.setMovieList(genreMap)
                             binding.parentRecyclerView.adapter = parentAdapter
-
+                        }
+                        Constants.ADULT_ID -> {
+                            val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                            response?.premiumContentList?.forEach {
+                                if (genreMap[it.genre1] != null) {
+                                    genreMap[it.genre1]?.add(it)
+                                } else {
+                                    val movieList = mutableListOf<ContentDto>()
+                                    movieList.add(it)
+                                    genreMap[it.genre1] = movieList
+                                }
+                            }
+                            val parentAdapter = ParentAdapter()
+                            parentAdapter.genreToDisplay = "Adult"
+                            parentAdapter.setMovieList(genreMap)
+                            binding.parentRecyclerView.adapter = parentAdapter
                         }
                         else -> {
 
