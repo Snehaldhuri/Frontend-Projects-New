@@ -20,4 +20,5 @@
     //Movies
     <string name="rent_now">Rent Now %1$s 24 HRS %2$s</string>
     <string name="price_dollar">$ %1$s</string>
+    <string name="app_image">App Image</string>
 </resources>

@@ -18,6 +18,7 @@ import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
+import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
@@ -142,12 +143,19 @@ class MainMenuActivity : BaseActivity() {
                         Constants.HOTEL_SERVICES_ID -> {
                             startActivity(Intent(this, HotelInfoActivity::class.java))
                         }
+
                         Constants.LOCAL_ATTRACTION_ID -> {
                             startActivity(Intent(this, LocalAttractionActivity::class.java))
                         }
+
                         Constants.VOD_ID -> {
                             startActivity(Intent(this, MoviesActivity::class.java))
                         }
+
+                        Constants.APPS_ID -> {
+                            startActivity(Intent(this, AppWorldActivity::class.java))
+                        }
+
                         else -> {
 
                         }
