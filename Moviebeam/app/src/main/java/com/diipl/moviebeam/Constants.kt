@@ -69,6 +69,18 @@ object Constants {
     const val ADULT_DAY_PASS = "Adult Day Pass"
     const val ADULT = "Adult"
 
+    //Showtime page menu button list
+    const val ALL_SHOWS = "All Shows"
+    const val SHO_SPORTS = "SHO Sports"
+    const val SHO_SERIES = "SHO Series"
+    const val SHO_DOCS = "SHO Docs"
+
+    //Showtime page menu button Id
+    const val ALL_SHOWS_ID = "allShows"
+    const val SHO_SPORTS_ID = "shoSports"
+    const val SHO_SERIES_ID = "shoSeries"
+    const val SHO_DOCS_ID = "shoDocs"
+
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),
@@ -206,6 +218,14 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
+    val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
+        BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
+        BtnModel(SHO_SPORTS_ID, R.drawable.showtime, SHO_SPORTS),
+        BtnModel(SHO_SERIES_ID, R.drawable.showtime, SHO_SERIES),
+        BtnModel(SHO_DOCS_ID, R.drawable.showtime, SHO_DOCS),
+    )
+
+    const val FREE_MOVIE_RELEASE_TYPE_ID =1
 }
 
 const val SPLASH_DELAY = 3000

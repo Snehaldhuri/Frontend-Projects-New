@@ -11,13 +11,16 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
+import com.diipl.moviebeam.data.dto.showtime.Detail
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
-class ChildAdapter(
-    private val childList: List<ContentDto>,
-    private var onItemClicked: (ContentDto) -> Unit
+class ShowtimeChildAdapter(
+    private val childList: List<Detail>,
+    private var onItemClicked: (Detail) -> Unit
 ) :
-    RecyclerView.Adapter<ChildAdapter.ChildViewHolder>() {
+    RecyclerView.Adapter<ShowtimeChildAdapter.ChildViewHolder>() {
 
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val logo: ImageView = itemView.findViewById(R.id.childLogoIv)
@@ -54,9 +57,6 @@ class ChildAdapter(
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
         val item = childList[position]
         holder.logo.loadImagesWithGlideExt(item.secImagePathSushi)
-        holder.title.text =
-            holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
-
         holder.movieview.setOnClickListener {
             onItemClicked(item)
         }

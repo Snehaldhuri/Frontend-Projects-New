@@ -8,13 +8,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
+import com.diipl.moviebeam.data.dto.showtime.Detail
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 
-class ParentAdapter(
-    private var onItemClicked: (ContentDto) -> Unit
+class ShowtimeParentAdapter(
+    private var onItemClicked: (Detail) -> Unit
 ) :
-    RecyclerView.Adapter<ParentAdapter.ParentViewHolder>() {
+    RecyclerView.Adapter<ShowtimeParentAdapter.ParentViewHolder>() {
 
-    private var movieList: MutableList<List<ContentDto>> = mutableListOf()
+//    private var showsList: MutableList<List<ShowTimeContent>> = mutableListOf()
+    private var showsList: List<String> = emptyList()
+    private var genreMap: Map<String, List<Detail>> = emptyMap()
 
     inner class ParentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val titleTv: TextView = itemView.findViewById(R.id.parentTitleTv)
@@ -27,30 +32,25 @@ class ParentAdapter(
     }
 
     override fun getItemCount(): Int {
-        return movieList.size
+        return showsList.size
     }
 
     override fun onBindViewHolder(holder: ParentViewHolder, position: Int) {
-        val parentItem = movieList[position]
-        holder.titleTv.text = parentItem[0].genre1
+        val parentItem = showsList[position]
+        holder.titleTv.text = parentItem
 
         holder.childRecyclerView.setHasFixedSize(true)
         holder.childRecyclerView.layoutManager =
             LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
 
-        val adapter = ChildAdapter(parentItem, onItemClicked)
+        val adapter = ShowtimeChildAdapter(genreMap[parentItem] ?: emptyList(), onItemClicked)
         holder.childRecyclerView.adapter = adapter
     }
 
-    fun setMovieList(map: Map<String, List<ContentDto>>) {
-        val list: MutableList<List<ContentDto>> = mutableListOf()
-        map.keys.forEach {
-            map[it]?.let { genre ->
-                list.add(genre)
-            }
-        }
-        movieList = list
-
+    fun setShowsList(map: Map<String, List<Detail>>) {
+        showsList = map.keys.toList()
+        genreMap = map
+        notifyDataSetChanged()
     }
 
 
