@@ -8,10 +8,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toVisible
 
 class ChildAdapter(
     private val childList: List<ContentDto>,
@@ -54,8 +58,12 @@ class ChildAdapter(
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
         val item = childList[position]
         holder.logo.loadImagesWithGlideExt(item.secImagePathSushi)
-        holder.title.text =
-            holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
+        if(item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID){
+            holder.title.toInvisible()
+        }else{
+            holder.title.text =
+                holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
+        }
 
         holder.movieview.setOnClickListener {
             onItemClicked(item)

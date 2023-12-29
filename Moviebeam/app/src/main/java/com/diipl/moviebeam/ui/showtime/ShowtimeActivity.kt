@@ -17,16 +17,14 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.movies.ContentDto
-import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.movies.MovieDetailFragment
-import com.diipl.moviebeam.ui.movies.MoviesBtnAdapter
-import com.diipl.moviebeam.ui.movies.ParentAdapter
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -41,10 +39,10 @@ class ShowtimeActivity  : BaseActivity() {
     private var gradientStartColor = "#85bf08"
     private var gradientEndColor = "#0ca654"
 
-    private val list: List<BtnModel> = Constants.MOVIES_PAGE_MENU_BUTTON_LIST
+    private val list: List<BtnModel> = Constants.SHOWTIME_PAGE_MENU_BUTTON_LIST
 
     private val ShowtimeViewModel: ShowtimeViewModel by viewModels()
-    private val movieDetailFragment: MovieDetailFragment = MovieDetailFragment()
+    private val ShowtimeDetailFragment: ShowtimeDetailFragment = ShowtimeDetailFragment()
 
     override fun observeViewModel() {
         observe(ShowtimeViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -97,95 +95,82 @@ class ShowtimeActivity  : BaseActivity() {
                     binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-//                val genreMap: HashMap<String, MutableList<ShowTimeContent>> = HashMap()
-//                response?.shoContentList?.forEach {
-//                        if (genreMap[it.genre1] != null) {
-//                            genreMap[it.genre1]?.add(it)
-//                        } else {
-//                            val movieList = mutableListOf<ShowTimeContent>()
-//                            movieList.add(it)
-//                            genreMap[it.genre1] = movieList
-//                        }
-//                }
-//                val adapter = ShowtimeMenuAdapter(list) { btnId ->
-//                    binding.fcvMovieDetail.toInvisible()
-//                    binding.parentRecyclerView.toVisible()
-//                    when (btnId) {
-//
-//                        Constants.MOVIE_RENTALS_ID -> {
-//                            val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
-//
-//                            parentAdapter.setMovieList(genreMap)
-//                            binding.parentRecyclerView.adapter = parentAdapter
-//                        }
-//
-//                        Constants.FREE_MOVIES_ID -> {
-//                            val freeGenreMap: HashMap<String, MutableList<ShowTimeContent>> = HashMap()
-//                            response?.shoContentList?.forEach {
-//                                if (freeGenreMap[it.genre1] != null) {
-//                                    freeGenreMap[it.genre1]?.add(it)
-//                                } else {
-//                                    val movieList = mutableListOf<ShowTimeContent>()
-//                                    movieList.add(it)
-//                                    freeGenreMap[it.genre1] = movieList
-//                                }
-//                            }
-//                            val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
-//                            parentAdapter.setMovieList(freeGenreMap)
-//                            binding.parentRecyclerView.adapter = parentAdapter
-//                        }
-//
-//                        Constants.ADULT_DAY_PASS_ID -> {
-//                            val adultGenreMap: HashMap<String, MutableList<ShowTimeContent>> = HashMap()
-//                            response?.shoContentList?.forEach {
-//                                    if (adultGenreMap[it.genre1] != null) {
-//                                        adultGenreMap[it.genre1]?.add(it)
-//                                    } else {
-//                                        val movieList = mutableListOf<ShowTimeContent>()
-//                                        movieList.add(it)
-//                                        adultGenreMap[it.genre1] = movieList
-//                                    }
-//                            }
-//                            val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
-//                            parentAdapter.setMovieList(adultGenreMap)
-//                            binding.parentRecyclerView.adapter = parentAdapter
-//                        }
-//
-//                        Constants.ADULT_ID -> {
-//                            val adultGenreMap: HashMap<String, MutableList<ShowTimeContent>> = HashMap()
-//                            response?.shoContentList?.forEach {
-//                                if (it.genre1 == "Adult") {
-//                                    if (adultGenreMap[it.genre1] != null) {
-//                                        adultGenreMap[it.genre1]?.add(it)
-//                                    } else {
-//                                        val movieList = mutableListOf<ShowTimeContent>()
-//                                        movieList.add(it)
-//                                        adultGenreMap[it.genre1] = movieList
-//                                    }
-//                                }
-//                            }
-//                            val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
-//                            parentAdapter.setMovieList(adultGenreMap)
-//                            binding.parentRecyclerView.adapter = parentAdapter
-//                        }
-//
-//                    }
-//                }
-//                // TODO Movies Details Logic
-//                val transition = supportFragmentManager.beginTransaction()
-//                transition.replace(R.id.fcv_movie_detail, movieDetailFragment)
-//                transition.commit()
-//                binding.fcvMovieDetail.toInvisible()
-//                val parentAdapter = ParentAdapter {
-//                    movieDetailFragment.setMovieDetails(it)
-//                    binding.parentRecyclerView.toInvisible()
-//                    binding.fcvMovieDetail.toVisible()
-//                }
-////                parentAdapter.setMovieList(genreMap)
-//                binding.parentRecyclerView.adapter = parentAdapter
-//                adapter.setGradientColor(gradientStartColor, gradientEndColor)
-//                binding.menuRecyclerView.adapter = adapter
-//                binding.loaderView.toInvisible()
+                val showTimeGenreMap: Map<String, List<Detail>> = response?.shoGenreList?.associate { genre ->
+                    genre.name to genre.detailList
+                } ?: emptyMap()
+
+                val adapter = ShowtimeMenuAdapter(list) { btnId ->
+                    binding.fcvMovieDetail.toInvisible()
+                    binding.parentRecyclerView.toVisible()
+                    when (btnId) {
+
+                        Constants.ALL_SHOWS_ID -> {
+                            val showtimeParentAdapter =
+                                com.diipl.moviebeam.ui.showtime.ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+
+                            showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                            binding.parentRecyclerView.adapter = showtimeParentAdapter
+                        }
+
+                        Constants.SHO_SPORTS_ID -> {
+                            val shoSportsGenre = response?.shoGenreList?.find { it.name == "SHO Sports" }
+
+                            val showTimeGenreMap: Map<String, List<Detail>> = shoSportsGenre?.let {
+                                mapOf(it.name to it.detailList)
+                            } ?: emptyMap()
+
+                            val showtimeParentAdapter =
+                                com.diipl.moviebeam.ui.showtime.ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+
+                            showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                            binding.parentRecyclerView.adapter = showtimeParentAdapter
+
+                        }
+
+                        Constants.SHO_SERIES_ID -> {
+                            val shoSportsGenre = response?.shoGenreList?.find { it.name == "SHO Series" }
+
+                            val showTimeGenreMap: Map<String, List<Detail>> = shoSportsGenre?.let {
+                                mapOf(it.name to it.detailList)
+                            } ?: emptyMap()
+
+                            val showtimeParentAdapter =
+                                com.diipl.moviebeam.ui.showtime.ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+
+                            showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                            binding.parentRecyclerView.adapter = showtimeParentAdapter
+                        }
+
+                        Constants.SHO_DOCS_ID -> {
+                            val shoSportsGenre = response?.shoGenreList?.find { it.name == "SHO Docs" }
+
+                            val showTimeGenreMap: Map<String, List<Detail>> = shoSportsGenre?.let {
+                                mapOf(it.name to it.detailList)
+                            } ?: emptyMap()
+
+                            val showtimeParentAdapter =
+                                com.diipl.moviebeam.ui.showtime.ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+
+                            showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                            binding.parentRecyclerView.adapter = showtimeParentAdapter
+                        }
+
+                    }
+                }
+                val transition = supportFragmentManager.beginTransaction()
+                transition.replace(R.id.fcv_movie_detail, ShowtimeDetailFragment)
+                transition.commit()
+                binding.fcvMovieDetail.toInvisible()
+                val showtimeParentAdapter = ShowtimeParentAdapter {
+                    ShowtimeDetailFragment.setShowDetails(it)
+                    binding.parentRecyclerView.toInvisible()
+                    binding.fcvMovieDetail.toVisible()
+                }
+                showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                binding.parentRecyclerView.adapter = showtimeParentAdapter
+                adapter.setGradientColor(gradientStartColor, gradientEndColor)
+                binding.menuRecyclerView.adapter = adapter
+                binding.loaderView.toInvisible()
             }
 
             else -> {
@@ -224,8 +209,8 @@ class ShowtimeActivity  : BaseActivity() {
         return gradientDrawable
     }
 
-    private fun onMovieClick(movie: ShowTimeContent) {
-//        movieDetailFragment.setMovieDetails(movie)
+    private fun onShowsClick(shows: Detail) {
+        ShowtimeDetailFragment.setShowDetails(shows)
         binding.parentRecyclerView.toInvisible()
         binding.fcvMovieDetail.toVisible()
     }
@@ -266,7 +251,7 @@ class ShowtimeActivity  : BaseActivity() {
                 ShowtimeViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                movieDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
+                ShowtimeDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
                 ShowtimeViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
                     binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
                 }
@@ -297,3 +282,5 @@ class ShowtimeActivity  : BaseActivity() {
         }
     }
 }
+
+
