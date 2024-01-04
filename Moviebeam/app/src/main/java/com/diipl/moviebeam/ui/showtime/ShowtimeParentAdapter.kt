@@ -13,7 +13,7 @@ import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 
 class ShowtimeParentAdapter(
-    private var onItemClicked: (Detail) -> Unit
+    private var onItemClicked: (Detail,Int) -> Unit
 ) :
     RecyclerView.Adapter<ShowtimeParentAdapter.ParentViewHolder>() {
 

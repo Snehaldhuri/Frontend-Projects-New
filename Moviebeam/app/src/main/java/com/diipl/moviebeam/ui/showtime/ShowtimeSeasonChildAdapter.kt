@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.showtime
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,26 +11,27 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.showtime.Detail
+import com.diipl.moviebeam.data.dto.showtime.Season
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
-class ShowtimeChildAdapter(
-    private val childList: List<Detail>,
-    private var onItemClicked: (Detail,Int) -> Unit
-) :
-    RecyclerView.Adapter<ShowtimeChildAdapter.ChildViewHolder>() {
+class ShowtimeSeasonChildAdapter(
+    private val onItemClicked: (ShowTimeContent) -> Unit
+) : RecyclerView.Adapter<ShowtimeSeasonChildAdapter.ChildViewHolder>() {
+
+    private var seasonDet: List<Detail> = emptyList()
 
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val logo: ImageView = itemView.findViewById(R.id.childLogoIv)
-        val title: TextView = itemView.findViewById(R.id.childTitleTv)
-        val movieview: CardView = itemView.findViewById(R.id.cv_movie_card)
+        val seasonImage: ImageView = itemView.findViewById(R.id.iv_season_image)
+        val seasonTitle: TextView = itemView.findViewById(R.id.tv_season_name)
+        val seasonDetail: TextView = itemView.findViewById(R.id.tv_season_detail)
+        val movieview: CardView = itemView.findViewById(R.id.cv_season_movie_card)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.child_item, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.seasonlist_item, parent, false)
         view.isFocusable = true
         view.isClickable = true
 
@@ -52,14 +54,27 @@ class ShowtimeChildAdapter(
         return ChildViewHolder(view)
     }
 
-    override fun getItemCount(): Int = childList.size
+    override fun getItemCount(): Int = seasonDet.size
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
-        val item = childList[position]
-        holder.logo.loadImagesWithGlideExt(item.secImagePathSushi)
-        holder.movieview.setOnClickListener {
-            onItemClicked(item,item.releaseId)
+
+        val detail = seasonDet.get(position)
+        if (detail != null) {
+            holder.seasonImage.loadImagesWithGlideExt(detail.secImagePathSushi)
         }
+        holder.seasonTitle.text = detail?.episodeHeaderDetails
+        holder.seasonDetail.text = detail?.synopsis
+
+//                    holder.movieview.setOnClickListener {
+//                        onItemClicked(detail)
+//                    }
+
+    }
+
+    fun updateSeasons(newSeasons: List<Detail>) {
+        this.seasonDet = newSeasons
+        notifyDataSetChanged()
     }
 
 }
+

@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.showtime
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.icu.text.Transliterator.Position
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
@@ -16,15 +17,13 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.hotelinfo.HotelServiceInfoFragment
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -43,6 +42,7 @@ class ShowtimeActivity  : BaseActivity() {
 
     private val ShowtimeViewModel: ShowtimeViewModel by viewModels()
     private val ShowtimeDetailFragment: ShowtimeDetailFragment = ShowtimeDetailFragment()
+    private val ShowtimeSeasonFragment: ShowtimeSeasonFragment = ShowtimeSeasonFragment()
 
     override fun observeViewModel() {
         observe(ShowtimeViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -106,7 +106,7 @@ class ShowtimeActivity  : BaseActivity() {
 
                         Constants.ALL_SHOWS_ID -> {
                             val showtimeParentAdapter =
-                                com.diipl.moviebeam.ui.showtime.ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
 
                             showtimeParentAdapter.setShowsList(showTimeGenreMap)
                             binding.parentRecyclerView.adapter = showtimeParentAdapter
@@ -120,7 +120,7 @@ class ShowtimeActivity  : BaseActivity() {
                             } ?: emptyMap()
 
                             val showtimeParentAdapter =
-                                com.diipl.moviebeam.ui.showtime.ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
 
                             showtimeParentAdapter.setShowsList(showTimeGenreMap)
                             binding.parentRecyclerView.adapter = showtimeParentAdapter
@@ -135,7 +135,7 @@ class ShowtimeActivity  : BaseActivity() {
                             } ?: emptyMap()
 
                             val showtimeParentAdapter =
-                                com.diipl.moviebeam.ui.showtime.ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
 
                             showtimeParentAdapter.setShowsList(showTimeGenreMap)
                             binding.parentRecyclerView.adapter = showtimeParentAdapter
@@ -149,7 +149,7 @@ class ShowtimeActivity  : BaseActivity() {
                             } ?: emptyMap()
 
                             val showtimeParentAdapter =
-                                com.diipl.moviebeam.ui.showtime.ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
 
                             showtimeParentAdapter.setShowsList(showTimeGenreMap)
                             binding.parentRecyclerView.adapter = showtimeParentAdapter
@@ -157,14 +157,53 @@ class ShowtimeActivity  : BaseActivity() {
 
                     }
                 }
-                val transition = supportFragmentManager.beginTransaction()
-                transition.replace(R.id.fcv_movie_detail, ShowtimeDetailFragment)
-                transition.commit()
+                val transaction = supportFragmentManager.beginTransaction()
+                transaction.replace(R.id.fcv_movie_detail, ShowtimeDetailFragment)
+                transaction.replace(R.id.fcv_movie_detail, ShowtimeSeasonFragment)
+                transaction.commit()
                 binding.fcvMovieDetail.toInvisible()
-                val showtimeParentAdapter = ShowtimeParentAdapter {
-                    ShowtimeDetailFragment.setShowDetails(it)
+
+//                val transaction = supportFragmentManager.beginTransaction()
+
+                val showtimeParentAdapter = ShowtimeParentAdapter {it,pos ->
+                    if (it.episodesPresent==true) {
+
+                        val bundle = Bundle()
+                        bundle.putInt("movieReleaseId", it.releaseId)
+                        val fragment = ShowtimeSeasonFragment()
+                        fragment.arguments = bundle
+                        transaction.replace(R.id.fcv_movie_detail, fragment)
+                        transaction.addToBackStack(null)
+//                        transaction.commit()
+
+                        var detailsGenre = response?.shoContentList?.find { showtimeContent ->
+                            showtimeContent.releaseId == it.releaseId
+                        }
+                       /* val transition = supportFragmentManager.beginTransaction()
+                        transition.replace(R.id.fcv_movie_detail, ShowtimeSeasonFragment)
+                        detailsGenre?.let { it1 -> ShowtimeSeasonFragment.setShowDetails(it1)
+                            ShowtimeSeasonFragment.setAirportList(it1.seasonList)
+                        }
+                        transition.commit()*/
+
+                    }
+                    else{
+
+                        val bundle = Bundle()
+                        bundle.putInt("movieReleaseId", it.releaseId)
+                        val fragment = ShowtimeDetailFragment()
+                        fragment.arguments = bundle
+                        transaction.replace(R.id.fcv_movie_detail, fragment)
+//                        transaction.commit()
+                       /* val transition = supportFragmentManager.beginTransaction()
+                        transition.replace(R.id.fcv_movie_detail, ShowtimeDetailFragment)
+                        ShowtimeDetailFragment.setShowDetails(it)
+                        transition.commit()*/
+                    }
                     binding.parentRecyclerView.toInvisible()
                     binding.fcvMovieDetail.toVisible()
+//                    transaction.commit()
+
                 }
                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                 binding.parentRecyclerView.adapter = showtimeParentAdapter
@@ -209,7 +248,7 @@ class ShowtimeActivity  : BaseActivity() {
         return gradientDrawable
     }
 
-    private fun onShowsClick(shows: Detail) {
+    private fun onShowsClick(shows: Detail,position: Int) {
         ShowtimeDetailFragment.setShowDetails(shows)
         binding.parentRecyclerView.toInvisible()
         binding.fcvMovieDetail.toVisible()
