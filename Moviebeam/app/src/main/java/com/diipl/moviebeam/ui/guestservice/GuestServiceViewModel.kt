@@ -5,11 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
@@ -37,9 +35,9 @@ class GuestServiceViewModel @Inject constructor(
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
     init {
-        val ua = "17205KKXLKF626"
+        val ua = Constants.UA
         fetchThemeDetails(ua)
-        fetchAccountSetupDetails("ACTIVATE", "14508KKMH0K299", "JSON")
+        fetchAccountSetupDetails(Constants.ACTIVATE, ua, Constants.MODE)
         fetchWeatherData(ua)
         fetchDateTime(ua)
     }
@@ -61,7 +59,7 @@ class GuestServiceViewModel @Inject constructor(
             _themeLiveData.postValue(Resource.Loading())
             val response = movieBeamRepository.getThemeDetails(ua)
             if (response == null) {
-                _themeLiveData.postValue(Resource.DataError(code = R.string.server_error))
+                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
                 _themeLiveData.postValue(Resource.Success(response))
             }
@@ -85,7 +83,7 @@ class GuestServiceViewModel @Inject constructor(
             _dateTimeLiveData.postValue(Resource.Loading())
             val response = movieBeamRepository.getDateTimeData(ua)
             if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(code = R.string.server_error))
+                _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
                 _dateTimeLiveData.postValue(Resource.Success(response))
             }

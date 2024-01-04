@@ -7,6 +7,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
+import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -29,19 +30,29 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MoviesActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMoviesBinding
 
-    private var gradientStartColor = "#85bf08"
-    private var gradientEndColor = "#0ca654"
+    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
     private val list: List<BtnModel> = Constants.MOVIES_PAGE_MENU_BUTTON_LIST
 
     private val moviesViewModel: MoviesViewModel by viewModels()
     private val movieDetailFragment: MovieDetailFragment = MovieDetailFragment()
+
+    @Inject
+    lateinit var themeDataStore: DataStore<ThemeResponse>
+
+    @Inject
+    lateinit var weatherDataStore: DataStore<WeatherResponse>
+
+    @Inject
+    lateinit var moviesDataStore : DataStore<MoviesResponse>
 
     override fun observeViewModel() {
         observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -59,6 +70,12 @@ class MoviesActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // call below function to get data from datastore
+
+        moviesViewModel.getThemeResponseData(themeDataStore)
+        moviesViewModel.getWeatherResponseData(weatherDataStore)
+        moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
 
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
@@ -207,7 +224,8 @@ class MoviesActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+                    temperature
                 moviesViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
@@ -299,8 +317,8 @@ class MoviesActivity : BaseActivity() {
         binding.fcvMovieDetail.toVisible()
     }
 
-    fun gotoExoPlayerActivity(movieDetails : ContentDto){
-        val intent = Intent(this,ExoPlayerActivity ::class.java)
+    fun gotoExoPlayerActivity(movieDetails: ContentDto) {
+        val intent = Intent(this, ExoPlayerActivity::class.java)
         intent.putExtra(Constants.TRAILER_URL, movieDetails.trailerVideoPath)
         startActivity(intent)
     }

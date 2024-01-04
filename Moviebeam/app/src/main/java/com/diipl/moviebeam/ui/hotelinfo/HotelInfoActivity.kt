@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -14,6 +15,7 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
@@ -30,6 +32,8 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HotelInfoActivity : BaseActivity() {
@@ -37,8 +41,21 @@ class HotelInfoActivity : BaseActivity() {
     private lateinit var binding: ActivityHotelInfoBinding
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
-    private var isHelpinfoScreen = false
-    private var helpinfoPosition = 0
+
+    @Inject
+    lateinit var themeDataStore: DataStore<ThemeResponse>
+
+    @Inject
+    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
+
+    @Inject
+    lateinit var dateTimeDataStore: DataStore<DateTimeResponse>
+
+    @Inject
+    lateinit var weatherDataStore: DataStore<WeatherResponse>
+
+    @Inject
+    lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
@@ -57,6 +74,17 @@ class HotelInfoActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // fetch data from dataStore
+        hotelInfoViewModel.getThemeResponseData(themeDataStore)
+        hotelInfoViewModel.getWeatherResponseData(weatherDataStore)
+        hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
+
+        // check hotel logo image available from local storage
+        //   checkHotelLogoImageAvailableLocally()
+
+
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
                 binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
@@ -69,6 +97,27 @@ class HotelInfoActivity : BaseActivity() {
         }
         binding.rvHotelInfoHeader.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+    }
+
+    private fun checkHotelLogoImageAvailableLocally() {
+        val hotelLogoImageFile =
+            File(getExternalFilesDir(null), Constants.THEME_DIRECTORY + "/" + Constants.HOTEL_LOGO)
+        val backgroundImageFile = File(
+            getExternalFilesDir(null),
+            Constants.THEME_DIRECTORY + "/" + Constants.BACKGROUND_IMAGE
+        )
+
+        if (hotelLogoImageFile.exists()) {
+            // Load the image from local storage using Glide
+            Glide.with(this)
+                .load(hotelLogoImageFile)
+                .into(binding.layoutHeader.ivHotelLogo)
+        }
+
+        if (backgroundImageFile.exists()) {
+            // Load the image from local storage using Glide
+            loadBgImageFromLocalStorage(backgroundImageFile)
+        }
     }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
@@ -184,7 +233,6 @@ class HotelInfoActivity : BaseActivity() {
                     onHelpInfoTabClick = { it, pos, view ->
                         val fragment = HelpInfoFragment() {
                             if (it) {
-                                isHelpinfoScreen = false
                                 binding.fragmentContainerCarousel.toVisible()
                                 binding.rvHotelInfoHeader.toVisible()
                                 binding.tvHeaderTitle.toVisible()
@@ -282,6 +330,26 @@ class HotelInfoActivity : BaseActivity() {
                 }
 
                 override fun onLoadCleared(placeholder: Drawable?) {}
+            })
+
+    }
+
+    private fun loadBgImageFromLocalStorage(filename: File) {
+        Glide.with(this)
+            .load(filename)
+            .into(object : CustomTarget<Drawable>() {
+
+                override fun onResourceReady(
+                    resource: Drawable,
+                    transition: Transition<in Drawable>?
+                ) {
+                    resource.alpha = 120
+                    binding.root.background = resource
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+
+                }
             })
     }
 

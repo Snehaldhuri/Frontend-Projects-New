@@ -8,6 +8,10 @@ import androidx.datastore.core.Serializer
 import androidx.datastore.dataStoreFile
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import dagger.Module
@@ -29,7 +33,10 @@ private const val THEME_RESPONSE_DATA_STORE_FILE_NAME = "theme_response_prefs.pb
 private const val ACCOUNT_SETUP_DATA_STORE_FILE_NAME = "account_setup_prefs.pb"
 private const val WEATHER_DATA_STORE_FILE_NAME = "weather_new_prefs.pb"
 private const val DATE_TIME_DATA_STORE_FILE_NAME = "date_time_prefs.pb"
-
+private const val HOTEL_SERVICE_DATA_STORE_FILE_NAME = "hotel_service_prefs.pb"
+private const val LOCAL_ATTRACTION_DATA_STORE_FILE_NAME = "local_attraction_prefs.pb"
+private const val MOVIES__DATA_STORE_FILE_NAME = "movies_prefs.pb"
+private const val SHOWTIME__DATA_STORE_FILE_NAME = "showtime_prefs.pb"
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -86,6 +93,58 @@ object DataStoreModule {
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
+
+    @Singleton
+    @Provides
+    fun provideHotelServiceDataStore(@ApplicationContext appContext: Context): DataStore<HotelServiceResponse> {
+        return DataStoreFactory.create(
+            serializer = HotelServiceSerializer(),
+            produceFile = { appContext.dataStoreFile(HOTEL_SERVICE_DATA_STORE_FILE_NAME) },
+            corruptionHandler = null,
+            migrations = listOf(
+            ),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideLocalAttractionDataStore(@ApplicationContext appContext: Context): DataStore<LocalAttractionResponse> {
+        return DataStoreFactory.create(
+            serializer = LocalAttractionSerializer(),
+            produceFile = { appContext.dataStoreFile(LOCAL_ATTRACTION_DATA_STORE_FILE_NAME) },
+            corruptionHandler = null,
+            migrations = listOf(
+            ),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideMoviesDataStore(@ApplicationContext appContext: Context): DataStore<MoviesResponse> {
+        return DataStoreFactory.create(
+            serializer = MoviesSerializer(),
+            produceFile = { appContext.dataStoreFile(MOVIES__DATA_STORE_FILE_NAME) },
+            corruptionHandler = null,
+            migrations = listOf(
+            ),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideShowTimeDataStore(@ApplicationContext appContext: Context): DataStore<ShowTimeResponse> {
+        return DataStoreFactory.create(
+            serializer = ShowTimeSerializer(),
+            produceFile = { appContext.dataStoreFile(SHOWTIME__DATA_STORE_FILE_NAME) },
+            corruptionHandler = null,
+            migrations = listOf(
+            ),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
 }
 
 @Singleton
@@ -116,7 +175,10 @@ class AccountSetupSerializer @Inject constructor() : Serializer<AccountSetupResp
 
     override suspend fun readFrom(input: InputStream): AccountSetupResponse =
         try {
-            Json.decodeFromString(AccountSetupResponse.serializer(), input.readBytes().decodeToString())
+            Json.decodeFromString(
+                AccountSetupResponse.serializer(),
+                input.readBytes().decodeToString()
+            )
         } catch (serialization: SerializationException) {
             throw CorruptionException("Unable to read Settings", serialization)
         }
@@ -164,6 +226,98 @@ class DateTimeSerializer @Inject constructor() : Serializer<DateTimeResponse> {
     override suspend fun writeTo(t: DateTimeResponse, output: OutputStream) {
         output.write(
             Json.encodeToString(DateTimeResponse.serializer(), t)
+                .encodeToByteArray()
+        )
+    }
+}
+
+@Singleton
+class HotelServiceSerializer @Inject constructor() : Serializer<HotelServiceResponse> {
+    override val defaultValue: HotelServiceResponse
+        get() = HotelServiceResponse()
+
+    override suspend fun readFrom(input: InputStream): HotelServiceResponse =
+        try {
+            Json.decodeFromString(
+                HotelServiceResponse.serializer(),
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read Settings", serialization)
+        }
+
+    override suspend fun writeTo(t: HotelServiceResponse, output: OutputStream) {
+        output.write(
+            Json.encodeToString(HotelServiceResponse.serializer(), t)
+                .encodeToByteArray()
+        )
+    }
+}
+
+@Singleton
+class LocalAttractionSerializer @Inject constructor() : Serializer<LocalAttractionResponse> {
+    override val defaultValue: LocalAttractionResponse
+        get() = LocalAttractionResponse()
+
+    override suspend fun readFrom(input: InputStream): LocalAttractionResponse =
+        try {
+            Json.decodeFromString(
+                LocalAttractionResponse.serializer(),
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read Settings", serialization)
+        }
+
+    override suspend fun writeTo(t: LocalAttractionResponse, output: OutputStream) {
+        output.write(
+            Json.encodeToString(LocalAttractionResponse.serializer(), t)
+                .encodeToByteArray()
+        )
+    }
+}
+
+@Singleton
+class MoviesSerializer @Inject constructor() : Serializer<MoviesResponse> {
+    override val defaultValue: MoviesResponse
+        get() = MoviesResponse()
+
+    override suspend fun readFrom(input: InputStream): MoviesResponse =
+        try {
+            Json.decodeFromString(
+                MoviesResponse.serializer(),
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read Settings", serialization)
+        }
+
+    override suspend fun writeTo(t: MoviesResponse, output: OutputStream) {
+        output.write(
+            Json.encodeToString(MoviesResponse.serializer(), t)
+                .encodeToByteArray()
+        )
+    }
+}
+
+@Singleton
+class ShowTimeSerializer @Inject constructor() : Serializer<ShowTimeResponse> {
+    override val defaultValue: ShowTimeResponse
+        get() = ShowTimeResponse()
+
+    override suspend fun readFrom(input: InputStream): ShowTimeResponse =
+        try {
+            Json.decodeFromString(
+                ShowTimeResponse.serializer(),
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read Settings", serialization)
+        }
+
+    override suspend fun writeTo(t: ShowTimeResponse, output: OutputStream) {
+        output.write(
+            Json.encodeToString(ShowTimeResponse.serializer(), t)
                 .encodeToByteArray()
         )
     }

@@ -219,7 +219,9 @@ class GuestServiceActivity : BaseActivity() {
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent
                             val transaction = supportFragmentManager.beginTransaction()
-                            val fragment = NewsFragment()
+                            val fragment = NewsFragment{
+                                view.requestFocus()
+                            }
                             fragment.setGradientColor(gradientStartColor, gradientEndColor)
                             transaction.replace(R.id.fv_tab_content, fragment)
                             transaction.commit()

@@ -37,7 +37,7 @@ class FlightStatusFragment(
     private var isDep = true
     private var callType = Constants.DEPARTURE
     private var apCode = ""
-    private var ua = "17205KKXLKF626"
+    private var ua = Constants.UA
 
     private var gradientButton: GradientDrawable? = null
     private var gradientTable: GradientDrawable? = null

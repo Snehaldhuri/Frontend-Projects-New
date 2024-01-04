@@ -14,7 +14,6 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityHomeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showToast
@@ -51,7 +50,7 @@ class HomeActivity : BaseActivity() {
 
         binding.btnGoToDataStoreActivity.setOnClickListener {
 
-            startActivity(Intent(this,ExoPlayerActivity::class.java))
+            startActivity(Intent(this,DataStoreActivity::class.java))
         }
     }
 

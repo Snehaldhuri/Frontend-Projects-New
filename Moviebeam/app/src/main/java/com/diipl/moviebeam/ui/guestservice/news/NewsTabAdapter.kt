@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.guestservice.news
 
 import android.graphics.drawable.GradientDrawable
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -9,7 +10,8 @@ import com.diipl.moviebeam.data.dto.news.News
 import com.diipl.moviebeam.databinding.CardNewsBinding
 
 class NewsTabAdapter(
-    private var onMenuItemFocused: (News) -> Unit
+    private var onMenuItemFocused: (News) -> Unit,
+    private val onLeftKeyPressed: () -> Unit
 ) : RecyclerView.Adapter<NewsTabAdapter.MyViewHolder>() {
 
     private var newsList: List<News> = emptyList()
@@ -21,6 +23,16 @@ class NewsTabAdapter(
         val binding = CardNewsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
+        binding.root.setOnKeyListener { _, keycode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keycode) {
+                    KeyEvent.KEYCODE_DPAD_LEFT ->{
+                        onLeftKeyPressed()
+                    }
+                }
+            }
+            false
+        }
         return MyViewHolder(binding)
     }
 

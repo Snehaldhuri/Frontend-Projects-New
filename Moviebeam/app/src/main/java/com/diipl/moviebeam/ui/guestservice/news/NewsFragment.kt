@@ -17,7 +17,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 
-class NewsFragment : BaseFragment() {
+class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
 
     private var _binding: FragmentNewsBinding? = null
     val binding get() = _binding!!
@@ -25,6 +25,8 @@ class NewsFragment : BaseFragment() {
 
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null
+
+    private var newsHeaderPosition : Int =0
 
     override fun observeViewModel() {
         observe(newsViewModel.newsHeaderLiveData, ::handleNewsHeaderResponse)
@@ -41,9 +43,13 @@ class NewsFragment : BaseFragment() {
             is Resource.Success -> {
                 val newsHeaderDetails = newsViewModel.newsHeaderLiveData.value?.data
                 binding.rvNewsHeader.layoutManager = LinearLayoutManager(context)
-                val adapter = NewsHeaderTabAdapter {
-                    newsViewModel.fetchNewsDetails(it.id)
-                }
+                val adapter = NewsHeaderTabAdapter(
+                    onMenuItemClicked = { it, view,pos ->
+                        newsViewModel.fetchNewsDetails(it.id)
+                        newsHeaderPosition = pos
+                    },
+                    onLeftKeyPressed = onLeftKeyPressed
+                )
                 newsHeaderDetails?.newsHeaderList?.let {
                     adapter.setNewsHeaderList(it)
                 }
@@ -67,11 +73,13 @@ class NewsFragment : BaseFragment() {
             is Resource.Success -> {
                 val newsDetails = newsViewModel.newsLiveData.value?.data
                 binding.rvNews.layoutManager = LinearLayoutManager(context)
-                val adapter = NewsTabAdapter {
+                val adapter = NewsTabAdapter(onMenuItemFocused = {
                     binding.tvTitle.text = it.title
                     binding.tvDescription.text = it.description
                     binding.tvPublishDate.text = it.publishDate
-                }
+                }, onLeftKeyPressed = {
+                    binding.rvNewsHeader.layoutManager?.scrollToPosition(newsHeaderPosition)
+                })
                 newsDetails?.newsList?.let {
                     adapter.setNewsList(it)
                 }

@@ -20,6 +20,13 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
+    const val UA = "14508KKMH0K299"
+    const val ACCOUNTID = 7107
+    const val ACTIVATE = "ACTIVATE"
+    const val MODE = "JSON"
+    const val THEME_DIRECTORY = "ThemeImages"
+    const val HOTEL_LOGO = "HotelLogo.jpg"
+    const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
 
     const val ASSET = "ASSET"
 
@@ -119,18 +126,48 @@ object Constants {
 
     val GUEST_SERVICE_BUTTON_LIST = listOf(
         GsBtnModel(WEATHER_ID, WEATHER, R.drawable.weather, R.drawable.weather_black),
-        GsBtnModel(FLIGHT_STATUS_ID, FLIGHT_STATUS, R.drawable.flight_status, R.drawable.flight_status_black),
+        GsBtnModel(
+            FLIGHT_STATUS_ID,
+            FLIGHT_STATUS,
+            R.drawable.flight_status,
+            R.drawable.flight_status_black
+        ),
         GsBtnModel(NEWS_ID, NEWS, R.drawable.news, R.drawable.news_black),
         GsBtnModel(LA_ID, LA, R.drawable.local_attractions, R.drawable.local_attractions_black),
 
-        GsBtnModel(EXPRESS_CHECKOUT_ID, EXPRESS_CHECKOUT, R.drawable.express_checkout, R.drawable.express_checkout_black),
+        GsBtnModel(
+            EXPRESS_CHECKOUT_ID,
+            EXPRESS_CHECKOUT,
+            R.drawable.express_checkout,
+            R.drawable.express_checkout_black
+        ),
 
-        GsBtnModel(GUEST_FEEDBACK_ID, GUEST_FEEDBACK, R.drawable.guest_feedback, R.drawable.guest_feedback_black),
+        GsBtnModel(
+            GUEST_FEEDBACK_ID,
+            GUEST_FEEDBACK,
+            R.drawable.guest_feedback,
+            R.drawable.guest_feedback_black
+        ),
         GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black),
         GsBtnModel(CONCIERGE_ID, CONCIERGE, R.drawable.concierge, R.drawable.concierge_black),
-        GsBtnModel(FOOD_DELIVERY_ID, FOOD_DELIVERY, R.drawable.food_delivery_gs, R.drawable.weather_black),
-        GsBtnModel(IN_ROOM_DINING_ID, IN_ROOM_DINING, R.drawable.in_room_dining1, R.drawable.in_room_dining1_black),
-        GsBtnModel(TV_ON_OFF_ID, TV_ON_OFF, R.drawable.tv_on_off_timer, R.drawable.tv_on_off_timer_black)
+        GsBtnModel(
+            FOOD_DELIVERY_ID,
+            FOOD_DELIVERY,
+            R.drawable.food_delivery_gs,
+            R.drawable.weather_black
+        ),
+        GsBtnModel(
+            IN_ROOM_DINING_ID,
+            IN_ROOM_DINING,
+            R.drawable.in_room_dining1,
+            R.drawable.in_room_dining1_black
+        ),
+        GsBtnModel(
+            TV_ON_OFF_ID,
+            TV_ON_OFF,
+            R.drawable.tv_on_off_timer,
+            R.drawable.tv_on_off_timer_black
+        )
     )
 
     //Concierge category name

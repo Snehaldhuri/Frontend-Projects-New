@@ -13,6 +13,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -50,7 +51,9 @@ class DataStoreViewModel @Inject constructor(): ViewModel() {
 
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.data.collect {
+            dataStore.data.catch {
+                _weatherDataStore.postValue(Resource.DataError(it.toString()))
+            }.collect {
                 _weatherDataStore.postValue(Resource.Success(it))
             }
         }
