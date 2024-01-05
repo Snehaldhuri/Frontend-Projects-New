@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.showtime
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +11,6 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.data.dto.showtime.Season
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
@@ -65,10 +63,9 @@ class ShowtimeSeasonChildAdapter(
         holder.seasonTitle.text = detail?.episodeHeaderDetails
         holder.seasonDetail.text = detail?.synopsis
 
-//                    holder.movieview.setOnClickListener {
-//                        onItemClicked(detail)
-//                    }
-
+//        holder.movieview.setOnClickListener {
+//            onItemClicked(detail)
+//        }
     }
 
     fun updateSeasons(newSeasons: List<Detail>) {

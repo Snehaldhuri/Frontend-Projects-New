@@ -32,7 +32,6 @@ class ShowtimeMenuAdapter(
         layoutParams.setMargins(0, 0, 0, 3)
         view.layoutParams = layoutParams
         return MyViewHolder(view)
-
     }
 
     override fun onBindViewHolder(holder: ShowtimeMenuAdapter.MyViewHolder, position: Int) {
@@ -54,11 +53,9 @@ class ShowtimeMenuAdapter(
 
         }
     }
-
     override fun getItemCount(): Int =  itemList.size
 
     private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
-
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -73,7 +70,6 @@ class ShowtimeMenuAdapter(
 
         cardView.background = gradientDrawable
     }
-
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor
         this.endColor = endColor

@@ -3,7 +3,6 @@ package com.diipl.moviebeam.ui.showtime
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
-import android.icu.text.Transliterator.Position
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
@@ -23,7 +22,6 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.hotelinfo.HotelServiceInfoFragment
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -42,7 +40,6 @@ class ShowtimeActivity  : BaseActivity() {
 
     private val ShowtimeViewModel: ShowtimeViewModel by viewModels()
     private val ShowtimeDetailFragment: ShowtimeDetailFragment = ShowtimeDetailFragment()
-    private val ShowtimeSeasonFragment: ShowtimeSeasonFragment = ShowtimeSeasonFragment()
 
     override fun observeViewModel() {
         observe(ShowtimeViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -50,13 +47,11 @@ class ShowtimeActivity  : BaseActivity() {
         observe(ShowtimeViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(ShowtimeViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
     }
-
     override fun initViewBinding() {
         binding = ActivityShowtimeBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -83,8 +78,6 @@ class ShowtimeActivity  : BaseActivity() {
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
-
-
     }
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
@@ -103,7 +96,6 @@ class ShowtimeActivity  : BaseActivity() {
                     binding.fcvMovieDetail.toInvisible()
                     binding.parentRecyclerView.toVisible()
                     when (btnId) {
-
                         Constants.ALL_SHOWS_ID -> {
                             val showtimeParentAdapter =
                                 ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
@@ -124,7 +116,6 @@ class ShowtimeActivity  : BaseActivity() {
 
                             showtimeParentAdapter.setShowsList(showTimeGenreMap)
                             binding.parentRecyclerView.adapter = showtimeParentAdapter
-
                         }
 
                         Constants.SHO_SERIES_ID -> {
@@ -154,18 +145,12 @@ class ShowtimeActivity  : BaseActivity() {
                             showtimeParentAdapter.setShowsList(showTimeGenreMap)
                             binding.parentRecyclerView.adapter = showtimeParentAdapter
                         }
-
                     }
                 }
-                val transaction = supportFragmentManager.beginTransaction()
-                transaction.replace(R.id.fcv_movie_detail, ShowtimeDetailFragment)
-                transaction.replace(R.id.fcv_movie_detail, ShowtimeSeasonFragment)
-                transaction.commit()
                 binding.fcvMovieDetail.toInvisible()
 
-//                val transaction = supportFragmentManager.beginTransaction()
-
                 val showtimeParentAdapter = ShowtimeParentAdapter {it,pos ->
+                    val transaction = supportFragmentManager.beginTransaction()
                     if (it.episodesPresent==true) {
 
                         val bundle = Bundle()
@@ -173,37 +158,17 @@ class ShowtimeActivity  : BaseActivity() {
                         val fragment = ShowtimeSeasonFragment()
                         fragment.arguments = bundle
                         transaction.replace(R.id.fcv_movie_detail, fragment)
-                        transaction.addToBackStack(null)
-//                        transaction.commit()
-
-                        var detailsGenre = response?.shoContentList?.find { showtimeContent ->
-                            showtimeContent.releaseId == it.releaseId
-                        }
-                       /* val transition = supportFragmentManager.beginTransaction()
-                        transition.replace(R.id.fcv_movie_detail, ShowtimeSeasonFragment)
-                        detailsGenre?.let { it1 -> ShowtimeSeasonFragment.setShowDetails(it1)
-                            ShowtimeSeasonFragment.setAirportList(it1.seasonList)
-                        }
-                        transition.commit()*/
-
                     }
                     else{
-
                         val bundle = Bundle()
                         bundle.putInt("movieReleaseId", it.releaseId)
                         val fragment = ShowtimeDetailFragment()
                         fragment.arguments = bundle
                         transaction.replace(R.id.fcv_movie_detail, fragment)
-//                        transaction.commit()
-                       /* val transition = supportFragmentManager.beginTransaction()
-                        transition.replace(R.id.fcv_movie_detail, ShowtimeDetailFragment)
-                        ShowtimeDetailFragment.setShowDetails(it)
-                        transition.commit()*/
                     }
                     binding.parentRecyclerView.toInvisible()
                     binding.fcvMovieDetail.toVisible()
-//                    transaction.commit()
-
+                    transaction.commit()
                 }
                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                 binding.parentRecyclerView.adapter = showtimeParentAdapter
@@ -211,13 +176,11 @@ class ShowtimeActivity  : BaseActivity() {
                 binding.menuRecyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
             }
-
             else -> {
                 status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
             }
         }
     }
-
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
@@ -228,7 +191,6 @@ class ShowtimeActivity  : BaseActivity() {
                     resource.alpha = 120
                     binding.root.background = resource
                 }
-
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
@@ -297,13 +259,11 @@ class ShowtimeActivity  : BaseActivity() {
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
             }
-
             else -> {
                 status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
             }
         }
     }
-
     private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
@@ -314,7 +274,6 @@ class ShowtimeActivity  : BaseActivity() {
                     ShowtimeViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
-
             else -> {
                 status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
             }

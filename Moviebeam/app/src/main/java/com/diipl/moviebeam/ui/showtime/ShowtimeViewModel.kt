@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.showtime
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,7 +18,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 @HiltViewModel
 class ShowtimeViewModel @Inject constructor(
@@ -48,7 +46,6 @@ class ShowtimeViewModel @Inject constructor(
         fetchDateTime("17205KKXLKF626")
         fetchAccountSetupDetails("ACTIVATE", "14508KKMH0K299", "JSON")
     }
-
     private fun fetchShowtimeInfo(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _showtimeLiveData.postValue(Resource.Loading())
@@ -57,11 +54,9 @@ class ShowtimeViewModel @Inject constructor(
                 _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
                 _showtimeLiveData.postValue(Resource.Success(response))
-
             }
         }
     }
-
     private fun fetchThemeDetails(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _themeLiveData.postValue(Resource.Loading())
@@ -70,7 +65,6 @@ class ShowtimeViewModel @Inject constructor(
                 _themeLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
                 _themeLiveData.postValue(Resource.Success(response))
-
             }
         }
     }
@@ -119,6 +113,4 @@ class ShowtimeViewModel @Inject constructor(
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
     }
-
-
 }

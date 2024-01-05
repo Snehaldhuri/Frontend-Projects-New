@@ -5,20 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
-import androidx.core.view.marginLeft
-import androidx.core.view.setPadding
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.movies.ContentDto
+import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
+import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toVisible
 
-class ShowtimeDetailFragment : Fragment() {
+class ShowtimeDetailFragment : BaseFragment() {
 
     private var _binding: FragmentMovieDetailBinding? = null
     val binding get() = _binding!!
@@ -26,6 +26,22 @@ class ShowtimeDetailFragment : Fragment() {
     private var show: Detail? = null
     private var gradient: GradientDrawable? = null
 
+    private var position: Int = 0
+
+    private val showtimeViewModel: ShowtimeViewModel by activityViewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            position = it.getInt("movieReleaseId")
+        }
+    }
+    override fun observeViewModel() {
+        observe(showtimeViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
+    }
+    override fun initViewBinding() {
+
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -33,7 +49,24 @@ class ShowtimeDetailFragment : Fragment() {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
+    private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
+        when (status) {
+            is Resource.Loading -> { binding.loaderView.toVisible() }
+            is Resource.Success -> {
+                val response = showtimeViewModel.showtimeLiveData.value?.data
 
+                val detail = response?.shoGenreList?.get(0)?.detailList?.find { detail ->
+                    detail.releaseId == position
+                }
+                detail?.let { setShowDetails(it)  }
+
+                binding.loaderView.toInvisible()
+            }
+            else -> {
+                status.errorCode?.let { showtimeViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
     fun setShowDetails(show: Detail) {
         this.show = show
         show.secImagePathSushi.let {
@@ -47,7 +80,6 @@ class ShowtimeDetailFragment : Fragment() {
         binding.tvSynopsis.text = show.synopsis
         binding.tvCastTitle.isVisible=false
         binding.tvDirectorTitle.isVisible=false
-
         binding.btnRentNow.text = getString(R.string.watch_free)
         val layoutParams = binding.btnRentNow.layoutParams as ViewGroup.MarginLayoutParams
         layoutParams.marginStart = resources.getDimensionPixelSize(R.dimen.dp_225)
@@ -59,12 +91,9 @@ class ShowtimeDetailFragment : Fragment() {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-
         binding.btnWatchTrailer.isVisible=false
-
         binding.btnRentNow.requestFocus()
     }
-
     fun setGradient(gradient: GradientDrawable) {
         this.gradient = gradient
     }
