@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.showtime
 
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
@@ -21,6 +22,7 @@ import com.diipl.moviebeam.databinding.FragmentShowtimeSeasonBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 
 class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListener {
@@ -28,11 +30,11 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
     val binding get() = _binding!!
     private var adapter: ShowtimeSeasonChildAdapter? = null
     private var position: Int = 0
-
+    private var gradientStartColor = "#85bf08"
+    private var gradientEndColor = "#0ca654"
     private val showtimeViewModel: ShowtimeViewModel by activityViewModels()
 
     private var selectedShow: ShowTimeContent? = null
-    private var gradient: GradientDrawable? = null
 
     private var seasonList: List<Season> = listOf()
 
@@ -70,6 +72,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
                 detail?.secImagePathSushi?.let {
                     setImage(it)
                 }
+                binding.loaderView.toInvisible()
             }
             else -> {
                 status.errorCode?.let { showtimeViewModel.showToastMessage(getString(it)) }
@@ -82,32 +85,25 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
     fun setShowDetails(detail: ShowTimeContent) {
         selectedShow = detail
         binding.tvSeasonTitle.text = detail.movieName
-        binding.tvSeasonDirectorTitle.text = detail.director
-        binding.btnSeasonList.setOnFocusChangeListener { view, isFocused ->
-            if (isFocused) {
-                view.background = gradient
-            } else {
-                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
+        binding.tvSeasonDirectorTitle.setText("Director : " + detail.director);
         binding.seasonListRecyclerView.setHasFixedSize(true)
         seasonList = detail.seasonList
         val seasonNames = seasonList.map { it.name }
         val dropdown: Spinner = binding.btnSeasonList
+        dropdown.requestFocus()
 
+        dropdown.setOnFocusChangeListener { view, isFocused ->
+            if (isFocused) {
+                dropdown.background = getGradient(gradientStartColor, gradientEndColor)
+            } else {
+                dropdown.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
         val dropdownAdapter = ArrayAdapter(binding.root.context, R.layout.item_spinner_header, seasonNames)
         dropdownAdapter.setDropDownViewResource(R.layout.item_spinner_item)
 
         dropdown.adapter = dropdownAdapter
         dropdown.onItemSelectedListener = this
-        dropdown.setOnFocusChangeListener { view, isFocused ->
-            if (isFocused) {
-                view.findViewById<TextView>(R.id.tv_title).isSelected = true
-            } else {
-                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                view.findViewById<TextView>(R.id.tv_title).isSelected = false
-            }
-        }
         adapter = ShowtimeSeasonChildAdapter() { season ->
         }
         selectedShow?.let {
@@ -122,6 +118,20 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
     }
     override fun onNothingSelected(p0: AdapterView<*>?) {
 
+    }
+    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+        )
+
+        gradientDrawable.cornerRadius = 20f
+
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
     }
 
 }

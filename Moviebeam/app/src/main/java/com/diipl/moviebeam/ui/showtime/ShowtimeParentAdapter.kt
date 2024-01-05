@@ -22,7 +22,7 @@ class ShowtimeParentAdapter(
         val childRecyclerView: RecyclerView = itemView.findViewById(R.id.langRecyclerView)
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParentViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.parent_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.moviegenre_parent_item, parent, false)
         return ParentViewHolder(view)
     }
     override fun getItemCount(): Int {

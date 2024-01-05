@@ -80,7 +80,7 @@
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
-        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_20" />
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fcv_movie_detail"
@@ -89,10 +89,10 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:nextFocusLeft="@id/menuRecyclerView"
-        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_75"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
-        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_20" />
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
     <!--    <androidx.recyclerview.widget.RecyclerView-->
     <!--        android:id="@+id/rv_rental_movies"-->
@@ -134,13 +134,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.27" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_horizontal_20"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.20" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_60"

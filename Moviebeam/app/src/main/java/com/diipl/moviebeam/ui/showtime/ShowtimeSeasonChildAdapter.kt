@@ -34,8 +34,8 @@ class ShowtimeSeasonChildAdapter(
         view.isClickable = true
 
         view.setOnFocusChangeListener { it, hasFocus ->
-            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.1f)
-            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.1f)
+            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.05f)
+            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.05f)
 
             val scaleAnimatorSet = AnimatorSet()
             scaleAnimatorSet.duration = 200
@@ -66,6 +66,7 @@ class ShowtimeSeasonChildAdapter(
 //        holder.movieview.setOnClickListener {
 //            onItemClicked(detail)
 //        }
+
     }
 
     fun updateSeasons(newSeasons: List<Detail>) {

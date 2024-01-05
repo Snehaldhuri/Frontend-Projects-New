@@ -8,14 +8,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.toInvisible
-import com.diipl.moviebeam.utils.toVisible
 
 class ChildAdapter(
     private val childList: List<ContentDto>,
@@ -30,7 +28,7 @@ class ChildAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.child_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.moviegenre_childlist_item, parent, false)
         view.isFocusable = true
         view.isClickable = true
 

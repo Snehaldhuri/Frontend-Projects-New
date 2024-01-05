@@ -3,44 +3,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:layout_marginLeft="7dp"
     android:layout_height="match_parent"
     tools:context=".ui.showtime.ShowtimeSeasonFragment">
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_vertical_30"
+        android:id="@+id/gl_vertical_28"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.30" />
+        app:layout_constraintGuide_percent="0.28" />
 
-    <!-- Left ConstraintLayout -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_30"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_28"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/iv_season_movie_image"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             android:background="@drawable/round_outline_5dp"
             android:clipToOutline="true"
-            android:src="@drawable/weather_static"
             app:layout_constraintBottom_toTopOf="@+id/btn_season_list"
             app:layout_constraintDimensionRatio="0.65:1"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.9"
+            app:layout_constraintWidth_percent="0.88"
             tools:ignore="MissingConstraints" />
 
         <Spinner
             android:id="@+id/btn_season_list"
-            android:layout_width="120dp"
+            android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_margin="10dp"
             android:background="@drawable/btn_bg_gradient_default"
             android:focusable="true"
             android:focusableInTouchMode="true"
@@ -51,19 +49,16 @@
             android:paddingVertical="@dimen/dp_8"
             android:spinnerMode="dropdown"
             app:layout_constraintTop_toBottomOf="@+id/iv_season_movie_image"
-            tools:ignore="MissingConstraints" />
-
-
+             />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-    <!-- Right ConstraintLayout -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginLeft="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/gl_vertical_30"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_28"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -71,7 +66,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/manrope_bold_700"
-            android:text="Meg 2: The Trench"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_30"
             app:layout_constraintStart_toStartOf="parent"
@@ -82,7 +76,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/manrope_regular_400"
-            android:text="Director"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_12"
             app:layout_constraintStart_toStartOf="parent"
@@ -93,10 +86,9 @@
             android:id="@+id/seasonListRecyclerView"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:descendantFocusability="afterDescendants"
             android:focusableInTouchMode="true"
-            android:padding="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

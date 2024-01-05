@@ -149,27 +149,9 @@ class ShowtimeActivity  : BaseActivity() {
                 }
                 binding.fcvMovieDetail.toInvisible()
 
-                val showtimeParentAdapter = ShowtimeParentAdapter {it,pos ->
-                    val transaction = supportFragmentManager.beginTransaction()
-                    if (it.episodesPresent==true) {
+                val showtimeParentAdapter =
+                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
 
-                        val bundle = Bundle()
-                        bundle.putInt("movieReleaseId", it.releaseId)
-                        val fragment = ShowtimeSeasonFragment()
-                        fragment.arguments = bundle
-                        transaction.replace(R.id.fcv_movie_detail, fragment)
-                    }
-                    else{
-                        val bundle = Bundle()
-                        bundle.putInt("movieReleaseId", it.releaseId)
-                        val fragment = ShowtimeDetailFragment()
-                        fragment.arguments = bundle
-                        transaction.replace(R.id.fcv_movie_detail, fragment)
-                    }
-                    binding.parentRecyclerView.toInvisible()
-                    binding.fcvMovieDetail.toVisible()
-                    transaction.commit()
-                }
                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                 binding.parentRecyclerView.adapter = showtimeParentAdapter
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
@@ -211,9 +193,25 @@ class ShowtimeActivity  : BaseActivity() {
     }
 
     private fun onShowsClick(shows: Detail,position: Int) {
-        ShowtimeDetailFragment.setShowDetails(shows)
+        val transaction = supportFragmentManager.beginTransaction()
+        if (shows.episodesPresent==true) {
+
+            val bundle = Bundle()
+            bundle.putInt("movieReleaseId", shows.releaseId)
+            val fragment = ShowtimeSeasonFragment()
+            fragment.arguments = bundle
+            transaction.replace(R.id.fcv_movie_detail, fragment)
+        }
+        else{
+            val bundle = Bundle()
+            bundle.putInt("movieReleaseId", shows.releaseId)
+            val fragment = ShowtimeDetailFragment()
+            fragment.arguments = bundle
+            transaction.replace(R.id.fcv_movie_detail, fragment)
+        }
         binding.parentRecyclerView.toInvisible()
         binding.fcvMovieDetail.toVisible()
+        transaction.commit()
     }
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {

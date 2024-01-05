@@ -26,7 +26,7 @@ class ShowtimeChildAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.child_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.moviegenre_childlist_item, parent, false)
         view.isFocusable = true
         view.isClickable = true
 

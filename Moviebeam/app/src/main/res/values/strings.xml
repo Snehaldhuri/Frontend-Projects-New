@@ -38,6 +38,7 @@
     //Movies
     <string name="rent_now">Rent Now %1$s 24 HRS %2$s</string>
     <string name="watch_free">Watch Now Free</string>
+    <string name="watch_trailer">Watch Trailer</string>
     <string name="price_dollar">$ %1$s</string>
     <string name="OK">Ok</string>
     <string name="Cancel">Cancel</string>
