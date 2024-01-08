@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.data.remote.datasource
 
+import android.util.Log
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
@@ -8,6 +9,7 @@ import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
+import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -17,6 +19,7 @@ import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
+import retrofit2.http.Query
 import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
@@ -46,6 +49,7 @@ class RemoteDataSource @Inject constructor(
         }
         return ApiResponseParsing().getResponseAsObject(result.data, LocalAttractionResponse::class)
     }
+
     suspend fun getMoviesInfo(ua: String): MoviesResponse? {
         val result = safeAPiCall {
             lgRestApiService.getMovies(ua)
@@ -58,6 +62,7 @@ class RemoteDataSource @Inject constructor(
         }
         return ApiResponseParsing().getResponseAsObject(result.data, ShowTimeResponse::class)
     }
+
     suspend fun getThemeDetails(ua: String): ThemeResponse? {
         val result = safeAPiCall {
             lgRestApiService.getThemeDetails(ua)
@@ -110,4 +115,24 @@ class RemoteDataSource @Inject constructor(
         return ApiResponseParsing().getResponseAsObject(result.data, NewsResponse::class)
     }
 
+
+    suspend fun getStbMasterDetails(
+        ua: String,
+        srno: String,
+        macadd: String,
+        type: String,
+        wifimacadd: String
+    ): StbMasterResponse? {
+        val result = safeAPiCall {
+            lgRestApiService.getstbMaster(
+                ua,
+                srno,
+                macadd,
+                type,
+                wifimacadd
+            )
+        }
+        Log.e("result", "getStbMasterDetails:${result} ", )
+        return ApiResponseParsing().getResponseAsObject(result.data, StbMasterResponse::class)
+    }
 }

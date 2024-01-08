@@ -9,6 +9,7 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
+import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.datasource.RemoteDataSource
@@ -61,6 +62,7 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
     suspend fun getMoviesInfo(ua: String): MoviesResponse? {
         return remoteDataSource.getMoviesInfo(ua)
     }
+
     suspend fun getShowtimeInfo(ua: String): ShowTimeResponse? {
         return remoteDataSource.getShowtimeInfo(ua)
     }
@@ -68,5 +70,16 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
     suspend fun getNewsDetails(newsId: Int): NewsResponse? {
         return remoteDataSource.getNewsDetails(newsId)
     }
+
+    suspend fun getStbMasterDetails(
+        ua: String,
+        srno: String,
+        macadd: String,
+        type: String,
+        wifimacadd: String
+    ): StbMasterResponse? {
+        return remoteDataSource.getStbMasterDetails(ua, srno, macadd, type, wifimacadd)
+    }
+
 
 }
