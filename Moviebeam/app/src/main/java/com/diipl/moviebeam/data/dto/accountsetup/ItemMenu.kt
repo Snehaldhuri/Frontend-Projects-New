@@ -1,13 +1,16 @@
 package com.diipl.moviebeam.data.dto.accountsetup
 
-data class ItemMenu(
-    val dispPrice: String,
-    val itemId: Int,
-    val langWiseList: Map<String, TVToiletryItemDTO>,
-    val name: String,
-    val price: Double
-)
+import kotlinx.serialization.Serializable
 
+@Serializable
+data class ItemMenu(
+    val dispPrice: String = "",
+    val itemId: Int = 0,
+    val langWiseList: Map<String, TVToiletryItemDTO> = emptyMap(),
+    val name: String = "",
+    val price: Double = 0.0
+)
+@Serializable
 data class TVToiletryItemDTO(
-    val name: String
+    val name: String = ""
 )

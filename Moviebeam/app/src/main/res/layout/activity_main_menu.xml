@@ -14,6 +14,20 @@
         app:layout_constraintGuide_percent="0.1" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_65"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.65" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_95"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.9" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,106 +42,95 @@
         app:layout_constraintGuide_percent="0.95" />
 
     <ImageView
-        android:id="@+id/img_hotel_logo"
+        android:id="@+id/iv_hotel_logo"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:adjustViewBounds="true"
-        android:contentDescription="Hotel Logo"
+        android:contentDescription="@string/hotel_logo"
         app:layout_constraintDimensionRatio="1.49:1"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent=".17" />
 
     <TextView
-        android:id="@+id/txt_greeting"
-        android:layout_width="wrap_content"
+        android:id="@+id/tv_greeting"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/dp_20"
-        android:text="Hotel Info"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text=""
+        android:textColor="@color/home_page_greeting_text_color"
         android:textSize="@dimen/sp_18"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
-        app:layout_constraintTop_toBottomOf="@+id/img_hotel_logo" />
+        app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo" />
 
     <ImageView
-        android:id="@+id/img_weather_image"
+        android:id="@+id/iv_weather"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:layout_marginEnd="@dimen/dp_16"
         android:adjustViewBounds="true"
-        android:contentDescription="Weather Image"
+        android:contentDescription="@string/weather_image"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
         app:layout_constraintDimensionRatio="1.66:1"
-        app:layout_constraintEnd_toStartOf="@+id/txt_temperature"
+        app:layout_constraintEnd_toStartOf="@+id/tv_temperature"
         app:layout_constraintWidth_percent=".03" />
 
     <TextView
-        android:id="@+id/txt_temperature"
+        android:id="@+id/tv_temperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/dp_32"
-        android:text="Temperature"
-        android:textSize="@dimen/sp_12"
-        android:textStyle="bold"
-        app:layout_constraintBaseline_toBaselineOf="@+id/txt_time"
-        app:layout_constraintEnd_toStartOf="@+id/txt_time" />
-
-    <TextView
-        android:id="@+id/txt_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/dp_32"
-        android:text="Time"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text=""
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
-        app:layout_constraintEnd_toStartOf="@+id/txt_date" />
+        app:layout_constraintEnd_toStartOf="@+id/tv_time" />
 
     <TextView
-        android:id="@+id/txt_date"
+        android:id="@+id/tv_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Date"
+        android:layout_marginEnd="@dimen/dp_32"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text=""
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
-        app:layout_constraintBaseline_toBaselineOf="@+id/txt_time"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
+        app:layout_constraintEnd_toStartOf="@+id/tv_date" />
+
+    <TextView
+        android:id="@+id/tv_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text=""
+        android:textSize="@dimen/sp_12"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95" />
 
-    <RelativeLayout
-        android:id="@+id/loader_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <ProgressBar
+        android:id="@+id/pb_loader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:clickable="true"
-        android:visibility="gone">
-
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true" />
-    </RelativeLayout>
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideLine_horizontal_65"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.65" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideLine_horizontal_95"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.9" />
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/rv_menu_button"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_200"
-        android:background="@color/menu_list_bg"
         android:padding="@dimen/dp_8"
-        app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
-        app:layout_constraintBottom_toBottomOf="@+id/guideLine_horizontal_95"
+        app:layout_constraintBottom_toBottomOf="@+id/gl_horizontal_95"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
-        app:layout_constraintTop_toTopOf="@+id/guideLine_horizontal_65"
-        />
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_65" />
 </androidx.constraintlayout.widget.ConstraintLayout>

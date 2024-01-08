@@ -1,11 +1,13 @@
 package com.diipl.moviebeam.ui.movies
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
+import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -22,24 +24,35 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MoviesActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMoviesBinding
 
-    private var gradientStartColor = "#85bf08"
-    private var gradientEndColor = "#0ca654"
+    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
     private val list: List<BtnModel> = Constants.MOVIES_PAGE_MENU_BUTTON_LIST
 
     private val moviesViewModel: MoviesViewModel by viewModels()
     private val movieDetailFragment: MovieDetailFragment = MovieDetailFragment()
+
+    @Inject
+    lateinit var themeDataStore: DataStore<ThemeResponse>
+
+    @Inject
+    lateinit var weatherDataStore: DataStore<WeatherResponse>
+
+    @Inject
+    lateinit var moviesDataStore : DataStore<MoviesResponse>
 
     override fun observeViewModel() {
         observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -51,11 +64,18 @@ class MoviesActivity : BaseActivity() {
     override fun initViewBinding() {
         binding = ActivityMoviesBinding.inflate(layoutInflater)
         val view = binding.root
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         setContentView(view)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // call below function to get data from datastore
+
+        moviesViewModel.getThemeResponseData(themeDataStore)
+        moviesViewModel.getWeatherResponseData(weatherDataStore)
+        moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
 
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
@@ -88,7 +108,7 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 val response = moviesViewModel.moviesLiveData.value?.data
                 moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
@@ -204,9 +224,10 @@ class MoviesActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+                    temperature
                 moviesViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage.loadImagesWithGlideExt(
+                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
                     )
                 }
@@ -231,7 +252,7 @@ class MoviesActivity : BaseActivity() {
                 }
                 movieDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
                 moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
@@ -247,9 +268,9 @@ class MoviesActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.layoutHeader.headerWeatherTime.txtDate.text =
+                binding.layoutHeader.layoutWeatherTime.tvDate.text =
                     moviesViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.headerWeatherTime.txtTime.text =
+                binding.layoutHeader.layoutWeatherTime.tvTime.text =
                     moviesViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
@@ -294,6 +315,12 @@ class MoviesActivity : BaseActivity() {
         movieDetailFragment.setMovieDetails(movie)
         binding.parentRecyclerView.toInvisible()
         binding.fcvMovieDetail.toVisible()
+    }
+
+    fun gotoExoPlayerActivity(movieDetails: ContentDto) {
+        val intent = Intent(this, ExoPlayerActivity::class.java)
+        intent.putExtra(Constants.TRAILER_URL, movieDetails.trailerVideoPath)
+        startActivity(intent)
     }
 
 

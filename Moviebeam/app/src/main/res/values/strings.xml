@@ -15,10 +15,51 @@
     <string name="fetch_weather_data">Fetch Weather Data</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hotel_logo">Hotel Logo</string>
+    <string name="weather_image">Weather Image</string>
+    <string name="back">Back</string>
+    <string name="menu_button_image">Menu Button Image</string>
+    <string name="hotel_information">Hotel Information</string>
+
+    <string name="theme_success">Theme Success</string>
+    <string name="account_setup_success">Account Setup Success</string>
+    <string name="weather_success">Weather Success</string>
+    <string name="date_time_success">Date Time Success</string>
+
+    <string name="media_url_mp3">https://storage.googleapis.com/exoplayer-test-media-0/Jazz_In_Paris.mp3</string>
+    <string name="media_url_mp4">https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4</string>
+    <string name="media_url_dash"><![CDATA[https://www.youtube.com/api/manifest/dash/id/bf5bb2419360daf1/source/youtube?as=fmp4_audio_clear,fmp4_sd_hd_clear&sparams=ip,ipbits,expire,source,id,as&ip=0.0.0.0&ipbits=0&expire=19000000000&signature=51AF5F39AB0CEC3E5497CD9C900EBFEAECCCB5C7.8506521BFC350652163895D4C26DEE124209AA9E&key=ik0]]></string>
+
+
+
+
     <string name="movie_image">Movie Image</string>
 
     //Movies
     <string name="rent_now">Rent Now %1$s 24 HRS %2$s</string>
     <string name="price_dollar">$ %1$s</string>
-    <string name="app_image">App Image</string>
+    <string name="OK">Ok</string>
+    <string name="Cancel">Cancel</string>
+    <string name="status">Status</string>
+    <string name="gate">Gate</string>
+    <string name="terminal">Terminal</string>
+    <string name="time">Time</string>
+    <string name="airlines">Airlines</string>
+    <string name="destination">Destination</string>
+    <string name="flight_no">Flight No</string>
+    <string name="switch_to_departure">Switch to Departure</string>
+    <string name="switch_to_arrival">Switch to Arrival</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="humidity">Humidity</string>
+    <string name="dev_point">Dev Point</string>
+    <string name="sunset">Sunset</string>
+    <string name="visibility">Visibility</string>
+    <string name="wind">Wind</string>
+    <string name="high">High :</string>
+    <string name="low">Low :</string>
+    <string name="details">Details</string>
+    <string name="headlines">Headlines</string>
+    <string name="hotel_info_image">Hotel Info Image</string>
+    
+        <string name="app_image">App Image</string>
 </resources>

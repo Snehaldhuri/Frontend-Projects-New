@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.marginBottom
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
@@ -22,9 +21,9 @@ class MoviesBtnAdapter(
     var endColor = ""
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.imageView)
-        val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
-        val card: ConstraintLayout = itemView.findViewById(R.id.card1)
+        val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
+        val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
+        val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
     }
     override fun onCreateViewHolder( parent: ViewGroup, viewType: Int ): MoviesBtnAdapter.MyViewHolder {
 

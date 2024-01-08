@@ -2,12 +2,16 @@ package com.diipl.moviebeam.data.remote.datasource
 
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
+import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
+import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.NetworkHandler
@@ -17,8 +21,9 @@ import javax.inject.Inject
 class RemoteDataSource @Inject constructor(
     private val networkUtils: NetworkUtils,
     private val lgRestApiService: LgRestApiService,
-    private val accountSetupApiService: AccountSetupApiService
-) : NetworkHandler(networkUtils){
+    private val accountSetupApiService: AccountSetupApiService,
+    private val assetApiService: AssetApiService
+) : NetworkHandler(networkUtils) {
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {
         val result = safeAPiCall {
@@ -60,11 +65,42 @@ class RemoteDataSource @Inject constructor(
         return ApiResponseParsing().getResponseAsObject(result.data, DateTimeResponse::class)
     }
 
-    suspend fun getAccountSetupDetails(cmd: String, ua: String, mode: String): AccountSetupResponse? {
+    suspend fun getAccountSetupDetails(
+        cmd: String,
+        ua: String,
+        mode: String
+    ): AccountSetupResponse? {
         val result = safeAPiCall {
             accountSetupApiService.getAccountSetupDetails(cmd, ua, mode)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data,AccountSetupResponse::class)
+        return ApiResponseParsing().getResponseAsObject(result.data, AccountSetupResponse::class)
+    }
+
+    suspend fun getFlightStatus(
+        cmd: String,
+        ua: String,
+        callType: String,
+        apCode: String,
+        mode: String
+    ): FlightStatusResponse? {
+        val result = safeAPiCall {
+            assetApiService.getFlightStatus(cmd, ua, callType, apCode, mode)
+        }
+        return ApiResponseParsing().getResponseAsObject(result.data, FlightStatusResponse::class)
+    }
+
+    suspend fun getNewsHeader(ua: String, languageId: Int): NewsHeaderResponse? {
+        val result = safeAPiCall {
+            lgRestApiService.getNewsHeader(ua, languageId)
+        }
+        return ApiResponseParsing().getResponseAsObject(result.data, NewsHeaderResponse::class)
+    }
+
+    suspend fun getNewsDetails(newsId: Int): NewsResponse? {
+        val result = safeAPiCall {
+            lgRestApiService.getNewsDetails(newsId)
+        }
+        return ApiResponseParsing().getResponseAsObject(result.data, NewsResponse::class)
     }
 
 }

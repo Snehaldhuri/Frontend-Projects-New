@@ -1,9 +1,14 @@
 package com.diipl.moviebeam.ui.base
 
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -14,6 +19,7 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         initViewBinding()
         observeViewModel()
+//        CustomThreadExecutor()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -43,6 +49,38 @@ abstract class BaseActivity : AppCompatActivity() {
             }
         }
         trans.commit()
+    }
+
+    class CustomThreadExecutor {
+
+        private lateinit var scheduledExecutorService: ScheduledExecutorService
+        private lateinit var scheduledFuture: ScheduledFuture<*>
+        var counter = 0
+
+        init {
+            //Start Scheduler as required
+            startScheduler()
+        }
+
+
+        fun startScheduler() {
+            scheduledExecutorService = Executors.newScheduledThreadPool(2)
+
+            scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(
+                { tempImageFetch() }, 0, 60, TimeUnit.SECONDS)
+        }
+
+        fun shutdownScheduler() {
+            //Stop before exit the app or when necessary
+            scheduledExecutorService.shutdownNow()
+
+        }
+
+        private fun tempImageFetch() {
+            //TODO call API
+            counter++
+            Log.d("counter", counter.toString())
+        }
     }
 
     companion object {

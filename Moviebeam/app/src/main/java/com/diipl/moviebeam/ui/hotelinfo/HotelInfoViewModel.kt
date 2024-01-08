@@ -1,12 +1,11 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
-import android.util.Log
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
@@ -17,6 +16,7 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -40,62 +40,15 @@ class HotelInfoViewModel @Inject constructor(
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
+    private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
+    val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
+
+    private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
+    val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
+
     init {
-        fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
-        fetchHotelServiceInfo(7107)
-        fetchThemeDetails("17205KKXLKF626")
-        fetchWeatherData("17205KKXLKF626")
-        fetchDateTime("17205KKXLKF626")
-    }
 
-    private fun fetchHotelServiceInfo(accountId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _hotelServiceLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getHotelServiceInfo(accountId)
-            if (response == null) {
-                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _hotelServiceLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
-
-        viewModelScope.launch(Dispatchers.IO) {
-            _accountSetupLiveData.postValue(Resource.Loading())
-
-            val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
-            if (response == null) {
-                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _accountSetupLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    private fun fetchThemeDetails(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _themeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getThemeDetails(ua)
-            if (response == null) {
-                _themeLiveData.postValue(Resource.DataError(code = R.string.server_error))
-            } else {
-                _themeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    fun fetchWeatherData(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _weatherLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getWeatherData(ua)
-            if (response == null) {
-                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _weatherLiveData.postValue(Resource.Success(response))
-            }
-        }
+      fetchDateTime(Constants.UA)
     }
 
     fun fetchDateTime(ua: String) {
@@ -103,18 +56,59 @@ class HotelInfoViewModel @Inject constructor(
             _dateTimeLiveData.postValue(Resource.Loading())
             val response = movieBeamRepository.getDateTimeData(ua)
             if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(code = R.string.server_error))
+                _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
                 _dateTimeLiveData.postValue(Resource.Success(response))
             }
         }
     }
 
-    private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
-    val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
+    // Get Response from DataStore
+    fun getThemeResponseData(dataStore: DataStore<ThemeResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _themeLiveData.postValue(Resource.Loading())
 
-    private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
-    val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
+            dataStore.data.catch {
+                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+
+            }.collect {
+                _themeLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _weatherLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _weatherLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun getAccountSetupResponseData(dataStore: DataStore<AccountSetupResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _accountSetupLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _accountSetupLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun getHotelServicesResponseData(dataStore: DataStore<HotelServiceResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _hotelServiceLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _hotelServiceLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
 
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)

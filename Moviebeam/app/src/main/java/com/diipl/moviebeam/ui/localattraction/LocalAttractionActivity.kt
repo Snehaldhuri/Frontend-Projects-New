@@ -1,12 +1,11 @@
 package com.diipl.moviebeam.ui.localattraction
 
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -15,45 +14,61 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityLocalAttractionBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
-import com.diipl.moviebeam.ui.mainmenu.MainMenuBtnAdapter
-import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class LocalAttractionActivity : BaseActivity() {
     private lateinit var binding: ActivityLocalAttractionBinding
-    private var gradientStartColor = "#85bf08"
-    private var gradientEndColor = "#0ca654"
+    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
     private val localAttractionViewModel: LocalAttractionViewModel by viewModels()
+
+    @Inject
+    lateinit var themeDataStore: DataStore<ThemeResponse>
+
+    @Inject
+    lateinit var weatherDataStore: DataStore<WeatherResponse>
+
+    @Inject
+    lateinit var localAttractionDataStore : DataStore<LocalAttractionResponse>
+
     override fun observeViewModel() {
-        observe(localAttractionViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(localAttractionViewModel.themeLiveData, ::handleThemeResponse)
-        observe(localAttractionViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(localAttractionViewModel.localAttractionLiveData, ::handleLAServiceResponse)
+        observe(localAttractionViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(localAttractionViewModel.dateTimeLiveData, ::handleDateTimeResponse)
+        observe(localAttractionViewModel.themeLiveData,::handleThemeResponse)
     }
 
     override fun initViewBinding() {
         binding = ActivityLocalAttractionBinding.inflate(layoutInflater)
         val view = binding.root
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         setContentView(view)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // call below function to fetch data from dataStore
+
+        localAttractionViewModel.getThemeResponseData(themeDataStore)
+        localAttractionViewModel.getWeatherResponseData(weatherDataStore)
+        localAttractionViewModel.getLocalAttractionResponseData(localAttractionDataStore)
+
+
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
                 binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
@@ -86,10 +101,13 @@ class LocalAttractionActivity : BaseActivity() {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 val response = localAttractionViewModel.localAttractionLiveData.value?.data
-                Glide.with(this)
-                    .load(localAttractionViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.imgHotelLogo)
-                loadBg(localAttractionViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
+
+                localAttractionViewModel.themeLiveData.value?.data?.gradientColor?.let {
+                    gradientStartColor = it
+                }
+                localAttractionViewModel.themeLiveData.value?.data?.spotLightColor?.let {
+                    gradientEndColor = it
+                }
                 val adapter = LocalAttractionAdapter {
                     val cardAdapter = LaCardAdapter {
 
@@ -101,8 +119,9 @@ class LocalAttractionActivity : BaseActivity() {
                             gradientEndColor
                         )
                     )
-                    binding.recyclerView.adapter = cardAdapter
+                    binding.laCardCarousel.adapter = cardAdapter
                 }
+
                 adapter.setItemList(response?.servicesList!!)
                 adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
                 binding.recyclerView.adapter = adapter
@@ -127,10 +146,10 @@ class LocalAttractionActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
                 Glide.with(this)
                     .load(localAttractionViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
-                    .into(binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage)
+                    .into(binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather)
                 binding.loaderView.toInvisible()
             }
 
@@ -144,16 +163,21 @@ class LocalAttractionActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                localAttractionViewModel.themeLiveData.value?.data?.gradientColor?.let {
+
+                val response = localAttractionViewModel.themeLiveData.value?.data
+
+                response?.themeLogoFileName?.let {
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                }
+
+                loadBg(response?.themeBackgroundFileName)
+
+                response?.gradientColor?.let {
                     gradientStartColor = it
                 }
-                localAttractionViewModel.themeLiveData.value?.data?.spotLightColor?.let {
+                response?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                Glide.with(this)
-                    .load(localAttractionViewModel.themeLiveData.value?.data?.themeLogoFileName)
-                    .into(binding.layoutHeader.imgHotelLogo)
-                loadBg(localAttractionViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
             }
 
@@ -167,8 +191,8 @@ class LocalAttractionActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.layoutHeader.headerWeatherTime.txtDate.text = localAttractionViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.headerWeatherTime.txtTime.text = localAttractionViewModel.dateTimeLiveData.value?.data?.time
+                binding.layoutHeader.layoutWeatherTime.tvDate.text = localAttractionViewModel.dateTimeLiveData.value?.data?.date
+                binding.layoutHeader.layoutWeatherTime.tvTime.text = localAttractionViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 

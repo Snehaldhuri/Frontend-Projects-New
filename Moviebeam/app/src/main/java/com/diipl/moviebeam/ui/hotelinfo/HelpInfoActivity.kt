@@ -1,15 +1,25 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import com.diipl.moviebeam.R
+import com.diipl.moviebeam.databinding.ActivityHelpInfoBinding
+import com.diipl.moviebeam.ui.base.BaseActivity
 
-class HelpInfoActivity : AppCompatActivity() {
+class HelpInfoActivity : BaseActivity() {
+
+    private lateinit var binding: ActivityHelpInfoBinding
+    override fun observeViewModel() {
+
+    }
+
+    override fun initViewBinding() {
+        binding = ActivityHelpInfoBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_help_info)
-        findViewById<Button>(R.id.btn_back).setOnClickListener{
+        binding.btnBack.setOnClickListener{
             finish()
         }
     }

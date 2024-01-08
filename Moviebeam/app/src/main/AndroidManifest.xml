@@ -5,12 +5,17 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+
+
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
     <uses-feature
         android:name="android.software.leanback"
         android:required="true" />
+
+    <uses-configuration android:reqFiveWayNav="true" />
 
     <application
         android:name=".App"
@@ -20,25 +25,40 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
+
         <activity
             android:name=".ui.appworld.AppWorldActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".ui.movies.MoviesActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".ui.localattraction.LocalAttractionActivity"
+            android:name=".ui.guestservice.GuestServiceActivity"
             android:exported="false"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.hotelinfo.HelpInfoActivity"
             android:exported="false"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
+
         <activity
             android:name=".ui.hotelinfo.HotelInfoActivity"
             android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".ui.movies.MoviesActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+        <activity
+            android:name=".ui.exoplayer.ExoPlayerActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
@@ -48,6 +68,7 @@
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -67,14 +88,18 @@
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
+            <!--<intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.intent.action.MAIN" /> -->
-
-
-            <!-- <category android:name="android.intent.category.LEANBACK_LAUNCHER" /> -->
-            <!-- </intent-filter> -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>-->
         </activity>
+
+        <activity
+            android:name=".ui.home.DataStoreActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.splash.SplashActivity"
             android:banner="@drawable/app_icon_your_company"
@@ -85,13 +110,6 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
 
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
-            -->
         </activity>
     </application>
 

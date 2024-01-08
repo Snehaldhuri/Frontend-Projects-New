@@ -57,6 +57,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Back"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:background="@drawable/btn_bg_gradient_default"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
