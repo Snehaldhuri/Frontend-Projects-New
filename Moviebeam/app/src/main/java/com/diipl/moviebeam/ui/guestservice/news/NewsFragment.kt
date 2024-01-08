@@ -26,6 +26,9 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null
 
+    private var selectedHeaderItemPosition = 0
+    private val selectedMenuItemPosition = 0
+
     private var newsHeaderPosition : Int =0
 
     override fun observeViewModel() {
@@ -41,14 +44,27 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+
                 val newsHeaderDetails = newsViewModel.newsHeaderLiveData.value?.data
                 binding.rvNewsHeader.layoutManager = LinearLayoutManager(context)
                 val adapter = NewsHeaderTabAdapter(
                     onMenuItemClicked = { it, view,pos ->
+                        for ((index, item) in newsViewModel.newsHeaderLiveData.value?.data?.newsHeaderList?.withIndex()!!) {
+                            if (item.id == it.id) {
+                                selectedHeaderItemPosition = index;
+                                break;
+                            }
+                        }
                         newsViewModel.fetchNewsDetails(it.id)
                         newsHeaderPosition = pos
                     },
-                    onLeftKeyPressed = onLeftKeyPressed
+                    onRightKeyPressed = {
+                        binding.rvNews.smoothScrollToPosition(selectedMenuItemPosition);
+                        binding.rvNews.findViewHolderForAdapterPosition(selectedMenuItemPosition)?.itemView?.requestFocus();
+                    }, onLeftKeyPressed = {
+                        onLeftKeyPressed()
+
+                    }
                 )
                 newsHeaderDetails?.newsHeaderList?.let {
                     adapter.setNewsHeaderList(it)
@@ -78,7 +94,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                     binding.tvDescription.text = it.description
                     binding.tvPublishDate.text = it.publishDate
                 }, onLeftKeyPressed = {
-                    binding.rvNewsHeader.layoutManager?.scrollToPosition(newsHeaderPosition)
+                    binding.rvNews.findViewHolderForAdapterPosition(selectedHeaderItemPosition)?.itemView?.requestFocus();
                 })
                 newsDetails?.newsList?.let {
                     adapter.setNewsList(it)
