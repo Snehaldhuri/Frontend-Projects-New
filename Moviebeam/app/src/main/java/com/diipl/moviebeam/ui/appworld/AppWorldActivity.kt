@@ -6,13 +6,18 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import androidx.activity.viewModels
+import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
@@ -20,6 +25,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AppWorldActivity : BaseActivity() {
@@ -27,11 +33,22 @@ class AppWorldActivity : BaseActivity() {
     private lateinit var binding: ActivityAppWorldBinding
     private val appWorldViewModel: AppWorldViewModel by viewModels()
 
+    @Inject
+    lateinit var dateTimeDataStore: DataStore<DateTimeResponse>
+
+    @Inject
+    lateinit var weatherDataStore: DataStore<WeatherResponse>
+
+    @Inject
+    lateinit var themeDataStore: DataStore<ThemeResponse>
+
     override fun observeViewModel() {
+        observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(appWorldViewModel.themeLiveData, ::handleThemeResponse)
     }
 
     override fun initViewBinding() {
+        fetchDetailsFromDatasource()
         binding = ActivityAppWorldBinding.inflate(layoutInflater)
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         binding.rvApps.layoutManager = GridLayoutManager(this, 4)
@@ -84,6 +101,32 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
+    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
+//        when (status) {
+//            is Resource.Loading -> binding.pbLoader.toVisible()
+//            is Resource.Success -> {
+//                var temperature = appWorldViewModel.weatherLiveData.value?.data?.tempCondition
+//                temperature?.let {
+//                    temperature = if (it.contains("&deg C")) {
+//                        it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
+//                    } else {
+//                        it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
+//                    }
+//                }
+//                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+//                    temperature
+//                binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
+//                    appWorldViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
+//                )
+//                binding.pbLoader.toInvisible()
+//            }
+//
+//            else -> {
+//                status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
+//            }
+//        }
+    }
+
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
@@ -122,6 +165,11 @@ class AppWorldActivity : BaseActivity() {
 
     private fun isSystemApp(applicationInfo: ApplicationInfo): Boolean {
         return applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
+    }
+
+    private fun fetchDetailsFromDatasource(){
+        appWorldViewModel.getThemeResponseData(themeDataStore)
+        appWorldViewModel.getWeatherResponseData(weatherDataStore)
     }
 
 }
