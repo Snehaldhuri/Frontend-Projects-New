@@ -1,6 +1,6 @@
 package com.diipl.moviebeam.ui.appworld
 
-import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -33,25 +33,24 @@ class AppWorldActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityAppWorldBinding.inflate(layoutInflater)
-        val view = binding.root
         binding.rvApps.layoutManager = GridLayoutManager(this, 4)
         getInstalledApps()
         binding.btnBack.setOnClickListener {
             finish()
         }
-        setContentView(view)
+        setContentView(binding.root)
     }
 
     private fun getInstalledApps() {
         // get list of all the apps installed
-        val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+        val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
         val adapter = AppAdapter {
-            val i: Intent? = packageManager.getLaunchIntentForPackage(it.packageName)
-            i?.let {
-                startActivity(i)
+            packageManager.getLaunchIntentForPackage(it.packageName)?.let { intent ->
+                startActivity(intent)
             }
         }
-        adapter.setAppList(apps)
+        val installedApps = filterSystemApps(allApps)
+        adapter.setAppList(installedApps)
         binding.rvApps.adapter = adapter
     }
 
@@ -73,8 +72,8 @@ class AppWorldActivity : BaseActivity() {
                     binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(appWorldViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                binding.btnBack.requestFocus()
                 binding.pbLoader.toInvisible()
+                binding.btnBack.requestFocus()
             }
 
             else -> {
@@ -111,6 +110,16 @@ class AppWorldActivity : BaseActivity() {
 
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
+    }
+
+    private fun filterSystemApps(apps: List<ApplicationInfo>): List<ApplicationInfo> {
+        return apps.filter {
+            !isSystemApp(it)
+        }
+    }
+
+    private fun isSystemApp(applicationInfo: ApplicationInfo): Boolean {
+        return applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
     }
 
 }
