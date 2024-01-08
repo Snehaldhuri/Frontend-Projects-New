@@ -33,6 +33,7 @@ class AppWorldActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityAppWorldBinding.inflate(layoutInflater)
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         binding.rvApps.layoutManager = GridLayoutManager(this, 4)
         getInstalledApps()
         binding.btnBack.setOnClickListener {
@@ -69,10 +70,11 @@ class AppWorldActivity : BaseActivity() {
                     }
                 }
                 appWorldViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(appWorldViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.pbLoader.toInvisible()
+                binding.btnBack.clearFocus()
                 binding.btnBack.requestFocus()
             }
 
