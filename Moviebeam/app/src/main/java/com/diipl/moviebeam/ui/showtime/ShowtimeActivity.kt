@@ -49,6 +49,7 @@ class ShowtimeActivity  : BaseActivity() {
     }
     override fun initViewBinding() {
         binding = ActivityShowtimeBinding.inflate(layoutInflater)
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         val view = binding.root
         setContentView(view)
     }
@@ -85,7 +86,7 @@ class ShowtimeActivity  : BaseActivity() {
             is Resource.Success -> {
                 val response = ShowtimeViewModel.showtimeLiveData.value?.data
                 ShowtimeViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 val showTimeGenreMap: Map<String, List<Detail>> = response?.shoGenreList?.associate { genre ->
@@ -225,9 +226,9 @@ class ShowtimeActivity  : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.headerWeatherTime.weather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
                 ShowtimeViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.headerWeatherTime.weather.imgWeatherImage.loadImagesWithGlideExt(
+                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
                     )
                 }
@@ -252,7 +253,7 @@ class ShowtimeActivity  : BaseActivity() {
                 }
                 ShowtimeDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
                 ShowtimeViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.imgHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
@@ -266,9 +267,9 @@ class ShowtimeActivity  : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                binding.layoutHeader.headerWeatherTime.txtDate.text =
+                binding.layoutHeader.layoutWeatherTime.tvDate.text =
                     ShowtimeViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.headerWeatherTime.txtTime.text =
+                binding.layoutHeader.layoutWeatherTime.tvTime.text =
                     ShowtimeViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }

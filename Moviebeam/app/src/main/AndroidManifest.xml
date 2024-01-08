@@ -27,11 +27,12 @@
         <activity
             android:name=".ui.showtime.ShowtimeActivity"
             android:exported="false"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
             android:name=".ui.movies.MoviesActivity"
-            android:name=".ui.localattraction.LocalAttractionActivity"
             android:exported="false"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.guestservice.GuestServiceActivity"
@@ -50,7 +51,7 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".ui.movies.MoviesActivity"
+            android:name=".ui.localattraction.LocalAttractionActivity"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />

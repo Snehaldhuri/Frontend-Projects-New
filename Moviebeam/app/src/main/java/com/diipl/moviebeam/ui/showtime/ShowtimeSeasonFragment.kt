@@ -73,6 +73,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
                     setImage(it)
                 }
                 binding.loaderView.toInvisible()
+                binding.btnSeasonList.requestFocus()
             }
             else -> {
                 status.errorCode?.let { showtimeViewModel.showToastMessage(getString(it)) }

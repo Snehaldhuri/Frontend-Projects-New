@@ -224,7 +224,7 @@ class MainMenuActivity : BaseActivity() {
 
 
                         Constants.SHOWTIMES_ID -> {
-                            startActivity(Intent(this, ShowtimeActivity::class.java))
+                            intent = Intent(this, ShowtimeActivity::class.java)
                         }
                         else -> {
 
