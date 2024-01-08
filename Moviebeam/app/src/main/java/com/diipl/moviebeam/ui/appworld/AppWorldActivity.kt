@@ -15,6 +15,8 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
@@ -24,6 +26,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AppWorldActivity : BaseActivity() {
