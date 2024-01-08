@@ -221,6 +221,9 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
+
+
+
     fun setWeatherResponseData(
         dataStore: DataStore<WeatherResponse>,
         data: WeatherResponse
@@ -254,6 +257,8 @@ class MainMenuViewModel @Inject constructor(
             }
         }
     }
+
+
 
     fun setAccountSetupResponseData(
         dataStore: DataStore<AccountSetupResponse>,
