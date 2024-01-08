@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.showtime
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -16,12 +17,14 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -33,8 +36,8 @@ class ShowtimeActivity  : BaseActivity() {
 
     private lateinit var binding: ActivityShowtimeBinding
 
-    private var gradientStartColor = "#85bf08"
-    private var gradientEndColor = "#0ca654"
+    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
     private val list: List<BtnModel> = Constants.SHOWTIME_PAGE_MENU_BUTTON_LIST
 
@@ -201,6 +204,7 @@ class ShowtimeActivity  : BaseActivity() {
             bundle.putInt("movieReleaseId", shows.releaseId)
             val fragment = ShowtimeSeasonFragment()
             fragment.arguments = bundle
+            fragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
             transaction.replace(R.id.fcv_movie_detail, fragment)
         }
         else{
@@ -208,6 +212,7 @@ class ShowtimeActivity  : BaseActivity() {
             bundle.putInt("movieReleaseId", shows.releaseId)
             val fragment = ShowtimeDetailFragment()
             fragment.arguments = bundle
+            fragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
             transaction.replace(R.id.fcv_movie_detail, fragment)
         }
         binding.parentRecyclerView.toInvisible()
@@ -277,6 +282,12 @@ class ShowtimeActivity  : BaseActivity() {
                 status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
             }
         }
+    }
+
+    fun gotoExoPlayerActivity(movieDetails: Detail) {
+        val intent = Intent(this, ExoPlayerActivity::class.java)
+        intent.putExtra(Constants.TRAILER_URL, movieDetails.videoPath)
+        startActivity(intent)
     }
 }
 

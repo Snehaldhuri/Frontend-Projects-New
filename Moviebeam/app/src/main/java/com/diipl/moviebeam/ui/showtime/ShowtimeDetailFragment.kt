@@ -49,6 +49,13 @@ class ShowtimeDetailFragment : BaseFragment() {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.btnRentNow.setOnClickListener {
+            show?.let { it1 -> (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(it1) }
+        }
+    }
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
             is Resource.Loading -> { binding.loaderView.toVisible() }
@@ -81,6 +88,7 @@ class ShowtimeDetailFragment : BaseFragment() {
         binding.tvCastTitle.isVisible=false
         binding.tvDirectorTitle.isVisible=false
         binding.btnRentNow.text = getString(R.string.watch_free)
+
         val layoutParams = binding.btnRentNow.layoutParams as ViewGroup.MarginLayoutParams
         layoutParams.marginStart = resources.getDimensionPixelSize(R.dimen.dp_225)
         binding.btnRentNow.layoutParams = layoutParams

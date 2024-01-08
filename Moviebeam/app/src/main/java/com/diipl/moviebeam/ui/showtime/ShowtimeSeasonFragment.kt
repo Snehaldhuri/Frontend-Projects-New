@@ -30,8 +30,8 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
     val binding get() = _binding!!
     private var adapter: ShowtimeSeasonChildAdapter? = null
     private var position: Int = 0
-    private var gradientStartColor = "#85bf08"
-    private var gradientEndColor = "#0ca654"
+
+    private var gradient: GradientDrawable? = null
     private val showtimeViewModel: ShowtimeViewModel by activityViewModels()
 
     private var selectedShow: ShowTimeContent? = null
@@ -95,7 +95,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
 
         dropdown.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
-                dropdown.background = getGradient(gradientStartColor, gradientEndColor)
+                dropdown.background = gradient
             } else {
                 dropdown.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
@@ -120,19 +120,8 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
     override fun onNothingSelected(p0: AdapterView<*>?) {
 
     }
-    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-
-        gradientDrawable.cornerRadius = 20f
-
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
+    fun setGradient(gradient: GradientDrawable) {
+        this.gradient = gradient
     }
 
 }
