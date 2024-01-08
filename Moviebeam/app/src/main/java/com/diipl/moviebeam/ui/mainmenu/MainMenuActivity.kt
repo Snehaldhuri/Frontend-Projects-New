@@ -23,6 +23,7 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
+import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
@@ -222,6 +223,9 @@ class MainMenuActivity : BaseActivity() {
                             intent = Intent(this, GuestServiceActivity::class.java)
                         }
 
+                        Constants.APPS_ID -> {
+                            intent = Intent(this, AppWorldActivity::class.java)
+                        }
 
                         Constants.SHOWTIMES_ID -> {
                             intent = Intent(this, ShowtimeActivity::class.java)
