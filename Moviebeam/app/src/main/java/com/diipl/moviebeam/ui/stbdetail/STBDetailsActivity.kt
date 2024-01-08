@@ -1,9 +1,12 @@
 package com.diipl.moviebeam.ui.stbdetail
 
+import android.os.Build.VERSION_CODES.S
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
@@ -12,6 +15,8 @@ import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -57,7 +62,6 @@ class STBDetailsActivity : BaseActivity() {
                 }
                 // binding.pbLoader.toInvisible()
             }
-
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
