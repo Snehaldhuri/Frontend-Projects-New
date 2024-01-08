@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="@dimen/dp_8"
     tools:context=".ui.appworld.AppWorldActivity">
 
     <androidx.constraintlayout.widget.Guideline
@@ -47,7 +48,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.95"/>
+        app:layout_constraintGuide_percent="0.95" />
 
     <include
         android:id="@+id/layout_header"

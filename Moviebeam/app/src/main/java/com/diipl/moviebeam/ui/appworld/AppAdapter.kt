@@ -42,7 +42,7 @@ class AppAdapter(
         val item = appList[position]
         val context = holder.binding.root.context
         holder.binding.tvAppName.text = context.packageManager.getApplicationLabel(item)
-        holder.binding.ivAppIcon.setImageDrawable(context.packageManager.getApplicationIcon(item))
+        holder.binding.ivAppIcon.setImageDrawable(context.packageManager.getApplicationBanner(item))
         holder.binding.cardApp.setOnClickListener {
             onItemClicked(item)
         }
