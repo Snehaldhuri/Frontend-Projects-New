@@ -80,7 +80,7 @@ class AppWorldActivity : BaseActivity() {
                     if (isFocused) {
                         view.background = getGradient(
                             appWorldViewModel.themeLiveData.value?.data?.gradientColor,
-                            appWorldViewModel.themeLiveData.value?.data?.gradientColor
+                            appWorldViewModel.themeLiveData.value?.data?.spotLightColor
                         )
                     } else {
                         view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
@@ -161,12 +161,11 @@ class AppWorldActivity : BaseActivity() {
 
     private fun getGradient(startColor: String?, endColor: String?): GradientDrawable {
         val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
+            GradientDrawable.Orientation.TR_BL,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
         )
         gradientDrawable.cornerRadius = 20f
         gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
     }
