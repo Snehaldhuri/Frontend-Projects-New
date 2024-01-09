@@ -59,9 +59,9 @@ class MainMenuViewModel @Inject constructor(
     init {
      //   fetchDateTime(Constants.UA)
         fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE)
-        fetchHotelServiceInfo(Constants.ACCOUNTID)
+        /*fetchHotelServiceInfo(Constants.ACCOUNTID)
         fetchLocalAttractionInfo(Constants.UA)
-        fetchMoviesInfo(Constants.UA)
+        fetchMoviesInfo(Constants.UA)*/
     }
 
 

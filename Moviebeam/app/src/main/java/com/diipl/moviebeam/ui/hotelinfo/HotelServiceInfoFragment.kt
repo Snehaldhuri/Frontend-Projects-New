@@ -34,7 +34,7 @@ class HotelServiceInfoFragment : Fragment() {
     ): View {
         // Inflate the layout for this fragment
         _binding = FragmentHotelServiceInfoBinding.inflate(inflater, container, false)
-        if (description == "null") {
+        if (description == "null" || description.isEmpty()) {
             binding.tvServiceDesc.toInvisible()
             binding.glVertical50.setGuidelinePercent(0f)
             val layoutParams = binding.ivServiceImg.layoutParams as ConstraintLayout.LayoutParams
