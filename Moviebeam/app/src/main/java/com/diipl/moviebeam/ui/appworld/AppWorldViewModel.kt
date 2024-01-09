@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -34,17 +33,17 @@ class AppWorldViewModel @Inject constructor(
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
 
     init {
-//        fetchThemeDetails("17205KKXLKF626")
+        fetchDateTime("17205KKXLKF626")
     }
 
-    private fun fetchThemeDetails(ua: String) {
+    fun fetchDateTime(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            _themeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getThemeDetails(ua)
+            _dateTimeLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getDateTimeData(ua)
             if (response == null) {
-                _themeLiveData.postValue(Resource.DataError(code = R.string.server_error))
+                _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _themeLiveData.postValue(Resource.Success(response))
+                _dateTimeLiveData.postValue(Resource.Success(response))
             }
         }
     }

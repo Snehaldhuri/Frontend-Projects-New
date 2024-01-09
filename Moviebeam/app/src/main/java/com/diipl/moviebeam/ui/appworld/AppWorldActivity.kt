@@ -14,7 +14,6 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -43,6 +42,7 @@ class AppWorldActivity : BaseActivity() {
     lateinit var themeDataStore: DataStore<ThemeResponse>
 
     override fun observeViewModel() {
+        observe(appWorldViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(appWorldViewModel.themeLiveData, ::handleThemeResponse)
     }
@@ -101,30 +101,47 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
+    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.pbLoader.toVisible()
+            is Resource.Success -> {
+                binding.layoutHeader.layoutWeatherTime.tvDate.text =
+                    appWorldViewModel.dateTimeLiveData.value?.data?.date
+                binding.layoutHeader.layoutWeatherTime.tvTime.text =
+                    appWorldViewModel.dateTimeLiveData.value?.data?.time
+                binding.pbLoader.toInvisible()
+            }
+
+            else -> {
+                status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-//        when (status) {
-//            is Resource.Loading -> binding.pbLoader.toVisible()
-//            is Resource.Success -> {
-//                var temperature = appWorldViewModel.weatherLiveData.value?.data?.tempCondition
-//                temperature?.let {
-//                    temperature = if (it.contains("&deg C")) {
-//                        it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
-//                    } else {
-//                        it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
-//                    }
-//                }
-//                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-//                    temperature
-//                binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
-//                    appWorldViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
-//                )
-//                binding.pbLoader.toInvisible()
-//            }
-//
-//            else -> {
-//                status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
-//            }
-//        }
+        when (status) {
+            is Resource.Loading -> binding.pbLoader.toVisible()
+            is Resource.Success -> {
+                var temperature = appWorldViewModel.weatherLiveData.value?.data?.tempCondition
+                temperature?.let {
+                    temperature = if (it.contains("&deg C")) {
+                        it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
+                    } else {
+                        it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
+                    }
+                }
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+                    temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
+                    appWorldViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
+                )
+                binding.pbLoader.toInvisible()
+            }
+
+            else -> {
+                status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
+            }
+        }
     }
 
     private fun loadBg(imgUrl: String?) {
@@ -147,12 +164,9 @@ class AppWorldActivity : BaseActivity() {
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
         )
-
         gradientDrawable.cornerRadius = 20f
-
         gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
         gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
     }
@@ -167,7 +181,7 @@ class AppWorldActivity : BaseActivity() {
         return applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
     }
 
-    private fun fetchDetailsFromDatasource(){
+    private fun fetchDetailsFromDatasource() {
         appWorldViewModel.getThemeResponseData(themeDataStore)
         appWorldViewModel.getWeatherResponseData(weatherDataStore)
     }
