@@ -53,7 +53,11 @@ class ShowtimeChildAdapter(
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
         val item = childList[position]
-        holder.logo.loadImagesWithGlideExt(item.secImagePathSushi)
+
+        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        item.imagePathSushi = httpStreamingHotelvideoUrl+item.releaseId+"/"+item.releaseId+"_S.jpg"
+
+        holder.logo.loadImagesWithGlideExt(item.imagePathSushi)
         holder.movieview.setOnClickListener {
             onItemClicked(item,item.releaseId)
         }

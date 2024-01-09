@@ -111,7 +111,7 @@ class MoviesActivity : BaseActivity() {
                     binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                val genreMap: HashMap<String, MutableList<ContentDto>> = HashMap()
+                var genreMap: LinkedHashMap<String, MutableList<ContentDto>> = LinkedHashMap()
                 response?.premiumContentList?.forEach {
                     if (it.genre1 != "Adult") {
                         if (genreMap[it.genre1] != null) {
@@ -121,8 +121,19 @@ class MoviesActivity : BaseActivity() {
                             movieList.add(it)
                             genreMap[it.genre1] = movieList
                         }
+
+                        if (genreMap[Constants.ALL_PAY_MOVIES] != null) {
+                            genreMap[Constants.ALL_PAY_MOVIES]?.add(it)
+                        } else {
+                            val movieList = mutableListOf<ContentDto>()
+                            movieList.add(it.copy(genre1 = Constants.ALL_PAY_MOVIES))
+                            genreMap[Constants.ALL_PAY_MOVIES] = movieList
+                        }
                     }
                 }
+
+                val sortedGenreMap = genreMap.toList().sortedBy { it.first }.toMap()
+
                 val adapter = MoviesBtnAdapter(list) { btnId ->
                     binding.fcvMovieDetail.toInvisible()
                     binding.parentRecyclerView.toVisible()
@@ -131,7 +142,7 @@ class MoviesActivity : BaseActivity() {
                         Constants.MOVIE_RENTALS_ID -> {
                             val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
 
-                            parentAdapter.setMovieList(genreMap)
+                            parentAdapter.setMovieList(sortedGenreMap)
                             binding.parentRecyclerView.adapter = parentAdapter
                         }
 

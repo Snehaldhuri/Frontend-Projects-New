@@ -21,11 +21,11 @@
         app:layout_constraintGuide_percent="0.052" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_vertical_95"
+        android:id="@+id/gl_vertical_96"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.95" />
+        app:layout_constraintGuide_percent="0.96" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_16"
@@ -54,7 +54,7 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_16"
-        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_96"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="parent" />\
 
@@ -78,7 +78,7 @@
         android:background="@android:color/transparent"
         android:focusableInTouchMode="true"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
-        app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_96"
         app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_20" />
 
@@ -89,7 +89,7 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_75"
-        app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_96"
         app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_20" />
 
@@ -100,7 +100,7 @@
     <!--        android:focusable="true"-->
     <!--        android:focusableInTouchMode="true"-->
     <!--        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"-->
-    <!--        app:layout_constraintEnd_toEndOf="@id/gl_vertical_95"-->
+    <!--        app:layout_constraintEnd_toEndOf="@id/gl_vertical_96"-->
     <!--        app:layout_constraintStart_toStartOf="@id/gl_vertical_29"-->
     <!--        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_22" />-->
 

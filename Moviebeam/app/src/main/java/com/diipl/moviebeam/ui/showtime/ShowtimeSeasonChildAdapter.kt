@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.showtime
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,14 +12,14 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
 class ShowtimeSeasonChildAdapter(
-    private val onItemClicked: (ShowTimeContent) -> Unit
+    private val onItemClicked: (Detail) -> Unit
 ) : RecyclerView.Adapter<ShowtimeSeasonChildAdapter.ChildViewHolder>() {
 
     private var seasonDet: List<Detail> = emptyList()
+    private var gradient: GradientDrawable? = null
 
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val seasonImage: ImageView = itemView.findViewById(R.id.iv_season_image)
@@ -33,22 +34,6 @@ class ShowtimeSeasonChildAdapter(
         view.isFocusable = true
         view.isClickable = true
 
-        view.setOnFocusChangeListener { it, hasFocus ->
-            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.05f)
-            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.05f)
-
-            val scaleAnimatorSet = AnimatorSet()
-            scaleAnimatorSet.duration = 200
-            scaleAnimatorSet.playTogether(scaleX, scaleY)
-
-            if (hasFocus) {
-                scaleAnimatorSet.start()
-            } else {
-                scaleAnimatorSet.cancel()
-                it.scaleX = 1.0f
-                it.scaleY = 1.0f
-            }
-        }
         return ChildViewHolder(view)
     }
 
@@ -56,17 +41,33 @@ class ShowtimeSeasonChildAdapter(
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
 
-        val detail = seasonDet.get(position)
-        if (detail != null) {
-            holder.seasonImage.loadImagesWithGlideExt(detail.secImagePathSushi)
+        val detail = seasonDet[position]
+        holder.seasonImage.loadImagesWithGlideExt(detail.secImagePathPoster)
+        holder.seasonTitle.text = detail.episodeHeaderDetails
+        holder.seasonDetail.text = detail.synopsis
+
+        holder.movieview.setOnClickListener {
+            onItemClicked(detail)
         }
-        holder.seasonTitle.text = detail?.episodeHeaderDetails
-        holder.seasonDetail.text = detail?.synopsis
 
-//        holder.movieview.setOnClickListener {
-//            onItemClicked(detail)
-//        }
+        holder.movieview.setOnFocusChangeListener { it, hasFocus ->
+            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.02f)
+            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.02f)
 
+            val scaleAnimatorSet = AnimatorSet()
+            scaleAnimatorSet.duration = 200
+            scaleAnimatorSet.playTogether(scaleX, scaleY)
+
+            if (hasFocus) {
+                holder.movieview.background = gradient
+                scaleAnimatorSet.start()
+            } else {
+                holder.movieview.setBackgroundResource(R.color.transparent)
+                scaleAnimatorSet.cancel()
+                it.scaleX = 1.0f
+                it.scaleY = 1.0f
+            }
+        }
     }
 
     fun updateSeasons(newSeasons: List<Detail>) {
@@ -74,5 +75,8 @@ class ShowtimeSeasonChildAdapter(
         notifyDataSetChanged()
     }
 
+    fun setGradient(gradient: GradientDrawable) {
+        this.gradient = gradient
+    }
 }
 
