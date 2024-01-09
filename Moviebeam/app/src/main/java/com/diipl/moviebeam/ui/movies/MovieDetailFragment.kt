@@ -38,7 +38,10 @@ class MovieDetailFragment : Fragment() {
 
     fun setMovieDetails(movie: ContentDto) {
         this.movie = movie
-        movie.secImagePathPoster.let {
+
+        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        movie.imagePathPoster =httpStreamingHotelvideoUrl+movie.releaseId+"/"+movie.releaseId+"_P.jpg"
+        movie.imagePathPoster.let {
             binding.ivMovieImage.loadImagesWithGlideExt(it)
         }
         binding.tvTitle.text = movie.movieName

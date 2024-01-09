@@ -13,6 +13,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.showtime.Season
@@ -32,6 +33,10 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
     private var position: Int = 0
 
     private var gradient: GradientDrawable? = null
+
+    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
+
     private val showtimeViewModel: ShowtimeViewModel by activityViewModels()
 
     private var selectedShow: ShowTimeContent? = null
@@ -57,6 +62,11 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
         _binding = FragmentShowtimeSeasonBinding.inflate(inflater, container, false)
         return binding.root
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+    }
+
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
             is Resource.Loading -> { binding.loaderView.toVisible() }
@@ -69,7 +79,11 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
                 val detail = response?.shoGenreList?.get(0)?.detailList?.find { detail ->
                     detail.releaseId == position
                 }
-                detail?.secImagePathSushi?.let {
+
+                val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+                detail?.imagePathSushi =httpStreamingHotelvideoUrl+detail?.releaseId+"/"+detail?.releaseId+"_S.jpg"
+
+                detail?.imagePathSushi?.let {
                     setImage(it)
                 }
                 binding.loaderView.toInvisible()
@@ -105,7 +119,11 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
 
         dropdown.adapter = dropdownAdapter
         dropdown.onItemSelectedListener = this
-        adapter = ShowtimeSeasonChildAdapter() { season ->
+        adapter = ShowtimeSeasonChildAdapter { movieDetail ->
+            (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(movieDetail)
+        }
+        gradient?.let {
+            adapter?.setGradient(it)
         }
         selectedShow?.let {
             adapter!!.updateSeasons(it.seasonList[0].detailList)
@@ -113,6 +131,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
         binding.seasonListRecyclerView.adapter = adapter
         binding.seasonListRecyclerView.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+
     }
     override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
         adapter?.updateSeasons(seasonList[position].detailList)
@@ -120,6 +139,21 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
     override fun onNothingSelected(p0: AdapterView<*>?) {
 
     }
+    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+        )
+
+        gradientDrawable.cornerRadius = 20f
+
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
+    }
+
     fun setGradient(gradient: GradientDrawable) {
         this.gradient = gradient
     }

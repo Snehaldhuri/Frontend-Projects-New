@@ -76,7 +76,10 @@ class ShowtimeDetailFragment : BaseFragment() {
     }
     fun setShowDetails(show: Detail) {
         this.show = show
-        show.secImagePathSushi.let {
+
+        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        show.imagePathPoster =httpStreamingHotelvideoUrl+show.releaseId+"/"+show.releaseId+"_P.jpg"
+        show.imagePathPoster.let {
             binding.ivMovieImage.loadImagesWithGlideExt(it)
         }
         binding.ivMovieImage.setBackgroundResource(R.drawable.round_outline_5dp)

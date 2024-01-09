@@ -228,6 +228,12 @@ class GuestServiceActivity : BaseActivity() {
                         }
                     }
                 }
+                binding.rvTabContent.toInvisible()
+                val transaction = supportFragmentManager.beginTransaction()
+                val fragment = WeatherFragment()
+                transaction.replace(R.id.fv_tab_content, fragment)
+                transaction.commit()
+
                 adapter.setButtonList(ArrayList(gsBtnModelList.map { it.copy() }))
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
 

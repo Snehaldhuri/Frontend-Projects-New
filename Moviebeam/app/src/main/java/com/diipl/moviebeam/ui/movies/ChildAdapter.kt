@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
@@ -32,22 +33,6 @@ class ChildAdapter(
         view.isFocusable = true
         view.isClickable = true
 
-        view.setOnFocusChangeListener { it, hasFocus ->
-            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.1f)
-            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.1f)
-
-            val scaleAnimatorSet = AnimatorSet()
-            scaleAnimatorSet.duration = 200
-            scaleAnimatorSet.playTogether(scaleX, scaleY)
-
-            if (hasFocus) {
-                scaleAnimatorSet.start()
-            } else {
-                scaleAnimatorSet.cancel()
-                it.scaleX = 1.0f
-                it.scaleY = 1.0f
-            }
-        }
         return ChildViewHolder(view)
     }
 
@@ -55,12 +40,38 @@ class ChildAdapter(
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
         val item = childList[position]
-        holder.logo.loadImagesWithGlideExt(item.secImagePathSushi)
+
+        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        item.imagePathSushi = httpStreamingHotelvideoUrl+item.releaseId+"/"+item.releaseId+"_S.jpg"
+
+        holder.logo.loadImagesWithGlideExt(item.imagePathSushi)
         if(item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID){
             holder.title.toInvisible()
         }else{
             holder.title.text =
                 holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
+        }
+
+        holder.movieview.setOnFocusChangeListener { it, hasFocus ->
+            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.1f)
+            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.1f)
+
+            val scaleAnimatorSet = AnimatorSet()
+            scaleAnimatorSet.duration = 200
+            scaleAnimatorSet.playTogether(scaleX, scaleY)
+
+            val focusedColor = ContextCompat.getColor(holder.title.context, R.color.home_page_greeting_text_color)
+            val unfocusedColor = ContextCompat.getColor(holder.title.context, R.color.text_color_primary)
+
+            if (hasFocus) {
+                holder.title.setTextColor(focusedColor)
+                scaleAnimatorSet.start()
+            } else {
+                holder.title.setTextColor(unfocusedColor)
+                scaleAnimatorSet.cancel()
+                it.scaleX = 1.0f
+                it.scaleY = 1.0f
+            }
         }
 
         holder.movieview.setOnClickListener {

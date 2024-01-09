@@ -62,6 +62,7 @@ object Constants {
     const val FREE_MOVIES_ID = "freeMovies"
     const val ADULT_DAY_PASS_ID = "adultDayPass"
     const val ADULT_ID = "adult"
+    const val ALL_PAY_MOVIES = "All Pay Movies"
 
     //Movies page menu button list
     const val MOVIE_RENTALS = "Movie Rentals"

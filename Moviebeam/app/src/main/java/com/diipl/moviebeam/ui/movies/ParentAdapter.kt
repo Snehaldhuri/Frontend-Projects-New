@@ -44,7 +44,12 @@ class ParentAdapter(
 
     fun setMovieList(map: Map<String, List<ContentDto>>) {
         val list: MutableList<List<ContentDto>> = mutableListOf()
-        map.keys.forEach {
+            val keys = map.keys.toMutableList()
+            keys.remove("New Releases")
+            keys.add(0, "New Releases")
+            keys.remove("All Pay Movies")
+            keys.add(1, "All Pay Movies")
+            keys.forEach {
             map[it]?.let { genre ->
                 list.add(genre)
             }
