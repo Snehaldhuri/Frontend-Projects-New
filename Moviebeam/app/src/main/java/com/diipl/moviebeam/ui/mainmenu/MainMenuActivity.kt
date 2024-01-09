@@ -204,6 +204,22 @@ class MainMenuActivity : BaseActivity() {
                 val adapter = MainMenuBtnAdapter { btn ->
                     val bundle = Bundle()
                     bundle.putString("title", btn.title)
+                    bundle.putString(
+                        "themeLogoFileName",
+                        mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
+                    )
+                    bundle.putString(
+                        "themeBackgroundFileName",
+                        mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
+                    )
+                    bundle.putString(
+                        "gradientStartColor",
+                        mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                    )
+                    bundle.putString(
+                        "gradientEndColor",
+                        mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                    )
                     var intent: Intent? = null
                     when (btn.btnId) {
                         Constants.HOTEL_SERVICES_ID -> {
@@ -313,30 +329,30 @@ class MainMenuActivity : BaseActivity() {
 
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl).into(object : CustomTarget<Drawable?>() {
-                override fun onResourceReady(
-                    resource: Drawable, transition: Transition<in Drawable?>?
-                ) {
-                    binding.root.background = resource
-                }
+            override fun onResourceReady(
+                resource: Drawable, transition: Transition<in Drawable?>?
+            ) {
+                binding.root.background = resource
+            }
 
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
+            override fun onLoadCleared(placeholder: Drawable?) {}
+        })
     }
 
 
     private fun getImageBitmap(imageUrl: String, filename: String) {
         Glide.with(this).asBitmap().load(imageUrl).into(object : CustomTarget<Bitmap>() {
-                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                    // The 'resource' parameter contains the Bitmap loaded from the imageUrl
-                    // Now you can use the bitmap as needed, for example, save it locally
-                    saveImageLocally(resource, filename)
+            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                // The 'resource' parameter contains the Bitmap loaded from the imageUrl
+                // Now you can use the bitmap as needed, for example, save it locally
+                saveImageLocally(resource, filename)
 
-                }
+            }
 
-                override fun onLoadCleared(placeholder: Drawable?) {
+            override fun onLoadCleared(placeholder: Drawable?) {
 
-                }
-            })
+            }
+        })
     }
 
     // Save the image locally

@@ -15,7 +15,6 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -32,29 +31,31 @@ class AppWorldActivity : BaseActivity() {
     private lateinit var binding: ActivityAppWorldBinding
     private val appWorldViewModel: AppWorldViewModel by viewModels()
 
-    @Inject
-    lateinit var dateTimeDataStore: DataStore<DateTimeResponse>
+    private var gradient: GradientDrawable? = null
 
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
-    @Inject
-    lateinit var themeDataStore: DataStore<ThemeResponse>
-
     override fun observeViewModel() {
-        observe(appWorldViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(appWorldViewModel.themeLiveData, ::handleThemeResponse)
+        observe(appWorldViewModel.dateTimeLiveData, ::handleDateTimeResponse)
     }
 
     override fun initViewBinding() {
-        fetchDetailsFromDatasource()
+        fetchDataFromDatastore()
         binding = ActivityAppWorldBinding.inflate(layoutInflater)
-        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+        fetchDetails()
         binding.rvApps.layoutManager = GridLayoutManager(this, 4)
         getInstalledApps()
         binding.btnBack.setOnClickListener {
             finish()
+        }
+        binding.btnBack.setOnFocusChangeListener { view, isFocused ->
+            if (isFocused) {
+                view.background = gradient
+            } else {
+                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
         }
         setContentView(binding.root)
     }
@@ -70,35 +71,6 @@ class AppWorldActivity : BaseActivity() {
         val installedApps = filterSystemApps(allApps)
         adapter.setAppList(installedApps)
         binding.rvApps.adapter = adapter
-    }
-
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.btnBack.setOnFocusChangeListener { view, isFocused ->
-                    if (isFocused) {
-                        view.background = getGradient(
-                            appWorldViewModel.themeLiveData.value?.data?.gradientColor,
-                            appWorldViewModel.themeLiveData.value?.data?.spotLightColor
-                        )
-                    } else {
-                        view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                    }
-                }
-                appWorldViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
-                }
-                loadBg(appWorldViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                binding.pbLoader.toInvisible()
-                binding.btnBack.clearFocus()
-                binding.btnBack.requestFocus()
-            }
-
-            else -> {
-                status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
-            }
-        }
     }
 
     private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
@@ -122,19 +94,13 @@ class AppWorldActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                var temperature = appWorldViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    temperature = if (it.contains("&deg C")) {
-                        it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
-                    } else {
-                        it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
-                    }
-                }
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    temperature
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
-                    appWorldViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
-                )
+                    replaceDegreeSymbol(appWorldViewModel.weatherLiveData.value?.data?.tempCondition)
+                appWorldViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
+                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
+                        it
+                    )
+                }
                 binding.pbLoader.toInvisible()
             }
 
@@ -180,9 +146,32 @@ class AppWorldActivity : BaseActivity() {
         return applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
     }
 
-    private fun fetchDetailsFromDatasource() {
-        appWorldViewModel.getThemeResponseData(themeDataStore)
+    private fun fetchDataFromDatastore() {
         appWorldViewModel.getWeatherResponseData(weatherDataStore)
+    }
+
+    private fun fetchDetails() {
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+        gradient = getGradient(
+            intent.extras?.getString("gradientStartColor"),
+            intent.extras?.getString("gradientEndColor")
+        )
+        intent.extras?.getString("themeLogoFileName")?.let {
+            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+        }
+        loadBg(intent.extras?.getString("themeBackgroundFileName"))
+    }
+
+    private fun replaceDegreeSymbol(temp: String?): String {
+        var temperature = ""
+        temp?.let {
+            temperature = if (it.contains("&deg C")) {
+                it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
+            } else {
+                it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
+            }
+        }
+        return temperature
     }
 
 }
