@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
@@ -34,12 +35,17 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.kapping.Actions
+import com.diipl.moviebeam.ui.kapping.EndlessService
+import com.diipl.moviebeam.ui.kapping.ServiceState
+import com.diipl.moviebeam.ui.kapping.getServiceState
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -58,6 +64,7 @@ class MainMenuActivity : BaseActivity() {
     private lateinit var binding: ActivityMainMenuBinding
     private var gradientStartColor = ""
     private var gradientEndColor = ""
+    private var isServiceStarted = false
 
     private var videoUrl =""
 
@@ -94,6 +101,10 @@ class MainMenuActivity : BaseActivity() {
          mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
          */
 
+        // start the endless service
+        if (!isServiceStarted){
+            actionOnService(Actions.START)
+        }
         videoTextureView = findViewById(R.id.videoTextureView)
 
         mediaPlayer = MediaPlayer()
@@ -130,9 +141,9 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-        observe(mainMenuViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
+        /*observe(mainMenuViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(mainMenuViewModel.localAttractionLiveData, ::handleLAServiceResponse)
-        observe(mainMenuViewModel.moviesLiveData, ::handleMoviesResponse)
+        observe(mainMenuViewModel.moviesLiveData, ::handleMoviesResponse)*/
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
@@ -451,6 +462,25 @@ class MainMenuActivity : BaseActivity() {
             }
         } catch (e: IOException) {
             e.printStackTrace()
+        }
+    }
+
+    private fun actionOnService(action: Actions) {
+        if (action == Actions.STOP){
+            isServiceStarted = false
+        }else if (action == Actions.START){
+            isServiceStarted = true
+        }
+        if (getServiceState(this) == ServiceState.STOPPED && action == Actions.STOP) return
+        Intent(this, EndlessService::class.java).also {
+            it.action = action.name
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                log("Starting the service in >=26 Mode")
+                startForegroundService(it)
+                return
+            }
+            log("Starting the service in < 26 Mode")
+            startService(it)
         }
     }
 

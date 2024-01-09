@@ -1,7 +1,7 @@
 package com.diipl.moviebeam.utils
 
 import android.app.Service
-import android.graphics.drawable.Drawable
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
@@ -11,8 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.google.android.material.snackbar.Snackbar
 
@@ -155,6 +153,10 @@ fun ImageView.loadImagesWithGlideExtLA(url: String) {
             .placeholder(R.drawable.la_default)
             .into(this)
     }
+}
+
+fun log(msg: String) {
+    Log.d("ENDLESS-SERVICE", msg)
 }
 
 
