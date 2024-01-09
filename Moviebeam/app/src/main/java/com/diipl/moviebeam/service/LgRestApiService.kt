@@ -27,7 +27,7 @@ interface LgRestApiService {
 
     //for device versions
     @GET("process/stbMaster")
-     fun getstbMaster(
+    suspend fun getstbMaster(
         @Query("UA") UA: String,
         @Query("SRNO") SRNO: String,
         @Query("MACADDR") MACADDR: String,

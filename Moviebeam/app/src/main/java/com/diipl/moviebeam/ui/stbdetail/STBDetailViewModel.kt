@@ -22,7 +22,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
     ViewModel() {
 
     private val _stbMasterLiveData = MutableLiveData<Resource<StbMasterResponse>>()
-    val stbMasterLiveData: LiveData<Resource<StbMasterResponse>> get() = _stbMasterLiveData
+    val  stbMasterLiveData: LiveData<Resource<StbMasterResponse>> get() = _stbMasterLiveData
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
     val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
 

@@ -13,6 +13,7 @@ import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.kaping.kapingResponce
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
@@ -132,7 +133,55 @@ class RemoteDataSource @Inject constructor(
                 wifimacadd
             )
         }
-        Log.e("result", "getStbMasterDetails:${result} ", )
+        Log.e("result", "getStbMasterDetails:${result} ")
         return ApiResponseParsing().getResponseAsObject(result.data, StbMasterResponse::class)
+    }
+
+
+    suspend fun kapingResponce(
+        Q: String,
+        UA: String,
+        DRID: String,
+        SW: String,
+        CLISTVER: String,
+        DV: String,
+        TNS: String,
+        EVENT: String,
+        SID: String,
+        RBTY: String,
+        MODE: String,
+        LAVER: String,
+        HSVER: String,
+        THMVER: String,
+        CMDRES: String,
+        CALLBACKFLG: String,
+        INRMVER: String,
+        LAUVER: String
+    ): kapingResponce {
+        val result = safeAPiCall {
+            lgRestApiService.kaping(
+                Q,
+                UA,
+                DRID,
+                SW,
+                CLISTVER,
+                DV,
+                TNS,
+                EVENT,
+                SID,
+                RBTY,
+                MODE,
+                LAVER,
+                HSVER,
+                THMVER,
+                CMDRES,
+                CALLBACKFLG,
+                INRMVER,
+                LAUVER
+
+            )
+        }
+        Log.e("result", "getStbMasterDetails:${result} ")
+        return ApiResponseParsing().getResponseAsObject(result.data, kapingResponce::class)!!
     }
 }

@@ -12,6 +12,7 @@ import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.kaping.kapingResponce
 import com.diipl.moviebeam.data.remote.datasource.RemoteDataSource
 import javax.inject.Inject
 
@@ -79,6 +80,48 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         wifimacadd: String
     ): StbMasterResponse? {
         return remoteDataSource.getStbMasterDetails(ua, srno, macadd, type, wifimacadd)
+    }
+
+    suspend fun kapingResponce(
+        Q: String,
+        UA: String,
+        DRID: String,
+        SW: String,
+        CLISTVER: String,
+        DV: String,
+        TNS: String,
+        EVENT: String,
+        SID: String,
+        RBTY: String,
+        MODE: String,
+        LAVER: String,
+        HSVER: String,
+        THMVER: String,
+        CMDRES: String,
+        CALLBACKFLG: String,
+        INRMVER: String,
+        LAUVER: String
+    ): kapingResponce {
+        return remoteDataSource.kapingResponce(
+            Q,
+            UA,
+            DRID,
+            SW,
+            CLISTVER,
+            DV,
+            TNS,
+            EVENT,
+            SID,
+            RBTY,
+            MODE,
+            LAVER,
+            HSVER,
+            THMVER,
+            CMDRES,
+            CALLBACKFLG,
+            INRMVER,
+            LAUVER
+        )
     }
 
 
