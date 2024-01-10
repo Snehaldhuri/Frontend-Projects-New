@@ -206,6 +206,18 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
+    //Apps
+    val SELECTED_APPS = listOf(
+        "Prime Video",
+        "Disney+",
+        "Hulu",
+        "Max",
+        "Netflix",
+        "Paramount+",
+        "Peacock TV",
+        "YouTube"
+    )
+
 }
 
 const val SPLASH_DELAY = 3000

@@ -69,6 +69,9 @@ class AppWorldActivity : BaseActivity() {
             }
         }
         val installedApps = filterSystemApps(allApps)
+        val selectedApps = installedApps.filter {
+            Constants.SELECTED_APPS.contains(packageManager.getApplicationLabel(it))
+        }
         adapter.setAppList(installedApps)
         binding.rvApps.adapter = adapter
     }
