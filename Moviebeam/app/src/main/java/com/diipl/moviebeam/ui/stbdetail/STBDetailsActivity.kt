@@ -20,16 +20,20 @@ class STBDetailsActivity : BaseActivity() {
 
     private val stbDetailViewModel: STBDetailViewModel by viewModels()
     private lateinit var binding: ActivityStbdetailsBinding
-    lateinit var serail_num: String
+    lateinit var serial_num: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val bundle = intent.extras
-        //Extract the data…
-        serail_num = bundle!!.getString("serial")!!
-        Log.e("serial_num", "initViewBinding:${serail_num}")
+        intent?.let {
+            val bundle = it.extras
+            //Extract the data…
+            serial_num = bundle?.getString("serial").toString()
+            Log.e("serial_num", "initViewBinding:${serial_num}")
+        }
+
+
     }
 
     //observe class
