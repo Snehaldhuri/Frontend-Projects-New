@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import com.diipl.moviebeam.SPLASH_DELAY
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.databinding.SplashLayoutBinding
 import com.diipl.moviebeam.ui.login.LoginActivity
 
 
-class SplashActivity : AppCompatActivity(){
+class SplashActivity : AppCompatActivity() {
 
     private lateinit var binding: SplashLayoutBinding
 
@@ -27,6 +27,6 @@ class SplashActivity : AppCompatActivity(){
             val nextScreenIntent = Intent(this, LoginActivity::class.java)
             startActivity(nextScreenIntent)
             finish()
-        }, SPLASH_DELAY.toLong())
+        }, Constants.SPLASH_DELAY.toLong())
     }
 }
