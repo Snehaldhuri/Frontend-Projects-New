@@ -190,6 +190,7 @@ object Constants {
     //Flight Status
     const val DEPARTURE = "DEP"
     const val ARRIVAL = "ARR"
+    const val NOT_AVAILABLE = "N/A"
 
     //Api Cmd
     const val ACTIVATE_CMD = "ACTIVATE"

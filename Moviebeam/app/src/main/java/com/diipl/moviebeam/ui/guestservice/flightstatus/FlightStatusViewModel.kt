@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.guestservice.flightstatus
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -23,18 +22,10 @@ class FlightStatusViewModel @Inject constructor(
     private val _flightStatusLiveData = MutableLiveData<Resource<FlightStatusResponse>>()
     val flightStatusLiveData: LiveData<Resource<FlightStatusResponse>> get() = _flightStatusLiveData
 
-    private val callType = "DEP"
-    init {
-        val ua = "17205KKXLKF626"
-//        getFlightStatus("FLSTATUS", ua, callType, "", "JSON")
-//        Log.d("INIT FLIGHT STATUS", "In init Block: ")
-    }
-
     fun getFlightStatus(cmd: String, ua: String, callType: String, apCode: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _flightStatusLiveData.postValue(Resource.Loading())
             val response = movieBeamRepository.getFlightStatus(cmd, ua, callType, apCode, mode)
-            Log.i("getFlightStatus: ", response.toString())
             if (response == null) {
                 _flightStatusLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {

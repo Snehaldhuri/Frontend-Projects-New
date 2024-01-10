@@ -19,7 +19,7 @@ class FlightStatusTableAdapter(
     private val onLeftKeyPressed: () -> Unit
 ) : RecyclerView.Adapter<FlightStatusTableAdapter.MyViewHolder>() {
 
-    private var itemList: List<Flight> = mutableListOf()
+    private var flightList: List<Flight> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val flightNo: TextView = itemView.findViewById(R.id.tv_flight_no)
@@ -41,12 +41,10 @@ class FlightStatusTableAdapter(
         view.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                 when (keycode) {
-                    KeyEvent.KEYCODE_DPAD_LEFT ->{
-                        onLeftKeyPressed()
-                    }
+                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
                 }
             }
-                false
+            false
         }
 
         val params = view.layoutParams
@@ -59,10 +57,10 @@ class FlightStatusTableAdapter(
         return (width * percent) / 100
     }
 
-    override fun getItemCount(): Int = itemList.size
+    override fun getItemCount(): Int = flightList.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val item = itemList[position]
+        val item = flightList[position]
 
         setContent(holder.flightNo, item.flightNo)
         setContent(holder.destination, item.destination)
@@ -70,12 +68,20 @@ class FlightStatusTableAdapter(
         setContent(holder.time, item.departureTime)
         setContent(holder.terminal, item.terminal)
         setContent(holder.gate, item.gate)
-        setContent(holder.status, item.status, item.colorCode)
+        if(item.colorCode != null){
+            setContent(holder.status, item.status, item.colorCode)
+        }else{
+            setContent(holder.status, item.status)
+        }
 
     }
 
-    private fun setContent(textView: TextView, text: String, color: String = "white") {
-        textView.text = text
+    private fun setContent(textView: TextView, text: String?, color: String = "white") {
+        if (text == null){
+            textView.text = Constants.NOT_AVAILABLE
+        }else{
+            textView.text = text
+        }
         textView.gravity = Gravity.CENTER
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
         when (color) {
@@ -100,7 +106,7 @@ class FlightStatusTableAdapter(
     }
 
     fun setFlightList(flightList: List<Flight>) {
-        itemList = flightList
+        this.flightList = flightList
     }
 
 }

@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.guestservice.flightstatus
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -54,19 +55,7 @@ class FlightStatusFragment(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentFlightStatusBinding.inflate(inflater, container, false)
-
-//        binding.layoutFlightStatusTable.rvTableContent.setOnKeyListener { _, keycode, keyEvent ->
-//            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-//                when (keycode) {
-//                    KeyEvent.KEYCODE_DPAD_LEFT ->
-//                        onLeftKeyPressed()
-//                }
-//            }
-//            false
-//        }
-
         return binding.root
     }
 
@@ -104,27 +93,28 @@ class FlightStatusFragment(
         dropdown.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 view.background = gradientButton
-                view.findViewById<TextView>(R.id.tv_title).isSelected = true
+                view.findViewById<TextView>(R.id.tv_title)?.let {
+                    it.isSelected = true
+                }
             } else {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                view.findViewById<TextView>(R.id.tv_title).isSelected = false
+                view.findViewById<TextView>(R.id.tv_title)?.let {
+                    it.isSelected = false
+                }
             }
         }
-//        dropdown.setOnKeyListener { _, keycode, keyEvent ->
-//            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-//                when (keycode) {
-//                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
-////                        onLeftKeyPressed(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
-////                        Log.d("TAG22", "onViewCreated: Working")
-////                    onLeftKeyPressed()
-//                }
-//            }
-//            false
-//        }
-//        binding.spAirport.requestFocus()
+        dropdown.requestFocus()
+        dropdown.setOnKeyListener { _, keycode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keycode) {
+                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
+                }
+            }
+            false
+        }
     }
 
-    fun handleFlightStatusResponse(status: Resource<FlightStatusResponse>) {
+    private fun handleFlightStatusResponse(status: Resource<FlightStatusResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
@@ -133,7 +123,10 @@ class FlightStatusFragment(
                         LinearLayoutManager(this.context)
 
                     val tableAdapter =
-                        FlightStatusTableAdapter(onFlightFocused = ::handleFlightStatusFocus, onLeftKeyPressed= onLeftKeyPressed)
+                        FlightStatusTableAdapter(
+                            onFlightFocused = ::handleFlightStatusFocus,
+                            onLeftKeyPressed = onLeftKeyPressed
+                        )
                     tableAdapter.setFlightList(it)
                     binding.layoutFlightStatusTable.rvTableContent.adapter = tableAdapter
                 }
@@ -156,7 +149,7 @@ class FlightStatusFragment(
             ua,
             callType,
             apCode,
-            "JSON"
+            Constants.MODE
         )
     }
 
@@ -169,18 +162,6 @@ class FlightStatusFragment(
     override fun onNothingSelected(parent: AdapterView<*>?) {
         apCode = ""
         fetchFlightStatus()
-    }
-
-    private fun handleButtonFocus(view: View, isFocused: Boolean, isDropdown: Boolean) {
-        if (isFocused) {
-            view.background = gradientButton
-            if (isDropdown)
-                view.findViewById<TextView>(R.id.tv_title).isSelected = true
-        } else {
-            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            if (isDropdown)
-                view.findViewById<TextView>(R.id.tv_title).isSelected = false
-        }
     }
 
     private fun handleFlightStatusFocus(view: View, isFocused: Boolean) {
