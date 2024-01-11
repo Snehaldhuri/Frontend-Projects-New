@@ -2,6 +2,7 @@ package com.diipl.moviebeam.data.remote.datasource
 
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
@@ -101,6 +102,13 @@ class RemoteDataSource @Inject constructor(
             lgRestApiService.getNewsDetails(newsId)
         }
         return ApiResponseParsing().getResponseAsObject(result.data, NewsResponse::class)
+    }
+
+    suspend fun sendGuestFeedback(ua: String, feedback: String, stbTime: String): FeedbackResponse? {
+        val result = safeAPiCall {
+            lgRestApiService.sendGuestFeedback(ua, feedback, stbTime)
+        }
+        return ApiResponseParsing().getResponseAsObject(result.data, FeedbackResponse::class)
     }
 
 }

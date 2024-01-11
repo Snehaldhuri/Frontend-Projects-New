@@ -207,6 +207,16 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
+    //Guest Feedback
+    const val UNACCEPTABLE = "Unacceptable"
+    const val DISAPPOINTING = "Disappointing"
+    const val GOOD = "Good"
+    const val EXCELLENT = "Excellent"
+
+    //    const val UNSATISFIED = " Unsatisfies"
+    const val FEEDBACK_POSITIVE_COLOR = "#34C759"
+    const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
+
 }
 
 const val SPLASH_DELAY = 3000

@@ -47,4 +47,11 @@ interface LgRestApiService {
         @Query("newsId") newsId: Int
     ): Response<String>
 
+    @GET("process/guestFeedback")
+    suspend fun sendGuestFeedback(
+        @Query("UA") ua: String,
+        @Query("FEEDBACK") feedback: String,
+        @Query("STB_TIME") stbTime: String
+    ): Response<String>
+
 }
