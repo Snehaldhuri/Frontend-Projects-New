@@ -1,47 +1,38 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
-
-import android.content.Context.LAYOUT_INFLATER_SERVICE
-import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.PopupWindow
-import androidx.core.content.ContextCompat.getSystemServiceName
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.databinding.FragmentMakeMyRoomBinding
+import com.diipl.moviebeam.databinding.FragmentGolfBinding
 
 
-class MakeMyRoomFragment : Fragment() {
+class GolfFragment : Fragment() {
 
-    private var _binding: FragmentMakeMyRoomBinding? = null
+    private var _binding: FragmentGolfBinding? = null
     val binding get() = _binding!!
 
     private var day: String = ""
     private var date: String = ""
     private var month: String = ""
     private var year: String = ""
-    private var currentHour: Int =24
+    private var currentHour: Int = 24
     lateinit var layout_dt: LinearLayout
     lateinit var layout_confirmation: LinearLayout
-
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
+
         // Inflate the layout for this fragment
-        _binding = FragmentMakeMyRoomBinding.inflate(inflater, container, false)
+        _binding = FragmentGolfBinding.inflate(inflater, container, false)
         layout_dt = binding.root.findViewById(R.id.layout_dt)
         layout_confirmation = binding.root.findViewById(R.id.layout_confirmation)
-
 
         binding.btnCancel.setOnClickListener(View.OnClickListener {
 

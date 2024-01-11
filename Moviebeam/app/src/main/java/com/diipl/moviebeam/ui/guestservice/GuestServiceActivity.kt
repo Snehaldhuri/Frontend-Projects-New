@@ -28,6 +28,7 @@ import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.concierge.ConciergeAdapter
 import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.VelvetParkingFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
@@ -177,6 +178,34 @@ class GuestServiceActivity : BaseActivity() {
                                         }
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
+                                        binding.fvTabContent.toVisible()
+                                        transaction.commit()
+                                    }
+                                    2 -> {
+                                        val transaction = supportFragmentManager.beginTransaction()
+                                        val fragment = VelvetParkingFragment()
+                                        transaction.replace(R.id.fv_tab_content, fragment)
+                                        binding.rvTabContent.toInvisible()
+                                        binding.fvTabContent.toVisible()
+                                        transaction.commit()
+                                    }
+                                    6 -> {
+                                        val transaction = supportFragmentManager.beginTransaction()
+                                        val fragment = MakeMyRoomFragment()
+                                        val dateTimeResponse =
+                                            guestServiceViewModel.dateTimeLiveData.value?.data
+                                        dateTimeResponse?.let { date ->
+                                            fragment.setDate(
+                                                date.hour,
+                                                date.date.substring(0, 3),
+                                                date.day,
+                                                date.month,
+                                                date.year
+                                            )
+                                        }
+                                        transaction.replace(R.id.fv_tab_content, fragment)
+                                        binding.rvTabContent.toInvisible()
+                                        binding.fvTabContent.toVisible()
                                         transaction.commit()
                                     }
                                 }
