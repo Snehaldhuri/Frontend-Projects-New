@@ -24,6 +24,10 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.guestservice.feedback.thankyou.ThankYouActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
             android:name=".ui.casting.CastingActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>

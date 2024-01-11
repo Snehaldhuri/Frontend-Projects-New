@@ -2,6 +2,7 @@ package com.diipl.moviebeam.data.repositories
 
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
@@ -67,6 +68,14 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
 
     suspend fun getNewsDetails(newsId: Int): NewsResponse? {
         return remoteDataSource.getNewsDetails(newsId)
+    }
+
+    suspend fun sendGuestFeedback(
+        ua: String,
+        feedback: String,
+        stbTime: String
+    ): FeedbackResponse? {
+        return remoteDataSource.sendGuestFeedback(ua, feedback, stbTime)
     }
 
 }

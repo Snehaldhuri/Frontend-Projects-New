@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.guestservice.flightstatus
+package com.diipl.moviebeam.ui.guestservice.feedback
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -6,30 +6,31 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
+import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
-class FlightStatusViewModel @Inject constructor(
+class FeedbackViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
 
-    private val _flightStatusLiveData = MutableLiveData<Resource<FlightStatusResponse>>()
-    val flightStatusLiveData: LiveData<Resource<FlightStatusResponse>> get() = _flightStatusLiveData
+    private val _feedbackLiveData = MutableLiveData<Resource<FeedbackResponse>>()
+    val feedbackLiveData: LiveData<Resource<FeedbackResponse>> get() = _feedbackLiveData
 
-    fun getFlightStatus(cmd: String, ua: String, callType: String, apCode: String, mode: String) {
+    fun sendGuestFeedback(ua: String, feedback: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            _flightStatusLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getFlightStatus(cmd, ua, callType, apCode, mode)
+            _feedbackLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.sendGuestFeedback(ua, feedback, Date().toString())
             if (response == null) {
-                _flightStatusLiveData.postValue(Resource.DataError(code = R.string.server_error))
+                _feedbackLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
-                _flightStatusLiveData.postValue(Resource.Success(response))
+                _feedbackLiveData.postValue(Resource.Success(response))
             }
         }
     }
@@ -43,5 +44,4 @@ class FlightStatusViewModel @Inject constructor(
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
     }
-
 }

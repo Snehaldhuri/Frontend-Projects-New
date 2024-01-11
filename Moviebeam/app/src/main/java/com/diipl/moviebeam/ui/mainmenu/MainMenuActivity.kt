@@ -206,6 +206,22 @@ class MainMenuActivity : BaseActivity() {
                 val adapter = MainMenuBtnAdapter { btn ->
                     val bundle = Bundle()
                     bundle.putString("title", btn.title)
+                    bundle.putString(
+                        "themeLogoFileName",
+                        mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
+                    )
+                    bundle.putString(
+                        "themeBackgroundFileName",
+                        mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
+                    )
+                    bundle.putString(
+                        "gradientStartColor",
+                        mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                    )
+                    bundle.putString(
+                        "gradientEndColor",
+                        mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                    )
                     var intent: Intent? = null
                     when (btn.btnId) {
                         Constants.HOTEL_SERVICES_ID -> {

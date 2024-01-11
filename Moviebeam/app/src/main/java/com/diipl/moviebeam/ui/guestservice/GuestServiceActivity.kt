@@ -5,10 +5,9 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,12 +21,12 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.concierge.ConciergeAdapter
 import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
+import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
@@ -40,19 +39,30 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class GuestServiceActivity : BaseActivity() {
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
 
+    @Inject
+    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
+
+    @Inject
+    lateinit var weatherDataStore: DataStore<WeatherResponse>
+
     private var gradientStartColor = "#010101"
     private var gradientEndColor = "#EFEFEF"
+    private var gradient: GradientDrawable? = null
 
     override fun initViewBinding() {
+        fetchDataFromDatastore()
         binding = ActivityGuestServiceBinding.inflate(layoutInflater)
+        fetchDetails()
         setContentView(binding.root)
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+        binding.btnBack.setOnFocusChangeListener(::handleBackClick)
         binding.btnBack.setOnClickListener { finish() }
         binding.rvTabLayout.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -60,50 +70,18 @@ class GuestServiceActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(guestServiceViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(guestServiceViewModel.themeLiveData, ::handleThemeResponse)
         observe(guestServiceViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observeSnackBarMessages(guestServiceViewModel.showSnackBar)
         observeToast(guestServiceViewModel.showToast)
     }
 
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                guestServiceViewModel.themeLiveData.value?.data?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                guestServiceViewModel.themeLiveData.value?.data?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
-                binding.btnBack.setOnFocusChangeListener(::handleBackClick)
-                binding.rvTabLayout.requestFocus()
-                guestServiceViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
-                }
-                loadBg(guestServiceViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-            }
-
-            else -> {
-                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                var temperature = guestServiceViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+                    replaceDegreeSymbol(guestServiceViewModel.weatherLiveData.value?.data?.tempCondition)
                 guestServiceViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
@@ -143,8 +121,6 @@ class GuestServiceActivity : BaseActivity() {
                     gsBtnListFromApi?.contains(it.btnId) == true
                 }
                 val adapter = GuestServiceTabAdapter { view, service ->
-                    view.findViewById<ImageView>(R.id.iv_menu_icon)
-                    view.findViewById<TextView>(R.id.tv_menu_title)
                     binding.tvServiceTitle.text = service.categoryName
                     when (service.btnId) {
                         Constants.CONCIERGE_ID -> {
@@ -193,10 +169,7 @@ class GuestServiceActivity : BaseActivity() {
                             val transaction1 = supportFragmentManager.beginTransaction()
 
                             val fragment = FlightStatusFragment {
-//                                view.setBackgroundResource(R.drawable.btn_bg_gradient_focus)
-//                                binding.rvTabLayout.requestFocus()
                                 view.requestFocus()
-
                             }
                             guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
                                 fragment.setAirportList(airports)
@@ -217,12 +190,21 @@ class GuestServiceActivity : BaseActivity() {
 
                         Constants.NEWS_ID -> {
                             binding.rvTabContent.toInvisible()
-                            binding.fvTabContent
                             val transaction = supportFragmentManager.beginTransaction()
-                            val fragment = NewsFragment{
+                            val fragment = NewsFragment {
                                 view.requestFocus()
                             }
                             fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            transaction.commit()
+                        }
+
+                        Constants.GUEST_FEEDBACK_ID -> {
+                            binding.rvTabContent.toInvisible()
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = FeedbackFragment{
+                                view.requestFocus()
+                            }
                             transaction.replace(R.id.fv_tab_content, fragment)
                             transaction.commit()
                         }
@@ -287,10 +269,42 @@ class GuestServiceActivity : BaseActivity() {
 
     private fun handleBackClick(view: View, focus: Boolean) {
         if (focus) {
-            view.background = getGradient()
+            view.background = gradient
         } else {
             view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         }
+    }
+
+    private fun fetchDataFromDatastore() {
+        guestServiceViewModel.getWeatherResponseData(weatherDataStore)
+        guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
+    }
+
+    private fun fetchDetails() {
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+        intent.extras?.getString("gradientStartColor")?.let {
+            gradientStartColor = it
+        }
+        intent.extras?.getString("gradientEndColor")?.let {
+            gradientEndColor = it
+        }
+        gradient = getGradient()
+        intent.extras?.getString("themeLogoFileName")?.let {
+            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+        }
+        loadBg(intent.extras?.getString("themeBackgroundFileName"))
+    }
+
+    private fun replaceDegreeSymbol(temp: String?): String {
+        var temperature = ""
+        temp?.let {
+            temperature = if (it.contains("&deg C")) {
+                it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
+            } else {
+                it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
+            }
+        }
+        return temperature
     }
 
 }
