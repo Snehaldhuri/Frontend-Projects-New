@@ -88,9 +88,18 @@
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.exoplayer.ExoPlayerActivity"
-            android:exported="false"
+            android:banner="@drawable/app_icon_your_company"
+            android:exported="true"
+            android:icon="@drawable/app_icon_your_company"
+            android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+
+           <!-- <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>-->
+        </activity>
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
             android:banner="@drawable/app_icon_your_company"
@@ -128,12 +137,12 @@
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
         <service
-            android:name=".ui.kapping.EndlessService"
+            android:name=".ui.kappingservice.EndlessService"
             android:enabled="true"
             android:exported="false">
         </service>
 
-        <receiver android:enabled="true" android:name=".ui.kapping.StartReceiver"
+        <receiver android:enabled="true" android:name=".ui.kappingservice.StartReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>

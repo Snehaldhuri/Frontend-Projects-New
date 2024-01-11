@@ -28,10 +28,10 @@ import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
-import com.diipl.moviebeam.ui.kapping.Actions
-import com.diipl.moviebeam.ui.kapping.EndlessService
-import com.diipl.moviebeam.ui.kapping.ServiceState
-import com.diipl.moviebeam.ui.kapping.getServiceState
+import com.diipl.moviebeam.ui.kappingservice.Actions
+import com.diipl.moviebeam.ui.kappingservice.EndlessService
+import com.diipl.moviebeam.ui.kappingservice.ServiceState
+import com.diipl.moviebeam.ui.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity

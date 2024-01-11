@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.kapping
+package com.diipl.moviebeam.ui.kappingservice
 
 import android.app.Notification
 import android.app.NotificationChannel

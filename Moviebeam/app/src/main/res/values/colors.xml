@@ -25,5 +25,7 @@
     <color name="flight_status_yellow">#FFFF00</color>
 
     <color name="semiTransparentBlackColor">#60000000</color>
+    <color name="blue_screen">#03A9F4</color>
+
 
 </resources>
