@@ -104,7 +104,6 @@ object Constants {
     const val TRAILER_EXTENSION = "_T.m2t"
     const val CONTENT_EXTENSION = ".m2t"
 
-    const val MOVIE_URL1 = "https://d14ez9fl8x9e1s.cloudfront.net/41301.m2t"
    /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
     const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
