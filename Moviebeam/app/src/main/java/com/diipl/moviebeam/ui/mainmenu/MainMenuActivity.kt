@@ -25,6 +25,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
@@ -231,8 +232,8 @@ class MainMenuActivity : BaseActivity() {
                             intent = Intent(this, ShowtimeActivity::class.java)
                         }
 
-                        Constants.APPS_ID -> {
-                            startActivity(Intent(this, AppWorldActivity::class.java))
+                        Constants.CASTING_ID -> {
+                            intent = Intent(this, CastingActivity::class.java)
                         }
 
                         else -> {

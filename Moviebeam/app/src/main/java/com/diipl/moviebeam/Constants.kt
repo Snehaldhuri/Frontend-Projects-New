@@ -232,6 +232,9 @@ object Constants {
     )
 
     const val FREE_MOVIE_RELEASE_TYPE_ID =1
+
+    //Casting
+    const val CASTING_URL = "https://dicasttest.movie-beam.com/"
 }
 
 const val SPLASH_DELAY = 3000
