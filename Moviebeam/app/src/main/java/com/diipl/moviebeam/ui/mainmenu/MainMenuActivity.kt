@@ -223,6 +223,9 @@ class MainMenuActivity : BaseActivity() {
                             intent = Intent(this, GuestServiceActivity::class.java)
                         }
 
+                        Constants.APPS_ID -> {
+                            intent = Intent(this, AppWorldActivity::class.java)
+                        }
 
                         Constants.SHOWTIMES_ID -> {
                             intent = Intent(this, ShowtimeActivity::class.java)

@@ -63,4 +63,6 @@
     <string name="details">Details</string>
     <string name="headlines">Headlines</string>
     <string name="hotel_info_image">Hotel Info Image</string>
+    
+        <string name="app_image">App Image</string>
 </resources>
