@@ -46,6 +46,7 @@ object Constants {
     //Home Page Menu Button Title
     const val PROGRAM_GUIDE = "Program Guide"
     const val MOVIES_MORE = "Movies & More"
+    const val SHOWTIME_NAME = "Free Selections"
     const val SHOWTIME = "Showtime"
     const val CASTING = "Casting"
     const val APPS = "Apps"
@@ -85,7 +86,7 @@ object Constants {
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),
-        BtnModel(SHOWTIMES_ID, R.drawable.showtime_icon, SHOWTIME),
+        BtnModel(SHOWTIMES_ID, R.drawable.showtime_icon, SHOWTIME_NAME),
         BtnModel(CASTING_ID, R.drawable.casting_icon, CASTING),
         BtnModel(APPS_ID, R.drawable.app_world_icon, APPS),
         BtnModel(GUEST_SERVICES_ID, R.drawable.guestservices_icon, GUEST_SERVICES),
@@ -97,13 +98,17 @@ object Constants {
     )
 
     const val MOVIE_URL = "http://d3rh9vbn3pp0qe.cloudfront.net/41177_T.m2t"
+    const val BASE_PLAYBACK_URL ="https://d14ez9fl8x9e1s.cloudfront.net/"
+    const val TRAILER_EXTENSION = "_T.m2t"
+    const val CONTENT_EXTENSION = ".m2t"
 
-
-    const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
+    const val MOVIE_URL1 = "https://d14ez9fl8x9e1s.cloudfront.net/41301.m2t"
     const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
-    const val TRAILER_URL = "trailer_url"
 
+    const val RELEASE_ID = "releaseId"
+    const val IS_TRAILER = "isTrailer"
+    const val IS_CONTENT  = "isContent"
 
     val MOVIES_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),

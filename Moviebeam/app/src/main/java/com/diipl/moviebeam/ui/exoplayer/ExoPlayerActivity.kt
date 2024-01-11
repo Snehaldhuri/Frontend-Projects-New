@@ -23,9 +23,13 @@ class ExoPlayerActivity : BaseActivity() {
     private var mediaItemIndex = 0
     private var playbackPosition = 0L
 
-    private var trailerURL = ""
-
     private val playerListener: Player.Listener = playerListener()
+
+    private var playbackUrl = ""
+    private var isTrailer = false
+    private var isContent = false
+
+    private var releaseId = ""
 
     override fun observeViewModel() {
 
@@ -35,7 +39,12 @@ class ExoPlayerActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         if (intent!=null){
-            trailerURL = intent.getStringExtra(Constants.TRAILER_URL).toString()
+           intent.extras?.getString(Constants.RELEASE_ID)?.let { releaseId = it  }
+           intent.extras?.getBoolean(Constants.IS_TRAILER)?.let { isTrailer = it  }
+           intent.extras?.getBoolean(Constants.IS_CONTENT)?.let { isContent = it  }
+//            releaseId = intent.getBundleExtra(Constants.RELEASE_ID).toString()
+//            isTrailer = intent.getBooleanExtra(Constants.IS_TRAILER,false)
+//            isContent = intent.getBooleanExtra(Constants.IS_CONTENT,false)
         }
     }
 
@@ -94,18 +103,26 @@ class ExoPlayerActivity : BaseActivity() {
                     .setUri(getString(R.string.media_url_dash))
                     .setMimeType(MimeTypes.APPLICATION_MPD)
                     .build()*/
-                if (trailerURL.isNotEmpty()){
-                    val mediaItem = MediaItem.fromUri(trailerURL)
+                if (isTrailer){
+                    playbackUrl = Constants.BASE_PLAYBACK_URL + releaseId + Constants.TRAILER_EXTENSION
+                }
+                if (isContent){
+                    playbackUrl = Constants.BASE_PLAYBACK_URL + releaseId + Constants.CONTENT_EXTENSION
+                }
+                if(playbackUrl.isNotEmpty()){
+                    val mediaItem = MediaItem.fromUri(playbackUrl)
+
+                    exoPlayer.setMediaItems(listOf(mediaItem), mediaItemIndex, playbackPosition)
+                    exoPlayer.playWhenReady = playWhenReady
+                    exoPlayer.addListener(playerListener)
+                    exoPlayer.prepare()
+                    exoPlayer.play()
                 }
                 val mediaItem1 = MediaItem.fromUri(Constants.MOVIE_URL1)
                 val mediaItem2 = MediaItem.fromUri(Constants.MOVIE_URL2)
                 val mediaItem3 = MediaItem.fromUri(Constants.MOVIE_URL3)
                 val secondMediaItem = MediaItem.fromUri(getString(R.string.media_url_mp4))
-                exoPlayer.setMediaItems(listOf(mediaItem1), mediaItemIndex, playbackPosition)
-                exoPlayer.playWhenReady = playWhenReady
-                exoPlayer.addListener(playerListener)
-                exoPlayer.prepare()
-                exoPlayer.play()
+
             }
     }
 

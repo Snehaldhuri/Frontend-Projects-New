@@ -120,7 +120,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
         dropdown.adapter = dropdownAdapter
         dropdown.onItemSelectedListener = this
         adapter = ShowtimeSeasonChildAdapter { movieDetail ->
-            (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(movieDetail)
+            (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(movieDetail,false,true)
         }
         gradient?.let {
             adapter?.setGradient(it)
