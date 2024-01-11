@@ -32,6 +32,7 @@ import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+
 @AndroidEntryPoint
 class MoviesActivity : BaseActivity() {
 
@@ -97,6 +98,7 @@ class MoviesActivity : BaseActivity() {
         parentRecyclerView.setHasFixedSize(true)
         binding.parentRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -328,9 +330,15 @@ class MoviesActivity : BaseActivity() {
         binding.fcvMovieDetail.toVisible()
     }
 
-    fun gotoExoPlayerActivity(movieDetails: ContentDto) {
+    fun gotoExoPlayerActivity(movieDetails: ContentDto ,isTrailer:Boolean ,isContent:Boolean) {
+
+        val bundle = Bundle()
+        bundle.putString(Constants.RELEASE_ID,(movieDetails.releaseId).toString())
+        bundle.putBoolean(Constants.IS_TRAILER,isTrailer)
+        bundle.putBoolean(Constants.IS_CONTENT,isContent)
+
         val intent = Intent(this, ExoPlayerActivity::class.java)
-        intent.putExtra(Constants.TRAILER_URL, movieDetails.trailerVideoPath)
+        intent.putExtras(bundle)
         startActivity(intent)
     }
 

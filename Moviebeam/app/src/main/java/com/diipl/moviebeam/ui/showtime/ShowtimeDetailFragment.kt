@@ -53,7 +53,7 @@ class ShowtimeDetailFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnRentNow.setOnClickListener {
-            show?.let { it1 -> (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(it1) }
+            show?.let { it1 -> (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(it1,true,false) }
         }
     }
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {

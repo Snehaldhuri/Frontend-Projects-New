@@ -284,9 +284,18 @@ class ShowtimeActivity  : BaseActivity() {
         }
     }
 
-    fun gotoExoPlayerActivity(movieDetails: Detail) {
+    fun gotoExoPlayerActivity(movieDetails: Detail,isTrailer:Boolean ,isContent:Boolean) {
+//        val intent = Intent(this, ExoPlayerActivity::class.java)
+//        intent.putExtra(Constants.TRAILER_URL, movieDetails.videoPath)
+
+        val bundle = Bundle()
+        bundle.putString(Constants.RELEASE_ID,(movieDetails.releaseId).toString())
+        bundle.putBoolean(Constants.IS_TRAILER,isTrailer)
+        bundle.putBoolean(Constants.IS_CONTENT,isContent)
+
         val intent = Intent(this, ExoPlayerActivity::class.java)
-        intent.putExtra(Constants.TRAILER_URL, movieDetails.videoPath)
+        intent.putExtras(bundle)
+
         startActivity(intent)
     }
 }

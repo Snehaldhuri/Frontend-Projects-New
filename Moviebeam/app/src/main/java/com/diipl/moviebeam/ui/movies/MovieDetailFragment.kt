@@ -32,7 +32,10 @@ class MovieDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnWatchTrailer.setOnClickListener {
-            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1) }
+            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,true,false) }
+        }
+        binding.btnRentNow.setOnClickListener {
+            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,false,true) }
         }
     }
 
