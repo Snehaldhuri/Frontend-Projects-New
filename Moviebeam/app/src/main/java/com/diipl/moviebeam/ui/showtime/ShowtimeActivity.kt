@@ -52,7 +52,7 @@ class ShowtimeActivity  : BaseActivity() {
     }
     override fun initViewBinding() {
         binding = ActivityShowtimeBinding.inflate(layoutInflater)
-        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+        binding.layoutHeader.tvTitle.setText("Showtime")
         val view = binding.root
         setContentView(view)
     }
