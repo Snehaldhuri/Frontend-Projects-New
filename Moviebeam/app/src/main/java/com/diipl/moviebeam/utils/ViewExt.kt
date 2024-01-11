@@ -151,6 +151,7 @@ fun ImageView.loadImagesWithGlideExtLA(url: String) {
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .placeholder(R.drawable.la_default)
+            .placeholder(R.drawable.default_poster)
             .into(this)
     }
 }
