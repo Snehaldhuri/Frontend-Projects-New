@@ -4,16 +4,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.widget.EditText
+import androidx.activity.viewModels
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.utils.observe
 
 
 class SerialActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySerialBinding
+    private val serialViewModel: SerialViewModel by viewModels()
+    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     override fun observeViewModel() {
-
+        observe(serialViewModel.serialNoTakenLiveData, ::handleDataStoreResponse)
     }
 
     override fun initViewBinding() {
@@ -26,6 +31,21 @@ class SerialActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+
+        serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
+    }
+
+    private fun handleDataStoreResponse(b: Boolean) {
+        if (b){
+            startActivity(Intent(this, STBDetailsActivity::class.java))
+            finish()
+        }else{
+            showSerialNumberDialog()
+        }
+    }
+
+    private fun showSerialNumberDialog() {
         val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(this)
         builder.setTitle("Enter Serial Number")
 
@@ -39,14 +59,9 @@ class SerialActivity : BaseActivity() {
 
         builder.setPositiveButton("OK") { dialog, which ->
             m_Text = input.text.toString()
-            val bundle = Bundle()
-            val i: Intent = Intent()
-            //Add your data from getFactualResults method to bundle
-            bundle.putString("serial", m_Text)
-            //Add the bundle to the intent
-            i.putExtras(bundle)
+            serialViewModel.setDataInDataStore(preferenceDataStoreHelper,true,m_Text)
             startActivity(Intent(this@SerialActivity, STBDetailsActivity::class.java))
-
+            finish()
         }
         builder.setNegativeButton(
             "Cancel"

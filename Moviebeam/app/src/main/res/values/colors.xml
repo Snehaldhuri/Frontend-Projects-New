@@ -29,5 +29,7 @@
     <color name="feedback_negative">#FF453A</color>
 
     <color name="semiTransparentBlackColor">#60000000</color>
+    <color name="blue_screen">#03A9F4</color>
+
 
 </resources>
