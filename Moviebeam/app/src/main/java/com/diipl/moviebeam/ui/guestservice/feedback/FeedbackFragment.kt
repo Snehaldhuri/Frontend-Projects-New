@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice.feedback
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.KeyEvent
@@ -16,6 +17,7 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.databinding.FragmentFeedbackBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
+import com.diipl.moviebeam.ui.guestservice.feedback.thankyou.ThankYouActivity
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -95,6 +97,18 @@ class FeedbackFragment(
             }
             animate(view, isFocused)
         }
+        binding.ivStar1.setOnClickListener {
+            sendFeedback(Constants.UNACCEPTABLE)
+        }
+        binding.ivStar2.setOnClickListener {
+            sendFeedback(Constants.DISAPPOINTING)
+        }
+        binding.ivStar3.setOnClickListener {
+            sendFeedback(Constants.GOOD)
+        }
+        binding.ivStar4.setOnClickListener {
+            sendFeedback(Constants.EXCELLENT)
+        }
         return binding.root
     }
 
@@ -135,7 +149,8 @@ class FeedbackFragment(
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                //TODO Api call for Guest Feedback
+                val intent = Intent(binding.root.context, ThankYouActivity::class.java)
+                startActivity(intent)
                 binding.pbLoader.toInvisible()
             }
 
@@ -143,6 +158,10 @@ class FeedbackFragment(
                 status.errorCode?.let { feedbackViewModel.showToastMessage(getString(it)) }
             }
         }
+    }
+
+    private fun sendFeedback(feedback: String) {
+        feedbackViewModel.sendGuestFeedback(Constants.UA, feedback)
     }
 
 }

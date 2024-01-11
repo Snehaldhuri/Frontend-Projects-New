@@ -12,6 +12,7 @@ import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,10 +23,10 @@ class FeedbackViewModel @Inject constructor(
     private val _feedbackLiveData = MutableLiveData<Resource<FeedbackResponse>>()
     val feedbackLiveData: LiveData<Resource<FeedbackResponse>> get() = _feedbackLiveData
 
-    fun sendGuestFeedback(ua: String, feedback: String, stbTime: String) {
+    fun sendGuestFeedback(ua: String, feedback: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _feedbackLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.sendGuestFeedback(ua, feedback, stbTime)
+            val response = movieBeamRepository.sendGuestFeedback(ua, feedback, Date().toString())
             if (response == null) {
                 _feedbackLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
