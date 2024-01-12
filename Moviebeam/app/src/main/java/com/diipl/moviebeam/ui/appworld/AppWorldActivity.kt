@@ -73,7 +73,7 @@ class AppWorldActivity : BaseActivity() {
         val selectedApps = installedApps.filter {
             Constants.SELECTED_APPS.contains(packageManager.getApplicationLabel(it))
         }
-        adapter.setAppList(installedApps)
+        adapter.setAppList(selectedApps)
         binding.rvApps.adapter = adapter
     }
 
