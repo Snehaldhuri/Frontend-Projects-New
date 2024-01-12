@@ -205,6 +205,7 @@ class GuestServiceActivity : BaseActivity() {
                             val fragment = FeedbackFragment{
                                 view.requestFocus()
                             }
+                            fragment.setGradientColor(gradientStartColor, gradientEndColor)
                             transaction.replace(R.id.fv_tab_content, fragment)
                             transaction.commit()
                         }

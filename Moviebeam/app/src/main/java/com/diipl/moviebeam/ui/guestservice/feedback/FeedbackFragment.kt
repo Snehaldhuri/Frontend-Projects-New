@@ -29,6 +29,8 @@ class FeedbackFragment(
     private var _binding: FragmentFeedbackBinding? = null
     val binding get() = _binding!!
     private val feedbackViewModel: FeedbackViewModel by activityViewModels()
+    private var gradientStartColor: String? = null
+    private var gradientEndColor: String? = null
 
     override fun observeViewModel() {
         observe(feedbackViewModel.feedbackLiveData, ::handleFeedbackResponse)
@@ -150,8 +152,13 @@ class FeedbackFragment(
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 val intent = Intent(binding.root.context, ThankYouActivity::class.java)
+                val bundle = Bundle()
+                bundle.putString("gradientStartColor", gradientStartColor)
+                bundle.putString("gradientEndColor", gradientEndColor)
+                intent.putExtras(bundle)
                 startActivity(intent)
                 binding.pbLoader.toInvisible()
+                activity?.finish()
             }
 
             else -> {
@@ -162,6 +169,11 @@ class FeedbackFragment(
 
     private fun sendFeedback(feedback: String) {
         feedbackViewModel.sendGuestFeedback(Constants.UA, feedback)
+    }
+
+    fun setGradientColor(startColor: String?, endColor: String?) {
+        gradientStartColor = startColor
+        gradientEndColor = endColor
     }
 
 }
