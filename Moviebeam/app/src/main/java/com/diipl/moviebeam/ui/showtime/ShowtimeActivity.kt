@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.widget.Spinner
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,6 +45,7 @@ class ShowtimeActivity  : BaseActivity() {
     private val ShowtimeViewModel: ShowtimeViewModel by viewModels()
     private val ShowtimeDetailFragment: ShowtimeDetailFragment = ShowtimeDetailFragment()
 
+    private var selectedHeaderItemPosition = 0
     override fun observeViewModel() {
         observe(ShowtimeViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(ShowtimeViewModel.themeLiveData, ::handleThemeResponse)
@@ -96,61 +98,44 @@ class ShowtimeActivity  : BaseActivity() {
                     genre.name to genre.detailList
                 } ?: emptyMap()
 
-                val adapter = ShowtimeMenuAdapter(list) { btnId ->
-                    binding.fcvMovieDetail.toInvisible()
-                    binding.parentRecyclerView.toVisible()
-                    when (btnId) {
-                        Constants.ALL_SHOWS_ID -> {
-                            val showtimeParentAdapter =
-                                ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                val adapter = ShowtimeMenuAdapter(list,
+                    onMoviesMenuItemClicked = { btnId ->
+                        binding.fcvMovieDetail.toInvisible()
+                        binding.parentRecyclerView.toVisible()
 
-                            showtimeParentAdapter.setShowsList(showTimeGenreMap)
-                            binding.parentRecyclerView.adapter = showtimeParentAdapter
+                        when (btnId) {
+                            Constants.ALL_SHOWS_ID -> {
+                                val showtimeParentAdapter = ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                                binding.parentRecyclerView.adapter = showtimeParentAdapter
+                            }
+
+                            Constants.SHO_SPORTS_ID,
+                            Constants.SHO_SERIES_ID,
+                            Constants.SHO_DOCS_ID -> {
+                                val shoSportsGenre = response?.shoGenreList?.find { it.name == getGenreName(btnId) }
+
+                                val showTimeGenreMap: Map<String, List<Detail>> = shoSportsGenre?.let {
+                                    mapOf(it.name to it.detailList)
+                                } ?: emptyMap()
+
+                                val showtimeParentAdapter = ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                                binding.parentRecyclerView.adapter = showtimeParentAdapter
+                            }
                         }
-
-                        Constants.SHO_SPORTS_ID -> {
-                            val shoSportsGenre = response?.shoGenreList?.find { it.name == "SHO Sports" }
-
-                            val showTimeGenreMap: Map<String, List<Detail>> = shoSportsGenre?.let {
-                                mapOf(it.name to it.detailList)
-                            } ?: emptyMap()
-
-                            val showtimeParentAdapter =
-                                ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
-
-                            showtimeParentAdapter.setShowsList(showTimeGenreMap)
-                            binding.parentRecyclerView.adapter = showtimeParentAdapter
-                        }
-
-                        Constants.SHO_SERIES_ID -> {
-                            val shoSportsGenre = response?.shoGenreList?.find { it.name == "SHO Series" }
-
-                            val showTimeGenreMap: Map<String, List<Detail>> = shoSportsGenre?.let {
-                                mapOf(it.name to it.detailList)
-                            } ?: emptyMap()
-
-                            val showtimeParentAdapter =
-                                ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
-
-                            showtimeParentAdapter.setShowsList(showTimeGenreMap)
-                            binding.parentRecyclerView.adapter = showtimeParentAdapter
-                        }
-
-                        Constants.SHO_DOCS_ID -> {
-                            val shoSportsGenre = response?.shoGenreList?.find { it.name == "SHO Docs" }
-
-                            val showTimeGenreMap: Map<String, List<Detail>> = shoSportsGenre?.let {
-                                mapOf(it.name to it.detailList)
-                            } ?: emptyMap()
-
-                            val showtimeParentAdapter =
-                                ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
-
-                            showtimeParentAdapter.setShowsList(showTimeGenreMap)
-                            binding.parentRecyclerView.adapter = showtimeParentAdapter
-                        }
+                    },
+                    onRightKeyPressed = {
+                        binding.fcvMovieDetail.requestFocus()
+                        binding.fcvMovieDetail.postDelayed({
+                            val btnSeasonList: Spinner? = binding.fcvMovieDetail.findViewById(R.id.btn_season_list)
+                            btnSeasonList?.requestFocus()
+                        }, 80)
                     }
-                }
+                )
+
+
+
                 binding.fcvMovieDetail.toInvisible()
 
                 val showtimeParentAdapter =
@@ -165,6 +150,14 @@ class ShowtimeActivity  : BaseActivity() {
             else -> {
                 status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
             }
+        }
+    }
+    private fun getGenreName(btnId: String): String {
+        return when (btnId) {
+            Constants.SHO_SPORTS_ID -> "SHO Sports"
+            Constants.SHO_SERIES_ID -> "SHO Series"
+            Constants.SHO_DOCS_ID -> "SHO Docs"
+            else -> ""
         }
     }
     private fun loadBg(imgUrl: String?) {

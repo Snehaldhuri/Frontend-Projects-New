@@ -119,9 +119,18 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
 
         dropdown.adapter = dropdownAdapter
         dropdown.onItemSelectedListener = this
-        adapter = ShowtimeSeasonChildAdapter { movieDetail ->
-            (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(movieDetail,false,true)
-        }
+
+        adapter = ShowtimeSeasonChildAdapter(
+            onItemClicked = { movieDetail ->
+                (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(movieDetail, false, true)
+            },
+            onLeftKeyPressed = {
+                binding.btnSeasonList.postDelayed({
+                    binding.btnSeasonList.requestFocus()
+                }, 1)
+            }
+        )
+
         gradient?.let {
             adapter?.setGradient(it)
         }

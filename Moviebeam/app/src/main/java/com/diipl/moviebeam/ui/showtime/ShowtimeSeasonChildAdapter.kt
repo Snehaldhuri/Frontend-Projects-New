@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.showtime
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.graphics.drawable.GradientDrawable
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,8 @@ import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
 class ShowtimeSeasonChildAdapter(
-    private val onItemClicked: (Detail) -> Unit
+    private val onItemClicked: (Detail) -> Unit,
+    private val onLeftKeyPressed: () -> Unit
 ) : RecyclerView.Adapter<ShowtimeSeasonChildAdapter.ChildViewHolder>() {
 
     private var seasonDet: List<Detail> = emptyList()
@@ -33,7 +35,14 @@ class ShowtimeSeasonChildAdapter(
             LayoutInflater.from(parent.context).inflate(R.layout.seasonlist_item, parent, false)
         view.isFocusable = true
         view.isClickable = true
-
+        view.setOnKeyListener { _, keycode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keycode) {
+                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
+                }
+            }
+            false
+        }
         return ChildViewHolder(view)
     }
 
@@ -51,8 +60,8 @@ class ShowtimeSeasonChildAdapter(
         }
 
         holder.movieview.setOnFocusChangeListener { it, hasFocus ->
-            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.02f)
-            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.02f)
+            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.01f)
+            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.01f)
 
             val scaleAnimatorSet = AnimatorSet()
             scaleAnimatorSet.duration = 200
