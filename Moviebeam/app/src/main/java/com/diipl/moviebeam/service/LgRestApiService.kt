@@ -25,4 +25,16 @@ interface LgRestApiService {
         @Query("accountId") accountId: Int
     ): String
 
+    //for device versions
+    @GET("process/stbMaster")
+    suspend fun getstbMaster(
+        @Query("UA") UA: String,
+        @Query("SRNO") SRNO: String,
+        @Query("MACADDR") MACADDR: String,
+        @Query("WIFI_MACADDR") WIFI_MACADDR: String,
+        @Query("TYPE") TYPE: String
+    ): String
+
+
+
 }

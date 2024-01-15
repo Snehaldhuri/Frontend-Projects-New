@@ -411,7 +411,6 @@ class MainMenuActivity : BaseActivity() {
             ) {
                 binding.root.background = resource
             }
-
             override fun onLoadCleared(placeholder: Drawable?) {}
         })
     }

@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.data.remote.services
 
+import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -59,4 +60,37 @@ interface LgRestApiService {
         @Query("STB_TIME") stbTime: String
     ): Response<String>
 
+
+    //for device versions
+    @GET("process/stbMaster")
+    suspend fun getstbMaster(
+        @Query("UA") UA: String,
+        @Query("SRNO") SRNO: String,
+        @Query("MACADDR") MACADDR: String,
+        @Query("WIFI_MACADDR") WIFI_MACADDR: String,
+        @Query("TYPE") TYPE: String
+    ): Response<String>
+
+
+    @GET("StbServlet")
+    suspend fun kaping(
+        @Query("Q") Q: String,
+        @Query("UA") UA: String,
+        @Query("DRID") DRID: String,
+        @Query("SW") SW: String,
+        @Query("CLISTVER") CLISTVER: String,
+        @Query("DV") DV: String,
+        @Query("TNS") TNS: String,
+        @Query("EVENT") EVENT: String,
+        @Query("SID") SID: String,
+        @Query("RBTY") RBTY: String,
+        @Query("MODE") MODE: String,
+        @Query("LAVER") LAVER: String,
+        @Query("HSVER") HSVER: String,
+        @Query("THMVER") THMVER: String,
+        @Query("CMDRES") CMDRES: String,
+        @Query("CALLBACKFLG") CALLBACKFLG: String,
+        @Query("INRMVER") INRMVER: String,
+        @Query("LAUVER") LAUVER: String
+    ): Response<String>
 }
