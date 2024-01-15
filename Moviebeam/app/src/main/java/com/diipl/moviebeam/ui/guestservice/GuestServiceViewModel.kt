@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice
 
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,6 +15,7 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,46 +38,7 @@ class GuestServiceViewModel @Inject constructor(
 
     init {
         val ua = Constants.UA
-        fetchThemeDetails(ua)
-        fetchAccountSetupDetails(Constants.ACTIVATE, ua, Constants.MODE)
-        fetchWeatherData(ua)
         fetchDateTime(ua)
-    }
-
-    private fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _accountSetupLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
-            if (response == null) {
-                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _accountSetupLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    private fun fetchThemeDetails(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _themeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getThemeDetails(ua)
-            if (response == null) {
-                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _themeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    private fun fetchWeatherData(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _weatherLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getWeatherData(ua)
-            if (response == null) {
-                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _weatherLiveData.postValue(Resource.Success(response))
-            }
-        }
     }
 
     private fun fetchDateTime(ua: String) {
@@ -86,6 +49,29 @@ class GuestServiceViewModel @Inject constructor(
                 _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
                 _dateTimeLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
+    //------------------------------------------datastore-------------------------------------------
+    fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _weatherLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _weatherLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun getAccountSetupResponseData(dataStore: DataStore<AccountSetupResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _accountSetupLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _accountSetupLiveData.postValue(Resource.Success(it))
             }
         }
     }

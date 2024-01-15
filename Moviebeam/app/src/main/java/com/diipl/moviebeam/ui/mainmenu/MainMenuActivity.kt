@@ -25,6 +25,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
@@ -205,6 +206,22 @@ class MainMenuActivity : BaseActivity() {
                 val adapter = MainMenuBtnAdapter { btn ->
                     val bundle = Bundle()
                     bundle.putString("title", btn.title)
+                    bundle.putString(
+                        "themeLogoFileName",
+                        mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
+                    )
+                    bundle.putString(
+                        "themeBackgroundFileName",
+                        mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
+                    )
+                    bundle.putString(
+                        "gradientStartColor",
+                        mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                    )
+                    bundle.putString(
+                        "gradientEndColor",
+                        mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                    )
                     var intent: Intent? = null
                     when (btn.btnId) {
                         Constants.HOTEL_SERVICES_ID -> {
@@ -231,8 +248,8 @@ class MainMenuActivity : BaseActivity() {
                             intent = Intent(this, ShowtimeActivity::class.java)
                         }
 
-                        Constants.APPS_ID -> {
-                            startActivity(Intent(this, AppWorldActivity::class.java))
+                        Constants.CASTING_ID -> {
+                            intent = Intent(this, CastingActivity::class.java)
                         }
 
                         else -> {
@@ -322,30 +339,30 @@ class MainMenuActivity : BaseActivity() {
 
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl).into(object : CustomTarget<Drawable?>() {
-                override fun onResourceReady(
-                    resource: Drawable, transition: Transition<in Drawable?>?
-                ) {
-                    binding.root.background = resource
-                }
+            override fun onResourceReady(
+                resource: Drawable, transition: Transition<in Drawable?>?
+            ) {
+                binding.root.background = resource
+            }
 
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
+            override fun onLoadCleared(placeholder: Drawable?) {}
+        })
     }
 
 
     private fun getImageBitmap(imageUrl: String, filename: String) {
         Glide.with(this).asBitmap().load(imageUrl).into(object : CustomTarget<Bitmap>() {
-                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                    // The 'resource' parameter contains the Bitmap loaded from the imageUrl
-                    // Now you can use the bitmap as needed, for example, save it locally
-                    saveImageLocally(resource, filename)
+            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                // The 'resource' parameter contains the Bitmap loaded from the imageUrl
+                // Now you can use the bitmap as needed, for example, save it locally
+                saveImageLocally(resource, filename)
 
-                }
+            }
 
-                override fun onLoadCleared(placeholder: Drawable?) {
+            override fun onLoadCleared(placeholder: Drawable?) {
 
-                }
-            })
+            }
+        })
     }
 
     // Save the image locally

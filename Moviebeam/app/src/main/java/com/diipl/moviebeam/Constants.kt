@@ -208,6 +208,7 @@ object Constants {
     //Flight Status
     const val DEPARTURE = "DEP"
     const val ARRIVAL = "ARR"
+    const val NOT_AVAILABLE = "N/A"
 
     //Api Cmd
     const val ACTIVATE_CMD = "ACTIVATE"
@@ -224,6 +225,28 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
+    //Apps
+    val SELECTED_APPS = listOf(
+        "Prime Video",
+        "Disney+",
+        "Hulu",
+        "Max",
+        "Netflix",
+        "Paramount+",
+        "Peacock TV",
+        "YouTube"
+    )
+
+    //Guest Feedback
+    const val UNACCEPTABLE = "Unacceptable"
+    const val DISAPPOINTING = "Disappointing"
+    const val GOOD = "Good"
+    const val EXCELLENT = "Excellent"
+
+    //    const val UNSATISFIED = " Unsatisfies"
+    const val FEEDBACK_POSITIVE_COLOR = "#34C759"
+    const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
+
     val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
         BtnModel(SHO_SPORTS_ID, R.drawable.showtime, SHO_SPORTS),
@@ -232,6 +255,9 @@ object Constants {
     )
 
     const val FREE_MOVIE_RELEASE_TYPE_ID =1
+
+    //Casting
+    const val CASTING_URL = "https://dicasttest.movie-beam.com/"
 }
 
 const val SPLASH_DELAY = 3000
