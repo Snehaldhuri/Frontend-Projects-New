@@ -209,11 +209,12 @@ class MoviesActivity : BaseActivity() {
                         }
                     },
                     onRightKeyPressed = {
-//                        binding.fcvMovieDetail.postDelayed({
-//                            val btnRentNow: Button? =
-//                                binding.fcvMovieDetail.findViewById(R.id.btn_rent_now)
-//                            btnRentNow?.requestFocus()
-//                        }, 50)
+                        if (binding.fcvMovieDetail.isVisible) {
+                            binding.fcvMovieDetail.postDelayed({
+                                val btnRentNow: Button? = binding.fcvMovieDetail.findViewById(R.id.btn_rent_now)
+                                btnRentNow?.requestFocus()
+                            }, 50)
+                        }
                     }
                 )
 

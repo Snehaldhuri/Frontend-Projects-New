@@ -126,11 +126,13 @@ class ShowtimeActivity  : BaseActivity() {
                         }
                     },
                     onRightKeyPressed = {
-                        binding.fcvMovieDetail.requestFocus()
-                        binding.fcvMovieDetail.postDelayed({
-                            val btnSeasonList: Spinner? = binding.fcvMovieDetail.findViewById(R.id.btn_season_list)
-                            btnSeasonList?.requestFocus()
-                        }, 80)
+                        if (binding.fcvMovieDetail.isVisible) {
+                            binding.fcvMovieDetail.requestFocus()
+                            binding.fcvMovieDetail.postDelayed({
+                                val btnSeasonList: Spinner? = binding.fcvMovieDetail.findViewById(R.id.btn_season_list)
+                                btnSeasonList?.requestFocus()
+                            }, 80)
+                        }
                     }
                 )
 
