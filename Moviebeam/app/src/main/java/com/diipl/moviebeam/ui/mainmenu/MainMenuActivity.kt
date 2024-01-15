@@ -2,8 +2,14 @@ package com.diipl.moviebeam.ui.mainmenu
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.SurfaceTexture
 import android.graphics.drawable.Drawable
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.util.Log
+import android.view.Surface
+import android.view.TextureView
+import android.view.View
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
@@ -52,6 +58,12 @@ class MainMenuActivity : BaseActivity() {
     private var gradientStartColor = ""
     private var gradientEndColor = ""
 
+    private var videoUrl =""
+
+    private lateinit var videoTextureView: TextureView
+    private lateinit var mediaPlayer: MediaPlayer
+    private var loopCount = 0
+
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
 
@@ -80,6 +92,35 @@ class MainMenuActivity : BaseActivity() {
          mainMenuViewModel.getWeatherResponseData(weatherDataStore)
          mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
          */
+
+        videoTextureView = findViewById(R.id.videoTextureView)
+
+        mediaPlayer = MediaPlayer()
+
+        videoTextureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+            override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+                val surface = Surface(surface)
+                mediaPlayer.setSurface(surface)
+//                    getVideoForMainmenu(videoUrl)
+//                    val mainmenuVideo = Constants.BASE_PLAYBACK_URL + "7147_HotelVideo.m2t"
+//                    Log.d("mainmenuVideo1","$videoUrl")
+//                    Log.d("mainmenuVideo", mainmenuVideo)
+                playVideoFromUrl("http://d1l6t4e2m4gzwb.cloudfront.net/7147_HotelVideo.m2t")
+            }
+
+            override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
+                // Ignored, the video size won't change here
+            }
+
+            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+                mediaPlayer.stop()
+                mediaPlayer.release()
+                return true
+            }
+            override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
+                // Invoked every time there's a new frame available
+            }
+        }
 
     }
 
@@ -133,6 +174,30 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
+
+    private fun playVideoFromUrl(videoUrl: String) {
+        try {
+            mediaPlayer.reset()
+            mediaPlayer.setDataSource(videoUrl)
+            mediaPlayer.setOnCompletionListener {
+                loopCount++
+                if (loopCount < 1) {
+                    mediaPlayer.start()
+                } else {
+                    stopVideoAndShowBackground()
+                }
+            }
+            mediaPlayer.prepare()
+            mediaPlayer.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    private fun stopVideoAndShowBackground() {
+        mediaPlayer.stop()
+        binding.videoTextureView.visibility = View.GONE
+        binding.backgroundImageView.visibility = View.VISIBLE
+    }
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
@@ -188,6 +253,8 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
 
                 mainMenuViewModel.fetchDateTime(Constants.UA)
+
+                videoUrl = Constants.BASE_PLAYBACK_URL + mainMenuViewModel.accountSetupLiveData.value?.data?.hotelChannelList?.get(0)?.fileName.toString()
 
                 mainMenuViewModel.accountSetupLiveData.value?.data?.let {
                     mainMenuViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
