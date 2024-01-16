@@ -1,14 +1,12 @@
 package com.diipl.moviebeam.ui.kaping
 
 import com.diipl.moviebeam.ui.base.BaseActivity
-import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
 
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.kaping.kapingResponce
+import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.databinding.ActivityKapingBinding
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
@@ -45,7 +43,7 @@ class KapingActivity : BaseActivity() {
     }
 
 
-    fun handleKapingResponce(status: Resource<kapingResponce>) {
+    fun handleKapingResponce(status: Resource<KapingResponse>) {
         when (status) {
             is Resource.Loading -> {}
 

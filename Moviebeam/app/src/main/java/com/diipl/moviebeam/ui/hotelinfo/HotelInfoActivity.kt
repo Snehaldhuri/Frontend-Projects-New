@@ -140,6 +140,8 @@ class HotelInfoActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -264,6 +266,8 @@ class HotelInfoActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -290,6 +294,8 @@ class HotelInfoActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -307,6 +313,8 @@ class HotelInfoActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
+
             }
         }
     }

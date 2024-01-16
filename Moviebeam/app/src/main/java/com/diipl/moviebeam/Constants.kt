@@ -6,7 +6,6 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
     const val SPLASH_DELAY = 3000
-    var timer = ""
     const val BASE_URL_LG_REST = "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
     const val BASE_URL_ACCOUNT_SETUP = "https://stb.moviebeam.com:1926/"
     const val BASE_URL_ASSET = "https://stb.moviebeam.com:1928/Asset/"
@@ -265,5 +264,19 @@ object Constants {
 
     //Casting
     const val CASTING_URL = "https://dicasttest.movie-beam.com/"
+
+    // Kaping
+    const val KAPING = "KAPING"
+    const val DV = "3.0.1.23"
+    const val CLISTVER="201803130001"
+    const val KAPINGEVENT = "10131220"
+    const val RBTY = "0100"
+    const val LAVER="1510818301"
+    const val HSVER= "1513951822"
+    const val THMVER= "1509529572"
+    const val CMDRES = "4105aa725d84402348900"
+    const val INRMVER = "1520924235"
+    const val LAUVER="1520937775"
+
 }
 

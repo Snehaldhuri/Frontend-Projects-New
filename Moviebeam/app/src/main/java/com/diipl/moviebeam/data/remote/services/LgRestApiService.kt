@@ -94,8 +94,30 @@ interface LgRestApiService {
         @Query("LAUVER") LAUVER: String
     ): Response<String>
 
+    @GET("StbServlet")
+    fun getKapingService(
+        @Query("Q") Q: String,
+        @Query("UA") UA: String,
+        @Query("DRID") DRID: String,
+        @Query("SW") SW: String,
+        @Query("CLISTVER") CLISTVER: String,
+        @Query("DV") DV: String,
+        @Query("TNS") TNS: String,
+        @Query("EVENT") EVENT: String,
+        @Query("SID") SID: String,
+        @Query("RBTY") RBTY: String,
+        @Query("MODE") MODE: String,
+        @Query("LAVER") LAVER: String,
+        @Query("HSVER") HSVER: String,
+        @Query("THMVER") THMVER: String,
+        @Query("CMDRES") CMDRES: String,
+        @Query("CALLBACKFLG") CALLBACKFLG: String,
+        @Query("INRMVER") INRMVER: String,
+        @Query("LAUVER") LAUVER: String
+    ): Call<String>
+
     @GET("process/stbMaster")
-     fun getstbMasterService(
+    fun getstbMasterService(
         @Query("UA") UA: String,
         @Query("SRNO") SRNO: String,
         @Query("MACADDR") MACADDR: String,

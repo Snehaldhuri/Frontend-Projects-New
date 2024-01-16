@@ -6,23 +6,21 @@ import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
-import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.kaping.kapingResponce
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
-import retrofit2.http.Query
 import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
@@ -165,7 +163,7 @@ class RemoteDataSource @Inject constructor(
         CALLBACKFLG: String,
         INRMVER: String,
         LAUVER: String
-    ): kapingResponce {
+    ): KapingResponse ?{
         val result = safeAPiCall {
             lgRestApiService.kaping(
                 Q,
@@ -190,6 +188,6 @@ class RemoteDataSource @Inject constructor(
             )
         }
         Log.e("result", "getStbMasterDetails:${result} ")
-        return ApiResponseParsing().getResponseAsObject(result.data, kapingResponce::class)!!
+        return ApiResponseParsing().getResponseAsObject(result.data, KapingResponse::class)
     }
 }

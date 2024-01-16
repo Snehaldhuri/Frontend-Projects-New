@@ -7,24 +7,37 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.widget.Toast
 import androidx.databinding.ktx.BuildConfig
+import androidx.datastore.core.DataStore
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
+import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.kaping.KapingResponse
+import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
-import com.diipl.moviebeam.utils.ApiResponseParsing
+import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.log
 import com.google.gson.GsonBuilder
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -36,13 +49,48 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class EndlessService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var isServiceStarted = false
     private var counter = 0
     private val myApiService = createRetrofitService()
+    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private var UA = ""
+    private var versionNumber = ""
+    private var themeVersion = ""
+    private var laVersion = ""
+    private var moviesVersion = ""
+    private var hotelServicesVersion = ""
+    private var CMDRES = ""
+    private var EVENT = ""
+
+    private val _themeLiveData = MutableLiveData<ThemeResponse>()
+    val themeLiveData: LiveData<ThemeResponse> get() = _themeLiveData
+
+    private val _localAttractionLiveData = MutableLiveData<LocalAttractionResponse>()
+    val localAttractionLiveData: LiveData<LocalAttractionResponse> get() = _localAttractionLiveData
+
+    private val _moviesLiveData = MutableLiveData<MoviesResponse>()
+    val moviesLiveData: LiveData<MoviesResponse> get() = _moviesLiveData
+
+    private val _hotelServicesLiveData = MutableLiveData<HotelServiceResponse>()
+    val hotelServicesLiveData: LiveData<HotelServiceResponse> get() = _hotelServicesLiveData
+
+    @Inject
+    lateinit var themeDataStore: DataStore<ThemeResponse>
+
+    @Inject
+    lateinit var localAttractionsDataStore: DataStore<LocalAttractionResponse>
+
+    @Inject
+    lateinit var moviesDataStore: DataStore<MoviesResponse>
+
+    @Inject
+    lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
 
     companion object {
         val gson = GsonBuilder()
@@ -68,7 +116,7 @@ class EndlessService : Service() {
             val retrofit = Retrofit.Builder()
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
-                .baseUrl(Constants.BASE_URL_LG_REST)
+                .baseUrl(Constants.BASE_URL_ACCOUNT_SETUP)
                 .client(provideOkHttpClient())
                 .build()
 
@@ -104,9 +152,16 @@ class EndlessService : Service() {
     override fun onCreate() {
         super.onCreate()
         log("The service has been created".uppercase(Locale.ROOT))
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+        versionNumber = getVersionNumber().replace(".","").trim()
+        log(versionNumber)
+
+
         val notification = createNotification()
         startForeground(1, notification)
     }
+
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -134,8 +189,15 @@ class EndlessService : Service() {
         GlobalScope.launch(Dispatchers.IO) {
             while (isServiceStarted) {
                 launch(Dispatchers.IO) {
+                    UA = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.UA, "")
+
+                   _themeLiveData.postValue(themeDataStore.data.first())
+                    _localAttractionLiveData.postValue(localAttractionsDataStore.data.first())
+                    _moviesLiveData.postValue(moviesDataStore.data.first())
+                    _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())
+
                     pingFakeServer()
-                    fetchData()
+                    callKapingApi()
                 }
                 delay(1 * 60 * 1000)
             }
@@ -166,17 +228,52 @@ class EndlessService : Service() {
         log(counter.toString())
     }
 
-    fun fetchData() {
+    private fun callKapingApi() {
 
-        val call: Call<String> = myApiService.getstbMasterService(Constants.UA, "", "", "", "")
+        val themeVersion1 = themeLiveData.value?.version
+        if (!themeVersion1.isNullOrEmpty()){
+            themeVersion = themeVersion1
+        }
+        log(themeVersion1.toString())
 
-        Constants.timer = "hsdsh"
-        call.enqueue(object : Callback<String> {
+        val laVersion1 = localAttractionLiveData.value?.version
+        if (!laVersion1.isNullOrEmpty()){
+            laVersion = laVersion1
+        }
+        log(laVersion1.toString())
+
+        val moviesVersion1 = moviesLiveData.value?.version
+        if (!moviesVersion1.isNullOrEmpty()){
+            moviesVersion = moviesVersion1
+        }
+        log(moviesVersion1.toString())
+
+        val hotelServicesVersion1 = hotelServicesLiveData.value?.version
+        if (!hotelServicesVersion1.isNullOrEmpty()){
+            hotelServicesVersion = hotelServicesVersion1
+        }
+        log(hotelServicesVersion1.toString())
+
+        if (CMDRES.isEmpty()){
+            CMDRES = Constants.CMDRES
+        }
+
+        val kapingCall = myApiService.getKapingService(Constants.KAPING,UA,"0",versionNumber,moviesVersion,Constants.DV,"1",
+            Constants.KAPINGEVENT, "0",Constants.RBTY,Constants.MODE,laVersion,hotelServicesVersion,themeVersion,
+            CMDRES,"1",Constants.INRMVER,Constants.LAUVER)
+
+        kapingCall.enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>, response: Response<String>) {
                 if (response.isSuccessful) {
                     val data = response.body()
-                    val result =
-                        ApiResponseParsing().getResponseAsObject(data, StbMasterResponse::class)
+                    val result = KapingResponseParsing().getResponseAsObject(data, KapingResponse::class)
+
+                    val cmdres = result?.CMD
+                    cmdres?.let {
+
+                        CMDRES= (it.substring(0, minOf(it.length, 19)))+"00"
+                        log("CMDRES -> $CMDRES")
+                    }
                     // Handle the data here
                     log(result.toString())
                 } else {
@@ -185,12 +282,21 @@ class EndlessService : Service() {
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
-
+                log(t.toString())
             }
 
         })
 
+    }
 
+    private fun getVersionNumber(): String {
+        try {
+            val packageInfo: PackageInfo = packageManager.getPackageInfo(packageName, 0)
+            return packageInfo.versionName
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+        }
+        return "0.0"
     }
 
     private fun createNotification(): Notification {

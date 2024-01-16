@@ -12,11 +12,6 @@ class NetworkUtils @Inject constructor(
 ) {
     private val connectivityManager: ConnectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)  as ConnectivityManager
 
-    /*val isNetworkConnected: Boolean
-        @RequiresApi(Build.VERSION_CODES.M)
-        get() = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            .isNetworkCapabilitiesValid()*/
-
     val isNetworkConnected : Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
         connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
             .isNetworkCapabilitiesValid()

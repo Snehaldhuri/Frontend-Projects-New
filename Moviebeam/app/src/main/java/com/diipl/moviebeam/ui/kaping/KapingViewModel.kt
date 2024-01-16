@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.kaping.kapingResponce
+import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,8 +18,8 @@ import javax.inject.Inject
 class KapingViewModel @Inject constructor(private val movieBeamRepository: MovieBeamRepository) :
     ViewModel() {
 
-    private val _kapingLiveData = MutableLiveData<Resource<kapingResponce>>()
-    val kapingLiveData: LiveData<Resource<kapingResponce>> get() = _kapingLiveData
+    private val _kapingLiveData = MutableLiveData<Resource<KapingResponse>>()
+    val kapingLiveData: LiveData<Resource<KapingResponse>> get() = _kapingLiveData
 
     private val showSnakcBarPrivate = MutableLiveData<SingleEvent<Any>>()
 

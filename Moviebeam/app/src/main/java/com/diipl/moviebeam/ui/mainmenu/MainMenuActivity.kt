@@ -24,9 +24,6 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
-import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
-import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
@@ -83,15 +80,6 @@ class MainMenuActivity : BaseActivity() {
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
-    @Inject
-    lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
-
-    @Inject
-    lateinit var localAttractionDataStore: DataStore<LocalAttractionResponse>
-
-    @Inject
-    lateinit var moviesDataStore: DataStore<MoviesResponse>
-
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,8 +93,6 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getUAFromDataStore(preferenceDataStoreHelper)
-
-//        UA = intent.extras?.getString("UA")
 
         // start the endless service
         if (!isServiceStarted) {
@@ -179,11 +165,11 @@ class MainMenuActivity : BaseActivity() {
                     binding.ivWeather.loadImagesWithGlideExt(it)
                 }
                 binding.pbLoader.toInvisible()
-
             }
-
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -236,9 +222,9 @@ class MainMenuActivity : BaseActivity() {
                 }
                 binding.pbLoader.toInvisible()
             }
-
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
             }
         }
     }
@@ -251,9 +237,10 @@ class MainMenuActivity : BaseActivity() {
                 binding.tvTime.text = mainMenuViewModel.dateTimeLiveData.value?.data?.time
                 binding.pbLoader.toInvisible()
             }
-
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -346,9 +333,10 @@ class MainMenuActivity : BaseActivity() {
                 binding.rvMenuButton.adapter = adapter
                 binding.pbLoader.toInvisible()
             }
-
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -356,7 +344,6 @@ class MainMenuActivity : BaseActivity() {
     private fun handleUAResponse(ua: String) {
         UA = ua
         mainMenuViewModel.fetchDateTime(ua)
-
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
