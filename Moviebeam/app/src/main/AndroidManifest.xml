@@ -30,9 +30,6 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
-            android:name=".ui.kaping.KapingActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.stbdetail.STBDetailsActivity"
             android:exported="true"
             android:screenOrientation="landscape"
@@ -49,26 +46,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".ui.kaping.KapingActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.stbdetail.STBDetailsActivity"
-            android:banner="@drawable/app_icon_your_company"
-            android:exported="true"
-            android:icon="@drawable/app_icon_your_company"
-            android:logo="@drawable/app_icon_your_company"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
-        <activity
-            android:name=".ui.serial_info.SerialActivity"
-            android:banner="@drawable/app_icon_your_company"
-            android:exported="true"
-            android:icon="@drawable/app_icon_your_company"
-            android:logo="@drawable/app_icon_your_company"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
         </activity>
         <activity
             android:name=".ui.guestservice.feedback.thankyou.ThankYouActivity"

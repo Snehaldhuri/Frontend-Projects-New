@@ -65,6 +65,5 @@
     <string name="thank_you">Thank You</string>
     <string name="thank_you_for_your_feedback">Thank you for your feedback</string>
 
-        <string name="app_image">App Image</string>
     <string name="please_wait_stb_box_is_initialising">Please Wait!  STB Box is initialising…</string>
 </resources>

@@ -4,10 +4,9 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
@@ -253,10 +252,6 @@ class MainMenuActivity : BaseActivity() {
                 mainMenuViewModel.fetchDateTime(Constants.UA)
 
                 videoUrl = Constants.BASE_PLAYBACK_URL + mainMenuViewModel.accountSetupLiveData.value?.data?.hotelChannelList?.get(0)?.fileName.toString()
-
-                mainMenuViewModel.accountSetupLiveData.value?.data?.let {
-                    mainMenuViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
-                }
 
                 binding.tvGreeting.text =
                     mainMenuViewModel.accountSetupLiveData.value?.data?.hotelInfo
