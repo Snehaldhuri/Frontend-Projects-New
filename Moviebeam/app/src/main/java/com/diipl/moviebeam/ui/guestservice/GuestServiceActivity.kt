@@ -29,6 +29,7 @@ import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.VelvetParkingFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
+import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
 import com.diipl.moviebeam.utils.SingleEvent
@@ -238,6 +239,14 @@ class GuestServiceActivity : BaseActivity() {
                             fragment.setGradientColor(gradientStartColor, gradientEndColor)
                             transaction.replace(R.id.fv_tab_content, fragment)
                             transaction.commit()
+                        }
+                        Constants.LA_ID -> {
+                            binding.rvTabContent.toInvisible()
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = LocalAttractionGsFragment()
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            transaction.commit()
+
                         }
                     }
                 }
