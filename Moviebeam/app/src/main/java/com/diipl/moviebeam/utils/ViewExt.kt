@@ -98,7 +98,61 @@ fun ImageView.loadImagesWithGlideExt(url: String) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .placeholder(R.drawable.app_icon_your_company)
+            .into(this)
+    }
+}
+fun ImageView.loadImagesWithGlideExtLogo(url: String) {
+    if (url!=null){
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.logo_default)
+            .into(this)
+    }
+}
+fun ImageView.loadImagesWithGlideExtPoster(url: String) {
+    if (url!=null){
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.default_poster)
+            .into(this)
+    }
+}
+fun ImageView.loadImagesWithGlideExtSushi(url: String) {
+    if (url!=null){
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.default_sushi)
+            .into(this)
+    }
+}
+fun ImageView.loadImagesWithGlideExtHsCard(url: String) {
+    if (url!=null){
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.hs_card_default)
+            .into(this)
+    }
+}
+fun ImageView.loadImagesWithGlideExtHS(url: String) {
+    if (url!=null){
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.hs_default)
+            .into(this)
+    }
+}
+
+fun ImageView.loadImagesWithGlideExtLA(url: String) {
+    if (url!=null){
+        Glide.with(this)
+            .load(url)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.la_default)
             .into(this)
     }
 }

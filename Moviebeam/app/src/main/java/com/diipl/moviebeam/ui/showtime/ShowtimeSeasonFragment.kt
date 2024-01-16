@@ -3,14 +3,12 @@ package com.diipl.moviebeam.ui.showtime
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.Constants
@@ -21,7 +19,7 @@ import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentShowtimeSeasonBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -95,7 +93,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
         }
     }
     private fun setImage(imgPath: String){
-        binding.ivSeasonMovieImage.loadImagesWithGlideExt(imgPath)
+        binding.ivSeasonMovieImage.loadImagesWithGlideExtSushi(imgPath)
     }
     fun setShowDetails(detail: ShowTimeContent) {
         selectedShow = detail

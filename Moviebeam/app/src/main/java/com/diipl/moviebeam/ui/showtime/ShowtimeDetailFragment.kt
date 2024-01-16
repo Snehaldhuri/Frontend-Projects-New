@@ -13,7 +13,7 @@ import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -80,7 +80,7 @@ class ShowtimeDetailFragment : BaseFragment() {
         val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
         show.imagePathPoster =httpStreamingHotelvideoUrl+show.releaseId+"/"+show.releaseId+"_P.jpg"
         show.imagePathPoster.let {
-            binding.ivMovieImage.loadImagesWithGlideExt(it)
+            binding.ivMovieImage.loadImagesWithGlideExtPoster(it)
         }
         binding.ivMovieImage.setBackgroundResource(R.drawable.round_outline_5dp)
         binding.ivMovieImage.clipToOutline =true

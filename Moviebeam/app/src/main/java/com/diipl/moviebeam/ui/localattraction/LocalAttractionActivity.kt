@@ -20,7 +20,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityLocalAttractionBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -167,7 +167,7 @@ class LocalAttractionActivity : BaseActivity() {
                 val response = localAttractionViewModel.themeLiveData.value?.data
 
                 response?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
 
                 loadBg(response?.themeBackgroundFileName)

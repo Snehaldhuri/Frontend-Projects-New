@@ -4,9 +4,8 @@
     android:id="@+id/card"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="@dimen/dp_4"
-    android:padding="@dimen/dp_8"
-    app:cardCornerRadius="@dimen/dp_16">
+    android:layout_margin="10dp"
+    app:cardCornerRadius="@dimen/dp_10">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/card_container"
@@ -25,7 +24,6 @@
             android:id="@+id/iv_card_image"
             android:layout_width="@dimen/dp_0"
             android:layout_height="@dimen/dp_0"
-            android:layout_margin="@dimen/dp_8"
             android:foregroundGravity="center"
             android:src="@drawable/weather_static"
             app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_55"
@@ -38,9 +36,8 @@
             android:id="@+id/tv_card_content"
             android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp_16"
+            android:layout_marginTop="@dimen/dp_14"
             android:gravity="center_horizontal"
-            android:paddingTop="@dimen/dp_8"
             android:text="Weather"
             android:textSize="@dimen/sp_15"
             app:layout_constraintEnd_toEndOf="parent"

@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.appworld
 
 import android.content.pm.ApplicationInfo
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -20,6 +19,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -161,7 +161,7 @@ class AppWorldActivity : BaseActivity() {
             intent.extras?.getString("gradientEndColor")
         )
         intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
         }
         loadBg(intent.extras?.getString("themeBackgroundFileName"))
     }

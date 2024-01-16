@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.widget.Button
-import android.widget.Spinner
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
@@ -28,6 +27,7 @@ import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -112,7 +112,7 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 val response = moviesViewModel.moviesLiveData.value?.data
                 moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 var genreMap: LinkedHashMap<String, MutableList<ContentDto>> = LinkedHashMap()
@@ -281,7 +281,7 @@ class MoviesActivity : BaseActivity() {
                 }
                 movieDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
                 moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()

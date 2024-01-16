@@ -33,6 +33,7 @@ import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -320,7 +321,7 @@ class GuestServiceActivity : BaseActivity() {
         }
         gradient = getGradient()
         intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
         }
         loadBg(intent.extras?.getString("themeBackgroundFileName"))
     }

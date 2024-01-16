@@ -39,6 +39,7 @@ import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -211,7 +212,7 @@ class MainMenuActivity : BaseActivity() {
                 binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
                 response?.themeLogoFileName?.let {
                     getImageBitmap(it, Constants.HOTEL_LOGO)
-                    binding.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 response?.gradientColor?.let {
                     gradientStartColor = it

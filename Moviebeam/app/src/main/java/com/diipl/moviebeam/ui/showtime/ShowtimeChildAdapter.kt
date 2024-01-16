@@ -11,7 +11,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 
 class ShowtimeChildAdapter(
     private val childList: List<Detail>,
@@ -57,7 +57,7 @@ class ShowtimeChildAdapter(
         val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
         item.imagePathSushi = httpStreamingHotelvideoUrl+item.releaseId+"/"+item.releaseId+"_S.jpg"
 
-        holder.logo.loadImagesWithGlideExt(item.imagePathSushi)
+        holder.logo.loadImagesWithGlideExtSushi(item.imagePathSushi)
         holder.movieview.setOnClickListener {
             onItemClicked(item,item.releaseId)
         }

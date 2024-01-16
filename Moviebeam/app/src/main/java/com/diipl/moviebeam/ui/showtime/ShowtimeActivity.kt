@@ -18,7 +18,6 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -27,6 +26,7 @@ import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -91,7 +91,7 @@ class ShowtimeActivity  : BaseActivity() {
             is Resource.Success -> {
                 val response = ShowtimeViewModel.showtimeLiveData.value?.data
                 ShowtimeViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 val showTimeGenreMap: Map<String, List<Detail>> = response?.shoGenreList?.associate { genre ->
@@ -253,7 +253,7 @@ class ShowtimeActivity  : BaseActivity() {
                 }
                 ShowtimeDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
                 ShowtimeViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()

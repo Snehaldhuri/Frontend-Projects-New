@@ -10,7 +10,7 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 
 class MovieDetailFragment : Fragment() {
 
@@ -45,7 +45,7 @@ class MovieDetailFragment : Fragment() {
         val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
         movie.imagePathPoster =httpStreamingHotelvideoUrl+movie.releaseId+"/"+movie.releaseId+"_P.jpg"
         movie.imagePathPoster.let {
-            binding.ivMovieImage.loadImagesWithGlideExt(it)
+            binding.ivMovieImage.loadImagesWithGlideExtPoster(it)
         }
         binding.tvTitle.text = movie.movieName
         binding.tvHeading.text = movie.headingDetailsNew

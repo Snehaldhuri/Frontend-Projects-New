@@ -37,7 +37,7 @@ class ConciergeAdapter(
         val view = LayoutInflater.from(parent.context).inflate(R.layout.concierge_card, parent, false)
         view.isFocusable = true
         val params = view.layoutParams
-        params.height = getHeightInPercent(parent.context, 32)
+        params.height = getHeightInPercent(parent.context, 26)
         return MyViewHolder(view)
     }
 

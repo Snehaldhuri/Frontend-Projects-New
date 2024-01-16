@@ -13,7 +13,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 
 class ShowtimeSeasonChildAdapter(
     private val onItemClicked: (Detail) -> Unit,
@@ -51,7 +51,7 @@ class ShowtimeSeasonChildAdapter(
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
 
         val detail = seasonDet[position]
-        holder.seasonImage.loadImagesWithGlideExt(detail.secImagePathPoster)
+        holder.seasonImage.loadImagesWithGlideExtSushi(detail.secImagePathPoster)
         holder.seasonTitle.text = detail.episodeHeaderDetails
         holder.seasonDetail.text = detail.synopsis
 

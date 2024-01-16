@@ -25,6 +25,7 @@ import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -131,7 +132,7 @@ class HotelInfoActivity : BaseActivity() {
                     gradientEndColor = it
                 }
                 hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(hotelInfoViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.pbLoader.toInvisible()

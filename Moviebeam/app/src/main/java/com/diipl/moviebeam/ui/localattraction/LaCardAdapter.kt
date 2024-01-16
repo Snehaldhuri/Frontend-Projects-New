@@ -13,7 +13,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAService
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLA
 
 class LaCardAdapter(
     private var onMenuItemClicked: (String) -> Unit
@@ -65,7 +65,7 @@ class LaCardAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 
-        holder.imageView.loadImagesWithGlideExt(item.imagePathPoster)
+        holder.imageView.loadImagesWithGlideExtLA(item.imagePathPoster)
         holder.textView.text = item.title
         holder.description.text = item.description.replace("<br/>", "")
 
