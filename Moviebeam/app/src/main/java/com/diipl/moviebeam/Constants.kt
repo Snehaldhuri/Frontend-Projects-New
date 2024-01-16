@@ -6,6 +6,7 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
     const val SPLASH_DELAY = 3000
+    var timer = ""
     const val BASE_URL_LG_REST = "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
     const val BASE_URL_ACCOUNT_SETUP = "https://stb.moviebeam.com:1926/"
     const val BASE_URL_ASSET = "https://stb.moviebeam.com:1928/Asset/"

@@ -96,6 +96,7 @@ fun ImageView.loadImagesWithGlideExt(url: String) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .placeholder(R.drawable.default_poster)
             .into(this)
     }
 }
@@ -154,6 +155,10 @@ fun ImageView.loadImagesWithGlideExtLA(url: String) {
             .placeholder(R.drawable.default_poster)
             .into(this)
     }
+}
+
+fun log(msg: String) {
+    Log.d("ENDLESS-SERVICE", msg)
 }
 
 fun log(msg: String) {

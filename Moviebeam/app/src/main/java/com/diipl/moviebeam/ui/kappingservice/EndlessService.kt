@@ -15,6 +15,14 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.widget.Toast
 import androidx.databinding.ktx.BuildConfig
+import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
+import com.diipl.moviebeam.data.remote.services.LgRestApiService
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.utils.ApiResponseParsing
+import com.diipl.moviebeam.utils.log
+import com.google.gson.GsonBuilder
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -161,8 +169,6 @@ class EndlessService : Service() {
         startForeground(1, notification)
     }
 
-
-
     override fun onDestroy() {
         super.onDestroy()
         log("The service has been destroyed".uppercase(Locale.ROOT))
@@ -189,6 +195,8 @@ class EndlessService : Service() {
         GlobalScope.launch(Dispatchers.IO) {
             while (isServiceStarted) {
                 launch(Dispatchers.IO) {
+                    pingFakeServer()
+                    fetchData()
                     UA = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.UA, "")
 
                    _themeLiveData.postValue(themeDataStore.data.first())
@@ -228,6 +236,17 @@ class EndlessService : Service() {
         log(counter.toString())
     }
 
+    fun fetchData() {
+
+        val call: Call<String> = myApiService.getstbMasterService(Constants.UA, "", "", "", "")
+
+        Constants.timer = "hsdsh"
+        call.enqueue(object : Callback<String> {
+            override fun onResponse(call: Call<String>, response: Response<String>) {
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    val result =
+                        ApiResponseParsing().getResponseAsObject(data, StbMasterResponse::class)
     private fun callKapingApi() {
 
         val themeVersion1 = themeLiveData.value?.version
@@ -282,6 +301,7 @@ class EndlessService : Service() {
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
+
                 log(t.toString())
             }
 

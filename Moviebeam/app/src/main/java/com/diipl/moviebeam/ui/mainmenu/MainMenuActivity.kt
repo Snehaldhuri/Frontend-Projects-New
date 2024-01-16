@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
@@ -41,6 +42,7 @@ import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -63,6 +65,8 @@ class MainMenuActivity : BaseActivity() {
     private var gradientEndColor = ""
     private var isServiceStarted = false
     private var UA = ""
+    private var isServiceStarted = false
+    private var UA = ""
 
     private var videoUrl =""
 
@@ -81,6 +85,8 @@ class MainMenuActivity : BaseActivity() {
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
+    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -88,6 +94,10 @@ class MainMenuActivity : BaseActivity() {
 
         // call below function to get data from datastore
 
+        mainMenuViewModel.getThemeResponseData(themeDataStore)
+        mainMenuViewModel.getWeatherResponseData(weatherDataStore)
+        mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        mainMenuViewModel.getUAFromDataStore(preferenceDataStoreHelper)
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
@@ -126,6 +136,12 @@ class MainMenuActivity : BaseActivity() {
             }
         }
 
+//        UA = intent.extras?.getString("UA")
+
+        // start the endless service
+        if (!isServiceStarted) {
+            actionOnService(Actions.START)
+        }
     }
 
     override fun observeViewModel() {
@@ -249,6 +265,7 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
 
+               /* mainMenuViewModel.fetchDateTime(Constants.UA)*/
                 mainMenuViewModel.fetchDateTime(Constants.UA)
 
                 videoUrl = Constants.BASE_PLAYBACK_URL + mainMenuViewModel.accountSetupLiveData.value?.data?.hotelChannelList?.get(0)?.fileName.toString()
@@ -330,6 +347,14 @@ class MainMenuActivity : BaseActivity() {
             }
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleUAResponse(ua: String) {
+        UA = ua
+        mainMenuViewModel.fetchDateTime(ua)
+
                 status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
 
             }
@@ -356,6 +381,7 @@ class MainMenuActivity : BaseActivity() {
             ) {
                 binding.root.background = resource
             }
+
             override fun onLoadCleared(placeholder: Drawable?) {}
         })
     }
