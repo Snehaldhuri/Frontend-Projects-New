@@ -38,6 +38,7 @@ import com.diipl.moviebeam.ui.kappingservice.ServiceState
 import com.diipl.moviebeam.ui.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
@@ -336,6 +337,10 @@ class MainMenuActivity : BaseActivity() {
 
                         Constants.CASTING_ID -> {
                             intent = Intent(this, CastingActivity::class.java)
+                        }
+
+                        Constants.PRG_GUIDE_ID -> {
+                            intent = Intent(this, ProgramGuideActivity::class.java)
                         }
 
                         else -> {
