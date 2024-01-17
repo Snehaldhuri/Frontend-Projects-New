@@ -30,4 +30,7 @@
 
     <color name="semiTransparentBlackColor">#60000000</color>
 
+    //Program Guide
+    <color name="prg_guide_channel_info_bg">#99000000</color>
+
 </resources>

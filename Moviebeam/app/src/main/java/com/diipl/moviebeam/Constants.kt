@@ -258,6 +258,25 @@ object Constants {
 
     //Casting
     const val CASTING_URL = "https://dicasttest.movie-beam.com/"
+
+    //Program Guide
+    const val CONTENT_LIST_PARAM = "contentList"
+    const val CHANNEL_LIST_PARAM = "channelList"
+    const val SELECTED_CHANNEL_INDEX = "index"
+    const val CHANEL_NO_PARAM = "channelNo"
+    const val CHANNEL_NAME_PARAM = "channelName"
+    const val CHANNEL_LOGO_PARAM = "channelLogo"
+    const val NOW_SHOWING_PARAM = "nowShowing"
+    const val NEXT_PROGRAM_PARAM = "nextProgram"
+    const val PROG_1_TIME_PARAM = "prog1Time"
+    const val PROG_2_TIME_PARAM = "prog2Time"
+
+    const val GRADIENT_START_COLOR_PARAM = "gradientStartColor"
+    const val GRADIENT_END_COLOR_PARAM = "gradientEndColor"
+    const val TITLE_PARAM = "title"
+    const val BG_IMAGE_URL = "bgImageUrl"
+    const val LOGO_IMAGE_URL = "logoImageUrl"
+
 }
 
 const val SPLASH_DELAY = 3000
