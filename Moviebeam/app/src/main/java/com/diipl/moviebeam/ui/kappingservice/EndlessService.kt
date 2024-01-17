@@ -15,14 +15,6 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.widget.Toast
 import androidx.databinding.ktx.BuildConfig
-import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
-import com.diipl.moviebeam.data.remote.services.LgRestApiService
-import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
-import com.diipl.moviebeam.utils.ApiResponseParsing
-import com.diipl.moviebeam.utils.log
-import com.google.gson.GsonBuilder
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -161,7 +153,7 @@ class EndlessService : Service() {
         super.onCreate()
         log("The service has been created".uppercase(Locale.ROOT))
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        versionNumber = getVersionNumber().replace(".","").trim()
+        versionNumber = getVersionNumber().replace(".", "").trim()
         log(versionNumber)
 
 
@@ -195,11 +187,12 @@ class EndlessService : Service() {
         GlobalScope.launch(Dispatchers.IO) {
             while (isServiceStarted) {
                 launch(Dispatchers.IO) {
-                    pingFakeServer()
-                    fetchData()
-                    UA = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.UA, "")
+                    UA = preferenceDataStoreHelper.getFirstPreference(
+                        PreferenceDataStoreConstants.UA,
+                        ""
+                    )
 
-                   _themeLiveData.postValue(themeDataStore.data.first())
+                    _themeLiveData.postValue(themeDataStore.data.first())
                     _localAttractionLiveData.postValue(localAttractionsDataStore.data.first())
                     _moviesLiveData.postValue(moviesDataStore.data.first())
                     _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())
@@ -236,61 +229,73 @@ class EndlessService : Service() {
         log(counter.toString())
     }
 
-    fun fetchData() {
-
-        val call: Call<String> = myApiService.getstbMasterService(Constants.UA, "", "", "", "")
-
-        Constants.timer = "hsdsh"
-        call.enqueue(object : Callback<String> {
-            override fun onResponse(call: Call<String>, response: Response<String>) {
-                if (response.isSuccessful) {
-                    val data = response.body()
-                    val result =
-                        ApiResponseParsing().getResponseAsObject(data, StbMasterResponse::class)
     private fun callKapingApi() {
 
         val themeVersion1 = themeLiveData.value?.version
-        if (!themeVersion1.isNullOrEmpty()){
+        if (!themeVersion1.isNullOrEmpty()) {
             themeVersion = themeVersion1
         }
         log(themeVersion1.toString())
 
         val laVersion1 = localAttractionLiveData.value?.version
-        if (!laVersion1.isNullOrEmpty()){
+        if (!laVersion1.isNullOrEmpty()) {
             laVersion = laVersion1
         }
         log(laVersion1.toString())
 
         val moviesVersion1 = moviesLiveData.value?.version
-        if (!moviesVersion1.isNullOrEmpty()){
+        if (!moviesVersion1.isNullOrEmpty()) {
             moviesVersion = moviesVersion1
         }
         log(moviesVersion1.toString())
 
         val hotelServicesVersion1 = hotelServicesLiveData.value?.version
-        if (!hotelServicesVersion1.isNullOrEmpty()){
+        if (!hotelServicesVersion1.isNullOrEmpty()) {
             hotelServicesVersion = hotelServicesVersion1
         }
         log(hotelServicesVersion1.toString())
 
-        if (CMDRES.isEmpty()){
+        if (CMDRES.isEmpty()) {
             CMDRES = Constants.CMDRES
         }
 
-        val kapingCall = myApiService.getKapingService(Constants.KAPING,UA,"0",versionNumber,moviesVersion,Constants.DV,"1",
-            Constants.KAPINGEVENT, "0",Constants.RBTY,Constants.MODE,laVersion,hotelServicesVersion,themeVersion,
-            CMDRES,"1",Constants.INRMVER,Constants.LAUVER)
+        val kapingCall = myApiService.getKapingService(
+            Constants.KAPING,
+            UA,
+            "0",
+            versionNumber,
+            moviesVersion,
+            Constants.DV,
+            "1",
+            Constants.KAPINGEVENT,
+            "0",
+            Constants.RBTY,
+            Constants.MODE,
+            laVersion,
+            hotelServicesVersion,
+            themeVersion,
+            CMDRES,
+            "1",
+            Constants.INRMVER,
+            Constants.LAUVER
+        )
 
         kapingCall.enqueue(object : Callback<String> {
-            override fun onResponse(call: Call<String>, response: Response<String>) {
+            override fun onResponse(
+                call: Call<String>,
+                response: Response<String>
+            ) {
                 if (response.isSuccessful) {
                     val data = response.body()
-                    val result = KapingResponseParsing().getResponseAsObject(data, KapingResponse::class)
+                    val result = KapingResponseParsing().getResponseAsObject(
+                        data,
+                        KapingResponse::class
+                    )
 
                     val cmdres = result?.CMD
                     cmdres?.let {
 
-                        CMDRES= (it.substring(0, minOf(it.length, 19)))+"00"
+                        CMDRES = (it.substring(0, minOf(it.length, 19))) + "00"
                         log("CMDRES -> $CMDRES")
                     }
                     // Handle the data here
@@ -311,7 +316,8 @@ class EndlessService : Service() {
 
     private fun getVersionNumber(): String {
         try {
-            val packageInfo: PackageInfo = packageManager.getPackageInfo(packageName, 0)
+            val packageInfo: PackageInfo =
+                packageManager.getPackageInfo(packageName, 0)
             return packageInfo.versionName
         } catch (e: PackageManager.NameNotFoundException) {
             e.printStackTrace()
@@ -336,7 +342,8 @@ class EndlessService : Service() {
                 it.enableLights(true)
                 it.lightColor = Color.RED
                 it.enableVibration(true)
-                it.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+                it.vibrationPattern =
+                    longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
                 it
             }
             notificationManager.createNotificationChannel(channel)
@@ -344,7 +351,12 @@ class EndlessService : Service() {
 
         val pendingIntent: PendingIntent =
             Intent(this, MainMenuActivity::class.java).let { notificationIntent ->
-                PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    notificationIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
             }
 
         val builder: Notification.Builder =
@@ -362,4 +374,5 @@ class EndlessService : Service() {
             .setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
             .build()
     }
+
 }

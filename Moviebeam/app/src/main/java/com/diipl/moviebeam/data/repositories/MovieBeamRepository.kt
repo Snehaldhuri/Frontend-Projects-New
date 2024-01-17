@@ -5,12 +5,10 @@ import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
-import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
-import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -104,7 +102,7 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         CALLBACKFLG: String,
         INRMVER: String,
         LAUVER: String
-    ): kapingResponce {
+    ): kapingResponce? {
         return remoteDataSource.kapingResponce(
             Q,
             UA,
@@ -136,57 +134,7 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         return remoteDataSource.sendGuestFeedback(ua, feedback, stbTime)
     }
 
-    suspend fun getStbMasterDetails(
-        ua: String,
-        srno: String,
-        macadd: String,
-        type: String,
-        wifimacadd: String
-    ): StbMasterResponse? {
-        return remoteDataSource.getStbMasterDetails(ua, srno, macadd, type, wifimacadd)
-    }
 
-    suspend fun kapingResponce(
-        Q: String,
-        UA: String,
-        DRID: String,
-        SW: String,
-        CLISTVER: String,
-        DV: String,
-        TNS: String,
-        EVENT: String,
-        SID: String,
-        RBTY: String,
-        MODE: String,
-        LAVER: String,
-        HSVER: String,
-        THMVER: String,
-        CMDRES: String,
-        CALLBACKFLG: String,
-        INRMVER: String,
-        LAUVER: String
-    ): KapingResponse? {
-        return remoteDataSource.kapingResponce(
-            Q,
-            UA,
-            DRID,
-            SW,
-            CLISTVER,
-            DV,
-            TNS,
-            EVENT,
-            SID,
-            RBTY,
-            MODE,
-            LAVER,
-            HSVER,
-            THMVER,
-            CMDRES,
-            CALLBACKFLG,
-            INRMVER,
-            LAUVER
-        )
-    }
 
 
 }

@@ -71,6 +71,9 @@ class HotelInfoActivity : BaseActivity() {
         binding = ActivityHotelInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+        gradientStartColor = intent.extras?.getString("gradientStartColor").toString()
+        gradientEndColor = intent.extras?.getString("gradientEndColor").toString()
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -246,6 +249,10 @@ class HotelInfoActivity : BaseActivity() {
 
                             }
                         }
+                        val mBundle = Bundle()
+                        mBundle.putString("gradientStartColor",gradientStartColor)
+                        mBundle.putString("gradientEndColor",gradientEndColor)
+                        fragment.arguments = mBundle
                         supportFragmentManager.beginTransaction()
                             .add(R.id.fragment_container_help_info, fragment)
                             .addToBackStack("Help Info").commit()

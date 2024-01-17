@@ -20,19 +20,18 @@ class HelpInfoFragment(private var onBackButtonClick: ((Boolean)) -> Unit) : Fra
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-
-        }
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
+        arguments?.let {
+
+            gradientStartColor = it.getString("gradientStartColor").toString()
+            gradientEndColor = it.getString("gradientEndColor").toString()
+
+        }
 
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {

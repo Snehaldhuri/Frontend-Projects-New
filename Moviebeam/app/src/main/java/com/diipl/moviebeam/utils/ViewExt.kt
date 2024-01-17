@@ -161,9 +161,6 @@ fun log(msg: String) {
     Log.d("ENDLESS-SERVICE", msg)
 }
 
-fun log(msg: String) {
-    Log.d("ENDLESS-SERVICE", msg)
-}
 
 
 

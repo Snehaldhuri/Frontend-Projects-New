@@ -4,7 +4,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
@@ -42,7 +41,6 @@ import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
-import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -65,10 +63,8 @@ class MainMenuActivity : BaseActivity() {
     private var gradientEndColor = ""
     private var isServiceStarted = false
     private var UA = ""
-    private var isServiceStarted = false
-    private var UA = ""
 
-    private var videoUrl =""
+    private var videoUrl = ""
 
     private lateinit var videoTextureView: TextureView
     private lateinit var mediaPlayer: MediaPlayer
@@ -82,8 +78,6 @@ class MainMenuActivity : BaseActivity() {
 
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
-
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
@@ -112,7 +106,11 @@ class MainMenuActivity : BaseActivity() {
         mediaPlayer = MediaPlayer()
 
         videoTextureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-            override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+            override fun onSurfaceTextureAvailable(
+                surface: SurfaceTexture,
+                width: Int,
+                height: Int
+            ) {
                 val surface = Surface(surface)
                 mediaPlayer.setSurface(surface)
 //                    getVideoForMainmenu(videoUrl)
@@ -122,7 +120,11 @@ class MainMenuActivity : BaseActivity() {
                 playVideoFromUrl("http://d1l6t4e2m4gzwb.cloudfront.net/7147_HotelVideo.m2t")
             }
 
-            override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
+            override fun onSurfaceTextureSizeChanged(
+                surface: SurfaceTexture,
+                width: Int,
+                height: Int
+            ) {
                 // Ignored, the video size won't change here
             }
 
@@ -131,6 +133,7 @@ class MainMenuActivity : BaseActivity() {
                 mediaPlayer.release()
                 return true
             }
+
             override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
                 // Invoked every time there's a new frame available
             }
@@ -181,6 +184,7 @@ class MainMenuActivity : BaseActivity() {
                 }
                 binding.pbLoader.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
@@ -208,11 +212,13 @@ class MainMenuActivity : BaseActivity() {
             e.printStackTrace()
         }
     }
+
     private fun stopVideoAndShowBackground() {
         mediaPlayer.stop()
         binding.videoTextureView.visibility = View.GONE
         binding.backgroundImageView.visibility = View.VISIBLE
     }
+
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
@@ -237,6 +243,7 @@ class MainMenuActivity : BaseActivity() {
                 }
                 binding.pbLoader.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
@@ -252,6 +259,7 @@ class MainMenuActivity : BaseActivity() {
                 binding.tvTime.text = mainMenuViewModel.dateTimeLiveData.value?.data?.time
                 binding.pbLoader.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
@@ -264,11 +272,12 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-
-               /* mainMenuViewModel.fetchDateTime(Constants.UA)*/
                 mainMenuViewModel.fetchDateTime(Constants.UA)
 
-                videoUrl = Constants.BASE_PLAYBACK_URL + mainMenuViewModel.accountSetupLiveData.value?.data?.hotelChannelList?.get(0)?.fileName.toString()
+                videoUrl =
+                    Constants.BASE_PLAYBACK_URL + mainMenuViewModel.accountSetupLiveData.value?.data?.hotelChannelList?.get(
+                        0
+                    )?.fileName.toString()
 
                 binding.tvGreeting.text =
                     mainMenuViewModel.accountSetupLiveData.value?.data?.hotelInfo
@@ -345,6 +354,7 @@ class MainMenuActivity : BaseActivity() {
                 binding.rvMenuButton.adapter = adapter
                 binding.pbLoader.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
@@ -355,16 +365,9 @@ class MainMenuActivity : BaseActivity() {
         UA = ua
         mainMenuViewModel.fetchDateTime(ua)
 
-                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
-
-            }
-        }
     }
 
-    private fun handleUAResponse(ua: String) {
-        UA = ua
-        mainMenuViewModel.fetchDateTime(ua)
-    }
+
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
         binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
