@@ -1,7 +1,10 @@
 package com.diipl.moviebeam.ui.appworld
 
+import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -24,6 +27,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Collections
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -48,9 +52,7 @@ class AppWorldActivity : BaseActivity() {
         fetchDetails()
         binding.rvApps.layoutManager = GridLayoutManager(this, 4)
         getInstalledApps()
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
+        binding.btnBack.setOnClickListener { finish() }
         binding.btnBack.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 view.background = gradient
@@ -65,8 +67,10 @@ class AppWorldActivity : BaseActivity() {
         // get list of all the apps installed
         val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
         val adapter = AppAdapter {
-            packageManager.getLaunchIntentForPackage(it.packageName)?.let { intent ->
-                startActivity(intent)
+            if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
+                launchAppSecured(it.packageName)
+            } else {
+                launchApp(it.packageName)
             }
         }
         val installedApps = filterSystemApps(allApps)
@@ -75,6 +79,33 @@ class AppWorldActivity : BaseActivity() {
         }
         adapter.setAppList(selectedApps)
         binding.rvApps.adapter = adapter
+    }
+
+    private fun launchApp(packageName: String) {
+        startActivity(packageManager.getLaunchIntentForPackage(packageName))
+    }
+
+    private fun launchAppSecured(packageName: String?) {
+        val intent = Intent()
+        intent.setPackage(packageName)
+        val pm = packageManager
+        val resolveInfos = pm.queryIntentActivities(intent, PackageManager.GET_META_DATA)
+        Collections.sort(resolveInfos, ResolveInfo.DisplayNameComparator(pm))
+        if (resolveInfos.size > 0) {
+            val launchable = resolveInfos[0]
+            val activity = launchable.activityInfo
+            val name = ComponentName(
+                activity.applicationInfo.packageName,
+                activity.name
+            )
+            val i = Intent(Intent.ACTION_MAIN)
+            i.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+            )
+            i.setComponent(name)
+            startActivity(i)
+        }
     }
 
     private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
