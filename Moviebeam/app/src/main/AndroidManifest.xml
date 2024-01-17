@@ -42,7 +42,6 @@
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-        <activity
             android:name=".ui.stbdetail.STBDetailsActivity"
             android:exported="true"
             android:screenOrientation="landscape"
