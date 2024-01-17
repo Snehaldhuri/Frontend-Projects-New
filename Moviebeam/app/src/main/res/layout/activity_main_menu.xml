@@ -69,17 +69,31 @@
         app:layout_constraintWidth_percent=".17" />
 
     <TextView
-        android:id="@+id/tv_greeting"
+        android:id="@+id/tv_welcome"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/dp_20"
-        android:fontFamily="@font/manrope_semibold_600"
-        android:text=""
-        android:textColor="@color/home_page_greeting_text_color"
-        android:textSize="@dimen/sp_18"
+        android:fontFamily="@font/gloock_regular"
+        android:text="Welcome John Appleseed"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="10dp"
+        android:textColor="@color/white"
+        android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo" />
+
+    <TextView
+        android:id="@+id/tv_greeting"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text=""
+        android:layout_marginLeft="12dp"
+        android:textColor="@color/home_page_greeting_text_color"
+        android:textSize="@dimen/sp_17"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
+        app:layout_constraintTop_toBottomOf="@+id/tv_welcome" />
 
     <ImageView
         android:id="@+id/iv_weather"

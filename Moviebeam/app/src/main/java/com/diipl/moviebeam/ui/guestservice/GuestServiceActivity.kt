@@ -25,6 +25,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.concierge.ConciergeAdapter
+import com.diipl.moviebeam.ui.guestservice.concierge.GolfFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.VelvetParkingFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
@@ -148,12 +149,14 @@ class GuestServiceActivity : BaseActivity() {
                                         dateTimeResponse?.let { date ->
                                             fragment.setDate(
                                                 date.hour,
+                                                date.minute,
                                                 date.date.substring(0, 3),
                                                 date.day,
                                                 date.month,
                                                 date.year
                                             )
                                         }
+                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()
@@ -165,6 +168,7 @@ class GuestServiceActivity : BaseActivity() {
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()
+                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.commit()
                                     }
                                     6 -> {
@@ -175,6 +179,7 @@ class GuestServiceActivity : BaseActivity() {
                                         dateTimeResponse?.let { date ->
                                             fragment.setDate(
                                                 date.hour,
+                                                date.minute,
                                                 date.date.substring(0, 3),
                                                 date.day,
                                                 date.month,
