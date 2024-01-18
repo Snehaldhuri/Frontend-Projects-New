@@ -19,7 +19,9 @@ import com.diipl.moviebeam.databinding.FragmentVelvetParkingBinding
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 
 
-class VelvetParkingFragment : Fragment() {
+class VelvetParkingFragment(
+    private var onOkClicked: () -> Unit
+) : Fragment() {
 
 
 
@@ -45,17 +47,6 @@ class VelvetParkingFragment : Fragment() {
         binding.edtTicketNo.setOnFocusChangeListener { view, hasFocus ->
             if(hasFocus){
 //                    setVelvetFocus(binding.edtTicketNo)
-//                    view.setOnKeyListener { _, keyCode, event ->
-//                        if (event.action == KeyEvent.ACTION_DOWN) {
-//                            when (keyCode) {
-//                                KeyEvent.KEYCODE_DPAD_CENTER -> {
-//                                    binding.btnOk.requestFocus()
-//                                    return@setOnKeyListener true
-//                                }
-//                            }
-//                        }
-//                        false
-//                    }
                 showSerialNumberDialog()
             }
             else{
@@ -83,16 +74,31 @@ class VelvetParkingFragment : Fragment() {
             layout_velvet_parking_number.visibility = View.GONE
             layout_confirmation.visibility = View.VISIBLE
 
+            binding.btnPopOk.postDelayed({
+                binding.btnPopOk.requestFocus()
+            }, 1)
+
+            binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
+                if(hasFocus){
+                    setFocus(binding.btnPopOk)
+                }
+                else{
+                    binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                }
+            }
             binding.tvMessage.text =
                 "Thank you.Your request has been sent .Please proceed with valet desk to retrive your vehicle"
 
+            binding.btnPopOk.setOnClickListener {
+                onOkClicked()
+            }
         })
 
         return binding.root
     }
     private fun showSerialNumberDialog() {
         val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
-        builder.setTitle("Enter Serial Number")
+        builder.setTitle("Enter Velvet ticket Number")
 
         // Serial No :- 29221HFGN30WLA
 
@@ -101,9 +107,10 @@ class VelvetParkingFragment : Fragment() {
         input.inputType = InputType.TYPE_CLASS_TEXT
         builder.setView(input)
 
-
         builder.setPositiveButton("OK") { dialog, which ->
             m_Text = input.text.toString()
+            binding.edtTicketNo.setText(m_Text)
+            binding.btnOk.requestFocus()
         }
         builder.setNegativeButton(
             "Cancel"
