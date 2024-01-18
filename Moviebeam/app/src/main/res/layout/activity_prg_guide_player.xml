@@ -34,6 +34,7 @@
         android:id="@+id/pv_program"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:show_buffering="always"
         app:use_controller="false" />
 
     <LinearLayout
