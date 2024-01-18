@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -13,6 +12,10 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -291,24 +294,39 @@ class ProgramGuideActivity : BaseActivity() {
 
     private fun playChannelVideoBg(program: ProgramDTO?) {
         if (program == null) {
-            binding.layoutVideo.videoView.start()
             isFScreenExit = false
+            binding.layoutVideo.videoView.player?.play()
         } else {
             if (this.cNo != program.CNO) {
-                val videoView = binding.layoutVideo.videoView
-                val uri = Uri.parse(program.VP)
-                videoView.setVideoURI(uri)
+                initializePlayer(program)
                 binding.layoutVideo.root.toVisible()
-                videoView.start()
                 binding.tvProgramTitle.text = program.P1_PT
                 binding.tvDescription.text = program.P1_SY
                 this.cNo = program.CNO
-
             }
         }
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun initializePlayer(program: ProgramDTO) {
+        val player = ExoPlayer.Builder(this)
+            .setRenderersFactory(DefaultRenderersFactory(this).setEnableDecoderFallback(true))
+            .build()
+        val playerView = binding.layoutVideo.videoView
+        playerView.player?.release()
+        playerView.player = player
+        player?.let {
+            it.setMediaItem(MediaItem.fromUri(program.VP))
+            it.playWhenReady = true
+            it.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+            it.prepare()
+            it.play()
+        }
+
+    }
+
     private fun launchExoPlayer(program: ProgramDTO) {
+        binding.layoutVideo.videoView.player?.pause()
         val bundle = Bundle()
         bundle.putStringArrayList(
             Constants.CONTENT_LIST_PARAM,
