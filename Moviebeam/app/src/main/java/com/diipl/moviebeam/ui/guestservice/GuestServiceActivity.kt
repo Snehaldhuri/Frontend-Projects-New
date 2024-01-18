@@ -143,7 +143,10 @@ class GuestServiceActivity : BaseActivity() {
                                 when (conciergeService.serviceId) {
                                     1 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = MakeMyRoomFragment()
+                                        val fragment = MakeMyRoomFragment {
+                                            view.requestFocus()
+                                            view.performClick()
+                                        }
                                         val dateTimeResponse =
                                             guestServiceViewModel.dateTimeLiveData.value?.data
                                         dateTimeResponse?.let { date ->
@@ -164,16 +167,22 @@ class GuestServiceActivity : BaseActivity() {
                                     }
                                     2 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = VelvetParkingFragment()
+                                        val fragment = VelvetParkingFragment {
+                                            view.requestFocus()
+                                            view.performClick()
+                                        }
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()
                                         fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.commit()
                                     }
-                                    6 -> {
+                                    5 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = MakeMyRoomFragment()
+                                        val fragment = MakeMyRoomFragment {
+                                            view.requestFocus()
+                                            view.performClick()
+                                        }
                                         val dateTimeResponse =
                                             guestServiceViewModel.dateTimeLiveData.value?.data
                                         dateTimeResponse?.let { date ->
@@ -186,6 +195,56 @@ class GuestServiceActivity : BaseActivity() {
                                                 date.year
                                             )
                                         }
+                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                                        transaction.replace(R.id.fv_tab_content, fragment)
+                                        binding.rvTabContent.toInvisible()
+                                        binding.fvTabContent.toVisible()
+                                        transaction.commit()
+
+                                    }
+                                    6 -> {
+                                        val transaction = supportFragmentManager.beginTransaction()
+                                        val fragment = MakeMyRoomFragment {
+                                            view.requestFocus()
+                                            view.performClick()
+                                        }
+                                        val dateTimeResponse =
+                                            guestServiceViewModel.dateTimeLiveData.value?.data
+                                        dateTimeResponse?.let { date ->
+                                            fragment.setDate(
+                                                date.hour,
+                                                date.minute,
+                                                date.date.substring(0, 3),
+                                                date.day,
+                                                date.month,
+                                                date.year
+                                            )
+                                        }
+                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                                        transaction.replace(R.id.fv_tab_content, fragment)
+                                        binding.rvTabContent.toInvisible()
+                                        binding.fvTabContent.toVisible()
+                                        transaction.commit()
+                                    }
+                                    7 -> {
+                                        val transaction = supportFragmentManager.beginTransaction()
+                                        val fragment = MakeMyRoomFragment {
+                                            view.requestFocus()
+                                            view.performClick()
+                                        }
+                                        val dateTimeResponse =
+                                            guestServiceViewModel.dateTimeLiveData.value?.data
+                                        dateTimeResponse?.let { date ->
+                                            fragment.setDate(
+                                                date.hour,
+                                                date.minute,
+                                                date.date.substring(0, 3),
+                                                date.day,
+                                                date.month,
+                                                date.year
+                                            )
+                                        }
+                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()

@@ -21,11 +21,11 @@
         app:layout_constraintGuide_percent="0.052" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_vertical_95"
+        android:id="@+id/gl_vertical_94"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.95" />
+        app:layout_constraintGuide_percent="0.94" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_16"
@@ -40,7 +40,7 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_16"
-        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_94"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -52,11 +52,11 @@
         app:layout_constraintGuide_percent="0.29" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_vertical_55"
+        android:id="@+id/gl_vertical_52"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.55" />
+        app:layout_constraintGuide_percent="0.52" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -65,7 +65,7 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
-        app:layout_constraintEnd_toEndOf="@id/gl_vertical_55"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_52"
         app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
@@ -108,11 +108,12 @@
         android:id="@+id/la_card_carousel"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
+        android:layout_marginStart="17dp"
         android:nextFocusLeft="@id/recyclerView"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
-        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_94"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/gl_vertical_55"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_52"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
     <androidx.constraintlayout.widget.Guideline

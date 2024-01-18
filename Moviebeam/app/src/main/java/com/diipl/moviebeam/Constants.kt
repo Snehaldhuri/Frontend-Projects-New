@@ -202,6 +202,7 @@ object Constants {
     const val TOILETRY_REQUEST = "Toiletry Request"
     const val SPA = "Spa"
     const val GOLF = "Golf"
+    const val LAUNDRY_TIME = "Laundry Time"
 
     val CONCIERGE_BUTTON_LIST = listOf(
         ConciergeBtnModel(1, MAKE_MY_ROOM, R.drawable.make_my_room),
@@ -209,7 +210,8 @@ object Constants {
         ConciergeBtnModel(3, LAUNDRY, R.drawable.laundry),
         ConciergeBtnModel(4, TOILETRY_REQUEST, R.drawable.request_items),
         ConciergeBtnModel(5, SPA, R.drawable.spa),
-        ConciergeBtnModel(6, GOLF, R.drawable.golf)
+        ConciergeBtnModel(6, GOLF, R.drawable.golf),
+        ConciergeBtnModel(7, LAUNDRY_TIME, R.drawable.laundry)
     )
 
     //Flight Status
