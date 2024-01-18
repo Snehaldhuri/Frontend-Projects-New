@@ -3,20 +3,17 @@ package com.diipl.moviebeam.ui.guestservice.concierge
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.content.Context.LAYOUT_INFLATER_SERVICE
-import android.opengl.Visibility
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.news.NewsHeader
 import com.diipl.moviebeam.databinding.FragmentMakeMyRoomBinding
 
 
@@ -53,18 +50,16 @@ class MakeMyRoomFragment(
         })
 
         binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
-            if(hasFocus){
+            if (hasFocus) {
                 setFocus(binding.btnOk)
-            }
-            else{
+            } else {
                 binding.btnOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
-            if(hasFocus){
+            if (hasFocus) {
                 setFocus(binding.btnCancel)
-            }
-            else{
+            } else {
                 binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
@@ -77,12 +72,11 @@ class MakeMyRoomFragment(
             }, 1)
 
             binding.tvMessage.text =
-                "Thank you.Your request has been received and your room will be serviced on " + day+". " + month +" "+ date +" " +year+ " at " + currentHour + ":" + currentminute
+                "Thank you.Your request has been received and your room will be serviced on " + day + ". " + month + " " + date + " " + year + " at " + currentHour + ":" + currentminute
             binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
-                if(hasFocus){
+                if (hasFocus) {
                     setFocus(binding.btnPopOk)
-                }
-                else{
+                } else {
                     binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 }
             }
@@ -95,16 +89,18 @@ class MakeMyRoomFragment(
         binding.layoutDateTimeSelector.tvDay.text = day
         binding.layoutDateTimeSelector.tvDate.text = "$date / $month / $year"
 
-        binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text = currentHour.toString()
+        binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
+            currentHour.toString()
 
-        binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text = currentminute.toString()
+        binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text =
+            currentminute.toString()
 
 
         val hourPicker = binding.layoutDateTimeSelector.timeSelectorLayout.hourPicker
         val minutePicker = binding.layoutDateTimeSelector.timeSelectorLayout.minutePicker
 
         hourPicker.requestFocus()
-        hourPicker.setOnFocusChangeListener {view, hasFocus ->
+        hourPicker.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 view.setBackgroundResource(R.drawable.border_bg)
                 view.setOnKeyListener { _, keyCode, event ->
@@ -114,17 +110,21 @@ class MakeMyRoomFragment(
                             KeyEvent.KEYCODE_DPAD_UP -> {
                                 if (currentHour < 24) {
                                     currentHour++
-                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text = currentHour.toString()
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
+                                        currentHour.toString()
                                 }
                                 return@setOnKeyListener true
                             }
+
                             KeyEvent.KEYCODE_DPAD_DOWN -> {
                                 if (currentHour > 1) {
                                     currentHour--
-                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text = currentHour.toString()
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
+                                        currentHour.toString()
                                 }
                                 return@setOnKeyListener true
                             }
+
                             KeyEvent.KEYCODE_DPAD_CENTER -> {
                                 binding.btnOk.requestFocus()
                                 return@setOnKeyListener true
@@ -138,7 +138,7 @@ class MakeMyRoomFragment(
                 view.setBackgroundResource(R.color.transparent)
             }
         }
-        minutePicker.setOnFocusChangeListener {view, hasFocus ->
+        minutePicker.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 view.setBackgroundResource(R.drawable.border_bg)
                 view.setOnKeyListener { _, keyCode, event ->
@@ -148,28 +148,35 @@ class MakeMyRoomFragment(
                             KeyEvent.KEYCODE_DPAD_UP -> {
                                 if (currentminute < 60) {
                                     currentminute++
-                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text = currentminute.toString()
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text =
+                                        currentminute.toString()
                                 }
                                 if (currentminute == 60) {
                                     currentminute = 1
                                     currentHour++
-                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text = currentHour.toString()
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
+                                        currentHour.toString()
                                 }
                                 return@setOnKeyListener true
                             }
+
                             KeyEvent.KEYCODE_DPAD_DOWN -> {
                                 if (currentminute >= 1) {
                                     currentminute--
-                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text = currentminute.toString()
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text =
+                                        currentminute.toString()
                                 }
                                 if (currentminute == 0) {
                                     currentminute = 59
-                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text =currentminute.toString()
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text =
+                                        currentminute.toString()
                                     currentHour--
-                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text = currentHour.toString()
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
+                                        currentHour.toString()
                                 }
                                 return@setOnKeyListener true
                             }
+
                             KeyEvent.KEYCODE_DPAD_CENTER -> {
                                 binding.btnOk.requestFocus()
                                 return@setOnKeyListener true
@@ -185,7 +192,15 @@ class MakeMyRoomFragment(
         }
         return binding.root
     }
-    fun setDate(hour: String,minute:String, day: String, date: String, month: String, year: String) {
+
+    fun setDate(
+        hour: String,
+        minute: String,
+        day: String,
+        date: String,
+        month: String,
+        year: String
+    ) {
         this.currentHour = hour.toInt()
         this.currentminute = minute.toInt()
         this.day = day.uppercase()
@@ -194,6 +209,7 @@ class MakeMyRoomFragment(
         this.year = year
         Log.d("setDatedate", "onCreateView:${day + month + date + currentHour} ")
     }
+
     private fun getMonth(mon: Int): String {
         val months = listOf(
             "Jan",
@@ -211,6 +227,7 @@ class MakeMyRoomFragment(
         )
         return months[mon - 1]
     }
+
     private fun setFocus(cardView: Button) {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
@@ -222,6 +239,7 @@ class MakeMyRoomFragment(
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         cardView.background = gradientDrawable
     }
+
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor
         this.endColor = endColor
