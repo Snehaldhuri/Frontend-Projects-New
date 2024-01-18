@@ -31,8 +31,12 @@
     <color name="semiTransparentBlackColor">#60000000</color>
     <color name="blue_screen">#0000FF</color>
 
-
+    
     //Program Guide
     <color name="prg_guide_channel_info_bg">#99000000</color>
+    // conceirge
+    <color name="conceirge_items">#00BFBA</color>
+    <color name="conceirge_items_quantity">#FFB81A</color>
+
 
 </resources>

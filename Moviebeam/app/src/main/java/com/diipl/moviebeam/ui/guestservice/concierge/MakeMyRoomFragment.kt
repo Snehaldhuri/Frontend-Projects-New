@@ -3,14 +3,16 @@ package com.diipl.moviebeam.ui.guestservice.concierge
 
 import android.annotation.SuppressLint
 import android.graphics.Color
+import android.content.Context.LAYOUT_INFLATER_SERVICE
+import android.opengl.Visibility
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
@@ -29,7 +31,7 @@ class MakeMyRoomFragment(
     private var date: String = ""
     private var month: String = ""
     private var year: String = ""
-    private var currentHour: Int =24
+    private var currentHour: Int = 24
     private var currentminute: Int = 60
     lateinit var layout_dt: LinearLayout
     lateinit var layout_confirmation: LinearLayout
