@@ -77,6 +77,9 @@ class ProgramGuideActivity : BaseActivity() {
         binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
         binding.btnBack.setOnClickListener { finish() }
         parseData()
+        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
+            binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+        }
     }
 
     override fun onResume() {
@@ -93,7 +96,10 @@ class ProgramGuideActivity : BaseActivity() {
         intent.extras?.let {
             binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
             gradient =
-                getGradient(it.getString(Constants.GRADIENT_START_COLOR_PARAM), it.getString(Constants.GRADIENT_END_COLOR_PARAM))
+                getGradient(
+                    it.getString(Constants.GRADIENT_START_COLOR_PARAM),
+                    it.getString(Constants.GRADIENT_END_COLOR_PARAM)
+                )
             loadBg(it.getString("themeBackgroundFileName"))
         }
     }
