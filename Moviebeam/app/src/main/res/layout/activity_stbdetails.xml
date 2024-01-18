@@ -11,13 +11,16 @@
   <TextView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="@dimen/dp_80"
       android:padding="@dimen/dp_16"
-      android:textSize="@dimen/sp_22"
+      android:textSize="@dimen/sp_20"
+      android:textColor="@color/white"
+      android:textAlignment="center"
+      android:lineHeight="24dp"
       android:text="@string/please_wait_stb_box_is_initialising"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent"
       />
 
   <!--  <ImageView

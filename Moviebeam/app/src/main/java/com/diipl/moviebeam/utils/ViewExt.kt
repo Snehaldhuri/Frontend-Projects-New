@@ -96,7 +96,6 @@ fun ImageView.loadImagesWithGlideExt(url: String) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
-            .placeholder(R.drawable.default_poster)
             .into(this)
     }
 }

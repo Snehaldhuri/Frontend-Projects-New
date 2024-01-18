@@ -159,8 +159,8 @@ class GuestServiceActivity : BaseActivity() {
                                         fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
-                                        binding.fvTabContent.toVisible()
                                         transaction.commit()
+                                        binding.fvTabContent.toVisible()
                                     }
                                     2 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
@@ -168,7 +168,7 @@ class GuestServiceActivity : BaseActivity() {
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()
-//                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.commit()
                                     }
                                     6 -> {

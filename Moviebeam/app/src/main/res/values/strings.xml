@@ -67,6 +67,6 @@
     <string name="search">Search</string>
     <string name="channel_logo">Channel Logo</string>
 
-    <string name="please_wait_stb_box_is_initialising">Please Wait! Application is initialising…</string>
+    <string name="please_wait_stb_box_is_initialising">"Welcome\nApplication is initializing\nOne moment please</string>
     <string name="channel_no">Channel No. %1$s</string>
 </resources>

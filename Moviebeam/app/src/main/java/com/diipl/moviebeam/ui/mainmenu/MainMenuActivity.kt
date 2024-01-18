@@ -201,7 +201,7 @@ class MainMenuActivity : BaseActivity() {
             mediaPlayer.setDataSource(videoUrl)
             mediaPlayer.setOnCompletionListener {
                 loopCount++
-                if (loopCount < 1) {
+                if (loopCount < 3) {
                     mediaPlayer.start()
                 } else {
                     stopVideoAndShowBackground()

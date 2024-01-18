@@ -1,8 +1,10 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -14,6 +16,7 @@ import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentVelvetParkingBinding
+import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 
 
 class VelvetParkingFragment : Fragment() {
@@ -41,22 +44,22 @@ class VelvetParkingFragment : Fragment() {
         binding.edtTicketNo.requestFocus()
         binding.edtTicketNo.setOnFocusChangeListener { view, hasFocus ->
             if(hasFocus){
-                setVelvetFocus(binding.edtTicketNo)
-                view.setOnKeyListener { _, keyCode, event ->
-                    if (event.action == KeyEvent.ACTION_DOWN) {
-                        Log.d("keypressed", "keypressed")
-                        when (keyCode) {
-                            KeyEvent.KEYCODE_DPAD_CENTER -> {
-                                binding.btnOk.requestFocus()
-                                return@setOnKeyListener true
-                            }
-                        }
-                    }
-                    false
-                }
+//                    setVelvetFocus(binding.edtTicketNo)
+//                    view.setOnKeyListener { _, keyCode, event ->
+//                        if (event.action == KeyEvent.ACTION_DOWN) {
+//                            when (keyCode) {
+//                                KeyEvent.KEYCODE_DPAD_CENTER -> {
+//                                    binding.btnOk.requestFocus()
+//                                    return@setOnKeyListener true
+//                                }
+//                            }
+//                        }
+//                        false
+//                    }
+                showSerialNumberDialog()
             }
             else{
-                binding.edtTicketNo.setBackgroundResource(R.color.white)
+                binding.edtTicketNo.setBackgroundResource(R.drawable.rounded_corner_border)
             }
         }
         binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
@@ -86,6 +89,28 @@ class VelvetParkingFragment : Fragment() {
         })
 
         return binding.root
+    }
+    private fun showSerialNumberDialog() {
+        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
+        builder.setTitle("Enter Serial Number")
+
+        // Serial No :- 29221HFGN30WLA
+
+        val input = EditText(context)
+        var m_Text: String
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+
+
+        builder.setPositiveButton("OK") { dialog, which ->
+            m_Text = input.text.toString()
+        }
+        builder.setNegativeButton(
+            "Cancel"
+        ) { dialog, which ->
+        }
+
+        builder.show()
     }
     private fun setFocus(cardView: Button) {
         val gradientDrawable = GradientDrawable(
