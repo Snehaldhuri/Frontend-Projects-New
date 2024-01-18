@@ -14,10 +14,13 @@ import android.widget.Button
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.news.NewsHeader
 import com.diipl.moviebeam.databinding.FragmentMakeMyRoomBinding
 
 
-class MakeMyRoomFragment : Fragment() {
+class MakeMyRoomFragment(
+    private var onOkClicked: () -> Unit
+) : Fragment() {
 
     private var _binding: FragmentMakeMyRoomBinding? = null
     val binding get() = _binding!!
@@ -44,7 +47,7 @@ class MakeMyRoomFragment : Fragment() {
         layout_confirmation = binding.root.findViewById(R.id.layout_confirmation)
 
         binding.btnCancel.setOnClickListener(View.OnClickListener {
-
+            onOkClicked()
         })
 
         binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
@@ -66,7 +69,10 @@ class MakeMyRoomFragment : Fragment() {
         binding.btnOk.setOnClickListener(View.OnClickListener {
             layout_dt.visibility = View.GONE
             layout_confirmation.visibility = View.VISIBLE
-            binding.btnPopOk.requestFocus()
+
+            binding.btnPopOk.postDelayed({
+                binding.btnPopOk.requestFocus()
+            }, 1)
 
             binding.tvMessage.text =
                 "Thank you.Your request has been received and your room will be serviced on " + day+". " + month +" "+ date +" " +year+ " at " + currentHour + ":" + currentminute
@@ -77,6 +83,9 @@ class MakeMyRoomFragment : Fragment() {
                 else{
                     binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 }
+            }
+            binding.btnPopOk.setOnClickListener {
+                onOkClicked()
             }
 
         })

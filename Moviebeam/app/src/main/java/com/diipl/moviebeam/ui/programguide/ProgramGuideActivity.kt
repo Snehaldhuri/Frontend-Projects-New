@@ -27,6 +27,7 @@ import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -88,7 +89,7 @@ class ProgramGuideActivity : BaseActivity() {
 
     private fun fetchDetails() {
         intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
         }
         intent.extras?.let {
             binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
