@@ -92,15 +92,7 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getUAFromDataStore(preferenceDataStoreHelper)
-        mainMenuViewModel.getThemeResponseData(themeDataStore)
-        mainMenuViewModel.getWeatherResponseData(weatherDataStore)
-        mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
-        mainMenuViewModel.getUAFromDataStore(preferenceDataStoreHelper)
 
-        // start the endless service
-        if (!isServiceStarted) {
-            actionOnService(Actions.START)
-        }
         videoTextureView = findViewById(R.id.videoTextureView)
 
         mediaPlayer = MediaPlayer()

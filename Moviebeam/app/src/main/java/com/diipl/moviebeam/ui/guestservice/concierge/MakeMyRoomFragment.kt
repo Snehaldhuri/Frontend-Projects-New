@@ -1,18 +1,12 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
 
-import android.content.Context.LAYOUT_INFLATER_SERVICE
-import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.PopupWindow
-import androidx.core.content.ContextCompat.getSystemServiceName
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentMakeMyRoomBinding
@@ -27,10 +21,9 @@ class MakeMyRoomFragment : Fragment() {
     private var date: String = ""
     private var month: String = ""
     private var year: String = ""
-    private var currentHour: Int =24
+    private var currentHour: Int = 24
     lateinit var layout_dt: LinearLayout
     lateinit var layout_confirmation: LinearLayout
-
 
 
     override fun onCreateView(
@@ -54,7 +47,7 @@ class MakeMyRoomFragment : Fragment() {
 
             Log.e("date", "onCreateView:${day + month + date + currentHour} ")
             binding.tvMessage.text =
-                "Thank you.Your request has been received and your room will be serviced on " + day+" " + month +" "+ date + " at " + currentHour
+                "Thank you.Your request has been received and your room will be serviced on " + day + " " + month + " " + date + " at " + currentHour
         })
 
 

@@ -30,6 +30,10 @@
 
     <color name="semiTransparentBlackColor">#60000000</color>
     <color name="blue_screen">#03A9F4</color>
+    
+    // conceirge
+    <color name="conceirge_items">#00BFBA</color>
+    <color name="conceirge_items_quantity">#FFB81A</color>
 
 
 </resources>
