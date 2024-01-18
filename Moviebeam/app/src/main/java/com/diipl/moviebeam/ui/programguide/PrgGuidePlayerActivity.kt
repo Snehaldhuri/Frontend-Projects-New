@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.KeyEvent
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
@@ -36,14 +37,16 @@ class PrgGuidePlayerActivity : BaseActivity(), KeyEvent.Callback {
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun initializePlayer() {
-        player = ExoPlayer.Builder(this).build()
+        player = ExoPlayer.Builder(this)
+            .setRenderersFactory(DefaultRenderersFactory(this).setEnableDecoderFallback(true))
+            .build()
         val playerView = binding.pvProgram
         playerView.player = player
         player?.let {
             it.setMediaItems(contentList, index, 0)
-            it.prepare()
             it.playWhenReady = true
             it.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+            it.prepare()
         }
 
     }
@@ -113,6 +116,11 @@ class PrgGuidePlayerActivity : BaseActivity(), KeyEvent.Callback {
         binding.layoutChannelInfo.tvNext.text = program.liveProg2
         binding.layoutChannelInfo.tvNowShowingTime.text = program.prog1Time
         binding.layoutChannelInfo.tvNextTime.text = program.prog2Time
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        player?.release()
     }
 
 }

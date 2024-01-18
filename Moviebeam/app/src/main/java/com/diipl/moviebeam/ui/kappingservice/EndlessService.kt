@@ -47,6 +47,8 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.lang.Integer.parseInt
+import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -67,6 +69,10 @@ class EndlessService : Service() {
     private var hotelServicesVersion = ""
     private var CMDRES = ""
     private var EVENT = ""
+    private var kapingCMD = ""
+    private var epochTime = ""
+    private var transactionId = ""
+    private var kapingCmdExecutionResponse = "00"
 
     private val _themeLiveData = MutableLiveData<ThemeResponse>()
     val themeLiveData: LiveData<ThemeResponse> get() = _themeLiveData
@@ -255,9 +261,29 @@ class EndlessService : Service() {
         }
         log(hotelServicesVersion1.toString())
 
-        if (CMDRES.isEmpty()) {
-            CMDRES = Constants.CMDRES
+        var epoch =
+            parseInt(((Date().getTime() / 1000).toString())).toString(16); //Date => timestamp => HEX
+        log("epoch - > $epoch")
+        var Prefix = "";
+        var Prfixzero = "";
+        //Epoch should be 9 charcters, append 0 if not
+        if (epoch.length < 9) {
+            Prfixzero = (9 - epoch.length).toString();
+            if (Prfixzero.equals("1")) {
+                Prefix = "0"
+            } else if (Prfixzero.equals("2")) {
+                Prefix = "00";
+            }
+            epoch = Prefix + epoch;
+            log("prefix epoch ->  $epoch")
+            epochTime = epoch
         }
+        if (kapingCMD == "00"){
+            CMDRES = ""
+        }else{
+            CMDRES = "$kapingCMD$epochTime$transactionId$kapingCmdExecutionResponse"
+        }
+        log("CMDRES -> $CMDRES")
 
         val kapingCall = myApiService.getKapingService(
             Constants.KAPING,
@@ -294,9 +320,8 @@ class EndlessService : Service() {
 
                     val cmdres = result?.CMD
                     cmdres?.let {
-
-                        CMDRES = (it.substring(0, minOf(it.length, 19))) + "00"
-                        log("CMDRES -> $CMDRES")
+                        kapingCMD = it.substring(0,2)
+                        transactionId = it.substring(11,minOf(it.length, 19))
                     }
                     // Handle the data here
                     log(result.toString())

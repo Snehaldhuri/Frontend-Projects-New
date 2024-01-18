@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
+import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -27,6 +28,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.concierge.ConciergeAdapter
 import com.diipl.moviebeam.ui.guestservice.concierge.GolfFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.VelvetParkingFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
@@ -124,6 +126,8 @@ class GuestServiceActivity : BaseActivity() {
                 val gsBtnModelList: List<GsBtnModel> = Constants.GUEST_SERVICE_BUTTON_LIST.filter {
                     gsBtnListFromApi?.contains(it.btnId) == true
                 }
+                val menulist = guestServiceViewModel.accountSetupLiveData
+                    .value?.data?.itemMenuList
                 val adapter = GuestServiceTabAdapter { view, service ->
                     binding.tvServiceTitle.text = service.categoryName
                     when (service.btnId) {
@@ -177,6 +181,21 @@ class GuestServiceActivity : BaseActivity() {
                                         fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.commit()
                                     }
+                                    4 -> {
+                                        binding.layoutHeader.tvTitle.text =
+                                            getString(R.string.toiletry_requests)
+                                        val transaction = supportFragmentManager.beginTransaction()
+                                        val fragment = ToiletryRequestFragment()
+                                        val mBundle = Bundle()
+                                        mBundle.putString("gradientStartColor",gradientStartColor)
+                                        mBundle.putString("gradientEndColor",gradientEndColor)
+                                        fragment.arguments = mBundle
+                                        transaction.replace(R.id.fv_tab_content, fragment)
+                                        transaction.addToBackStack(null)
+                                        binding.rvTabContent.toInvisible()
+                                        binding.fvTabContent.toVisible()
+                                        transaction.commit()
+                                    }
                                     5 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
                                         val fragment = MakeMyRoomFragment {
@@ -203,6 +222,7 @@ class GuestServiceActivity : BaseActivity() {
 
                                     }
                                     6 -> {
+
                                         val transaction = supportFragmentManager.beginTransaction()
                                         val fragment = MakeMyRoomFragment {
                                             view.requestFocus()
