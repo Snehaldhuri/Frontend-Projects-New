@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -91,6 +93,11 @@ class LaundryFragment : BaseFragment() {
                         var array_title = ArrayList<String>()
                         var array_price = ArrayList<String>()
                         var adp: CustomAdapterLaundry
+
+
+
+
+
 
                         for (i in 0 until size.size) {
                             array_title.add(it.subCategoryList[i].title!!)
