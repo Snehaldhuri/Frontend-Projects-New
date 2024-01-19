@@ -5,9 +5,12 @@ import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
 import com.diipl.moviebeam.databinding.ItemToiletryRequestBinding
+import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 
 class ToiletryRequestAdapter(
@@ -35,16 +38,27 @@ class ToiletryRequestAdapter(
 
         val item = itemList[position]
         holder.binding.tvItem.text = item.name
+        holder.binding.tvCharges.text = item.dispPrice
 
         holder.binding.clToiletryItems.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 setFocus(holder.binding.clItem)
             }
+            else{
+                holder.binding.clItem.setBackgroundResource(R.color.transparent)
+            }
         }
         holder.binding.clToiletryItems.setOnClickListener {
             onMenuItemClicked(item)
-            holder.binding.ivIconChecked.toVisible()
-            holder.binding.clQuantity.toVisible()
+            if(holder.binding.ivIconChecked.isVisible){
+                holder.binding.ivIconChecked.toInvisible()
+                holder.binding.clQuantity.toInvisible()
+            }
+            else{
+                holder.binding.ivIconChecked.toVisible()
+                holder.binding.clQuantity.toVisible()
+            }
+
         }
     }
 

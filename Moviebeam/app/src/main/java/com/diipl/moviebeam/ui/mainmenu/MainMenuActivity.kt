@@ -135,9 +135,9 @@ class MainMenuActivity : BaseActivity() {
 //        UA = intent.extras?.getString("UA")
 
         // start the endless service
-        if (!isServiceStarted) {
-            actionOnService(Actions.START)
-        }
+//        if (!isServiceStarted) {
+//            actionOnService(Actions.START)
+//        }
     }
 
     override fun observeViewModel() {
