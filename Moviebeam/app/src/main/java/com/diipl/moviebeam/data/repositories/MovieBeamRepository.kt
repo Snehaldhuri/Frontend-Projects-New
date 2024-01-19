@@ -67,9 +67,6 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
     suspend fun getShowtimeInfo(ua: String): ShowTimeResponse? {
         return remoteDataSource.getShowtimeInfo(ua)
     }
-    suspend fun getShowtimeInfo(ua: String): ShowTimeResponse? {
-        return remoteDataSource.getShowtimeInfo(ua)
-    }
 
     suspend fun getNewsDetails(newsId: Int): NewsResponse? {
         return remoteDataSource.getNewsDetails(newsId)

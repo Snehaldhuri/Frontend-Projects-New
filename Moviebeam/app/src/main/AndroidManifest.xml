@@ -24,10 +24,6 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ui.showtime.ShowtimeActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <activity
             android:name=".ui.kaping.KapingActivity"
             android:exported="false" />
         <activity
@@ -37,7 +33,7 @@
             android:icon="@drawable/app_icon_your_company"
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
             android:name=".ui.serial_info.SerialActivity"
             android:banner="@drawable/app_icon_your_company"
