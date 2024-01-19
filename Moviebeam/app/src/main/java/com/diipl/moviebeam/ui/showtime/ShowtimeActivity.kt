@@ -19,6 +19,8 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse

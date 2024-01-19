@@ -20,7 +20,7 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
-    const val UA = "14508KKMH0K299"
+    var UA = "14508KKMH0K299"
     const val ACCOUNTID = 7107
     const val ACTIVATE = "ACTIVATE"
     const val MODE = "JSON"
@@ -123,6 +123,14 @@ object Constants {
         BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
         BtnModel(ADULT_ID, R.drawable.adult, ADULT),
     )
+    val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
+        BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
+        BtnModel(SHO_SPORTS_ID, R.drawable.showtime, SHO_SPORTS),
+        BtnModel(SHO_SERIES_ID, R.drawable.showtime, SHO_SERIES),
+        BtnModel(SHO_DOCS_ID, R.drawable.showtime, SHO_DOCS),
+    )
+
+    const val FREE_MOVIE_RELEASE_TYPE_ID =1
 
     //Guest Service Button Id
     const val WEATHER_ID = "weather"
@@ -255,15 +263,6 @@ object Constants {
     //    const val UNSATISFIED = " Unsatisfies"
     const val FEEDBACK_POSITIVE_COLOR = "#34C759"
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
-
-    val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
-        BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
-        BtnModel(SHO_SPORTS_ID, R.drawable.showtime, SHO_SPORTS),
-        BtnModel(SHO_SERIES_ID, R.drawable.showtime, SHO_SERIES),
-        BtnModel(SHO_DOCS_ID, R.drawable.showtime, SHO_DOCS),
-    )
-
-    const val FREE_MOVIE_RELEASE_TYPE_ID =1
 
     //Casting
     const val CASTING_URL = "https://dicasttest.movie-beam.com/"

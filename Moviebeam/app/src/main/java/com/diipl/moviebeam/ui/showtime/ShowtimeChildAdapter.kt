@@ -10,8 +10,11 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 
 class ShowtimeChildAdapter(
     private val childList: List<Detail>,

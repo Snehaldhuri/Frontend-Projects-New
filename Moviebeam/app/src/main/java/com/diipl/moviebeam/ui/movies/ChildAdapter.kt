@@ -9,12 +9,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toVisible
 
 class ChildAdapter(
     private val childList: List<ContentDto>,
@@ -72,6 +74,12 @@ class ChildAdapter(
                 it.scaleX = 1.0f
                 it.scaleY = 1.0f
             }
+        }
+        if(item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID){
+            holder.title.toInvisible()
+        }else{
+            holder.title.text =
+                holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
         }
 
         holder.movieview.setOnClickListener {
