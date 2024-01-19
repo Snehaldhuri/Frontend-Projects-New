@@ -20,6 +20,13 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.30" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_70"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.70" />
+
     <TextView
         android:id="@+id/tv_select_deselect"
         android:layout_width="@dimen/dp_0"
@@ -38,10 +45,22 @@
         android:text="@string/items"
         android:textColor="@color/conceirge_items"
         android:textSize="@dimen/sp_14"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/gl_vertical_30"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_70"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_30"
         app:layout_constraintTop_toBottomOf="@+id/tv_select_deselect" />
-
+    <TextView
+        android:id="@+id/tv_charges"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_5"
+        android:text="Charge"
+        android:textColor="@color/conceirge_items"
+        android:textSize="@dimen/sp_14"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_70"
+        app:layout_constraintTop_toBottomOf="@+id/tv_select_deselect"
+        />
     <View
         android:id="@+id/view_toiletry"
         android:layout_width="@dimen/dp_0"
@@ -66,7 +85,7 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@+id/btn_cancel"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/gl_vertical_30"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_30"
         app:layout_constraintTop_toBottomOf="@+id/view_toiletry" />
 
     <androidx.cardview.widget.CardView

@@ -6,6 +6,7 @@ import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -57,6 +58,7 @@ class RemoteDataSource @Inject constructor(
         }
         return ApiResponseParsing().getResponseAsObject(result.data, MoviesResponse::class)
     }
+
     suspend fun getShowtimeInfo(ua: String): ShowTimeResponse? {
         val result = safeAPiCall {
             lgRestApiService.getShowtime(ua)
@@ -178,17 +180,28 @@ class RemoteDataSource @Inject constructor(
                 CALLBACKFLG,
                 INRMVER,
                 LAUVER
-
             )
         }
         Log.e("result", "getStbMasterDetails:${result} ")
-        return ApiResponseParsing().getResponseAsObject(result.data, kapingResponce::class)!!
+        return ApiResponseParsing().getResponseAsObject(result.data, kapingResponce::class)
     }
-    suspend fun sendGuestFeedback(ua: String, feedback: String, stbTime: String): FeedbackResponse? {
+
+    suspend fun sendGuestFeedback(
+        ua: String,
+        feedback: String,
+        stbTime: String
+    ): FeedbackResponse? {
         val result = safeAPiCall {
             lgRestApiService.sendGuestFeedback(ua, feedback, stbTime)
         }
         return ApiResponseParsing().getResponseAsObject(result.data, FeedbackResponse::class)
     }
+
+    suspend fun laundryResponce(UA: String, serviceId: String): LaundryResponce? {
+        val result = safeAPiCall { lgRestApiService.getLaundry(UA, serviceId) }
+        Log.e("result_laundry_rds", "laundryResponce:${result}")
+        return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
+    }
+
 
 }

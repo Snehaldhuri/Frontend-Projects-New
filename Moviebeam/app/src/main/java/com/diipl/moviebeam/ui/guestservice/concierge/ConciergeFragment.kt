@@ -15,8 +15,6 @@ class ConciergeFragment : Fragment() {
 private var _binding: FragmentConciergeBinding? = null
     val binding get() = _binding!!
 
-
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -24,11 +22,6 @@ private var _binding: FragmentConciergeBinding? = null
         // Inflate the layout for this fragment
         _binding = FragmentConciergeBinding.inflate(inflater, container, false)
         binding.rvContent.layoutManager = GridLayoutManager(binding.root.context, 4)
-
-//        val view = inflater.inflate(R.layout.fragment_concierge, container, false)
-//        view.findViewById<>()
         return binding.root
     }
-
-
 }
