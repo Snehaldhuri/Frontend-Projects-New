@@ -20,7 +20,7 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
-    const val UA = "14508KKMH0K299"
+    var UA = "14508KKMH0K299"
     const val ACCOUNTID = 7107
     const val ACTIVATE = "ACTIVATE"
     const val MODE = "JSON"

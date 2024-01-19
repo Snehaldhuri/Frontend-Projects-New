@@ -135,9 +135,9 @@ class MainMenuActivity : BaseActivity() {
 //        UA = intent.extras?.getString("UA")
 
         // start the endless service
-        if (!isServiceStarted) {
-            actionOnService(Actions.START)
-        }
+//        if (!isServiceStarted) {
+//            actionOnService(Actions.START)
+//        }
     }
 
     override fun observeViewModel() {
@@ -265,7 +265,7 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                mainMenuViewModel.fetchDateTime(Constants.UA)
+//                mainMenuViewModel.fetchDateTime(Constants.UA)
 
                 videoUrl =
                     Constants.BASE_PLAYBACK_URL + mainMenuViewModel.accountSetupLiveData.value?.data?.hotelChannelList?.get(
@@ -360,6 +360,7 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleUAResponse(ua: String) {
         UA = ua
+        Constants.UA = UA
         mainMenuViewModel.fetchDateTime(ua)
 
     }
