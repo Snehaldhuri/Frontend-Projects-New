@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="@dimen/dp_8">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_15"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.15" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_30"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.33" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_45"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.48" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_58"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.58" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_73"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.72" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_85"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.82" />
+
+    <TextView
+        android:id="@+id/tv_flight_no"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_2"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:text="@string/flight_no"
+        android:textColor="@color/flight_status_header"
+        android:textSize="@dimen/sp_18"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_15"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_destination"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_2"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:text="@string/destination"
+        android:textColor="@color/flight_status_header"
+        android:textSize="@dimen/sp_18"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_30"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_15"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_airlines"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_2"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:text="@string/airlines"
+        android:textColor="@color/flight_status_header"
+        android:textSize="@dimen/sp_18"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_45"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_30"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_time"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_2"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:text="@string/time"
+        android:textColor="@color/flight_status_header"
+        android:textSize="@dimen/sp_18"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_58"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_45"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_terminal"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_2"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:text="@string/terminal"
+        android:textColor="@color/flight_status_header"
+        android:textSize="@dimen/sp_18"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_73"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_58"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_gate"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_2"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:text="@string/gate"
+        android:textColor="@color/flight_status_header"
+        android:textSize="@dimen/sp_18"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_85"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_73"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/dp_2"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:text="@string/status"
+        android:textColor="@color/flight_status_header"
+        android:textSize="@dimen/sp_18"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_85"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

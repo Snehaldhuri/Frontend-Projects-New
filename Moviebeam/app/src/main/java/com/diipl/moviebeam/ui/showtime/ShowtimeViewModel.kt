@@ -42,13 +42,12 @@ class ShowtimeViewModel @Inject constructor(
     val showtimeLiveData: LiveData<Resource<ShowTimeResponse>> get() = _showtimeLiveData
 
     init {
-        fetchShowtimeInfo("17205KKXLKF626")
-        fetchThemeDetails("17205KKXLKF626")
-        fetchWeatherData("17205KKXLKF626")
-        fetchDateTime("17205KKXLKF626")
+        fetchShowtimeInfo("14508KKMH0K299")
+        fetchThemeDetails("14508KKMH0K299")
+        fetchWeatherData("14508KKMH0K299")
+        fetchDateTime("14508KKMH0K299")
         fetchAccountSetupDetails("ACTIVATE", "14508KKMH0K299", "JSON")
     }
-
     private fun fetchShowtimeInfo(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _showtimeLiveData.postValue(Resource.Loading())
@@ -57,11 +56,9 @@ class ShowtimeViewModel @Inject constructor(
                 _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
                 _showtimeLiveData.postValue(Resource.Success(response))
-
             }
         }
     }
-
     private fun fetchThemeDetails(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _themeLiveData.postValue(Resource.Loading())
@@ -70,7 +67,6 @@ class ShowtimeViewModel @Inject constructor(
                 _themeLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
                 _themeLiveData.postValue(Resource.Success(response))
-
             }
         }
     }
@@ -119,6 +115,4 @@ class ShowtimeViewModel @Inject constructor(
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
     }
-
-
 }

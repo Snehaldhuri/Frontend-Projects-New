@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.guestservice.weather.WeatherFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_27"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.27" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_44"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.44" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_50"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <TextView
+        android:id="@+id/tv_temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_8"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_30"
+        app:layout_constraintBottom_toTopOf="@+id/tv_city"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_50" />
+
+    <TextView
+        android:id="@+id/tv_city"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_8"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_50" />
+
+    <ImageView
+        android:id="@+id/iv_weather"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:layout_marginEnd="@dimen/dp_8"
+        android:contentDescription="@string/sunrise"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
+        app:layout_constraintDimensionRatio="1.1:1"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintWidth_percent="0.1" />
+
+    <TextView
+        android:id="@+id/tv_temp_high_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text="@string/high"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintBottom_toTopOf="@+id/tv_temp_low_title"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintTop_toBottomOf="@+id/iv_weather" />
+
+    <TextView
+        android:id="@+id/tv_temp_high"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_8"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintBottom_toTopOf="@+id/tv_temp_low"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintTop_toBottomOf="@+id/tv_city" />
+
+    <TextView
+        android:id="@+id/tv_temp_low_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text="@string/low"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintBottom_toTopOf="@+id/tv_dev_point_title"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintTop_toBottomOf="@+id/tv_temp_high_title" />
+
+    <TextView
+        android:id="@+id/tv_temp_low"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_8"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_44"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
+        app:layout_constraintTop_toBottomOf="@+id/tv_temp_high" />
+
+    <TextView
+        android:id="@+id/tv_sunrise_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text="@string/sunrise"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toStartOf="@+id/tv_humidity_title"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_44" />
+
+    <ImageView
+        android:id="@+id/iv_sunrise"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:contentDescription="@string/sunrise"
+        android:src="@drawable/sunrise"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/tv_sunrise_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_sunrise_title"
+        app:layout_constraintTop_toBottomOf="@+id/tv_sunrise_title"
+        app:layout_constraintWidth_percent="0.07" />
+
+    <TextView
+        android:id="@+id/tv_sunrise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintEnd_toEndOf="@+id/tv_sunrise_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_sunrise_title"
+        app:layout_constraintTop_toBottomOf="@+id/iv_sunrise" />
+
+    <TextView
+        android:id="@+id/tv_humidity_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text="@string/humidity"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toStartOf="@+id/tv_dev_point_title"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/tv_sunrise_title"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_44" />
+
+    <ImageView
+        android:id="@+id/iv_humidity"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:contentDescription="@string/humidity"
+        android:src="@drawable/humidity"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/tv_humidity_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_humidity_title"
+        app:layout_constraintTop_toBottomOf="@+id/tv_humidity_title"
+        app:layout_constraintWidth_percent="0.07" />
+
+    <TextView
+        android:id="@+id/tv_humidity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintEnd_toEndOf="@+id/tv_humidity_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_humidity_title"
+        app:layout_constraintTop_toBottomOf="@+id/iv_humidity" />
+
+    <TextView
+        android:id="@+id/tv_dev_point_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text="@string/dev_point"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toStartOf="@+id/tv_sunset_title"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/tv_humidity_title"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_44" />
+
+    <ImageView
+        android:id="@+id/iv_dev_point"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:contentDescription="@string/dev_point"
+        android:src="@drawable/dew_point"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/tv_dev_point_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_dev_point_title"
+        app:layout_constraintTop_toBottomOf="@+id/tv_dev_point_title"
+        app:layout_constraintWidth_percent="0.07" />
+
+    <TextView
+        android:id="@+id/tv_dev_point"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintEnd_toEndOf="@+id/tv_dev_point_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_dev_point_title"
+        app:layout_constraintTop_toBottomOf="@+id/iv_dev_point" />
+
+    <TextView
+        android:id="@+id/tv_sunset_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text="@string/sunset"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toStartOf="@+id/tv_visibility_title"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/tv_dev_point_title"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_44" />
+
+    <ImageView
+        android:id="@+id/iv_sunset"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:contentDescription="@string/sunset"
+        android:src="@drawable/sunset"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/tv_sunset_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_sunset_title"
+        app:layout_constraintTop_toBottomOf="@+id/tv_sunset_title"
+        app:layout_constraintWidth_percent="0.07" />
+
+    <TextView
+        android:id="@+id/tv_sunset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintEnd_toEndOf="@+id/tv_sunset_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_sunset_title"
+        app:layout_constraintTop_toBottomOf="@+id/iv_sunset" />
+
+    <TextView
+        android:id="@+id/tv_visibility_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text="@string/visibility"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toStartOf="@+id/tv_wind_title"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/tv_sunset_title"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_44" />
+
+    <ImageView
+        android:id="@+id/iv_visibility"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:contentDescription="@string/visibility"
+        android:src="@drawable/visibility"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/tv_visibility_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_visibility_title"
+        app:layout_constraintTop_toBottomOf="@+id/tv_visibility_title"
+        app:layout_constraintWidth_percent="0.07" />
+
+    <TextView
+        android:id="@+id/tv_visibility"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintEnd_toEndOf="@+id/tv_visibility_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_visibility_title"
+        app:layout_constraintTop_toBottomOf="@+id/iv_visibility" />
+
+    <TextView
+        android:id="@+id/tv_wind_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:text="@string/wind"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/tv_visibility_title"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_44" />
+
+    <ImageView
+        android:id="@+id/iv_wind"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:contentDescription="@string/wind"
+        android:src="@drawable/wind"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/tv_wind_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_wind_title"
+        app:layout_constraintTop_toBottomOf="@+id/tv_wind_title"
+        app:layout_constraintWidth_percent="0.07" />
+
+    <TextView
+        android:id="@+id/tv_wind"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/white"
+        android:textSize="@dimen/sp_12"
+        app:layout_constraintEnd_toEndOf="@+id/tv_wind_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_wind_title"
+        app:layout_constraintTop_toBottomOf="@+id/iv_wind" />
+
+    <ImageView
+        android:id="@+id/iv_weather_provider"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:layout_marginBottom="44dp"
+        android:contentDescription="@string/wind"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="4.6:1"
+        app:layout_constraintStart_toStartOf="@+id/tv_visibility_title"
+        app:layout_constraintWidth_percent="0.2" />
+
+    <ProgressBar
+        android:id="@+id/pb_loader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

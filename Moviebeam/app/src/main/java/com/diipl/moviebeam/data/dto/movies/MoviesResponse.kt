@@ -1,13 +1,16 @@
 package com.diipl.moviebeam.data.dto.movies
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class MoviesResponse(
-    val accountId: String,
-    val adultDayPassPrice: Int,
-    val freeContentList: List<ContentDto>,
-    val freeGenreList: List<GenreDto>,
-    val id: Int,
-    val premiumContentList: List<ContentDto>,
-    val premiumGenreList: List<PremiumGenre>,
-    val type: String,
-    val version: String
+    val accountId: String = "",
+    val adultDayPassPrice: Int = 0,
+    val freeContentList: List<ContentDto> = emptyList(),
+    val freeGenreList: List<GenreDto> = emptyList(),
+    val id: Int = 0,
+    val premiumContentList: List<ContentDto> = emptyList(),
+    val premiumGenreList: List<PremiumGenre> = emptyList(),
+    val type: String = "",
+    val version: String = ""
 )

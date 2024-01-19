@@ -1,27 +1,31 @@
 package com.diipl.moviebeam.data.dto.hotelservice
 
+import kotlinx.serialization.Serializable
+
+
+@Serializable
 data class Service(
-    val active: Boolean,
-    val categoryId: Int,
-    val categoryName: String,
-    val contentType: String,
-    val contentTypeId: Int,
-    val defaultImage: ImageDTO,
-    val description: String,
-    val editFlag: Boolean,
-    val id: Int,
-    val imagePathPoster: String,
-    val imagePathSushi: String,
-    val isSpecial: Boolean,
-    val landscapeRatio: Int,
-    val languageWiseServiceList: Map<String, LanguageWiseServiceDTO>,
-    val layout: Int,
-    val secServiceImageList: List<String>,
-    val serviceId: Int,
-    val serviceImageList: List<String>,
-    val serviceImageListNew: List<String>,
-    val spotlightImage: ImageDTO,
-    val title: String,
-    val versionNo: Int,
-    val videoAvailable: Boolean
+    val active: Boolean = false,
+    val categoryId: Int = 0,
+    val categoryName: String = "",
+    val contentType: String = "",
+    val contentTypeId: Int = 0,
+    val defaultImage: ImageDTO = ImageDTO(),
+    val description: String = "",
+    val editFlag: Boolean = false,
+    val id: Int = 0,
+    val imagePathPoster: String = "",
+    val imagePathSushi: String = "",
+    val isSpecial: Boolean = false,
+    val landscapeRatio: Int = 0,
+    val languageWiseServiceList: Map<String, LanguageWiseServiceDTO> = emptyMap(),
+    val layout: Int = 0,
+    val secServiceImageList: List<String> = emptyList(),
+    val serviceId: Int = 0,
+    val serviceImageList: List<String> = emptyList(),
+    val serviceImageListNew: List<String> = emptyList(),
+    val spotlightImage: ImageDTO = ImageDTO(),
+    val title: String = "",
+    val versionNo: Int = 0,
+    val videoAvailable: Boolean = false
 )

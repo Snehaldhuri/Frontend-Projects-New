@@ -20,6 +20,7 @@ class MovieDetailFragment : Fragment() {
     private var movie: ContentDto? = null
     private var gradient: GradientDrawable? = null
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -28,9 +29,22 @@ class MovieDetailFragment : Fragment() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.btnWatchTrailer.setOnClickListener {
+            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,true,false) }
+        }
+        binding.btnRentNow.setOnClickListener {
+            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,false,true) }
+        }
+    }
+
     fun setMovieDetails(movie: ContentDto) {
         this.movie = movie
-        movie.secImagePathPoster.let {
+
+        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        movie.imagePathPoster =httpStreamingHotelvideoUrl+movie.releaseId+"/"+movie.releaseId+"_P.jpg"
+        movie.imagePathPoster.let {
             binding.ivMovieImage.loadImagesWithGlideExt(it)
         }
         binding.tvTitle.text = movie.movieName

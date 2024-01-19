@@ -9,29 +9,27 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 
 class MainMenuBtnAdapter(
-    private var onMenuItemClicked: (String) -> Unit
+    private var onMenuItemClicked: (BtnModel) -> Unit
 ) :
     RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
 
-    var startColor = ""
-    var endColor = ""
-
+    private var startColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var endColor = Constants.DEFAULTGRADIENTENDCOLOR
     var itemList: List<BtnModel> = mutableListOf()
 
-
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.imageView)
-        val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
-        val card: ConstraintLayout = itemView.findViewById(R.id.card1)
+        val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
+        val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
+        val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
         return MyViewHolder(view)
     }
 
@@ -53,26 +51,19 @@ class MainMenuBtnAdapter(
             }
         }
         holder.card.setOnClickListener {
-            onMenuItemClicked(item.btnId)
+            onMenuItemClicked(item)
         }
-
     }
 
     private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
-
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
         )
-
         gradientDrawable.cornerRadius = 20f
-
         gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
         gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-
-
         cardView.background = gradientDrawable
     }
 

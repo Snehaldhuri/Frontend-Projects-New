@@ -2,29 +2,30 @@ package com.diipl.moviebeam.ui.movies
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.marginBottom
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 
 class MoviesBtnAdapter(
     private val itemList: List<BtnModel>,
-    private val onMoviesMenuItemClicked: (contentType: String) -> Unit
+    private val onMoviesMenuItemClicked: (contentType: String) -> Unit,
+    private val onRightKeyPressed: () -> Unit
 ) :
     RecyclerView.Adapter<MoviesBtnAdapter.MyViewHolder>() {
     var startColor = ""
     var endColor = ""
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.imageView)
-        val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
-        val card: ConstraintLayout = itemView.findViewById(R.id.card1)
+        val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
+        val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
+        val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
     }
     override fun onCreateViewHolder( parent: ViewGroup, viewType: Int ): MoviesBtnAdapter.MyViewHolder {
 
@@ -32,6 +33,18 @@ class MoviesBtnAdapter(
         val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
         layoutParams.setMargins(0, 0, 0, 3)
         view.layoutParams = layoutParams
+
+        view.setOnKeyListener { _, keycode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keycode) {
+                    KeyEvent.KEYCODE_DPAD_RIGHT ->{
+                        onRightKeyPressed()
+                    }
+                }
+            }
+            false
+        }
+
         return MyViewHolder(view)
 
     }

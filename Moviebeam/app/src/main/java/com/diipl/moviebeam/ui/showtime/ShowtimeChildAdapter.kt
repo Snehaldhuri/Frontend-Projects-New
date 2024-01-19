@@ -18,7 +18,7 @@ import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 
 class ShowtimeChildAdapter(
     private val childList: List<Detail>,
-    private var onItemClicked: (Detail) -> Unit
+    private var onItemClicked: (Detail,Int) -> Unit
 ) :
     RecyclerView.Adapter<ShowtimeChildAdapter.ChildViewHolder>() {
 
@@ -29,7 +29,7 @@ class ShowtimeChildAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.child_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.moviegenre_childlist_item, parent, false)
         view.isFocusable = true
         view.isClickable = true
 
@@ -56,10 +56,13 @@ class ShowtimeChildAdapter(
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
         val item = childList[position]
-        holder.logo.loadImagesWithGlideExt(item.secImagePathSushi)
+
+        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        item.imagePathSushi = httpStreamingHotelvideoUrl+item.releaseId+"/"+item.releaseId+"_S.jpg"
+
+        holder.logo.loadImagesWithGlideExt(item.imagePathSushi)
         holder.movieview.setOnClickListener {
-            onItemClicked(item)
+            onItemClicked(item,item.releaseId)
         }
     }
-
 }

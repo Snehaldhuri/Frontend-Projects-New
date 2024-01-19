@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.showtime
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,16 +15,16 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 
 class ShowtimeMenuAdapter(
     private val itemList: List<BtnModel>,
-    private val onMoviesMenuItemClicked: (contentType: String) -> Unit
+    private val onMoviesMenuItemClicked: (contentType: String) -> Unit,
+    private val onRightKeyPressed: () -> Unit
 ) :
     RecyclerView.Adapter<ShowtimeMenuAdapter.MyViewHolder>() {
     var startColor = ""
     var endColor = ""
-
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageView: ImageView = itemView.findViewById(R.id.imageView)
-        val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
-        val card: ConstraintLayout = itemView.findViewById(R.id.card1)
+        val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
+        val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
+        val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
     }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int ): ShowtimeMenuAdapter.MyViewHolder {
 
@@ -31,8 +32,18 @@ class ShowtimeMenuAdapter(
         val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
         layoutParams.setMargins(0, 0, 0, 3)
         view.layoutParams = layoutParams
-        return MyViewHolder(view)
 
+        view.setOnKeyListener { _, keycode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keycode) {
+                    KeyEvent.KEYCODE_DPAD_RIGHT ->{
+                        onRightKeyPressed()
+                    }
+                }
+            }
+            false
+        }
+        return MyViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ShowtimeMenuAdapter.MyViewHolder, position: Int) {
@@ -54,11 +65,9 @@ class ShowtimeMenuAdapter(
 
         }
     }
-
     override fun getItemCount(): Int =  itemList.size
 
     private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
-
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -73,7 +82,6 @@ class ShowtimeMenuAdapter(
 
         cardView.background = gradientDrawable
     }
-
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor
         this.endColor = endColor
