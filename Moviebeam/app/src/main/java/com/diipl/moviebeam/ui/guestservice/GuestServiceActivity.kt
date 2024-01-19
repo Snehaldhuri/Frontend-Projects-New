@@ -29,6 +29,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.concierge.ConciergeAdapter
 import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.VelvetParkingFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.laundry.LaundryFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
@@ -104,7 +105,8 @@ class GuestServiceActivity : BaseActivity() {
                         temperature = it.replace("&deg F", " \u2109")
                     }
                 }
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+                    temperature
                 guestServiceViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
@@ -181,6 +183,7 @@ class GuestServiceActivity : BaseActivity() {
                                         binding.fvTabContent.toVisible()
                                         transaction.commit()
                                     }
+
                                     2 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
                                         val fragment = VelvetParkingFragment()
@@ -189,6 +192,7 @@ class GuestServiceActivity : BaseActivity() {
                                         binding.fvTabContent.toVisible()
                                         transaction.commit()
                                     }
+
                                     6 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
                                         val fragment = MakeMyRoomFragment()
@@ -203,6 +207,17 @@ class GuestServiceActivity : BaseActivity() {
                                                 date.year
                                             )
                                         }
+                                        transaction.replace(R.id.fv_tab_content, fragment)
+                                        binding.rvTabContent.toInvisible()
+                                        binding.fvTabContent.toVisible()
+                                        transaction.commit()
+                                    }
+
+                                    3 -> {
+                                        val transaction = supportFragmentManager.beginTransaction()
+                                        val fragment = LaundryFragment()
+
+                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()
@@ -248,7 +263,7 @@ class GuestServiceActivity : BaseActivity() {
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent
                             val transaction = supportFragmentManager.beginTransaction()
-                            val fragment = NewsFragment{
+                            val fragment = NewsFragment {
                                 view.requestFocus()
                             }
                             fragment.setGradientColor(gradientStartColor, gradientEndColor)

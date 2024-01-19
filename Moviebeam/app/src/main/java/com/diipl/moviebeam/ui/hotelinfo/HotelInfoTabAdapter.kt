@@ -52,9 +52,7 @@ class HotelInfoTabAdapter(
             holder.card.setOnClickListener {
                 onItemFocused(itemList[position],it)
                 onHelpInfoTabClick(itemList[position], position,it)
-
             }
-
         }
     }
 

@@ -87,5 +87,4 @@ class ConciergeAdapter(
         this.startColor = startColor
         this.endColor = endColor
     }
-
 }

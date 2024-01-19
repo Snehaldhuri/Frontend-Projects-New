@@ -5,6 +5,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
@@ -17,9 +18,9 @@ import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.utils.ApiResponseParsing
+import com.diipl.moviebeam.utils.LaundryApiResponseParsing
 import com.diipl.moviebeam.utils.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
-import retrofit2.http.Query
 import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
@@ -150,7 +151,7 @@ class RemoteDataSource @Inject constructor(
         CALLBACKFLG: String,
         INRMVER: String,
         LAUVER: String
-    ): kapingResponce {
+    ): kapingResponce? {
         val result = safeAPiCall {
             lgRestApiService.kaping(
                 Q,
@@ -171,10 +172,18 @@ class RemoteDataSource @Inject constructor(
                 CALLBACKFLG,
                 INRMVER,
                 LAUVER
-
             )
         }
         Log.e("result", "getStbMasterDetails:${result} ")
-        return ApiResponseParsing().getResponseAsObject(result.data, kapingResponce::class)!!
+        return ApiResponseParsing().getResponseAsObject(result.data, kapingResponce::class)
     }
+
+    suspend fun laundryResponce(UA: String, serviceId: String): LaundryResponce? {
+        val result = safeAPiCall { lgRestApiService.getLaundry(UA, serviceId) }
+        Log.e("result_laundry_rds", "laundryResponce:${result}")
+        return ApiResponseParsing().getResponseAsObject(result.data,LaundryResponce::class)
+    }
+
+
+
 }

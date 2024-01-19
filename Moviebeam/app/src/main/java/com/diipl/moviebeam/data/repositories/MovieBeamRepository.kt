@@ -4,6 +4,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
@@ -77,6 +78,10 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         return remoteDataSource.getStbMasterDetails(ua, srno, macadd, type, wifimacadd)
     }
 
+    suspend fun getLaundryDetails(ua: String, srno: String): LaundryResponce? {
+        return remoteDataSource.laundryResponce(ua, srno)
+    }
+
     suspend fun kapingResponce(
         Q: String,
         UA: String,
@@ -96,7 +101,7 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         CALLBACKFLG: String,
         INRMVER: String,
         LAUVER: String
-    ): kapingResponce {
+    ): kapingResponce? {
         return remoteDataSource.kapingResponce(
             Q,
             UA,

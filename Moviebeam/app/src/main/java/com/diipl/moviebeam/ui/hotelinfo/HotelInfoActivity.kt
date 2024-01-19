@@ -158,7 +158,6 @@ class HotelInfoActivity : BaseActivity() {
                                 tabs.add(it.title)
                             }
                         }
-
                         else -> {
                             tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
                             tabs.add(service.categoryName)

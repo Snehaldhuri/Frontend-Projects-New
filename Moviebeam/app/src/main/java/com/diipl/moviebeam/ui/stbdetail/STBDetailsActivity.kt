@@ -41,8 +41,6 @@ class STBDetailsActivity : BaseActivity() {
         binding = ActivityStbdetailsBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-
-
     }
 
     private fun handleStbMasterResponse(status: Resource<StbMasterResponse>) {

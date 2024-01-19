@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.data.remote.services
 
-import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -81,4 +80,11 @@ interface LgRestApiService {
         @Query("INRMVER") INRMVER: String,
         @Query("LAUVER") LAUVER: String
     ): Response<String>
+
+
+    @GET("content/serviceRequest")
+    suspend fun getLaundry(
+        @Query("UA") UA: String,
+        @Query("serviceId") serviceId: String
+    ) : Response<String>
 }
