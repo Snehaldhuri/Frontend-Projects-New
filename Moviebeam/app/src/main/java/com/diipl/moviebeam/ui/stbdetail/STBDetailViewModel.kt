@@ -396,7 +396,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         }
     }
 
-    fun showToastMessage(error: String) {
-        showToastPrivate.value = SingleEvent(error)
-    }
+        fun showToastMessage(error: String) {
+            showToastPrivate.value = SingleEvent(error)
+        }
 }

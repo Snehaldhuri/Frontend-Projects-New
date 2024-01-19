@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.guestservice.concierge.laundry.LaundryFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_laundry"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="@dimen/dp_20"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/dp_20"
+        android:layout_marginRight="@dimen/dp_20"
+        android:layout_weight="1"
+        android:ellipsize="none"
+        android:maxLines="2"
+        android:scrollHorizontally="false"
+        android:text="Please click OK to select/deselect the laundry items.Pres +/- to increase/decrease quantity"
+        android:textAlignment="center"
+        app:flow_wrapMode="aligned"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/rv_laundry"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_items"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="300dp"
+        android:text="Items"
+        android:textColor="@color/fastlane_background"
+        app:layout_constraintEnd_toStartOf="@+id/tv_charges"
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+    <TextView
+        android:id="@+id/tv_charges"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_20"
+        android:layout_marginRight="@dimen/dp_20"
+        android:text="Charges"
+        android:textColor="@color/fastlane_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+    <ListView
+        android:fadeScrollbars="false"
+        android:id="@+id/lv_laundry"
+        android:layout_width="400dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="@dimen/dp_0"
+        android:divider="@null"
+        app:layout_constraintTop_toBottomOf="@+id/tv_items" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

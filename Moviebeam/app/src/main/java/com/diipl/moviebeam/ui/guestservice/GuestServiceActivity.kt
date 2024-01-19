@@ -30,6 +30,7 @@ import com.diipl.moviebeam.ui.guestservice.concierge.GolfFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.VelvetParkingFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.laundry.LaundryFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
 import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFragment
@@ -88,6 +89,8 @@ class GuestServiceActivity : BaseActivity() {
             is Resource.Success -> {
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
                     replaceDegreeSymbol(guestServiceViewModel.weatherLiveData.value?.data?.tempCondition)
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+                    temperature
                 guestServiceViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
@@ -169,6 +172,7 @@ class GuestServiceActivity : BaseActivity() {
                                         transaction.commit()
                                         binding.fvTabContent.toVisible()
                                     }
+
                                     2 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
                                         val fragment = VelvetParkingFragment {
@@ -264,6 +268,17 @@ class GuestServiceActivity : BaseActivity() {
                                                 date.year
                                             )
                                         }
+                                        fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                                        transaction.replace(R.id.fv_tab_content, fragment)
+                                        binding.rvTabContent.toInvisible()
+                                        binding.fvTabContent.toVisible()
+                                        transaction.commit()
+                                    }
+
+                                    3 -> {
+                                        val transaction = supportFragmentManager.beginTransaction()
+                                        val fragment = LaundryFragment()
+
                                         fragment.setGradientColor(gradientStartColor, gradientEndColor)
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
