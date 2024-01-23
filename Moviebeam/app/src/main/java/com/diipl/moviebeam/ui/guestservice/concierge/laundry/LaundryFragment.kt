@@ -32,7 +32,7 @@ class LaundryFragment : BaseFragment() {
     private var _binding: FragmentLaundryBinding? = null
     val binding get() = _binding!!
     private var laundryHeaderPosition: Int = 0
-
+    private var laundrySubCategoryPosition: Int = 0
 
     override fun observeViewModel() {
         observe(laundryViewModel.laundryMasterLiveData, ::handleLaundryMasterResponse)
@@ -79,25 +79,14 @@ class LaundryFragment : BaseFragment() {
                     var array_price = ArrayList<String>()
                     var adp: CustomAdapterLaundry
 
-                    /*   for (i in 0 until size.size) {
-                           array_title.add(laundry_list[0].subCategoryList[i].title!!)
-                           array_price.add(laundry_list[0].subCategoryList[i].price.toString())
-                       }
-                       adp = CustomAdapterLaundry(
-                           onMenuItemFocused = {},
-                           onLeftKeyPressed = {},
-                           requireContext(),
-                           array_title,
-                           array_price
-                       )*/
-                    //  binding.lvLaundry.adapter = adp
 
-
-                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
+                    laundry_adapter = LaundryAdapter(onMenuItemFocused = { it, pos ->
                         var size = it.subCategoryList
                         var array_title = ArrayList<String>()
                         var array_price = ArrayList<String>()
                         var adp: CustomAdapterLaundry
+                        laundryHeaderPosition = pos as Int
+                        laundrySubCategoryPosition = pos
 
                         for (i in 0 until size.size) {
                             array_title.add(it.subCategoryList[i].title!!)
@@ -105,22 +94,27 @@ class LaundryFragment : BaseFragment() {
                         }
 
                         adp = CustomAdapterLaundry(
-                            onMenuItemFocused = {  },
+                            onMenuItemFocused = {pos ->
+
+                            },
                             onLeftKeyPressed = {
                                 binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+                            },
+                            onRightKeyPressed = {
+                                binding.lvLaundry.smoothScrollToPosition(laundrySubCategoryPosition)
                             }, requireContext(), array_title, array_price
                         )
 
 
-                       // laundry_list?.let {
-                            adp.setNewsList(it.subCategoryList)
+                        // laundry_list?.let {
+                        adp.setNewsList(it.subCategoryList)
                         //}
                         adp.setGradient(getGradient())
                         binding.lvLaundry.adapter = adp
 
-                    }, onLeftKeyPressed = {
+                    }) {
                         // binding.lvLaundry.scrollToPosition(laundryHeaderPosition)
-                    })
+                    }
 
 
                     laundry_list?.let {

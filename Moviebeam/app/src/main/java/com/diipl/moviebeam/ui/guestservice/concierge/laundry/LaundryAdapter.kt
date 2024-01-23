@@ -11,11 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
-import com.diipl.moviebeam.data.dto.news.News
 import com.diipl.moviebeam.databinding.RecyclerLayoutLaundryBinding
 
 class LaundryAdapter(
-    private var onMenuItemFocused: (LaundryDataList) -> Unit,
+    private var onMenuItemFocused: (LaundryDataList, Any?) -> Unit,
     private val onLeftKeyPressed: () -> Unit
 ) :
     RecyclerView.Adapter<LaundryAdapter.MyViewHolder>() {
@@ -59,7 +58,7 @@ class LaundryAdapter(
 
         holder.binding.clCardLaundry.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
-            onMenuItemFocused(item)
+            onMenuItemFocused(item,position)
             if (isFocused) {
                 holder.binding.clCardLaundry.background = gradient
             } else {
