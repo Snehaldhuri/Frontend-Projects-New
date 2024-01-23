@@ -125,13 +125,14 @@ class MoviesActivity : BaseActivity() {
                             movieList.add(it)
                             genreMap[it.genre1] = movieList
                         }
-
-                        if (genreMap[Constants.ALL_PAY_MOVIES] != null) {
-                            genreMap[Constants.ALL_PAY_MOVIES]?.add(it)
-                        } else {
-                            val movieList = mutableListOf<ContentDto>()
-                            movieList.add(it.copy(genre1 = Constants.ALL_PAY_MOVIES))
-                            genreMap[Constants.ALL_PAY_MOVIES] = movieList
+                        if (it.genre1 != "New Releases") {
+                            if (genreMap[Constants.ALL_PAY_MOVIES] != null) {
+                                genreMap[Constants.ALL_PAY_MOVIES]?.add(it)
+                            } else {
+                                val movieList = mutableListOf<ContentDto>()
+                                movieList.add(it.copy(genre1 = Constants.ALL_PAY_MOVIES))
+                                genreMap[Constants.ALL_PAY_MOVIES] = movieList
+                            }
                         }
                     }
                 }

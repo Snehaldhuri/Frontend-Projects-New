@@ -32,6 +32,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.kappingservice.Actions
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.kappingservice.ServiceState
@@ -281,6 +282,11 @@ class MainMenuActivity : BaseActivity() {
                 val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
                     btnListFromApi?.contains(it.btnId) == true
                 }
+
+                val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
+                    btnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
+                }
+
                 binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
                 val adapter = MainMenuBtnAdapter { btn ->
                     val bundle = Bundle()
@@ -335,6 +341,10 @@ class MainMenuActivity : BaseActivity() {
                             intent = Intent(this, ProgramGuideActivity::class.java)
                         }
 
+                        Constants.IN_ROOM_DINING_ID -> {
+                            intent = Intent(this, InRoomDiningActivity::class.java)
+                        }
+
                         else -> {
 
                         }
@@ -344,7 +354,7 @@ class MainMenuActivity : BaseActivity() {
                         startActivity(it)
                     }
                 }
-                adapter.itemList = btnModelList
+                adapter.itemList = sortedBtnModelList
                 if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }

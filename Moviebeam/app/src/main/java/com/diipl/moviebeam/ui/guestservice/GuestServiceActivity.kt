@@ -19,6 +19,7 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
@@ -26,12 +27,16 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.concierge.ConciergeAdapter
+import com.diipl.moviebeam.ui.guestservice.concierge.GolfFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.LaundryTimeFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.SpaFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.VelvetParkingFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.laundry.LaundryFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
+import com.diipl.moviebeam.ui.guestservice.inroomdininggs.InRoomDiningGsFragment
 import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
@@ -126,6 +131,10 @@ class GuestServiceActivity : BaseActivity() {
                 val gsBtnModelList: List<GsBtnModel> = Constants.GUEST_SERVICE_BUTTON_LIST.filter {
                     gsBtnListFromApi?.contains(it.btnId) == true
                 }
+                val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
+                    gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
+                }
+
                 val menulist = guestServiceViewModel.accountSetupLiveData
                     .value?.data?.itemMenuList
                 val adapter = GuestServiceTabAdapter { view, service ->
@@ -207,7 +216,7 @@ class GuestServiceActivity : BaseActivity() {
 
                                     5 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = MakeMyRoomFragment {
+                                        val fragment = SpaFragment {
                                             view.requestFocus()
                                             view.performClick()
                                         }
@@ -237,7 +246,7 @@ class GuestServiceActivity : BaseActivity() {
                                     6 -> {
 
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = MakeMyRoomFragment {
+                                        val fragment = GolfFragment {
                                             view.requestFocus()
                                             view.performClick()
                                         }
@@ -265,7 +274,7 @@ class GuestServiceActivity : BaseActivity() {
 
                                     7 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = MakeMyRoomFragment {
+                                        val fragment = LaundryTimeFragment {
                                             view.requestFocus()
                                             view.performClick()
                                         }
@@ -293,7 +302,9 @@ class GuestServiceActivity : BaseActivity() {
 
                                     3 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = LaundryFragment()
+                                        val fragment = LaundryFragment(
+
+                                        )
 
                                         fragment.setGradientColor(
                                             gradientStartColor,
@@ -315,6 +326,7 @@ class GuestServiceActivity : BaseActivity() {
 
                         Constants.FLIGHT_STATUS_ID -> {
                             binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
                             val transaction1 = supportFragmentManager.beginTransaction()
 
                             val fragment = FlightStatusFragment {
@@ -330,6 +342,7 @@ class GuestServiceActivity : BaseActivity() {
 
                         Constants.WEATHER_ID -> {
                             binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
                             val fragment = WeatherFragment()
                             transaction.replace(R.id.fv_tab_content, fragment)
@@ -339,6 +352,7 @@ class GuestServiceActivity : BaseActivity() {
 
                         Constants.NEWS_ID -> {
                             binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
                             val fragment = NewsFragment {
                                 view.requestFocus()
@@ -350,6 +364,7 @@ class GuestServiceActivity : BaseActivity() {
 
                         Constants.GUEST_FEEDBACK_ID -> {
                             binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
                             val fragment = FeedbackFragment {
                                 view.requestFocus()
@@ -361,11 +376,21 @@ class GuestServiceActivity : BaseActivity() {
 
                         Constants.LA_ID -> {
                             binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
                             val fragment = LocalAttractionGsFragment()
                             transaction.replace(R.id.fv_tab_content, fragment)
                             transaction.commit()
 
+                        }
+
+                        Constants.IN_ROOM_ID -> {
+                            binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = InRoomDiningGsFragment()
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            transaction.commit()
                         }
                     }
                 }
@@ -375,7 +400,7 @@ class GuestServiceActivity : BaseActivity() {
                 transaction.replace(R.id.fv_tab_content, fragment)
                 transaction.commit()
 
-                adapter.setButtonList(ArrayList(gsBtnModelList.map { it.copy() }))
+                adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
 
                 binding.rvTabLayout.adapter = adapter

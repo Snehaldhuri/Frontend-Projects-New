@@ -14,14 +14,14 @@ import android.widget.Button
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.databinding.FragmentGolfBinding
+import com.diipl.moviebeam.databinding.FragmentLaundryTimeBinding
 
 
-class GolfFragment(
+class LaundryTimeFragment(
     private var onOkClicked: () -> Unit
 ) : Fragment() {
 
-    private var _binding: FragmentGolfBinding? = null
+    private var _binding: FragmentLaundryTimeBinding? = null
     val binding get() = _binding!!
 
     private var day: String = ""
@@ -41,7 +41,7 @@ class GolfFragment(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentGolfBinding.inflate(inflater, container, false)
+        _binding = FragmentLaundryTimeBinding.inflate(inflater, container, false)
         layout_dt = binding.root.findViewById(R.id.layout_dt)
         layout_confirmation = binding.root.findViewById(R.id.layout_confirmation)
 
