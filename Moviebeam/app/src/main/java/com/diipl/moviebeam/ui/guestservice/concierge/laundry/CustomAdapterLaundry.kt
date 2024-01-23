@@ -22,10 +22,12 @@ import com.diipl.moviebeam.databinding.CustomLaundryListViewBinding
 class CustomAdapterLaundry(
     var onMenuItemFocused: (SubCategoryList) -> Unit,
     var onLeftKeyPressed: () -> Unit?,
+    var onRightKeyPressed: () -> Unit,
     var context: Context,
     var array_title: ArrayList<String>,
-    var array_price: ArrayList<String>
-) : BaseAdapter() {
+    var array_price: ArrayList<String>,
+
+    ) : BaseAdapter() {
 
     var sublList: List<SubCategoryList> = emptyList()
 
@@ -59,6 +61,7 @@ class CustomAdapterLaundry(
                 when (keycode) {
                     KeyEvent.KEYCODE_DPAD_LEFT -> {
                         onLeftKeyPressed()
+                        onRightKeyPressed()
                     }
                 }
             }
