@@ -26,7 +26,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null
 
-    private var newsHeaderPosition : Int =0
+    private var newsHeaderPosition: Int = 0
 
     override fun observeViewModel() {
         observe(newsViewModel.newsHeaderLiveData, ::handleNewsHeaderResponse)
@@ -44,7 +44,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                 val newsHeaderDetails = newsViewModel.newsHeaderLiveData.value?.data
                 binding.rvNewsHeader.layoutManager = LinearLayoutManager(context)
                 val adapter = NewsHeaderTabAdapter(
-                    onMenuItemClicked = { it, view,pos ->
+                    onMenuItemClicked = { it, view, pos ->
                         newsViewModel.fetchNewsDetails(it.id)
                         newsHeaderPosition = pos
                     },

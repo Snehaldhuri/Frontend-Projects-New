@@ -32,6 +32,7 @@ class LaundryAdapter(
             RecyclerLayoutLaundryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
         binding.root.isFocusable = true
+        binding.root.requestFocus()
         binding.root.isFocusableInTouchMode = true
         binding.root.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {

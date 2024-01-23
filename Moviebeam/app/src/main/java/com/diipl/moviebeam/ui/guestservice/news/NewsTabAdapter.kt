@@ -41,6 +41,8 @@ class NewsTabAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = newsList[position]
         holder.binding.tvNews.text = item.title
+
+
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
             onMenuItemFocused(item)
             if(isFocused){
