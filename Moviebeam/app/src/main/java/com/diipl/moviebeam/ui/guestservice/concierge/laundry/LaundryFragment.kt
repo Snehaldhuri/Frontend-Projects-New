@@ -7,8 +7,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -33,6 +31,9 @@ class LaundryFragment : BaseFragment() {
 
     private var _binding: FragmentLaundryBinding? = null
     val binding get() = _binding!!
+    private var laundryHeaderPosition: Int = 0
+
+
     override fun observeViewModel() {
         observe(laundryViewModel.laundryMasterLiveData, ::handleLaundryMasterResponse)
     }
@@ -78,14 +79,18 @@ class LaundryFragment : BaseFragment() {
                     var array_price = ArrayList<String>()
                     var adp: CustomAdapterLaundry
 
-                    for (i in 0 until size.size) {
-                        array_title.add(laundry_list[0].subCategoryList[i].title!!)
-                        array_price.add(laundry_list[0].subCategoryList[i].price.toString())
-                    }
-                    adp = CustomAdapterLaundry(requireContext(), array_title, array_price)
-                    binding.lvLaundry.adapter = adp
-
-
+                    /*   for (i in 0 until size.size) {
+                           array_title.add(laundry_list[0].subCategoryList[i].title!!)
+                           array_price.add(laundry_list[0].subCategoryList[i].price.toString())
+                       }
+                       adp = CustomAdapterLaundry(
+                           onMenuItemFocused = {},
+                           onLeftKeyPressed = {},
+                           requireContext(),
+                           array_title,
+                           array_price
+                       )*/
+                    //  binding.lvLaundry.adapter = adp
 
 
                     laundry_adapter = LaundryAdapter(onMenuItemFocused = {
@@ -94,22 +99,29 @@ class LaundryFragment : BaseFragment() {
                         var array_price = ArrayList<String>()
                         var adp: CustomAdapterLaundry
 
-
-
-
-
-
                         for (i in 0 until size.size) {
                             array_title.add(it.subCategoryList[i].title!!)
                             array_price.add(it.subCategoryList[i].price.toString())
                         }
-                        adp = CustomAdapterLaundry(requireContext(), array_title, array_price)
+
+                        adp = CustomAdapterLaundry(
+                            onMenuItemFocused = {  },
+                            onLeftKeyPressed = {
+                                binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+                            }, requireContext(), array_title, array_price
+                        )
+
+
+                       // laundry_list?.let {
+                            adp.setNewsList(it.subCategoryList)
+                        //}
+                        adp.setGradient(getGradient())
                         binding.lvLaundry.adapter = adp
 
-
                     }, onLeftKeyPressed = {
-                        // binding.rvNewsHeader.layoutManager?.scrollToPosition(newsHeaderPosition)
+                        // binding.lvLaundry.scrollToPosition(laundryHeaderPosition)
                     })
+
 
                     laundry_list?.let {
                         laundry_adapter.setNewsList(it)
@@ -117,7 +129,6 @@ class LaundryFragment : BaseFragment() {
                     laundry_adapter.setGradient(getGradient())
                     binding.rvLaundry.adapter = laundry_adapter
                 }
-                // binding.pbLoader.toInvisible()
             }
 
             else -> {
