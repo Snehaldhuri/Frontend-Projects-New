@@ -1,12 +1,14 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
 import com.diipl.moviebeam.databinding.ItemToiletryRequestSummaryBinding
+import java.util.ArrayList
 
-class ToiletryRequestSummaryAdapter(): RecyclerView.Adapter<ToiletryRequestSummaryAdapter.MyViewHolder>() {
+class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummaryAdapter.MyViewHolder>() {
 
     private var itemList: List<ItemMenu> = mutableListOf()
 
@@ -20,17 +22,20 @@ class ToiletryRequestSummaryAdapter(): RecyclerView.Adapter<ToiletryRequestSumma
     }
 
     override fun getItemCount(): Int {
-        return 5
+        return itemList.size
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-        val item = itemList[position]
-        holder.binding.tvItems.text = item.name
-        holder.binding.tvQty.text = item.dispPrice
+        if (itemList.isNotEmpty() && position < itemList.size) {
+            val item = itemList[position]
+            holder.binding.tvItems.text = item.name
+            holder.binding.tvQty.text = item.dispPrice
+        }
     }
 
-    fun setButtonList(itemList: List<ItemMenu>){
-        this.itemList = itemList
+    fun setItemList(selectedItems: MutableList<ItemMenu>){
+        this.itemList = selectedItems
     }
+
 }

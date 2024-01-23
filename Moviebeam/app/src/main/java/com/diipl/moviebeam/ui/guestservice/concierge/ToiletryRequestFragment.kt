@@ -1,12 +1,17 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.databinding.FragmentToiletryRequestBinding
@@ -61,10 +66,45 @@ class ToiletryRequestFragment : BaseFragment() {
                 val toiletryRequestAdapter = ToiletryRequestAdapter(){
 
                 }
-
                 response?.let { toiletryRequestAdapter.setButtonList(it) }
                 toiletryRequestAdapter.setGradientColor(gradientStartColor, gradientEndColor)
                 binding.rvToiletryRequest.adapter = toiletryRequestAdapter
+
+                binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
+                    if(hasFocus){
+                        setFocus(binding.btnCancel)
+                    }
+                    else{
+                        binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                    }
+                }
+                binding.btnSendRequest.setOnFocusChangeListener { view, hasFocus ->
+                    if(hasFocus){
+                        setFocus(binding.btnSendRequest)
+                    }
+                    else{
+                        binding.btnSendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                    }
+                }
+                binding.btnCancel.setOnClickListener {
+//                    onOkClicked()
+                }
+                binding.btnSendRequest.setOnClickListener {
+
+//                    val summaryFragment = ToiletryRequestSummaryFragment()
+//                    summaryFragment.setItemList(selectedItems)
+//
+//                    fragmentTransaction.replace(
+//                        R.id.rv_toiletry_request,
+//                        summaryFragment
+//                    )
+//
+//                    fragmentTransaction.addToBackStack(null)
+//                    fragmentTransaction.commit()
+//                    Log.d("TAG1212", "handleAccountSetupResponse: $selectedItems")val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+//
+
+                }
 
                 binding.loaderView.toInvisible()
             }
@@ -77,6 +117,20 @@ class ToiletryRequestFragment : BaseFragment() {
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
-
+    private fun setFocus(cardView: Button) {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
+        )
+        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        cardView.background = gradientDrawable
+    }
+    fun setGradientColor(startColor: String, endColor: String) {
+        this.gradientStartColor = startColor
+        this.gradientEndColor = endColor
+    }
 
 }

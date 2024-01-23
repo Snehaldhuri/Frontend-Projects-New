@@ -8,7 +8,8 @@ data class ItemMenu(
     val itemId: Int = 0,
     val langWiseList: Map<String, TVToiletryItemDTO> = emptyMap(),
     val name: String = "",
-    val price: Double = 0.0
+    val price: Double = 0.0,
+    val quantity: Int = 1
 )
 @Serializable
 data class TVToiletryItemDTO(
