@@ -27,8 +27,9 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/manrope_bold_700"
         android:gravity="center"
+        android:textColor="@color/white"
         android:text="@string/confirm_service_n_your_request_for_following_items_has_been_received_and_will_n_be_serviced_shortly"
-        android:textSize="@dimen/sp_18"
+        android:textSize="@dimen/sp_16"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -65,19 +66,20 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/rvSummary"-->
-<!--        android:layout_width="@dimen/dp_0"-->
-<!--        android:layout_height="@dimen/dp_0"-->
-<!--        android:focusable="true"-->
-<!--        android:focusableInTouchMode="true"-->
-<!--        android:orientation="vertical"-->
-<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/btnConfirm"-->
-<!--        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_85"-->
-<!--        app:layout_constraintStart_toEndOf="@+id/gl_vertical_15"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/clSummaryHeader"-->
-<!--        />-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSummary"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@+id/btnConfirm"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_85"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/gl_vertical_15"
+        app:layout_constraintTop_toBottomOf="@+id/clSummaryHeader"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/btnConfirm"

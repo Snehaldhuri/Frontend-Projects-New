@@ -202,7 +202,10 @@ class GuestServiceActivity : BaseActivity() {
                                         binding.layoutHeader.tvTitle.text =
                                             getString(R.string.toiletry_requests)
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = ToiletryRequestFragment()
+                                        val fragment = ToiletryRequestFragment{
+                                            view.requestFocus()
+                                            view.performClick()
+                                        }
                                         val mBundle = Bundle()
                                         mBundle.putString("gradientStartColor", gradientStartColor)
                                         mBundle.putString("gradientEndColor", gradientEndColor)

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
 import com.diipl.moviebeam.databinding.FragmentToiletryRequestBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.ui.guestservice.GuestServiceViewModel
@@ -24,7 +25,9 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 
-class ToiletryRequestFragment : BaseFragment() {
+class ToiletryRequestFragment(
+    private var onOkClicked: () -> Unit
+) : BaseFragment() {
 
     private var _binding: FragmentToiletryRequestBinding? = null
     val binding get() = _binding!!
@@ -33,6 +36,7 @@ class ToiletryRequestFragment : BaseFragment() {
 
     private val guestServiceViewModel: GuestServiceViewModel by activityViewModels()
 
+    private val selectedItems: MutableList<ItemMenu> = mutableListOf()
 
     override fun observeViewModel() {
         observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
@@ -63,8 +67,13 @@ class ToiletryRequestFragment : BaseFragment() {
             is Resource.Success -> {
                 val response = guestServiceViewModel.accountSetupLiveData.value?.data?.itemMenuList
                 binding.rvToiletryRequest.layoutManager = LinearLayoutManager(requireActivity())
-                val toiletryRequestAdapter = ToiletryRequestAdapter(){
-
+                val toiletryRequestAdapter = ToiletryRequestAdapter{isVisible, item ->
+                    if(isVisible){
+                        selectedItems.remove(item)
+                    }else{
+                        selectedItems.add(item)
+                        Log.d("selectedItems","selectedItems $selectedItems")
+                    }
                 }
                 response?.let { toiletryRequestAdapter.setButtonList(it) }
                 toiletryRequestAdapter.setGradientColor(gradientStartColor, gradientEndColor)
@@ -87,22 +96,30 @@ class ToiletryRequestFragment : BaseFragment() {
                     }
                 }
                 binding.btnCancel.setOnClickListener {
-//                    onOkClicked()
+                    onOkClicked()
                 }
                 binding.btnSendRequest.setOnClickListener {
 
-//                    val summaryFragment = ToiletryRequestSummaryFragment()
-//                    summaryFragment.setItemList(selectedItems)
-//
-//                    fragmentTransaction.replace(
-//                        R.id.rv_toiletry_request,
-//                        summaryFragment
-//                    )
-//
-//                    fragmentTransaction.addToBackStack(null)
-//                    fragmentTransaction.commit()
-//                    Log.d("TAG1212", "handleAccountSetupResponse: $selectedItems")val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
-//
+                    val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+                    val summaryFragment = ToiletryRequestSummaryFragment{
+//                        view?.requestFocus()
+//                        view?.performClick()
+                    }
+                    val mBundle = Bundle()
+                    mBundle.putString("gradientStartColor", gradientStartColor)
+                    mBundle.putString("gradientEndColor", gradientEndColor)
+                    summaryFragment.arguments = mBundle
+                    summaryFragment.setItemList(selectedItems)
+
+                    fragmentTransaction.replace(
+                        R.id.fv_tab_content,
+                        summaryFragment
+                    )
+
+                    fragmentTransaction.addToBackStack(null)
+                    fragmentTransaction.commit()
+                    Log.d("TAG1212", "handleAccountSetupResponse: $selectedItems")
+
 
                 }
 

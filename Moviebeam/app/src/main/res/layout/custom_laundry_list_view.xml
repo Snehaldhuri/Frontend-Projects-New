@@ -8,7 +8,7 @@
     android:layout_height="wrap_content"
     android:paddingTop="@dimen/dp_3"
     android:paddingBottom="3dp"
-    android:id="@+id/constraint">
+    >
 
 
     <TextView

@@ -14,12 +14,13 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 
 class ToiletryRequestAdapter(
-    private var onMenuItemClicked: (ItemMenu) -> Unit
+    private var onMenuItemClicked: (Boolean, ItemMenu) -> Unit
 ): RecyclerView.Adapter<ToiletryRequestAdapter.MyViewHolder>() {
 
     private var itemList: List<ItemMenu> = mutableListOf()
     private var startColor = ""
     private var endColor = ""
+    private val selectedItems: MutableList<ItemMenu> = mutableListOf()
 
     inner class MyViewHolder(val binding: ItemToiletryRequestBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -49,7 +50,7 @@ class ToiletryRequestAdapter(
             }
         }
         holder.binding.clToiletryItems.setOnClickListener {
-            onMenuItemClicked(item)
+            onMenuItemClicked(holder.binding.ivIconChecked.isVisible, item)
             if(holder.binding.ivIconChecked.isVisible){
                 holder.binding.ivIconChecked.toInvisible()
                 holder.binding.clQuantity.toInvisible()
@@ -59,6 +60,9 @@ class ToiletryRequestAdapter(
                 holder.binding.clQuantity.toVisible()
             }
 
+        }
+        if(holder.binding.ivIconChecked.isVisible){
+            selectedItems.add(item)
         }
     }
 
@@ -77,6 +81,9 @@ class ToiletryRequestAdapter(
     fun setButtonList(itemList: List<ItemMenu>){
         this.itemList = itemList
     }
+   fun getSelectedItems(): List<ItemMenu> {
+          return selectedItems.toList()
+   }
 
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor

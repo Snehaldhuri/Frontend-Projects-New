@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.widget.Spinner
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
@@ -71,12 +72,7 @@ class ShowtimeActivity  : BaseActivity() {
             }
         }
         binding.btnBack.setOnClickListener {
-            if (binding.fcvMovieDetail.isVisible) {
-                binding.fcvMovieDetail.toInvisible()
-                binding.parentRecyclerView.toVisible()
-            } else {
-                finish()
-            }
+            handleBackClick()
         }
 
         val parentRecyclerView: RecyclerView = binding.parentRecyclerView
@@ -294,6 +290,24 @@ class ShowtimeActivity  : BaseActivity() {
         intent.putExtras(bundle)
 
         startActivity(intent)
+    }
+
+    private fun handleBackClick(){
+        if (binding.fcvMovieDetail.isVisible) {
+            binding.fcvMovieDetail.toInvisible()
+            binding.parentRecyclerView.toVisible()
+        } else {
+            finish()
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_BACK -> {
+                handleBackClick()
+            }
+        }
+        return false
     }
 }
 
