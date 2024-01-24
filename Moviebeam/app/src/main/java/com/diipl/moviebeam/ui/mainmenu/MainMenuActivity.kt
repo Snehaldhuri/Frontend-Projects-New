@@ -144,7 +144,6 @@ class MainMenuActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
-        observe(mainMenuViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(mainMenuViewModel.uaLiveData, ::handleUAResponse)
 
@@ -163,16 +162,8 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-
-                var temperature = mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
-                binding.tvTemperature.text = temperature
+                binding.tvTemperature.text =
+                    mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
                 mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.ivWeather.loadImagesWithGlideExt(it)
                 }
@@ -241,23 +232,6 @@ class MainMenuActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.tvDate.text = mainMenuViewModel.dateTimeLiveData.value?.data?.date
-                binding.tvTime.text = mainMenuViewModel.dateTimeLiveData.value?.data?.time
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -371,10 +345,7 @@ class MainMenuActivity : BaseActivity() {
     private fun handleUAResponse(ua: String) {
         UA = ua
         Constants.UA = UA
-        mainMenuViewModel.fetchDateTime(ua)
-
     }
-
 
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {

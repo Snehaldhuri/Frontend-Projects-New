@@ -31,27 +31,8 @@ class MoviesViewModel @Inject constructor(
     private val _themeLiveData = MutableLiveData<Resource<ThemeResponse>>()
     val themeLiveData: LiveData<Resource<ThemeResponse>> get() = _themeLiveData
 
-    private val _dateTimeLiveData = MutableLiveData<Resource<DateTimeResponse>>()
-    val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
-
     private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
     val moviesLiveData: LiveData<Resource<MoviesResponse>> get() = _moviesLiveData
-
-    init {
-        fetchDateTime(Constants.UA)
-    }
-
-    private fun fetchDateTime(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _dateTimeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getDateTimeData(ua)
-            if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(msg =Constants.SERVER_ERROR))
-            } else {
-                _dateTimeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
 
     // Get Response From DataStore
     fun getThemeResponseData(dataStore: DataStore<ThemeResponse>) {

@@ -61,7 +61,6 @@ class HotelInfoActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(hotelInfoViewModel.themeLiveData, ::handleThemeResponse)
-        observe(hotelInfoViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(hotelInfoViewModel.weatherLiveData, ::handleWeatherResponse)
         observeSnackBarMessages(hotelInfoViewModel.showSnackBar)
         observeToast(hotelInfoViewModel.showToast)
@@ -282,38 +281,11 @@ class HotelInfoActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                var temperature = hotelInfoViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    temperature
+                    hotelInfoViewModel.weatherLiveData.value?.data?.tempCondition
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                     hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
                 )
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
-
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    hotelInfoViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    hotelInfoViewModel.dateTimeLiveData.value?.data?.time
                 binding.pbLoader.toInvisible()
             }
 

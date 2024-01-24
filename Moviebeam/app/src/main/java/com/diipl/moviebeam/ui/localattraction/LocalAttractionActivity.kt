@@ -43,13 +43,12 @@ class LocalAttractionActivity : BaseActivity() {
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
     @Inject
-    lateinit var localAttractionDataStore : DataStore<LocalAttractionResponse>
+    lateinit var localAttractionDataStore: DataStore<LocalAttractionResponse>
 
     override fun observeViewModel() {
         observe(localAttractionViewModel.localAttractionLiveData, ::handleLAServiceResponse)
         observe(localAttractionViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(localAttractionViewModel.dateTimeLiveData, ::handleDateTimeResponse)
-        observe(localAttractionViewModel.themeLiveData,::handleThemeResponse)
+        observe(localAttractionViewModel.themeLiveData, ::handleThemeResponse)
     }
 
     override fun initViewBinding() {
@@ -138,15 +137,8 @@ class LocalAttractionActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                var temperature = localAttractionViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+                    localAttractionViewModel.weatherLiveData.value?.data?.tempCondition
                 Glide.with(this)
                     .load(localAttractionViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
                     .into(binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather)
@@ -178,21 +170,6 @@ class LocalAttractionActivity : BaseActivity() {
                 response?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text = localAttractionViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text = localAttractionViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 

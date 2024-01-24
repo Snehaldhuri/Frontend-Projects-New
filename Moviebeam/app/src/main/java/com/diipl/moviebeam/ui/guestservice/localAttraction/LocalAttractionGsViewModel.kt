@@ -20,9 +20,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LocalAttractionGsViewModel @Inject constructor(
-    private val movieBeamRepository: MovieBeamRepository
-) : ViewModel() {
+class LocalAttractionGsViewModel @Inject constructor() : ViewModel() {
 
     private val _localAttractionLiveData = MutableLiveData<Resource<LocalAttractionResponse>>()
     val localAttractionLiveData: LiveData<Resource<LocalAttractionResponse>> get() = _localAttractionLiveData
@@ -36,47 +34,6 @@ class LocalAttractionGsViewModel @Inject constructor(
     private val _dateTimeLiveData = MutableLiveData<Resource<DateTimeResponse>>()
     val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
 
-    init {
-        fetchDateTime(Constants.UA)
-    }
-
-    private fun fetchDateTime(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _dateTimeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getDateTimeData(ua)
-            if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _dateTimeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    // Get Response From DataStore
-    fun getThemeResponseData(dataStore: DataStore<ThemeResponse>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _themeLiveData.postValue(Resource.Loading())
-
-            dataStore.data.catch {
-                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-
-            }.collect {
-                _themeLiveData.postValue(Resource.Success(it))
-            }
-        }
-    }
-
-    fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _weatherLiveData.postValue(Resource.Loading())
-            dataStore.data.catch {
-                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            }.collect {
-                _weatherLiveData.postValue(Resource.Success(it))
-            }
-        }
-    }
-
     fun getLocalAttractionResponseData(dataStore: DataStore<LocalAttractionResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
             _localAttractionLiveData.postValue(Resource.Loading())
@@ -87,7 +44,6 @@ class LocalAttractionGsViewModel @Inject constructor(
             }
         }
     }
-
 
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
 

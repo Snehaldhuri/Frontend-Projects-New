@@ -22,27 +22,8 @@ class AppWorldViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
 
-    private val _dateTimeLiveData = MutableLiveData<Resource<DateTimeResponse>>()
-    val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
-
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
-
-    init {
-        fetchDateTime("17205KKXLKF626")
-    }
-
-    fun fetchDateTime(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _dateTimeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getDateTimeData(ua)
-            if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _dateTimeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
 
     //------------------------fetching data from datasource--------------------
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {

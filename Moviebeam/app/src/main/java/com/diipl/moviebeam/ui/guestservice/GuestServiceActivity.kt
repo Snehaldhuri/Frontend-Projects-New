@@ -63,8 +63,8 @@ class GuestServiceActivity : BaseActivity() {
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
-    private var gradientStartColor = "#010101"
-    private var gradientEndColor = "#EFEFEF"
+    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private var gradient: GradientDrawable? = null
 
     override fun initViewBinding() {
@@ -81,7 +81,6 @@ class GuestServiceActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(guestServiceViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(guestServiceViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observeSnackBarMessages(guestServiceViewModel.showSnackBar)
         observeToast(guestServiceViewModel.showToast)
@@ -92,28 +91,12 @@ class GuestServiceActivity : BaseActivity() {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    replaceDegreeSymbol(guestServiceViewModel.weatherLiveData.value?.data?.tempCondition)
+                    guestServiceViewModel.weatherLiveData.value?.data?.tempCondition
                 guestServiceViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
                     )
                 }
-            }
-
-            else -> {
-                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    guestServiceViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    guestServiceViewModel.dateTimeLiveData.value?.data?.time
             }
 
             else -> {
@@ -159,18 +142,6 @@ class GuestServiceActivity : BaseActivity() {
                                         val fragment = MakeMyRoomFragment {
                                             view.requestFocus()
                                             view.performClick()
-                                        }
-                                        val dateTimeResponse =
-                                            guestServiceViewModel.dateTimeLiveData.value?.data
-                                        dateTimeResponse?.let { date ->
-                                            fragment.setDate(
-                                                date.hour,
-                                                date.minute,
-                                                date.date.substring(0, 3),
-                                                date.day,
-                                                date.month,
-                                                date.year
-                                            )
                                         }
                                         fragment.setGradientColor(
                                             gradientStartColor,
@@ -223,18 +194,6 @@ class GuestServiceActivity : BaseActivity() {
                                             view.requestFocus()
                                             view.performClick()
                                         }
-                                        val dateTimeResponse =
-                                            guestServiceViewModel.dateTimeLiveData.value?.data
-                                        dateTimeResponse?.let { date ->
-                                            fragment.setDate(
-                                                date.hour,
-                                                date.minute,
-                                                date.date.substring(0, 3),
-                                                date.day,
-                                                date.month,
-                                                date.year
-                                            )
-                                        }
                                         fragment.setGradientColor(
                                             gradientStartColor,
                                             gradientEndColor
@@ -253,18 +212,6 @@ class GuestServiceActivity : BaseActivity() {
                                             view.requestFocus()
                                             view.performClick()
                                         }
-                                        val dateTimeResponse =
-                                            guestServiceViewModel.dateTimeLiveData.value?.data
-                                        dateTimeResponse?.let { date ->
-                                            fragment.setDate(
-                                                date.hour,
-                                                date.minute,
-                                                date.date.substring(0, 3),
-                                                date.day,
-                                                date.month,
-                                                date.year
-                                            )
-                                        }
                                         fragment.setGradientColor(
                                             gradientStartColor,
                                             gradientEndColor
@@ -280,18 +227,6 @@ class GuestServiceActivity : BaseActivity() {
                                         val fragment = LaundryTimeFragment {
                                             view.requestFocus()
                                             view.performClick()
-                                        }
-                                        val dateTimeResponse =
-                                            guestServiceViewModel.dateTimeLiveData.value?.data
-                                        dateTimeResponse?.let { date ->
-                                            fragment.setDate(
-                                                date.hour,
-                                                date.minute,
-                                                date.date.substring(0, 3),
-                                                date.day,
-                                                date.month,
-                                                date.year
-                                            )
                                         }
                                         fragment.setGradientColor(
                                             gradientStartColor,
@@ -480,18 +415,6 @@ class GuestServiceActivity : BaseActivity() {
             binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
         }
         loadBg(intent.extras?.getString("themeBackgroundFileName"))
-    }
-
-    private fun replaceDegreeSymbol(temp: String?): String {
-        var temperature = ""
-        temp?.let {
-            temperature = if (it.contains("&deg C")) {
-                it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
-            } else {
-                it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
-            }
-        }
-        return temperature
     }
 
 }

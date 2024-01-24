@@ -17,14 +17,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <TextClock
         android:id="@+id/tv_time"
         android:layout_width="@dimen/dp_135"
         android:layout_height="wrap_content"
         android:fontFamily="@font/manrope_semibold_600"
         android:gravity="center"
-        android:text=""
-        android:textColor="@color/home_menu_title"
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -32,14 +30,13 @@
         app:layout_constraintStart_toEndOf="@+id/layout_weather"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <TextClock
         android:id="@+id/tv_date"
         android:layout_width="@dimen/dp_135"
         android:layout_height="wrap_content"
         android:fontFamily="@font/manrope_semibold_600"
+        android:format12Hour="EEE, dd MMM yyyy"
         android:gravity="center"
-        android:text=""
-        android:textColor="@color/home_menu_title"
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"

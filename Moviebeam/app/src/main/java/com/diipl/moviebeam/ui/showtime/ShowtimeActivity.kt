@@ -20,8 +20,6 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -36,7 +34,7 @@ import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ShowtimeActivity  : BaseActivity() {
+class ShowtimeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityShowtimeBinding
 
@@ -52,15 +50,16 @@ class ShowtimeActivity  : BaseActivity() {
     override fun observeViewModel() {
         observe(ShowtimeViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(ShowtimeViewModel.themeLiveData, ::handleThemeResponse)
-        observe(ShowtimeViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(ShowtimeViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
     }
+
     override fun initViewBinding() {
         binding = ActivityShowtimeBinding.inflate(layoutInflater)
         binding.layoutHeader.tvTitle.setText("Showtime")
         val view = binding.root
         setContentView(view)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -83,6 +82,7 @@ class ShowtimeActivity  : BaseActivity() {
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
     }
+
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
@@ -92,9 +92,10 @@ class ShowtimeActivity  : BaseActivity() {
                     binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                val showTimeGenreMap: Map<String, List<Detail>> = response?.shoGenreList?.associate { genre ->
-                    genre.name to genre.detailList
-                } ?: emptyMap()
+                val showTimeGenreMap: Map<String, List<Detail>> =
+                    response?.shoGenreList?.associate { genre ->
+                        genre.name to genre.detailList
+                    } ?: emptyMap()
 
                 val adapter = ShowtimeMenuAdapter(list,
                     onMoviesMenuItemClicked = { btnId ->
@@ -103,7 +104,8 @@ class ShowtimeActivity  : BaseActivity() {
 
                         when (btnId) {
                             Constants.ALL_SHOWS_ID -> {
-                                val showtimeParentAdapter = ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                val showtimeParentAdapter =
+                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
                                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                                 binding.parentRecyclerView.adapter = showtimeParentAdapter
                             }
@@ -111,13 +113,16 @@ class ShowtimeActivity  : BaseActivity() {
                             Constants.SHO_SPORTS_ID,
                             Constants.SHO_SERIES_ID,
                             Constants.SHO_DOCS_ID -> {
-                                val shoSportsGenre = response?.shoGenreList?.find { it.name == getGenreName(btnId) }
+                                val shoSportsGenre =
+                                    response?.shoGenreList?.find { it.name == getGenreName(btnId) }
 
-                                val showTimeGenreMap: Map<String, List<Detail>> = shoSportsGenre?.let {
-                                    mapOf(it.name to it.detailList)
-                                } ?: emptyMap()
+                                val showTimeGenreMap: Map<String, List<Detail>> =
+                                    shoSportsGenre?.let {
+                                        mapOf(it.name to it.detailList)
+                                    } ?: emptyMap()
 
-                                val showtimeParentAdapter = ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                val showtimeParentAdapter =
+                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
                                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                                 binding.parentRecyclerView.adapter = showtimeParentAdapter
                             }
@@ -127,7 +132,8 @@ class ShowtimeActivity  : BaseActivity() {
                         if (binding.fcvMovieDetail.isVisible) {
                             binding.fcvMovieDetail.requestFocus()
                             binding.fcvMovieDetail.postDelayed({
-                                val btnSeasonList: Spinner? = binding.fcvMovieDetail.findViewById(R.id.btn_season_list)
+                                val btnSeasonList: Spinner? =
+                                    binding.fcvMovieDetail.findViewById(R.id.btn_season_list)
                                 btnSeasonList?.requestFocus()
                             }, 80)
                         }
@@ -147,11 +153,13 @@ class ShowtimeActivity  : BaseActivity() {
                 binding.menuRecyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
             }
         }
     }
+
     private fun getGenreName(btnId: String): String {
         return when (btnId) {
             Constants.SHO_SPORTS_ID -> "SHO Sports"
@@ -160,6 +168,7 @@ class ShowtimeActivity  : BaseActivity() {
             else -> ""
         }
     }
+
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
@@ -170,6 +179,7 @@ class ShowtimeActivity  : BaseActivity() {
                     resource.alpha = 120
                     binding.root.background = resource
                 }
+
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
@@ -189,9 +199,9 @@ class ShowtimeActivity  : BaseActivity() {
         return gradientDrawable
     }
 
-    private fun onShowsClick(shows: Detail,position: Int) {
+    private fun onShowsClick(shows: Detail, position: Int) {
         val transaction = supportFragmentManager.beginTransaction()
-        if (shows.episodesPresent==true) {
+        if (shows.episodesPresent == true) {
 
             val bundle = Bundle()
             bundle.putInt("movieReleaseId", shows.releaseId)
@@ -199,8 +209,7 @@ class ShowtimeActivity  : BaseActivity() {
             fragment.arguments = bundle
             fragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
             transaction.replace(R.id.fcv_movie_detail, fragment)
-        }
-        else{
+        } else {
             val bundle = Bundle()
             bundle.putInt("movieReleaseId", shows.releaseId)
             val fragment = ShowtimeDetailFragment()
@@ -212,19 +221,13 @@ class ShowtimeActivity  : BaseActivity() {
         binding.fcvMovieDetail.toVisible()
         transaction.commit()
     }
+
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                var temperature = ShowtimeViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text = temperature
+                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
+                    ShowtimeViewModel.weatherLiveData.value?.data?.tempCondition
                 ShowtimeViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
@@ -249,42 +252,33 @@ class ShowtimeActivity  : BaseActivity() {
                 ShowtimeViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                ShowtimeDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
+                ShowtimeDetailFragment.setGradient(
+                    getGradient(
+                        gradientStartColor,
+                        gradientEndColor
+                    )
+                )
                 ShowtimeViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
                     binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.loaderView.toInvisible()
             }
-            else -> {
-                status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    ShowtimeViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    ShowtimeViewModel.dateTimeLiveData.value?.data?.time
-                binding.loaderView.toInvisible()
-            }
+
             else -> {
                 status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
             }
         }
     }
 
-    fun gotoExoPlayerActivity(movieDetails: Detail,isTrailer:Boolean ,isContent:Boolean) {
+    fun gotoExoPlayerActivity(movieDetails: Detail, isTrailer: Boolean, isContent: Boolean) {
 //        val intent = Intent(this, ExoPlayerActivity::class.java)
 //        intent.putExtra(Constants.TRAILER_URL, movieDetails.videoPath)
 
         val bundle = Bundle()
-        bundle.putString(Constants.RELEASE_ID,(movieDetails.releaseId).toString())
-        bundle.putBoolean(Constants.IS_TRAILER,isTrailer)
-        bundle.putBoolean(Constants.IS_CONTENT,isContent)
+        bundle.putString(Constants.RELEASE_ID, (movieDetails.releaseId).toString())
+        bundle.putBoolean(Constants.IS_TRAILER, isTrailer)
+        bundle.putBoolean(Constants.IS_CONTENT, isContent)
 
         val intent = Intent(this, ExoPlayerActivity::class.java)
         intent.putExtras(bundle)

@@ -44,7 +44,6 @@ class InRoomDiningActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(inRoomDiningViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(inRoomDiningViewModel.dateTimeLiveData, ::handleDateTimeResponse)
     }
 
     override fun initViewBinding() {
@@ -91,23 +90,6 @@ class InRoomDiningActivity : BaseActivity() {
                         it
                     )
                 }
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { inRoomDiningViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    inRoomDiningViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    inRoomDiningViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 
