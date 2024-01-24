@@ -11,7 +11,7 @@ import java.util.ArrayList
 class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummaryAdapter.MyViewHolder>() {
 
     private var itemList: List<ItemMenu> = mutableListOf()
-
+    var totalCharge = 0f
     inner class MyViewHolder(val binding: ItemToiletryRequestSummaryBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -30,8 +30,22 @@ class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummary
         if (itemList.isNotEmpty() && position < itemList.size) {
             val item = itemList[position]
             holder.binding.tvItems.text = item.name
-            holder.binding.tvQty.text = item.dispPrice
+            holder.binding.tvQty.text = item.quantity.toString()
+            holder.binding.tvCost.text = item.dispPrice
+
+            val numericPart = item.dispPrice.replace("[^\\d.]".toRegex(), "")
+
+            val cost = numericPart.toFloatOrNull() ?: 0f
+
+            val quantity = item.quantity
+            val total = quantity * cost
+
+            holder.binding.tvTotal.text = "$" + total.toString()
+
+
+
         }
+
     }
 
     fun setItemList(selectedItems: MutableList<ItemMenu>){

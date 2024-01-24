@@ -9,7 +9,7 @@ data class ItemMenu(
     val langWiseList: Map<String, TVToiletryItemDTO> = emptyMap(),
     val name: String = "",
     val price: Double = 0.0,
-    val quantity: Int = 1
+    var quantity: Int = 1
 )
 @Serializable
 data class TVToiletryItemDTO(

@@ -102,8 +102,7 @@ class ToiletryRequestFragment(
 
                     val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
                     val summaryFragment = ToiletryRequestSummaryFragment{
-//                        view?.requestFocus()
-//                        view?.performClick()
+                        onOkClicked()
                     }
                     val mBundle = Bundle()
                     mBundle.putString("gradientStartColor", gradientStartColor)

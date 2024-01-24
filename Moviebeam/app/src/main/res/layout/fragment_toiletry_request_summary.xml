@@ -45,26 +45,89 @@
 
         <TextView
             android:id="@+id/tvItems"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/items"
             android:textColor="@color/conceirge_items"
             android:textSize="@dimen/sp_16"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/tvQty"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvQty"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/qty"
             android:textColor="@color/conceirge_items"
             android:textSize="@dimen/sp_16"
+            app:layout_constraintStart_toEndOf="@+id/tvItems"
+            app:layout_constraintEnd_toStartOf="@+id/tvCost"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvCost"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Cost"
+            android:textColor="@color/conceirge_items"
+            android:textSize="@dimen/sp_16"
+            app:layout_constraintStart_toEndOf="@+id/tvQty"
+            app:layout_constraintEnd_toStartOf="@+id/tvTotal"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvTotal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Total"
+            android:textColor="@color/conceirge_items"
+            android:textSize="@dimen/sp_16"
+            app:layout_constraintStart_toEndOf="@+id/tvCost"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Horizontal Chain -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clHeaderChain"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.25" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.5" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.75" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="left"
+            app:constraint_referenced_ids="tvItems,tvQty,tvCost,tvTotal" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSummary"
@@ -74,12 +137,26 @@
         android:focusableInTouchMode="true"
         android:orientation="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@+id/btnConfirm"
+        app:layout_constraintBottom_toTopOf="@+id/tvTotalCharge"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_85"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/gl_vertical_15"
         app:layout_constraintTop_toBottomOf="@+id/clSummaryHeader"
         app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/tvTotalCharge"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Total Charge"
+        android:textColor="@color/conceirge_items"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_85"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/gl_vertical_15"
+        app:layout_constraintBottom_toTopOf="@+id/btnConfirm"
+        app:layout_constraintTop_toBottomOf="@id/rvSummary" />
+
 
     <Button
         android:id="@+id/btnConfirm"
