@@ -67,7 +67,6 @@ class ProgramGuideActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(programGuideViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(programGuideViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
     }
@@ -161,23 +160,6 @@ class ProgramGuideActivity : BaseActivity() {
                         it
                     )
                 }
-            }
-
-            else -> {
-                status.errorCode?.let { programGuideViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                programGuideViewModel.dateTimeLiveData.value?.data?.let {
-                    binding.layoutHeader.layoutWeatherTime.tvDate.text = it.date
-                    binding.layoutHeader.layoutWeatherTime.tvTime.text = it.time
-                }
-                binding.pbLoader.toInvisible()
             }
 
             else -> {

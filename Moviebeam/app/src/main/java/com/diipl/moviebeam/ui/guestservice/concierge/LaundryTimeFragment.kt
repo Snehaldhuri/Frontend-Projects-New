@@ -15,6 +15,7 @@ import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentLaundryTimeBinding
+import java.util.Calendar
 
 
 class LaundryTimeFragment(
@@ -43,6 +44,7 @@ class LaundryTimeFragment(
     ): View {
         _binding = FragmentLaundryTimeBinding.inflate(inflater, container, false)
         layout_dt = binding.root.findViewById(R.id.layout_dt)
+        setDate()
         layout_confirmation = binding.root.findViewById(R.id.layout_confirmation)
 
         binding.btnCancel.setOnClickListener(View.OnClickListener {
@@ -193,21 +195,27 @@ class LaundryTimeFragment(
         return binding.root
     }
 
-    fun setDate(
-        hour: String,
-        minute: String,
-        day: String,
-        date: String,
-        month: String,
-        year: String
-    ) {
-        this.currentHour = hour.toInt()
-        this.currentminute = minute.toInt()
-        this.day = day.uppercase()
-        this.date = date
-        this.month = getMonth(month.toInt())
-        this.year = year
-        Log.d("setDatedate", "onCreateView:${day + month + date + currentHour} ")
+    private fun setDate() {
+        val cal = Calendar.getInstance()
+        this.currentHour = cal.get(Calendar.HOUR_OF_DAY)
+        this.currentminute = cal.get(Calendar.MINUTE)
+        this.day = getDay(cal.get(Calendar.DAY_OF_WEEK_IN_MONTH))
+        this.date = cal.get(Calendar.DATE).toString()
+        this.month = getMonth(cal.get(Calendar.MONTH))
+        this.year = cal.get(Calendar.YEAR).toString()
+        Log.d("setDatedate", "onCreateView: $currentHour  $currentminute  $day  $date  ${month+1}  $year ${day + month + date + currentHour} ")
+    }
+
+    private fun getDay(day: Int): String {
+        return when (day) {
+            1 -> "SUN"
+            2 -> "MON"
+            3 -> "TUE"
+            4 -> "WED"
+            5 -> "THU"
+            6 -> "FRI"
+            else -> "SAT"
+        }
     }
 
     private fun getMonth(mon: Int): String {
@@ -225,7 +233,7 @@ class LaundryTimeFragment(
             "Nov",
             "Dec"
         )
-        return months[mon - 1]
+        return months[mon]
     }
 
     private fun setFocus(cardView: Button) {

@@ -32,9 +32,6 @@ class MainMenuViewModel @Inject constructor(
     private val _themeLiveData = MutableLiveData<Resource<ThemeResponse>>()
     val themeLiveData: LiveData<Resource<ThemeResponse>> get() = _themeLiveData
 
-    private val _dateTimeLiveData = MutableLiveData<Resource<DateTimeResponse>>()
-    val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
-
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
@@ -50,18 +47,6 @@ class MainMenuViewModel @Inject constructor(
    /* init {
         fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE)
     }*/
-
-     fun fetchDateTime(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _dateTimeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getDateTimeData(ua)
-            if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _dateTimeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
 
     /*private fun fetchAllApi(cmd: String, ua: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {

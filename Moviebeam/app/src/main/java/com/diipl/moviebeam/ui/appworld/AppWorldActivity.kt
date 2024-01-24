@@ -43,7 +43,6 @@ class AppWorldActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(appWorldViewModel.dateTimeLiveData, ::handleDateTimeResponse)
     }
 
     override fun initViewBinding() {
@@ -105,23 +104,6 @@ class AppWorldActivity : BaseActivity() {
             )
             i.setComponent(name)
             startActivity(i)
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    appWorldViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    appWorldViewModel.dateTimeLiveData.value?.data?.time
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
-            }
         }
     }
 

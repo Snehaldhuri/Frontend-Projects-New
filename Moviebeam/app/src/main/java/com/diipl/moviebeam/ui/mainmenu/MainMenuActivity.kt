@@ -144,7 +144,6 @@ class MainMenuActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
-        observe(mainMenuViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(mainMenuViewModel.uaLiveData, ::handleUAResponse)
 
@@ -233,23 +232,6 @@ class MainMenuActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.tvDate.text = mainMenuViewModel.dateTimeLiveData.value?.data?.date
-                binding.tvTime.text = mainMenuViewModel.dateTimeLiveData.value?.data?.time
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -363,8 +345,6 @@ class MainMenuActivity : BaseActivity() {
     private fun handleUAResponse(ua: String) {
         UA = ua
         Constants.UA = UA
-        mainMenuViewModel.fetchDateTime(ua)
-
     }
 
 

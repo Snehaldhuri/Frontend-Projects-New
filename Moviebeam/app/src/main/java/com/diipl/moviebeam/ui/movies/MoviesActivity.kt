@@ -61,7 +61,6 @@ class MoviesActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(moviesViewModel.themeLiveData, ::handleThemeResponse)
-        observe(moviesViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(moviesViewModel.moviesLiveData, ::handleMoviesServiceResponse)
     }
 
@@ -274,23 +273,6 @@ class MoviesActivity : BaseActivity() {
                     binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { moviesViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    moviesViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    moviesViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 

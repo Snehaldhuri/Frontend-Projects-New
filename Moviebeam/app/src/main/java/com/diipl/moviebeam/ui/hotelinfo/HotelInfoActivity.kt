@@ -61,7 +61,6 @@ class HotelInfoActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(hotelInfoViewModel.themeLiveData, ::handleThemeResponse)
-        observe(hotelInfoViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(hotelInfoViewModel.weatherLiveData, ::handleWeatherResponse)
         observeSnackBarMessages(hotelInfoViewModel.showSnackBar)
         observeToast(hotelInfoViewModel.showToast)
@@ -287,25 +286,6 @@ class HotelInfoActivity : BaseActivity() {
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                     hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
                 )
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
-
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    hotelInfoViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    hotelInfoViewModel.dateTimeLiveData.value?.data?.time
                 binding.pbLoader.toInvisible()
             }
 

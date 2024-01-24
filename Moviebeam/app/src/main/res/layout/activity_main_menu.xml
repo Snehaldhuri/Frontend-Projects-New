@@ -2,25 +2,26 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_menu_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/main_menu_background"
     tools:context=".ui.mainmenu.MainMenuActivity">
 
     <TextureView
         android:id="@+id/videoTextureView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/backgroundImageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"/>
+        android:contentDescription="@string/background_image"
+        android:visibility="gone" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_10"
@@ -72,12 +73,12 @@
         android:id="@+id/tv_welcome"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_10"
+        android:layout_marginTop="@dimen/dp_20"
         android:fontFamily="@font/gloock_regular"
         android:text="Welcome John Appleseed"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="10dp"
         android:textColor="@color/white"
-        android:textSize="30sp"
+        android:textSize="@dimen/sp_30"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo" />
@@ -86,9 +87,8 @@
         android:id="@+id/tv_greeting"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_12"
         android:fontFamily="@font/manrope_semibold_600"
-        android:text=""
-        android:layout_marginLeft="12dp"
         android:textColor="@color/home_page_greeting_text_color"
         android:textSize="@dimen/sp_17"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
@@ -113,30 +113,29 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/dp_32"
         android:fontFamily="@font/manrope_semibold_600"
-        android:text=""
+        android:textColor="@color/white"
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
         app:layout_constraintEnd_toStartOf="@+id/tv_time" />
 
-    <TextView
+    <TextClock
         android:id="@+id/tv_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/dp_32"
         android:fontFamily="@font/manrope_semibold_600"
-        android:text=""
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
         app:layout_constraintEnd_toStartOf="@+id/tv_date" />
 
-    <TextView
+    <TextClock
         android:id="@+id/tv_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/manrope_semibold_600"
-        android:text=""
+        android:format12Hour="EEE, dd MMM yyyy"
         android:textSize="@dimen/sp_12"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
@@ -156,8 +155,8 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_200"
         android:layout_margin="@dimen/dp_8"
         app:cardCornerRadius="@dimen/dp_18"
         app:layout_constraintBottom_toBottomOf="@+id/gl_horizontal_95"
@@ -169,7 +168,7 @@
             android:id="@+id/rv_menu_button"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="@dimen/dp_8"/>
+            android:padding="@dimen/dp_8" />
     </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

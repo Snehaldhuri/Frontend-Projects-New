@@ -48,7 +48,6 @@ class LocalAttractionActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(localAttractionViewModel.localAttractionLiveData, ::handleLAServiceResponse)
         observe(localAttractionViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(localAttractionViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(localAttractionViewModel.themeLiveData, ::handleThemeResponse)
     }
 
@@ -171,23 +170,6 @@ class LocalAttractionActivity : BaseActivity() {
                 response?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    localAttractionViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    localAttractionViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 

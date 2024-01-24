@@ -25,25 +25,6 @@ class ProgramGuideViewModel @Inject constructor(
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
 
-    private val _dateTimeLiveData = MutableLiveData<Resource<DateTimeResponse>>()
-    val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
-
-    init {
-        fetchDateTime(Constants.UA)
-    }
-
-    private fun fetchDateTime(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _dateTimeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getDateTimeData(ua)
-            if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _dateTimeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
     //------------------------------------------datastore-------------------------------------------
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
         viewModelScope.launch(Dispatchers.IO) {

@@ -50,7 +50,6 @@ class ShowtimeActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(ShowtimeViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(ShowtimeViewModel.themeLiveData, ::handleThemeResponse)
-        observe(ShowtimeViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(ShowtimeViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
     }
 
@@ -263,23 +262,6 @@ class ShowtimeActivity : BaseActivity() {
                     binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.tvDate.text =
-                    ShowtimeViewModel.dateTimeLiveData.value?.data?.date
-                binding.layoutHeader.layoutWeatherTime.tvTime.text =
-                    ShowtimeViewModel.dateTimeLiveData.value?.data?.time
                 binding.loaderView.toInvisible()
             }
 

@@ -32,9 +32,6 @@ class ShowtimeViewModel @Inject constructor(
     private val _themeLiveData = MutableLiveData<Resource<ThemeResponse>>()
     val themeLiveData: LiveData<Resource<ThemeResponse>> get() = _themeLiveData
 
-    private val _dateTimeLiveData = MutableLiveData<Resource<DateTimeResponse>>()
-    val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
-
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
@@ -42,11 +39,10 @@ class ShowtimeViewModel @Inject constructor(
     val showtimeLiveData: LiveData<Resource<ShowTimeResponse>> get() = _showtimeLiveData
 
     init {
-        fetchShowtimeInfo("14508KKMH0K299")
-        fetchThemeDetails("14508KKMH0K299")
-        fetchWeatherData("14508KKMH0K299")
-        fetchDateTime("14508KKMH0K299")
-        fetchAccountSetupDetails("ACTIVATE", "14508KKMH0K299", "JSON")
+        fetchShowtimeInfo(Constants.UA)
+        fetchThemeDetails(Constants.UA)
+        fetchWeatherData(Constants.UA)
+        fetchAccountSetupDetails(Constants.ACTIVATE_CMD, Constants.UA, Constants.MODE)
     }
     private fun fetchShowtimeInfo(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -70,17 +66,7 @@ class ShowtimeViewModel @Inject constructor(
             }
         }
     }
-    fun fetchDateTime(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _dateTimeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getDateTimeData(ua)
-            if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(code = R.string.server_error))
-            } else {
-                _dateTimeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
+
     fun fetchWeatherData(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _weatherLiveData.postValue(Resource.Loading())
