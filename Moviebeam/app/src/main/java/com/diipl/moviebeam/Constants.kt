@@ -84,15 +84,15 @@ object Constants {
     const val SHO_DOCS_ID = "shoDocs"
 
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
-        BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),
+        BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
         BtnModel(SHOWTIMES_ID, R.drawable.showtime_icon, SHOWTIME_NAME),
         BtnModel(CASTING_ID, R.drawable.casting_icon, CASTING),
         BtnModel(APPS_ID, R.drawable.app_world_icon, APPS),
         BtnModel(GUEST_SERVICES_ID, R.drawable.guestservices_icon, GUEST_SERVICES),
         BtnModel(HOTEL_SERVICES_ID, R.drawable.hotelservices_icon, HOTEL_SERVICES),
         BtnModel(CRACKLE_DEFAULT_ID, R.drawable.crackle_white_icon, CRACKLE_DEFAULT),
-        BtnModel(IN_ROOM_DINING_ID, R.drawable.crackle_white_icon, IN_ROOM_DINING),
+        BtnModel(IN_ROOM_DINING_ID, R.drawable.in_room_dining_menu, IN_ROOM_DINING),
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
@@ -103,7 +103,7 @@ object Constants {
     const val BASE_PLAYBACK_URL ="https://d14ez9fl8x9e1s.cloudfront.net/"
     const val TRAILER_EXTENSION = "_T.m2t"
     const val CONTENT_EXTENSION = ".m2t"
-
+    const val CONTENT_EXTENSION_MP = ".mp4"
    /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
     const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
@@ -139,6 +139,7 @@ object Constants {
     const val GUEST_FEEDBACK_ID = "guestFeedback"
     const val TV_ON_OFF_ID = "tvonoff"
     const val LA_ID = "la"
+    const val IN_ROOM_ID = "inRoomDining"
     const val CONCIERGE_ID = "concierge"
 
     const val EXPRESS_CHECKOUT_ID = "expressCheckout"
@@ -265,7 +266,7 @@ object Constants {
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
     //Casting
-    const val CASTING_URL = "https://democast.movie-beam.com/"
+    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
 
     // Kaping
     const val KAPING = "KAPING"

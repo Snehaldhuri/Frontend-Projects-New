@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".ui.guestservice.concierge.GolfFragment">
+    tools:context=".ui.guestservice.concierge.LaundryTimeFragment">
+    >
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_50"
@@ -39,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp_16"
             android:layout_marginBottom="48dp"
-            android:text="Please select time to schedule Tee time for Golf"
+            android:text="Please select date and time and click OK to schedule Laundry service."
             android:textSize="@dimen/sp_18"
             android:textStyle="bold"
             android:textColor="@color/white"
@@ -48,7 +49,6 @@
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
             app:layout_constraintTop_toTopOf="parent" />
-
         <include
             android:id="@+id/layout_date_time_selector"
             app:layout_constraintBottom_toBottomOf="@id/gl_horizontal_50"

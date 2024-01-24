@@ -29,7 +29,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
     private var selectedHeaderItemPosition = 0
     private val selectedMenuItemPosition = 0
 
-    private var newsHeaderPosition : Int =0
+    private var newsHeaderPosition: Int = 0
 
     override fun observeViewModel() {
         observe(newsViewModel.newsHeaderLiveData, ::handleNewsHeaderResponse)
@@ -48,7 +48,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                 val newsHeaderDetails = newsViewModel.newsHeaderLiveData.value?.data
                 binding.rvNewsHeader.layoutManager = LinearLayoutManager(context)
                 val adapter = NewsHeaderTabAdapter(
-                    onMenuItemClicked = { it, view,pos ->
+                    onMenuItemClicked = { it, view, pos ->
                         for ((index, item) in newsViewModel.newsHeaderLiveData.value?.data?.newsHeaderList?.withIndex()!!) {
                             if (item.id == it.id) {
                                 selectedHeaderItemPosition = index;
