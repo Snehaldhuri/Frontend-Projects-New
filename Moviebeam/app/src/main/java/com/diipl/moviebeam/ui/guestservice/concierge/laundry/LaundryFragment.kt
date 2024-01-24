@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
@@ -24,6 +25,8 @@ class LaundryFragment : BaseFragment() {
     private val laundryViewModel: LaundryViewModel by viewModels()
     lateinit var serail_num: String
     lateinit var laundry_adapter: LaundryAdapter
+    lateinit var customAdapterLaundry: CustomAdapterLaundry
+
     lateinit var laundry_list: List<LaundryDataList>
 
     private var gradientStartColor: String? = null
@@ -53,9 +56,58 @@ class LaundryFragment : BaseFragment() {
         binding.rvLaundry.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
+        binding.lvLaundry.layoutManager =
+            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        val cardRecyclerView2: RecyclerView = binding.rvLaundry
+
+        cardRecyclerView2.layoutManager = LinearLayoutManager(context)
+
+
         val cardRecyclerView: RecyclerView = binding.rvLaundry
         cardRecyclerView.layoutManager = LinearLayoutManager(context)
 
+
+        binding.btnLaundryCancel.setOnFocusChangeListener { view, hasFocus ->
+            if(hasFocus){
+                setFocus(binding.btnLaundryCancel)
+            }
+            else{
+                binding.btnLaundryCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+        binding.btnLaundrySendRequest.setOnFocusChangeListener { view, hasFocus ->
+            if(hasFocus){
+                setFocus(binding.btnLaundrySendRequest)
+            }
+            else{
+                binding.btnLaundrySendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+
+
+
+
+        binding.btnLaundrySendRequest.setOnClickListener {
+
+            val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+            val summaryFragment = LaundryRequestSummaryFragment {
+//                        view?.requestFocus()
+//                        view?.performClick()
+            }
+            val mBundle = Bundle()
+            mBundle.putString("gradientStartColor", gradientStartColor)
+            mBundle.putString("gradientEndColor", gradientEndColor)
+            summaryFragment.arguments = mBundle
+            summaryFragment.setItemList(selectedItems)
+
+            fragmentTransaction.replace(
+                R.id.fv_tab_content,
+                summaryFragment
+            )
+            fragmentTransaction.addToBackStack(null)
+            fragmentTransaction.commit()
+            Log.d("TAG1212", "handleAccountSetupResponse: $selectedItems")
+        }
         return binding.root
     }
 
@@ -72,51 +124,37 @@ class LaundryFragment : BaseFragment() {
                 laundryViewModel.laundryMasterLiveData.value?.data?.let {
                     Log.d("responce_laundryMaster", "handleStbMasterResponse:${it}")
                     laundry_list = it.laundryDataList
-                    //laundry_adapter = LaundryAdapter()
-                    //code for default list view
-                    var size = laundry_list[0].subCategoryList
-                    var array_title = ArrayList<String>()
-                    var array_price = ArrayList<String>()
-                    var adp: CustomAdapterLaundry
 
-
-                    laundry_adapter = LaundryAdapter(onMenuItemFocused = { it, pos ->
+                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
                         var size = it.subCategoryList
                         var array_title = ArrayList<String>()
                         var array_price = ArrayList<String>()
-                        var adp: CustomAdapterLaundry
-                        laundryHeaderPosition = pos as Int
-                        laundrySubCategoryPosition = pos
+                        // laundryHeaderPosition = pos as Int
+
 
                         for (i in 0 until size.size) {
                             array_title.add(it.subCategoryList[i].title!!)
                             array_price.add(it.subCategoryList[i].price.toString())
                         }
 
-                        adp = CustomAdapterLaundry(
-                            onMenuItemFocused = {pos ->
+                        customAdapterLaundry = CustomAdapterLaundry(
+                            onMenuItemFocused = {
 
                             },
                             onLeftKeyPressed = {
                                 binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
-                            },
-                            onRightKeyPressed = {
-                                binding.lvLaundry.smoothScrollToPosition(laundrySubCategoryPosition)
                             }, requireContext(), array_title, array_price
                         )
-
-
                         // laundry_list?.let {
-                        adp.setNewsList(it.subCategoryList)
+                        customAdapterLaundry.setNewsList(it.subCategoryList)
                         //}
-                        adp.setGradient(getGradient())
-                        binding.lvLaundry.adapter = adp
+                        customAdapterLaundry.setGradient(getGradient())
+                        binding.lvLaundry.adapter = customAdapterLaundry
 
-                    }) {
-                        // binding.lvLaundry.scrollToPosition(laundryHeaderPosition)
-                    }
-
-
+                    }, onLeftKeyPressed = {},
+                        onRightKeyPressed = {
+                            binding.lvLaundry.scrollToPosition(0)
+                        })
                     laundry_list?.let {
                         laundry_adapter.setNewsList(it)
                     }

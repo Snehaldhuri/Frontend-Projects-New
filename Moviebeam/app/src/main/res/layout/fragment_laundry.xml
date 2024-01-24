@@ -26,8 +26,8 @@
         android:scrollHorizontally="false"
         android:text="Please click OK to select/deselect the laundry items.Pres +/- to increase/decrease quantity"
         android:textAlignment="center"
-        app:flow_wrapMode="aligned"
         android:textSize="@dimen/sp_16"
+        app:flow_wrapMode="aligned"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/rv_laundry"
         app:layout_constraintTop_toTopOf="parent" />
@@ -54,40 +54,42 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/lv_laundry"
         android:layout_width="400dp"
-        android:layout_height="400dp"
+        android:layout_height="200dp"
         android:divider="@null"
         android:fadeScrollbars="false"
+        android:focusable="true"
+        android:scrollbars="vertical"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_items"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/tv_items" />
 
 
+    <Button
+        android:id="@+id/btn_laundry_cancel"
+        android:layout_width="150dp"
+        android:layout_height="@dimen/dp_30"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/btn_bg_gradient_default"
+        android:text="@string/Cancel"
+        android:layout_marginRight="@dimen/dp_50"
+        android:textSize="@dimen/sp_10"
+        app:layout_constraintEnd_toStartOf="@+id/btn_laundry_send_request"
+        app:layout_constraintTop_toBottomOf="@+id/lv_laundry" />
 
-        <Button
-            android:id="@+id/btn_laundry_cancel"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="50dp"
-            android:layout_weight="1"
-            android:background="@drawable/btn_bg_gradient_default"
-            android:text="@string/Cancel"
-            app:layout_constraintEnd_toStartOf="@+id/btn_laundry_send_request"
-            app:layout_constraintTop_toBottomOf="@+id/lv_laundry" />
-
-        <Button
-            android:id="@+id/btn_laundry_send_request"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="50dp"
-            android:layout_marginEnd="44dp"
-            android:layout_weight="1"
-            android:background="@drawable/btn_bg_gradient_default"
-            android:text="Send Request"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/lv_laundry" />
+    <Button
+        android:id="@+id/btn_laundry_send_request"
+        android:layout_width="150dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="@dimen/dp_50"
+        android:layout_marginEnd="44dp"
+        android:background="@drawable/btn_bg_gradient_default"
+        android:text="Send Request"
+        android:textSize="@dimen/sp_10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lv_laundry" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
