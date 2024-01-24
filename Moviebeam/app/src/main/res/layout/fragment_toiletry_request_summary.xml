@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.guestservice.concierge.ToiletryRequestSummaryFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_15"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.15" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_85"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.85" />
+
+
+    <TextView
+        android:id="@+id/tvConfirmMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_bold_700"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:text="@string/confirm_service_n_your_request_for_following_items_has_been_received_and_will_n_be_serviced_shortly"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clSummaryHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_8"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_85"
+        app:layout_constraintStart_toEndOf="@+id/gl_vertical_15"
+        app:layout_constraintTop_toBottomOf="@+id/tvConfirmMessage">
+
+        <TextView
+            android:id="@+id/tvItems"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/items"
+            android:textColor="@color/conceirge_items"
+            android:textSize="@dimen/sp_16"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvQty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/qty"
+            android:textColor="@color/conceirge_items"
+            android:textSize="@dimen/sp_16"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSummary"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@+id/btnConfirm"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_85"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/gl_vertical_15"
+        app:layout_constraintTop_toBottomOf="@+id/clSummaryHeader"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/btnConfirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_30"
+        android:background="@drawable/btn_bg_gradient_default"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:paddingStart="@dimen/dp_80"
+        android:paddingEnd="@dimen/dp_80"
+        android:text="Confirm"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

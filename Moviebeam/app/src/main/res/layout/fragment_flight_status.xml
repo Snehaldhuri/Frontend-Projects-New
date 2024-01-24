@@ -7,11 +7,11 @@
     tools:context=".ui.guestservice.flightstatus.FlightStatusFragment">
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_vertical_5"
+        android:id="@+id/gl_vertical_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.05" />
+        app:layout_constraintGuide_percent="0.01" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_95"
@@ -29,22 +29,22 @@
 
     <Spinner
         android:id="@+id/sp_airport"
-        android:layout_width="190dp"
+        android:layout_width="@dimen/dp_190"
         android:layout_height="wrap_content"
         android:background="@drawable/btn_bg_gradient_default"
-        android:paddingHorizontal="@dimen/dp_4"
-        android:paddingVertical="@dimen/dp_8"
-        android:spinnerMode="dropdown"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:overlapAnchor="false"
+        android:paddingHorizontal="@dimen/dp_4"
+        android:paddingVertical="@dimen/dp_8"
+        android:spinnerMode="dropdown"
         app:layout_constraintBottom_toTopOf="@id/gl_horizontal_5"
-        app:layout_constraintStart_toEndOf="@+id/gl_vertical_5"
+        app:layout_constraintStart_toEndOf="@+id/gl_vertical_1"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/btn_arr_dep"
-        android:layout_width="190dp"
+        android:layout_width="@dimen/dp_190"
         android:layout_height="wrap_content"
         android:background="@drawable/btn_bg_gradient_default"
         android:paddingHorizontal="@dimen/dp_16"
@@ -58,7 +58,7 @@
         android:id="@+id/layout_flight_status_table"
         layout="@layout/flight_status_table_layout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_5" />
 
@@ -67,8 +67,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clickable="true"
-        android:visibility="gone"
-        android:focusable="true">
+        android:focusable="true"
+        android:visibility="gone">
 
         <ProgressBar
             android:layout_width="wrap_content"

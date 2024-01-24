@@ -25,6 +25,7 @@ import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -70,6 +71,9 @@ class HotelInfoActivity : BaseActivity() {
         binding = ActivityHotelInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+        gradientStartColor = intent.extras?.getString("gradientStartColor").toString()
+        gradientEndColor = intent.extras?.getString("gradientEndColor").toString()
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -131,7 +135,7 @@ class HotelInfoActivity : BaseActivity() {
                     gradientEndColor = it
                 }
                 hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(hotelInfoViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                 binding.pbLoader.toInvisible()
@@ -139,6 +143,8 @@ class HotelInfoActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -242,6 +248,10 @@ class HotelInfoActivity : BaseActivity() {
 
                             }
                         }
+                        val mBundle = Bundle()
+                        mBundle.putString("gradientStartColor",gradientStartColor)
+                        mBundle.putString("gradientEndColor",gradientEndColor)
+                        fragment.arguments = mBundle
                         supportFragmentManager.beginTransaction()
                             .add(R.id.fragment_container_help_info, fragment)
                             .addToBackStack("Help Info").commit()
@@ -262,6 +272,8 @@ class HotelInfoActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -288,6 +300,8 @@ class HotelInfoActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -305,6 +319,8 @@ class HotelInfoActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
+
             }
         }
     }

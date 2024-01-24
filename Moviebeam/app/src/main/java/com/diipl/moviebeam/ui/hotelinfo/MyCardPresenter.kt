@@ -12,7 +12,7 @@ import androidx.cardview.widget.CardView
 import androidx.leanback.widget.Presenter
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.Service
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtHsCard
 
 
 class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val onLeftKeyPressed: (String) -> Unit) : Presenter() {
@@ -70,7 +70,7 @@ class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val
             // Customize other card attributes as needed
             val imageview = cardView.findViewById<ImageView>(R.id.iv_card_image)
 
-            imageview.loadImagesWithGlideExt(service.serviceImageList[0])
+            imageview.loadImagesWithGlideExtHsCard(service.serviceImageList[0])
         }
 
     }

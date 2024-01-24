@@ -12,6 +12,7 @@ import com.diipl.moviebeam.databinding.CardNewsBinding
 
 class NewsHeaderTabAdapter(
     private var onMenuItemClicked: (NewsHeader,View,Int) -> Unit,
+    private var onRightKeyPressed: () -> Unit,
     private val onLeftKeyPressed: () -> Unit
 ) : RecyclerView.Adapter<NewsHeaderTabAdapter.MyViewHolder>() {
 
@@ -27,9 +28,8 @@ class NewsHeaderTabAdapter(
         binding.root.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                 when (keycode) {
-                    KeyEvent.KEYCODE_DPAD_LEFT ->{
-                        onLeftKeyPressed()
-                    }
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> onRightKeyPressed()
+                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
                 }
             }
             false

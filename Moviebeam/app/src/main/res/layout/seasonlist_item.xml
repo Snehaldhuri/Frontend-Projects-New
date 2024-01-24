@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cv_season_movie_card"
+    android:layout_width="match_parent"
+    android:layout_height="97dp"
+    android:layout_marginBottom="15dp"
+    android:fadingEdgeLength="@dimen/dp_0"
+    android:clickable="true"
+    android:layout_marginLeft="3dp"
+    android:focusable="true"
+    app:cardCornerRadius="@dimen/dp_12"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardElevation="0dp"
+    app:cardPreventCornerOverlap="true"
+    app:contentPadding="5dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Parent FrameLayout for images -->
+        <FrameLayout
+            android:layout_width="58dp"
+            android:layout_height="match_parent"
+            android:id="@+id/fl_image_container"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
+
+            <!-- Main ImageView -->
+            <ImageView
+                android:id="@+id/iv_season_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+
+                android:clipToOutline="true"
+                android:src="@drawable/weather_static"
+                />
+
+            <!-- Small Image -->
+            <ImageView
+                android:id="@+id/iv_play_image"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:layout_margin="4dp"
+                android:src="@drawable/play"
+               />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_season_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintStart_toEndOf="@+id/fl_image_container"
+            tools:ignore="MissingConstraints" />
+
+        <TextView
+            android:id="@+id/tv_season_detail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:layout_marginLeft="@dimen/dp_8"
+            android:layout_marginTop="6dp"
+            android:textSize="12sp"
+            android:lineHeight="17sp"
+            android:maxLines="3"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_season_name"
+            app:layout_constraintStart_toEndOf="@+id/fl_image_container"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

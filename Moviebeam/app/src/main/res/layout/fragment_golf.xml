@@ -35,18 +35,19 @@
 
         <TextView
             android:id="@+id/tv_title"
-            app:layout_constraintBottom_toTopOf="@+id/layout_date_time_selector"
-            app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
-            app:layout_constraintTop_toTopOf="parent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp_16"
             android:layout_marginBottom="48dp"
-            android:text="Select Date and Time for Housekeeping to arive"
+            android:text="Please select time to schedule Tee time for Golf"
             android:textSize="@dimen/sp_18"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toTopOf="@+id/layout_date_time_selector"
+            app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <include
             android:id="@+id/layout_date_time_selector"

@@ -6,8 +6,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.SPLASH_DELAY
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.login.LoginResponse
 import com.diipl.moviebeam.utils.RegexUtils.isValidEmail
@@ -36,14 +36,16 @@ class LoginViewModel : ViewModel() {
         } else if (!isUsernameValid && isPassWordValid) {
             loginLiveDataPrivate.value = Resource.DataError(code = R.string.invalid_username)
         } else if (!isUsernameValid && !isPassWordValid) {
-            loginLiveDataPrivate.value = Resource.DataError(code = R.string.invalid_username_and_password)
+            loginLiveDataPrivate.value =
+                Resource.DataError(code = R.string.invalid_username_and_password)
         } else {
             viewModelScope.launch {
                 loginLiveDataPrivate.value = Resource.Loading()
                 Handler(Looper.getMainLooper()).postDelayed({
                     loginLiveDataPrivate.value = Resource.Success(
-                        LoginResponse("","","","","","","","",""));
-                }, SPLASH_DELAY.toLong())
+                        LoginResponse("", "", "", "", "", "", "", "", "")
+                    );
+                }, Constants.SPLASH_DELAY.toLong())
                 //API CALL
 //                loginLiveDataPrivate.value = it
             }

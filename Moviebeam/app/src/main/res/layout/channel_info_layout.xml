@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/prg_guide_channel_info_bg"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.01" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_95"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.99" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_25"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_50"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.50" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_95"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <ImageView
+        android:id="@+id/iv_channel_logo"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:contentDescription="@string/channel_logo"
+        app:layout_constraintBottom_toTopOf="@+id/tv_label_now_showing"
+        app:layout_constraintDimensionRatio="2.11:1"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
+        app:layout_constraintTop_toTopOf="@id/gl_horizontal_5"
+        app:layout_constraintWidth_percent="0.05" />
+
+    <TextView
+        android:id="@+id/tv_label_now_showing"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_medium_500"
+        android:text="Now Showing"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/tv_label_next"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_25"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@id/iv_channel_logo"
+        app:layout_constraintTop_toBottomOf="@+id/iv_channel_logo" />
+
+    <TextView
+        android:id="@+id/tv_label_next"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_medium_500"
+        android:text="Next"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_95"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_25"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@id/iv_channel_logo"
+        app:layout_constraintTop_toBottomOf="@+id/tv_label_now_showing" />
+
+    <TextView
+        android:id="@+id/tv_channel_name"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="0dp"
+        android:fontFamily="@font/manrope_medium_500"
+        android:gravity="center_vertical"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_channel_logo"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_50"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_25"
+        app:layout_constraintTop_toTopOf="@+id/iv_channel_logo" />
+
+    <TextView
+        android:id="@+id/tv_now_showing_time"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_medium_500"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_label_now_showing"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_50"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_25"
+        app:layout_constraintTop_toTopOf="@+id/tv_label_now_showing" />
+
+    <TextView
+        android:id="@+id/tv_next_time"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_medium_500"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_label_next"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_50"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_25"
+        app:layout_constraintTop_toTopOf="@+id/tv_label_next" />
+
+    <TextView
+        android:id="@+id/tv_channel_no"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:fontFamily="@font/manrope_medium_500"
+        android:gravity="end|center_vertical"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_channel_logo"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_50"
+        app:layout_constraintTop_toTopOf="@+id/iv_channel_logo" />
+
+    <TextView
+        android:id="@+id/tv_now_showing"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/manrope_medium_500"
+        android:singleLine="true"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_label_now_showing"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_50"
+        app:layout_constraintTop_toTopOf="@+id/tv_label_now_showing" />
+
+    <TextView
+        android:id="@+id/tv_next"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/manrope_medium_500"
+        android:singleLine="true"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_label_next"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_50"
+        app:layout_constraintTop_toTopOf="@+id/tv_next_time" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

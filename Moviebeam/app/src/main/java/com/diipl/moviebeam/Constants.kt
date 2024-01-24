@@ -6,7 +6,7 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
     const val SPLASH_DELAY = 3000
-    const val BASE_URL = "https://stb.moviebeam.com:1930/LG/rest/"
+    var timer = ""
     const val BASE_URL_LG_REST = "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
     const val BASE_URL_ACCOUNT_SETUP = "https://stb.moviebeam.com:1926/"
     const val BASE_URL_ASSET = "https://stb.moviebeam.com:1928/Asset/"
@@ -20,7 +20,7 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
-    const val UA = "14508KKMH0K299"
+    var UA = "14508KKMH0K299"
     const val ACCOUNTID = 7107
     const val ACTIVATE = "ACTIVATE"
     const val MODE = "JSON"
@@ -46,6 +46,7 @@ object Constants {
     //Home Page Menu Button Title
     const val PROGRAM_GUIDE = "Program Guide"
     const val MOVIES_MORE = "Movies & More"
+    const val SHOWTIME_NAME = "Free Selections"
     const val SHOWTIME = "Showtime"
     const val CASTING = "Casting"
     const val APPS = "Apps"
@@ -62,6 +63,7 @@ object Constants {
     const val FREE_MOVIES_ID = "freeMovies"
     const val ADULT_DAY_PASS_ID = "adultDayPass"
     const val ADULT_ID = "adult"
+    const val ALL_PAY_MOVIES = "All Pay Movies"
 
     //Movies page menu button list
     const val MOVIE_RENTALS = "Movie Rentals"
@@ -69,28 +71,51 @@ object Constants {
     const val ADULT_DAY_PASS = "Adult Day Pass"
     const val ADULT = "Adult"
 
+    //Showtime page menu button list
+    const val ALL_SHOWS = "All Shows"
+    const val SHO_SPORTS = "SHO Sports"
+    const val SHO_SERIES = "SHO Series"
+    const val SHO_DOCS = "SHO Docs"
+
+    //Showtime page menu button Id
+    const val ALL_SHOWS_ID = "allShows"
+    const val SHO_SPORTS_ID = "shoSports"
+    const val SHO_SERIES_ID = "shoSeries"
+    const val SHO_DOCS_ID = "shoDocs"
+
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
-        BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),
-        BtnModel(SHOWTIMES_ID, R.drawable.showtime_icon, SHOWTIME),
+        BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
+        BtnModel(SHOWTIMES_ID, R.drawable.showtime_icon, SHOWTIME_NAME),
         BtnModel(CASTING_ID, R.drawable.casting_icon, CASTING),
         BtnModel(APPS_ID, R.drawable.app_world_icon, APPS),
         BtnModel(GUEST_SERVICES_ID, R.drawable.guestservices_icon, GUEST_SERVICES),
         BtnModel(HOTEL_SERVICES_ID, R.drawable.hotelservices_icon, HOTEL_SERVICES),
         BtnModel(CRACKLE_DEFAULT_ID, R.drawable.crackle_white_icon, CRACKLE_DEFAULT),
-        BtnModel(IN_ROOM_DINING_ID, R.drawable.crackle_white_icon, IN_ROOM_DINING),
+        BtnModel(IN_ROOM_DINING_ID, R.drawable.in_room_dining_menu, IN_ROOM_DINING),
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
 
+    // Static Movies URl
+
     const val MOVIE_URL = "http://d3rh9vbn3pp0qe.cloudfront.net/41177_T.m2t"
-
-
-    const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
+    const val BASE_PLAYBACK_URL ="https://d14ez9fl8x9e1s.cloudfront.net/"
+    const val TRAILER_EXTENSION = "_T.m2t"
+    const val CONTENT_EXTENSION = ".m2t"
+    const val CONTENT_EXTENSION_MP = ".mp4"
+   /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
     const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
+    const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"*/
+   const val MOVIE_URL1 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974.mp4"
+    const val MOVIE_URL2 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974_B.mp4"
+    const val MOVIE_URL3 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/7107/hotelData/7107.mp4"
     const val TRAILER_URL = "trailer_url"
 
+    const val RELEASE_ID = "releaseId"
+    const val IS_TRAILER = "isTrailer"
+    const val IS_CONTENT  = "isContent"
 
     val MOVIES_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
@@ -98,6 +123,14 @@ object Constants {
         BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
         BtnModel(ADULT_ID, R.drawable.adult, ADULT),
     )
+    val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
+        BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
+        BtnModel(SHO_SPORTS_ID, R.drawable.showtime, SHO_SPORTS),
+        BtnModel(SHO_SERIES_ID, R.drawable.showtime, SHO_SERIES),
+        BtnModel(SHO_DOCS_ID, R.drawable.showtime, SHO_DOCS),
+    )
+
+    const val FREE_MOVIE_RELEASE_TYPE_ID =1
 
     //Guest Service Button Id
     const val WEATHER_ID = "weather"
@@ -106,6 +139,7 @@ object Constants {
     const val GUEST_FEEDBACK_ID = "guestFeedback"
     const val TV_ON_OFF_ID = "tvonoff"
     const val LA_ID = "la"
+    const val IN_ROOM_ID = "inRoomDining"
     const val CONCIERGE_ID = "concierge"
 
     const val EXPRESS_CHECKOUT_ID = "expressCheckout"
@@ -177,6 +211,7 @@ object Constants {
     const val TOILETRY_REQUEST = "Toiletry Request"
     const val SPA = "Spa"
     const val GOLF = "Golf"
+    const val LAUNDRY_TIME = "Laundry Time"
 
     val CONCIERGE_BUTTON_LIST = listOf(
         ConciergeBtnModel(1, MAKE_MY_ROOM, R.drawable.make_my_room),
@@ -184,12 +219,14 @@ object Constants {
         ConciergeBtnModel(3, LAUNDRY, R.drawable.laundry),
         ConciergeBtnModel(4, TOILETRY_REQUEST, R.drawable.request_items),
         ConciergeBtnModel(5, SPA, R.drawable.spa),
-        ConciergeBtnModel(6, GOLF, R.drawable.golf)
+        ConciergeBtnModel(6, GOLF, R.drawable.golf),
+        ConciergeBtnModel(7, LAUNDRY_TIME, R.drawable.laundry)
     )
 
     //Flight Status
     const val DEPARTURE = "DEP"
     const val ARRIVAL = "ARR"
+    const val NOT_AVAILABLE = "N/A"
 
     //Api Cmd
     const val ACTIVATE_CMD = "ACTIVATE"
@@ -206,6 +243,61 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
+    //Apps
+    val SELECTED_APPS = listOf(
+        "Prime Video",
+        "Disney+",
+        "Hulu",
+        "Max",
+        "Netflix",
+        "Paramount+",
+        "Peacock TV",
+        "YouTube"
+    )
+
+    //Guest Feedback
+    const val UNACCEPTABLE = "Unacceptable"
+    const val DISAPPOINTING = "Disappointing"
+    const val GOOD = "Good"
+    const val EXCELLENT = "Excellent"
+
+    //    const val UNSATISFIED = " Unsatisfies"
+    const val FEEDBACK_POSITIVE_COLOR = "#34C759"
+    const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
+
+    //Casting
+    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
+
+    // Kaping
+    const val KAPING = "KAPING"
+    const val DV = "3.0.1.23"
+    const val CLISTVER="201803130001"
+    const val KAPINGEVENT = "10131220"
+    const val RBTY = "0100"
+    const val LAVER="1510818301"
+    const val HSVER= "1513951822"
+    const val THMVER= "1509529572"
+    const val CMDRES = "4105aa725d84402348900"
+    const val INRMVER = "1520924235"
+    const val LAUVER="1520937775"
+
+    //Program Guide
+    const val CONTENT_LIST_PARAM = "contentList"
+    const val CHANNEL_LIST_PARAM = "channelList"
+    const val SELECTED_CHANNEL_INDEX = "index"
+    const val CHANEL_NO_PARAM = "channelNo"
+    const val CHANNEL_NAME_PARAM = "channelName"
+    const val CHANNEL_LOGO_PARAM = "channelLogo"
+    const val NOW_SHOWING_PARAM = "nowShowing"
+    const val NEXT_PROGRAM_PARAM = "nextProgram"
+    const val PROG_1_TIME_PARAM = "prog1Time"
+    const val PROG_2_TIME_PARAM = "prog2Time"
+
+    const val GRADIENT_START_COLOR_PARAM = "gradientStartColor"
+    const val GRADIENT_END_COLOR_PARAM = "gradientEndColor"
+    const val TITLE_PARAM = "title"
+    const val BG_IMAGE_URL = "bgImageUrl"
+    const val LOGO_IMAGE_URL = "logoImageUrl"
+
 }
 
-const val SPLASH_DELAY = 3000

@@ -4,10 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/stb_dark_landing_page"
+    android:background="@color/blue_screen"
     tools:context=".ui.stbdetail.STBDetailsActivity">
 
-    <ImageView
+
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:padding="@dimen/dp_16"
+      android:textSize="@dimen/sp_20"
+      android:textColor="@color/white"
+      android:textAlignment="center"
+      android:lineHeight="24dp"
+      android:text="@string/please_wait_stb_box_is_initialising"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent"
+      />
+
+  <!--  <ImageView
         android:id="@+id/imageView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -158,5 +174,7 @@
                 android:text="Serial Number"
                 android:textSize="20sp" />
         </LinearLayout>
-    </LinearLayout>
+    </LinearLayout>-->
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

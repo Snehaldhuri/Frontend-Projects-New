@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.movies
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,8 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 
 class MoviesBtnAdapter(
     private val itemList: List<BtnModel>,
-    private val onMoviesMenuItemClicked: (contentType: String) -> Unit
+    private val onMoviesMenuItemClicked: (contentType: String) -> Unit,
+    private val onRightKeyPressed: () -> Unit
 ) :
     RecyclerView.Adapter<MoviesBtnAdapter.MyViewHolder>() {
     var startColor = ""
@@ -31,6 +33,18 @@ class MoviesBtnAdapter(
         val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
         layoutParams.setMargins(0, 0, 0, 3)
         view.layoutParams = layoutParams
+
+        view.setOnKeyListener { _, keycode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keycode) {
+                    KeyEvent.KEYCODE_DPAD_RIGHT ->{
+                        onRightKeyPressed()
+                    }
+                }
+            }
+            false
+        }
+
         return MyViewHolder(view)
 
     }

@@ -9,17 +9,14 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
-import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
-import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,14 +38,8 @@ class MainMenuViewModel @Inject constructor(
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
-    private val _hotelServiceLiveData = MutableLiveData<Resource<HotelServiceResponse>>()
-    val hotelServiceLiveData: LiveData<Resource<HotelServiceResponse>> get() = _hotelServiceLiveData
-
-    private val _localAttractionLiveData = MutableLiveData<Resource<LocalAttractionResponse>>()
-    val localAttractionLiveData: LiveData<Resource<LocalAttractionResponse>> get() = _localAttractionLiveData
-
-    private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
-    val moviesLiveData: LiveData<Resource<MoviesResponse>> get() = _moviesLiveData
+    private val _UALiveData = MutableLiveData<String>()
+    val uaLiveData: LiveData<String> get() = _UALiveData
 
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
     val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
@@ -56,50 +47,9 @@ class MainMenuViewModel @Inject constructor(
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
-    init {
-     //   fetchDateTime(Constants.UA)
+   /* init {
         fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE)
-        fetchHotelServiceInfo(Constants.ACCOUNTID)
-        fetchLocalAttractionInfo(Constants.UA)
-        fetchMoviesInfo(Constants.UA)
-    }
-
-
-    private fun fetchHotelServiceInfo(accountId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-//            _hotelServiceLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getHotelServiceInfo(accountId)
-            if (response == null) {
-                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _hotelServiceLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    private fun fetchLocalAttractionInfo(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-//            _localAttractionLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getLocalAttractionInfo(ua)
-            if (response == null) {
-                _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _localAttractionLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
-    private fun fetchMoviesInfo(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-//            _moviesLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getMoviesInfo(ua)
-            if (response == null) {
-                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _moviesLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
+    }*/
 
      fun fetchDateTime(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -113,7 +63,7 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
-    private fun fetchAllApi(cmd: String, ua: String, mode: String) {
+    /*private fun fetchAllApi(cmd: String, ua: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _weatherLiveData.postValue(Resource.Loading())
             _themeLiveData.postValue(Resource.Loading())
@@ -149,7 +99,7 @@ class MainMenuViewModel @Inject constructor(
                 _accountSetupLiveData.postValue(Resource.Success(result[2] as AccountSetupResponse))
             }
         }
-    }
+    }*/
 
     /*------------------------------------------------------------------------------------------*/
 
@@ -189,11 +139,20 @@ class MainMenuViewModel @Inject constructor(
         }
     }
 
+    fun getUAFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch {
+            preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.UA, "")
+                .collect {
+                    _UALiveData.postValue(it)
+                }
+        }
+    }
+
     /*----------------------------------------------------------------------------------------------*/
 
     // Set Response to DataStore
 
-    fun setThemeResponseData(
+   /* fun setThemeResponseData(
         dataStore: DataStore<ThemeResponse>,
         data: ThemeResponse
     ) {
@@ -218,6 +177,12 @@ class MainMenuViewModel @Inject constructor(
                 )
 
             }
+    fun getUAFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch {
+            preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.UA, "")
+                .collect {
+                    _UALiveData.postValue(it)
+                }
         }
     }
 
@@ -425,7 +390,7 @@ class MainMenuViewModel @Inject constructor(
 
             }
         }
-    }
+    }*/
 
 
     fun showToastMessage(error: String) {

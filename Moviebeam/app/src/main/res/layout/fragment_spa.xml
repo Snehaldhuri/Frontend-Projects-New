@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.guestservice.concierge.SpaFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_50"
+        app:layout_constraintGuide_percent="0.5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_50"
+        app:layout_constraintGuide_percent="0.5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" />
+
+    <LinearLayout
+        android:id="@+id/layout_dt"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:foregroundGravity="center_horizontal"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/dp_16"
+            android:layout_marginBottom="48dp"
+            android:text="Please select date and time to schedule Spa treatment."
+            android:textSize="@dimen/sp_18"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toTopOf="@+id/layout_date_time_selector"
+            app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
+            app:layout_constraintTop_toTopOf="parent" />
+        <include
+            android:id="@+id/layout_date_time_selector"
+            app:layout_constraintBottom_toBottomOf="@id/gl_horizontal_50"
+            app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+            app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
+            app:layout_constraintTop_toTopOf="@+id/gl_horizontal_50"
+            layout="@layout/date_time_selector_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_cancel"
+                app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
+                app:layout_constraintStart_toStartOf="@+id/layout_date_time_selector"
+                app:layout_constraintTop_toBottomOf="@id/layout_date_time_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_16"
+                android:layout_weight="1"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="@string/Cancel" />
+
+            <View
+                android:layout_width="50dp"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btn_ok"
+                app:layout_constraintEnd_toEndOf="@+id/layout_date_time_selector"
+                app:layout_constraintStart_toEndOf="@+id/gl_vertical_50"
+                app:layout_constraintTop_toBottomOf="@id/layout_date_time_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_16"
+                android:layout_weight="1"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="@string/OK" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layout_confirmation"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:foregroundGravity="center_horizontal"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/textView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_30"
+            android:text="Confirm Service"
+            android:textAlignment="center"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/tv_message"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            android:layout_width="350dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Thank you.Your request has been received and your room will be serviced"
+            android:textAlignment="center"
+            android:textSize="@dimen/sp_16" />
+
+        <Button
+            android:id="@+id/btn_pop_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/dp_20"
+            android:background="@drawable/btn_bg_gradient_default"
+            android:fontFamily="@font/manrope_bold_700"
+            android:text="OK" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

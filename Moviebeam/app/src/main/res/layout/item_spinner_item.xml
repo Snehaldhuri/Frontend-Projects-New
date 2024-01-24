@@ -7,4 +7,3 @@
     android:paddingHorizontal="@dimen/dp_4"
     android:paddingVertical="@dimen/dp_8"
     android:singleLine="true" />
-

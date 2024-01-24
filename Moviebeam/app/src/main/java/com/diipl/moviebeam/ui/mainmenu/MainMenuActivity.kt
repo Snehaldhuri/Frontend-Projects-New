@@ -2,8 +2,14 @@ package com.diipl.moviebeam.ui.mainmenu
 
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.SurfaceTexture
 import android.graphics.drawable.Drawable
+import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
+import android.view.Surface
+import android.view.TextureView
+import android.view.View
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
@@ -17,19 +23,28 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
-import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
-import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
-import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
+import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
+import com.diipl.moviebeam.ui.kappingservice.Actions
+import com.diipl.moviebeam.ui.kappingservice.EndlessService
+import com.diipl.moviebeam.ui.kappingservice.ServiceState
+import com.diipl.moviebeam.ui.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
+import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -48,6 +63,14 @@ class MainMenuActivity : BaseActivity() {
     private lateinit var binding: ActivityMainMenuBinding
     private var gradientStartColor = ""
     private var gradientEndColor = ""
+    private var isServiceStarted = false
+    private var UA = ""
+
+    private var videoUrl = ""
+
+    private lateinit var videoTextureView: TextureView
+    private lateinit var mediaPlayer: MediaPlayer
+    private var loopCount = 0
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -58,26 +81,64 @@ class MainMenuActivity : BaseActivity() {
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
-    @Inject
-    lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
-
-    @Inject
-    lateinit var localAttractionDataStore: DataStore<LocalAttractionResponse>
-
-    @Inject
-    lateinit var moviesDataStore: DataStore<MoviesResponse>
+    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
         // call below function to get data from datastore
 
-        /* mainMenuViewModel.getThemeResponseData(themeDataStore)
-         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
-         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
-         */
+        mainMenuViewModel.getThemeResponseData(themeDataStore)
+        mainMenuViewModel.getWeatherResponseData(weatherDataStore)
+        mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        mainMenuViewModel.getUAFromDataStore(preferenceDataStoreHelper)
 
+        videoTextureView = findViewById(R.id.videoTextureView)
+
+        mediaPlayer = MediaPlayer()
+
+        videoTextureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+            override fun onSurfaceTextureAvailable(
+                surface: SurfaceTexture,
+                width: Int,
+                height: Int
+            ) {
+                val surface = Surface(surface)
+                mediaPlayer.setSurface(surface)
+//                    getVideoForMainmenu(videoUrl)
+//                    val mainmenuVideo = Constants.BASE_PLAYBACK_URL + "7147_HotelVideo.m2t"
+//                    Log.d("mainmenuVideo1","$videoUrl")
+//                    Log.d("mainmenuVideo", mainmenuVideo)
+                playVideoFromUrl("http://d1l6t4e2m4gzwb.cloudfront.net/7147_HotelVideo.m2t")
+            }
+
+            override fun onSurfaceTextureSizeChanged(
+                surface: SurfaceTexture,
+                width: Int,
+                height: Int
+            ) {
+                // Ignored, the video size won't change here
+            }
+
+            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+                mediaPlayer.stop()
+                mediaPlayer.release()
+                return true
+            }
+
+            override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
+                // Invoked every time there's a new frame available
+            }
+        }
+
+//        UA = intent.extras?.getString("UA")
+
+        // start the endless service
+//        if (!isServiceStarted) {
+//            actionOnService(Actions.START)
+//        }
     }
 
     override fun observeViewModel() {
@@ -85,9 +146,7 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.dateTimeLiveData, ::handleDateTimeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-        observe(mainMenuViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
-        observe(mainMenuViewModel.localAttractionLiveData, ::handleLAServiceResponse)
-        observe(mainMenuViewModel.moviesLiveData, ::handleMoviesResponse)
+        observe(mainMenuViewModel.uaLiveData, ::handleUAResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
@@ -105,9 +164,6 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
 
-                mainMenuViewModel.weatherLiveData.value?.data?.let {
-                    mainMenuViewModel.setWeatherResponseData(weatherDataStore, it)
-                }
                 var temperature = mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
                 temperature?.let {
                     if (it.contains("&deg C")) {
@@ -121,13 +177,40 @@ class MainMenuActivity : BaseActivity() {
                     binding.ivWeather.loadImagesWithGlideExt(it)
                 }
                 binding.pbLoader.toInvisible()
-
             }
 
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
+
             }
         }
+    }
+
+
+    private fun playVideoFromUrl(videoUrl: String) {
+        try {
+            mediaPlayer.reset()
+            mediaPlayer.setDataSource(videoUrl)
+            mediaPlayer.setOnCompletionListener {
+                loopCount++
+                if (loopCount < 3) {
+                    mediaPlayer.start()
+                } else {
+                    stopVideoAndShowBackground()
+                }
+            }
+            mediaPlayer.prepare()
+            mediaPlayer.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun stopVideoAndShowBackground() {
+        mediaPlayer.stop()
+        binding.videoTextureView.visibility = View.GONE
+        binding.backgroundImageView.visibility = View.VISIBLE
     }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
@@ -136,14 +219,11 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
 
                 val response = mainMenuViewModel.themeLiveData.value?.data
-                response?.let {
-                    mainMenuViewModel.setThemeResponseData(themeDataStore, it)
-                }
 
                 binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
                 response?.themeLogoFileName?.let {
                     getImageBitmap(it, Constants.HOTEL_LOGO)
-                    binding.ivHotelLogo.loadImagesWithGlideExt(it)
+                    binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 response?.gradientColor?.let {
                     gradientStartColor = it
@@ -160,6 +240,7 @@ class MainMenuActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
             }
         }
     }
@@ -175,6 +256,8 @@ class MainMenuActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
+
             }
         }
     }
@@ -183,12 +266,12 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+//                mainMenuViewModel.fetchDateTime(Constants.UA)
 
-                mainMenuViewModel.fetchDateTime(Constants.UA)
-
-                mainMenuViewModel.accountSetupLiveData.value?.data?.let {
-                    mainMenuViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
-                }
+                videoUrl =
+                    Constants.BASE_PLAYBACK_URL + mainMenuViewModel.accountSetupLiveData.value?.data?.hotelChannelList?.get(
+                        0
+                    )?.fileName.toString()
 
                 binding.tvGreeting.text =
                     mainMenuViewModel.accountSetupLiveData.value?.data?.hotelInfo
@@ -199,10 +282,31 @@ class MainMenuActivity : BaseActivity() {
                 val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
                     btnListFromApi?.contains(it.btnId) == true
                 }
+
+                val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
+                    btnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
+                }
+
                 binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
                 val adapter = MainMenuBtnAdapter { btn ->
                     val bundle = Bundle()
                     bundle.putString("title", btn.title)
+                    bundle.putString(
+                        "themeLogoFileName",
+                        mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
+                    )
+                    bundle.putString(
+                        "themeBackgroundFileName",
+                        mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
+                    )
+                    bundle.putString(
+                        "gradientStartColor",
+                        mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                    )
+                    bundle.putString(
+                        "gradientEndColor",
+                        mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                    )
                     var intent: Intent? = null
                     when (btn.btnId) {
                         Constants.HOTEL_SERVICES_ID -> {
@@ -221,6 +325,25 @@ class MainMenuActivity : BaseActivity() {
                             intent = Intent(this, GuestServiceActivity::class.java)
                         }
 
+                        Constants.APPS_ID -> {
+                            intent = Intent(this, AppWorldActivity::class.java)
+                        }
+
+                        Constants.SHOWTIMES_ID -> {
+                            intent = Intent(this, ShowtimeActivity::class.java)
+                        }
+
+                        Constants.CASTING_ID -> {
+                            intent = Intent(this, CastingActivity::class.java)
+                        }
+
+                        Constants.PRG_GUIDE_ID -> {
+                            intent = Intent(this, ProgramGuideActivity::class.java)
+                        }
+
+                        Constants.IN_ROOM_DINING_ID -> {
+                            intent = Intent(this, InRoomDiningActivity::class.java)
+                        }
 
                         else -> {
 
@@ -231,7 +354,7 @@ class MainMenuActivity : BaseActivity() {
                         startActivity(it)
                     }
                 }
-                adapter.itemList = btnModelList
+                adapter.itemList = sortedBtnModelList
                 if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
@@ -245,59 +368,14 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-    private fun handleHotelServiceResponse(status: Resource<HotelServiceResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
+    private fun handleUAResponse(ua: String) {
+        UA = ua
+        Constants.UA = UA
+        mainMenuViewModel.fetchDateTime(ua)
 
-                mainMenuViewModel.hotelServiceLiveData.value?.data?.let {
-                    mainMenuViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
-                }
-
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
-            }
-        }
     }
 
-    private fun handleLAServiceResponse(status: Resource<LocalAttractionResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
 
-                mainMenuViewModel.localAttractionLiveData.value?.data?.let {
-                    mainMenuViewModel.setLocalAttractionResponseData(localAttractionDataStore, it)
-                }
-
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleMoviesResponse(status: Resource<MoviesResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-
-                mainMenuViewModel.moviesLiveData.value?.data?.let {
-                    mainMenuViewModel.setMoviesResponseData(moviesDataStore, it)
-                }
-
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
         binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
@@ -314,10 +392,10 @@ class MainMenuActivity : BaseActivity() {
             ) {
                 binding.root.background = resource
             }
+
             override fun onLoadCleared(placeholder: Drawable?) {}
         })
     }
-
 
     private fun getImageBitmap(imageUrl: String, filename: String) {
         Glide.with(this).asBitmap().load(imageUrl).into(object : CustomTarget<Bitmap>() {
@@ -353,6 +431,25 @@ class MainMenuActivity : BaseActivity() {
             }
         } catch (e: IOException) {
             e.printStackTrace()
+        }
+    }
+
+    private fun actionOnService(action: Actions) {
+        if (action == Actions.STOP) {
+            isServiceStarted = false
+        } else if (action == Actions.START) {
+            isServiceStarted = true
+        }
+        if (getServiceState(this) == ServiceState.STOPPED && action == Actions.STOP) return
+        Intent(this, EndlessService::class.java).also {
+            it.action = action.name
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                log("Starting the service in >=26 Mode")
+                startForegroundService(it)
+                return
+            }
+            log("Starting the service in < 26 Mode")
+            startService(it)
         }
     }
 

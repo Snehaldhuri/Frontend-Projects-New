@@ -23,7 +23,20 @@
     <color name="flight_status_green">#008000</color>
     <color name="flight_status_orange">#FFA500</color>
     <color name="flight_status_yellow">#FFFF00</color>
+    
+    //feedback
+    <color name="feedback_positive">#34C759</color>
+    <color name="feedback_negative">#FF453A</color>
 
     <color name="semiTransparentBlackColor">#60000000</color>
+    <color name="blue_screen">#0000FF</color>
+
+    
+    //Program Guide
+    <color name="prg_guide_channel_info_bg">#99000000</color>
+    // conceirge
+    <color name="conceirge_items">#00BFBA</color>
+    <color name="conceirge_items_quantity">#FFB81A</color>
+
 
 </resources>

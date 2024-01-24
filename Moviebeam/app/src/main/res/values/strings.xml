@@ -35,7 +35,10 @@
 
     //Movies
     <string name="rent_now">Rent Now %1$s 24 HRS %2$s</string>
+    <string name="watch_free">Watch Now Free</string>
+    <string name="watch_trailer">Watch Trailer</string>
     <string name="price_dollar">$ %1$s</string>
+    <string name="app_image">App Image</string>
     <string name="OK">Ok</string>
     <string name="Cancel">Cancel</string>
     <string name="status">Status</string>
@@ -58,4 +61,25 @@
     <string name="details">Details</string>
     <string name="headlines">Headlines</string>
     <string name="hotel_info_image">Hotel Info Image</string>
+    <string name="unacceptable">Unacceptable</string>
+    <string name="thank_you">Thank You</string>
+    <string name="thank_you_for_your_feedback">Thank you for your feedback</string>
+    <string name="search">Search</string>
+    <string name="channel_logo">Channel Logo</string>
+
+    <string name="please_wait_stb_box_is_initialising">"Welcome\nApplication is initializing\nOne moment please</string>
+    <string name="channel_no">Channel No. %1$s</string>
+    <string name="toiletry_requests">Toiletry Requests</string>
+    <string name="send_request">Send Request</string>
+    <string name="please_click_ok_to_select_deselect_the_items_and_press_to_increase_decrease_the_quantity">Please click OK to select/deselect the items and press +/- to increase/decrease the quantity</string>
+    <string name="items">Items</string>
+    <string name="toothpaste">Toothpaste</string>
+    <string name="delete">-</string>
+    <string name="button_text">\\u00e2\\u0080\\u0093</string>
+    <string name="add_symbol">+</string>
+    <string name="minus_symbol">-</string>
+    <string name="error">ERROR</string>
+    <string name="please_slelect_items_to_send_request">Please slelect items to send request</string>
+    <string name="confirm_service_n_your_request_for_following_items_has_been_received_and_will_n_be_serviced_shortly">Confirm Service \n Your Request for following items has been received and will \n be serviced shortly</string>
+    <string name="qty">Qty</string>
 </resources>

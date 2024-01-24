@@ -6,10 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 
 class MovieDetailFragment : Fragment() {
 
@@ -31,21 +32,33 @@ class MovieDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnWatchTrailer.setOnClickListener {
-            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1) }
+            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,true,false) }
+        }
+        binding.btnRentNow.setOnClickListener {
+            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,false,true) }
         }
     }
 
     fun setMovieDetails(movie: ContentDto) {
         this.movie = movie
-        movie.secImagePathPoster.let {
-            binding.ivMovieImage.loadImagesWithGlideExt(it)
+
+        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        movie.imagePathPoster =httpStreamingHotelvideoUrl+movie.releaseId+"/"+movie.releaseId+"_P.jpg"
+        movie.imagePathPoster.let {
+            binding.ivMovieImage.loadImagesWithGlideExtPoster(it)
         }
         binding.tvTitle.text = movie.movieName
         binding.tvHeading.text = movie.headingDetailsNew
         binding.tvSynopsis.text = movie.synopsis
-        binding.tvCast.text = movie.actor
-        binding.tvDirector.text = movie.director
-        binding.btnRentNow.text = getString(R.string.rent_now, movie.qos, movie.price.toString())
+        binding.tvCastTitle.setText("Cast : " + movie.actor);
+        binding.tvDirectorTitle.setText("Director : " + movie.director);
+        if(movie.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID){
+            binding.btnRentNow.text = getString(R.string.watch_free)
+        }
+        else{
+            binding.btnRentNow.text = getString(R.string.rent_now, movie.qos, movie.price.toString())
+        }
+
         binding.btnRentNow.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 view.background = gradient
