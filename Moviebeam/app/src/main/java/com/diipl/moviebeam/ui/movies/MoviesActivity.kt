@@ -55,7 +55,7 @@ class MoviesActivity : BaseActivity() {
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
     @Inject
-    lateinit var moviesDataStore : DataStore<MoviesResponse>
+    lateinit var moviesDataStore: DataStore<MoviesResponse>
 
     override fun observeViewModel() {
         observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -211,7 +211,8 @@ class MoviesActivity : BaseActivity() {
                     onRightKeyPressed = {
                         if (binding.fcvMovieDetail.isVisible) {
                             binding.fcvMovieDetail.postDelayed({
-                                val btnRentNow: Button? = binding.fcvMovieDetail.findViewById(R.id.btn_rent_now)
+                                val btnRentNow: Button? =
+                                    binding.fcvMovieDetail.findViewById(R.id.btn_rent_now)
                                 btnRentNow?.requestFocus()
                             }, 50)
                         }
@@ -245,16 +246,8 @@ class MoviesActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                var temperature = moviesViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    temperature
+                    moviesViewModel.weatherLiveData.value?.data?.tempCondition
                 moviesViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
@@ -346,12 +339,12 @@ class MoviesActivity : BaseActivity() {
         binding.fcvMovieDetail.toVisible()
     }
 
-    fun gotoExoPlayerActivity(movieDetails: ContentDto ,isTrailer:Boolean ,isContent:Boolean) {
+    fun gotoExoPlayerActivity(movieDetails: ContentDto, isTrailer: Boolean, isContent: Boolean) {
 
         val bundle = Bundle()
-        bundle.putString(Constants.RELEASE_ID,(movieDetails.releaseId).toString())
-        bundle.putBoolean(Constants.IS_TRAILER,isTrailer)
-        bundle.putBoolean(Constants.IS_CONTENT,isContent)
+        bundle.putString(Constants.RELEASE_ID, (movieDetails.releaseId).toString())
+        bundle.putBoolean(Constants.IS_TRAILER, isTrailer)
+        bundle.putBoolean(Constants.IS_CONTENT, isContent)
 
         val intent = Intent(this, ExoPlayerActivity::class.java)
         intent.putExtras(bundle)

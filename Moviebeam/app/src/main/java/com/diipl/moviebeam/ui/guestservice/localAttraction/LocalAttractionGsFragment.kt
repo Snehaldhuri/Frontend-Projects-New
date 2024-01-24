@@ -43,25 +43,17 @@ class LocalAttractionGsFragment : BaseFragment() {
     lateinit var localAttractionDataStore: DataStore<LocalAttractionResponse>
 
     override fun observeViewModel() {
-        localAttractionViewModel.getThemeResponseData(themeDataStore)
-        localAttractionViewModel.getWeatherResponseData(weatherDataStore)
-        localAttractionViewModel.getLocalAttractionResponseData(localAttractionDataStore)
-
         observe(localAttractionViewModel.localAttractionLiveData, ::handleLAServiceResponse)
-        observe(localAttractionViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(localAttractionViewModel.dateTimeLiveData, ::handleDateTimeResponse)
-        observe(localAttractionViewModel.themeLiveData, ::handleThemeResponse)
     }
 
-    override fun initViewBinding() {
-        // Initialization code for view binding (if applicable)
-    }
+    override fun initViewBinding() {}
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentLocalattractionBinding.inflate(inflater, container, false)
+        localAttractionViewModel.getLocalAttractionResponseData(localAttractionDataStore)
         setupRecyclerView()
         return binding.root
     }
@@ -103,63 +95,6 @@ class LocalAttractionGsFragment : BaseFragment() {
                 adapter.setItemList(response?.servicesList!!)
                 adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
                 binding.recyclerView.adapter = adapter
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                var temperature =
-                    localAttractionViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-
-                val response = localAttractionViewModel.themeLiveData.value?.data
-
-                response?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                response?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleDateTimeResponse(status: Resource<DateTimeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
                 binding.loaderView.toInvisible()
             }
 

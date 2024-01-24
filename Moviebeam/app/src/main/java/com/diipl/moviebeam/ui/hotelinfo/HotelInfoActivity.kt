@@ -282,16 +282,8 @@ class HotelInfoActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                var temperature = hotelInfoViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    temperature
+                    hotelInfoViewModel.weatherLiveData.value?.data?.tempCondition
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                     hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
                 )

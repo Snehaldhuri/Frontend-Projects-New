@@ -155,7 +155,7 @@ class ProgramGuideActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    replaceDegreeSymbol(programGuideViewModel.weatherLiveData.value?.data?.tempCondition)
+                    programGuideViewModel.weatherLiveData.value?.data?.tempCondition
                 programGuideViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
@@ -184,18 +184,6 @@ class ProgramGuideActivity : BaseActivity() {
                 status.errorCode?.let { programGuideViewModel.showToastMessage(getString(it)) }
             }
         }
-    }
-
-    private fun replaceDegreeSymbol(temp: String?): String {
-        var temperature = ""
-        temp?.let {
-            temperature = if (it.contains("&deg C")) {
-                it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
-            } else {
-                it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
-            }
-        }
-        return temperature
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {

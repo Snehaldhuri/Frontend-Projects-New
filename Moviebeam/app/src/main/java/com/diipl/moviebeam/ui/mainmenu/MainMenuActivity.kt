@@ -162,16 +162,8 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-
-                var temperature = mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
-                temperature?.let {
-                    if (it.contains("&deg C")) {
-                        temperature = it.replace("&deg C", " \u2103")
-                    } else {
-                        temperature = it.replace("&deg F", " \u2109")
-                    }
-                }
-                binding.tvTemperature.text = temperature
+                binding.tvTemperature.text =
+                    mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
                 mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.ivWeather.loadImagesWithGlideExt(it)
                 }
@@ -364,7 +356,6 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.fetchDateTime(ua)
 
     }
-
 
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {

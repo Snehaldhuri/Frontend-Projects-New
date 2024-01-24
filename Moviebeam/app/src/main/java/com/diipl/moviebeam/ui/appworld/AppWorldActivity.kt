@@ -130,7 +130,7 @@ class AppWorldActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    replaceDegreeSymbol(appWorldViewModel.weatherLiveData.value?.data?.tempCondition)
+                    appWorldViewModel.weatherLiveData.value?.data?.tempCondition
                 appWorldViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
@@ -195,18 +195,6 @@ class AppWorldActivity : BaseActivity() {
             binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
         }
         loadBg(intent.extras?.getString("themeBackgroundFileName"))
-    }
-
-    private fun replaceDegreeSymbol(temp: String?): String {
-        var temperature = ""
-        temp?.let {
-            temperature = if (it.contains("&deg C")) {
-                it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
-            } else {
-                it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
-            }
-        }
-        return temperature
     }
 
 }

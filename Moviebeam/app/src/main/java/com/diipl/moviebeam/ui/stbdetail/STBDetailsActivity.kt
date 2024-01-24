@@ -54,7 +54,7 @@ class STBDetailsActivity : BaseActivity() {
     lateinit var moviesDataStore: DataStore<MoviesResponse>
 
     @Inject
-    lateinit var showTimeDataStore:DataStore<ShowTimeResponse>
+    lateinit var showTimeDataStore: DataStore<ShowTimeResponse>
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
@@ -73,7 +73,7 @@ class STBDetailsActivity : BaseActivity() {
         observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
         observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
-        observe(stbDetailViewModel.showtimeLiveData,::handleShowtimeServiceResponse)
+        observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
         observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
 
         observeSnackBarMessages(stbDetailViewModel.showSnackBar)
@@ -91,10 +91,14 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.weatherLiveData.value?.data?.let {
-                    stbDetailViewModel.setWeatherResponseData(weatherDataStore, it)
+                    stbDetailViewModel.setWeatherResponseData(
+                        weatherDataStore,
+                        it.copy(tempCondition = replaceDegreeSymbol(it.tempCondition))
+                    )
                     Log.d("DataStoreResponse", "handleWeatherResponse: $it")
                 }
             }
+
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
@@ -113,6 +117,7 @@ class STBDetailsActivity : BaseActivity() {
                     Log.d("DataStoreResponse", "handleThemeResponse: $it")
                 }
             }
+
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
@@ -130,6 +135,7 @@ class STBDetailsActivity : BaseActivity() {
                     Log.d("DataStoreResponse", "handleAccountSetupResponse: $it")
                 }
             }
+
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
@@ -147,6 +153,7 @@ class STBDetailsActivity : BaseActivity() {
                     Log.d("DataStoreResponse", "handleHotelServiceResponse: $it")
                 }
             }
+
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
@@ -164,6 +171,7 @@ class STBDetailsActivity : BaseActivity() {
                     Log.d("DataStoreResponse", "handleLAServiceResponse: $it")
                 }
             }
+
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
@@ -181,6 +189,7 @@ class STBDetailsActivity : BaseActivity() {
                     Log.d("DataStoreResponse", "handleMoviesResponse: $it")
                 }
             }
+
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
@@ -199,13 +208,14 @@ class STBDetailsActivity : BaseActivity() {
                 }
                 val bundle = Bundle()
                 bundle.putString("UA", UA)
-                val intent = Intent(this,MainMenuActivity::class.java)
+                val intent = Intent(this, MainMenuActivity::class.java)
                 intent.let {
                     it.putExtras(bundle)
                     startActivity(it)
                 }
                 finish()
             }
+
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
@@ -219,10 +229,9 @@ class STBDetailsActivity : BaseActivity() {
         UA = "21$serialNumber"
         Log.d("UA", "handleSerialNumberResponse: $UA")
 
-        stbDetailViewModel.setUAInDataStore(preferenceDataStoreHelper,UA)
-        stbDetailViewModel.fetchAllApi(Constants.ACTIVATE,UA,Constants.MODE,Constants.ACCOUNTID)
+        stbDetailViewModel.setUAInDataStore(preferenceDataStoreHelper, UA)
+        stbDetailViewModel.fetchAllApi(Constants.ACTIVATE, UA, Constants.MODE, Constants.ACCOUNTID)
     }
-
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
         binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
@@ -231,4 +240,17 @@ class STBDetailsActivity : BaseActivity() {
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
+
+    private fun replaceDegreeSymbol(temp: String?): String {
+        var temperature = ""
+        temp?.let {
+            temperature = if (it.contains("&deg C")) {
+                it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
+            } else {
+                it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
+            }
+        }
+        return temperature
+    }
+
 }
