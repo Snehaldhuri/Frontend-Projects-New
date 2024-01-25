@@ -252,7 +252,9 @@ object Constants {
         "Netflix",
         "Paramount+",
         "Peacock TV",
-        "YouTube"
+        "YouTube",
+        "Crackle",
+        "AccuWeather"
     )
 
     //Guest Feedback
