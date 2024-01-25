@@ -7,6 +7,8 @@ import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.KeyEvent
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
@@ -22,7 +24,6 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
@@ -422,6 +423,14 @@ class MainMenuActivity : BaseActivity() {
             log("Starting the service in < 26 Mode")
             startService(it)
         }
+    }
+
+    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
+        Log.d("TAG key", "onKeyDown: $keyEvent")
+        when (keyCode) {
+            KeyEvent.KEYCODE_BACK -> {}
+        }
+        return false
     }
 
 }

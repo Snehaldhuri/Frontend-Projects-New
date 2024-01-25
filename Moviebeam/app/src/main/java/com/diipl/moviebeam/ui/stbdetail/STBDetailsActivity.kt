@@ -61,8 +61,6 @@ class STBDetailsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
     }
 
     //observe class
@@ -84,6 +82,16 @@ class STBDetailsActivity : BaseActivity() {
         binding = ActivityStbdetailsBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+//        binding.root.post {
+//            preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+//            stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
+//        }
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+        stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
     }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
@@ -204,7 +212,6 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.showtimeLiveData.value?.data?.let {
                     stbDetailViewModel.setShowTimeResponseData(showTimeDataStore, it)
-                    Log.d("DataStoreResponse", "handleShowtimeServiceResponse: $it")
                 }
                 val bundle = Bundle()
                 bundle.putString("UA", UA)
@@ -230,7 +237,31 @@ class STBDetailsActivity : BaseActivity() {
         Log.d("UA", "handleSerialNumberResponse: $UA")
 
         stbDetailViewModel.setUAInDataStore(preferenceDataStoreHelper, UA)
-        stbDetailViewModel.fetchAllApi(Constants.ACTIVATE, UA, Constants.MODE, Constants.ACCOUNTID)
+//        Thread {
+//            Thread.sleep(10000)
+//            if (stbDetailViewModel.isNetworkAvailable(this)) {
+//                stbDetailViewModel.showToastMessage("Connected")
+//                stbDetailViewModel.fetchAllApi(
+//                    Constants.ACTIVATE,
+//                    UA,
+//                    Constants.MODE,
+//                    Constants.ACCOUNTID
+//                )
+//            } else {
+//                stbDetailViewModel.showToastMessage("Disconnected")
+//            }
+//        }
+//        runBlocking {
+//            delay(10000)
+//            stbDetailViewModel.fetch(context)
+//        }
+        Thread.sleep(10000)
+        if(stbDetailViewModel.isNetworkAvailable(this)){
+            stbDetailViewModel.showToastMessage("Connected")
+            stbDetailViewModel.fetchAllApi(Constants.ACTIVATE, UA, Constants.MODE, Constants.ACCOUNTID)
+        }else{
+            stbDetailViewModel.showToastMessage("Disconnected")
+        }
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {

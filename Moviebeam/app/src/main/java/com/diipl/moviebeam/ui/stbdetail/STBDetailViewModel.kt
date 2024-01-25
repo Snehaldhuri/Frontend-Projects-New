@@ -1,5 +1,9 @@
 package com.diipl.moviebeam.ui.stbdetail
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -60,13 +64,33 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
+    fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val nw = connectivityManager.activeNetwork ?: return false
+            val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+            return when {
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                //for other device how are able to connect with Ethernet
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                //for check internet over Bluetooth
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+                else -> false
+            }
+        } else {
+            return connectivityManager.activeNetworkInfo?.isConnected ?: false
+        }
+    }
 
-    fun fetchAllApi(cmd: String, ua: String, mode: String,accountId:Int) {
+    fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
 
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
             val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
-            val accountSetupApiResponse = async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
+            val accountSetupApiResponse =
+                async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
             val hotelServicesResponse = async { movieBeamRepository.getHotelServiceInfo(accountId) }
             val localAttractionResponse = async { movieBeamRepository.getLocalAttractionInfo(ua) }
             val releasesMoviesMoreResponse = async { movieBeamRepository.getMoviesInfo(ua) }
@@ -84,43 +108,43 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
             )
 
             if (result[0] == null) {
-                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "weatherApiResponse"))
             } else {
                 _weatherLiveData.postValue(Resource.Success(result[0] as WeatherResponse))
             }
 
             if (result[1] == null) {
-                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "themeApiResponse"))
             } else {
                 _themeLiveData.postValue(Resource.Success(result[1] as ThemeResponse))
             }
 
             if (result[2] == null) {
-                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "accountSetupApiResponse"))
             } else {
                 _accountSetupLiveData.postValue(Resource.Success(result[2] as AccountSetupResponse))
             }
 
             if (result[3] == null) {
-                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "hotelServicesResponse"))
             } else {
                 _hotelServiceLiveData.postValue(Resource.Success(result[3] as HotelServiceResponse))
             }
 
             if (result[4] == null) {
-                _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+                _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "localAttractionResponse"))
             } else {
                 _localAttractionLiveData.postValue(Resource.Success(result[4] as LocalAttractionResponse))
             }
 
             if (result[5] == null) {
-                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "releasesMoviesMoreResponse"))
             } else {
                 _moviesLiveData.postValue(Resource.Success(result[5] as MoviesResponse))
             }
 
             if (result[6] == null) {
-                _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+                _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "showTimeResponse"))
             } else {
                 _showtimeLiveData.postValue(Resource.Success(result[6] as ShowTimeResponse))
             }
@@ -144,9 +168,10 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         ua: String
     ) {
         viewModelScope.launch {
-            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.UA,ua)
+            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.UA, ua)
         }
     }
+
     fun setThemeResponseData(
         dataStore: DataStore<ThemeResponse>,
         data: ThemeResponse
@@ -208,7 +233,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
             }
         }
     }
-
 
 
     fun setAccountSetupResponseData(
@@ -379,9 +403,9 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
     }
 
     fun setShowTimeResponseData(
-        dataStore:DataStore<ShowTimeResponse>,
-        data:ShowTimeResponse
-    ){
+        dataStore: DataStore<ShowTimeResponse>,
+        data: ShowTimeResponse
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
@@ -396,7 +420,8 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         }
     }
 
-        fun showToastMessage(error: String) {
-            showToastPrivate.value = SingleEvent(error)
-        }
+    fun showToastMessage(error: String) {
+        showToastPrivate.value = SingleEvent(error)
+    }
+
 }
