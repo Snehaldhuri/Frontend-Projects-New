@@ -1,22 +1,26 @@
-package com.diipl.moviebeam.ui.guestservice.concierge
+package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
 import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
+import com.diipl.moviebeam.databinding.ItemLaundryRequestSummaryBinding
 import com.diipl.moviebeam.databinding.ItemToiletryRequestSummaryBinding
-import java.util.ArrayList
 
-class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummaryAdapter.MyViewHolder>() {
+class LaundryRequestSummaryAdapter :
+    RecyclerView.Adapter<LaundryRequestSummaryAdapter.MyViewHolder>() {
 
-    private var itemList: List<ItemMenu> = mutableListOf()
+    private var itemList: List<SubCategoryList> = mutableListOf()
 
-    inner class MyViewHolder(val binding: ItemToiletryRequestSummaryBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class MyViewHolder(val binding: ItemLaundryRequestSummaryBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val binding = ItemToiletryRequestSummaryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemLaundryRequestSummaryBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
         return MyViewHolder(binding)
@@ -29,12 +33,12 @@ class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummary
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         if (itemList.isNotEmpty() && position < itemList.size) {
             val item = itemList[position]
-            holder.binding.tvItems.text = item.name
+            holder.binding.tvItems.text = item.title
             holder.binding.tvQty.text = item.dispPrice
         }
     }
 
-    fun setItemList(selectedItems: MutableList<ItemMenu>){
+    fun setItemList(selectedItems: MutableList<SubCategoryList>) {
         this.itemList = selectedItems
     }
 }

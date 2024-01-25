@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +15,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
+import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.observe
@@ -36,6 +38,8 @@ class LaundryFragment : BaseFragment() {
     val binding get() = _binding!!
     private var laundryHeaderPosition: Int = 0
     private var laundrySubCategoryPosition: Int = 0
+    private var selectedItems: MutableList<SubCategoryList> = mutableListOf()
+
 
     override fun observeViewModel() {
         observe(laundryViewModel.laundryMasterLiveData, ::handleLaundryMasterResponse)
@@ -68,22 +72,19 @@ class LaundryFragment : BaseFragment() {
 
 
         binding.btnLaundryCancel.setOnFocusChangeListener { view, hasFocus ->
-            if(hasFocus){
+            if (hasFocus) {
                 setFocus(binding.btnLaundryCancel)
-            }
-            else{
+            } else {
                 binding.btnLaundryCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         binding.btnLaundrySendRequest.setOnFocusChangeListener { view, hasFocus ->
-            if(hasFocus){
+            if (hasFocus) {
                 setFocus(binding.btnLaundrySendRequest)
-            }
-            else{
+            } else {
                 binding.btnLaundrySendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-
 
 
 
@@ -112,11 +113,22 @@ class LaundryFragment : BaseFragment() {
     }
 
 
+    private fun setFocus(cardView: Button) {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
+        )
+        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        cardView.background = gradientDrawable
+    }
+
     fun handleLaundryMasterResponse(status: Resource<LaundryResponce>) {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
-
                 Log.e(
                     "data_laundry",
                     "handleLaundryMasterResponse: ${laundryViewModel.laundryMasterLiveData.value?.data}",
@@ -129,8 +141,6 @@ class LaundryFragment : BaseFragment() {
                         var size = it.subCategoryList
                         var array_title = ArrayList<String>()
                         var array_price = ArrayList<String>()
-                        // laundryHeaderPosition = pos as Int
-
 
                         for (i in 0 until size.size) {
                             array_title.add(it.subCategoryList[i].title!!)
@@ -138,8 +148,15 @@ class LaundryFragment : BaseFragment() {
                         }
 
                         customAdapterLaundry = CustomAdapterLaundry(
-                            onMenuItemFocused = {
-
+                            onMenuItemFocused = { isVisible, it ->
+                                if (isVisible) {
+                                    Log.e("isvisible", "handleLaundryMasterResponse:${it}")
+                                    selectedItems.remove(it)
+                                } else {
+                                    Log.e("isvisible_add", "handleLaundryMasterResponse:${it}")
+                                    selectedItems.add(it)
+                                    Log.d("selectedItems", "selectedItems $selectedItems")
+                                }
                             },
                             onLeftKeyPressed = {
                                 binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)

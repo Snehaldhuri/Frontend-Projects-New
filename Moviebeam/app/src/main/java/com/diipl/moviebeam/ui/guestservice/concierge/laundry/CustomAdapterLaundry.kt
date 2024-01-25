@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
@@ -21,7 +22,7 @@ import com.diipl.moviebeam.databinding.CustomLaundryListViewBinding
 
 
 class CustomAdapterLaundry(
-    var onMenuItemFocused: (SubCategoryList) -> Unit,
+    var onMenuItemFocused: (Boolean,SubCategoryList) -> Unit,
     var onLeftKeyPressed: () -> Unit?,
     var context: Context,
     var array_title: ArrayList<String>,
@@ -53,7 +54,6 @@ class CustomAdapterLaundry(
                     KeyEvent.KEYCODE_DPAD_LEFT -> {
                         onLeftKeyPressed()
                     }
-
                 }
             }
             false
@@ -111,7 +111,7 @@ class CustomAdapterLaundry(
 
         val item = sublList[p0]
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
-            onMenuItemFocused(item)
+            onMenuItemFocused(true,item)
             if (isFocused) {
                 holder.tv_lv_title.background = gradient2
             } else {

@@ -59,7 +59,6 @@ class ToiletryRequestAdapter(
                 holder.binding.ivIconChecked.toVisible()
                 holder.binding.clQuantity.toVisible()
             }
-
         }
         if(holder.binding.ivIconChecked.isVisible){
             selectedItems.add(item)

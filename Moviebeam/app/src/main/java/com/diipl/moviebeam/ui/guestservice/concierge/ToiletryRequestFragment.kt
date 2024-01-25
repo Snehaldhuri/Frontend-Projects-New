@@ -67,7 +67,8 @@ class ToiletryRequestFragment(
             is Resource.Success -> {
                 val response = guestServiceViewModel.accountSetupLiveData.value?.data?.itemMenuList
                 binding.rvToiletryRequest.layoutManager = LinearLayoutManager(requireActivity())
-                val toiletryRequestAdapter = ToiletryRequestAdapter{isVisible, item ->
+
+                val toiletryRequestAdapter = ToiletryRequestAdapter{ isVisible, item ->
                     if(isVisible){
                         selectedItems.remove(item)
                     }else{
@@ -119,8 +120,6 @@ class ToiletryRequestFragment(
                     fragmentTransaction.addToBackStack(null)
                     fragmentTransaction.commit()
                     Log.d("TAG1212", "handleAccountSetupResponse: $selectedItems")
-
-
                 }
 
                 binding.loaderView.toInvisible()

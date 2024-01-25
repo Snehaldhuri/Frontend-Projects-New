@@ -67,10 +67,7 @@ class ToiletryRequestSummaryFragment( private var onOkClicked: () -> Unit) : Bas
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
         adapter.setItemList(selectedItems)
-
         binding.rvSummary.adapter = adapter
-
-
     }
 
     fun setItemList(selectedItems: MutableList<ItemMenu>){
