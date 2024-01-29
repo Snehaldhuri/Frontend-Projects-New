@@ -16,7 +16,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryRequestDTO
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
@@ -31,7 +33,7 @@ class LaundryFragment : BaseFragment() {
     lateinit var laundry_adapter: LaundryAdapter
     lateinit var customAdapterLaundry: CustomAdapterLaundry
 
-    lateinit var laundry_list: List<LaundryDataList>
+    lateinit var laundry_list: List<LaundryRequestDTO>
 
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null
@@ -127,7 +129,7 @@ class LaundryFragment : BaseFragment() {
         cardView.background = gradientDrawable
     }
 
-    fun handleLaundryMasterResponse(status: Resource<LaundryResponce>) {
+    fun handleLaundryMasterResponse(status: Resource<LaundryResponse>) {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -158,7 +160,7 @@ class LaundryFragment : BaseFragment() {
                         onRightKeyPressed = {
                             binding.lvLaundry.scrollToPosition(0)
                         })
-                    laundry_list?.let {
+                    laundry_list.let {
                         laundry_adapter.setNewsList(it)
                     }
                     laundry_adapter.setGradient(getGradient())
