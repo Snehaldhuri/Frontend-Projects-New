@@ -26,7 +26,7 @@
         android:scrollHorizontally="false"
         android:text="Please click OK to select/deselect the laundry items.Pres +/- to increase/decrease quantity"
         android:textAlignment="center"
-        android:textSize="@dimen/sp_16"
+        android:textSize="@dimen/sp_12"
         app:flow_wrapMode="aligned"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/rv_laundry"
@@ -36,8 +36,9 @@
         android:id="@+id/tv_items"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dp_20"
         android:layout_marginTop="20dp"
-        android:layout_marginRight="300dp"
+        android:layout_marginRight="270dp"
         android:text="Items"
         android:textColor="@color/fastlane_background"
         app:layout_constraintEnd_toStartOf="@+id/tv_charges"
@@ -55,13 +56,15 @@
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginLeft="@dimen/dp_20"
         android:id="@+id/lv_laundry"
-        android:layout_width="400dp"
+        android:layout_width="450dp"
         android:layout_height="200dp"
         android:divider="@null"
         android:fadeScrollbars="false"
         android:focusable="true"
         android:scrollbars="vertical"
+        android:descendantFocusability="beforeDescendants"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_items" />
@@ -72,9 +75,9 @@
         android:layout_width="150dp"
         android:layout_height="@dimen/dp_30"
         android:layout_marginTop="50dp"
+        android:layout_marginRight="@dimen/dp_50"
         android:background="@drawable/btn_bg_gradient_default"
         android:text="@string/Cancel"
-        android:layout_marginRight="@dimen/dp_50"
         android:textSize="@dimen/sp_10"
         app:layout_constraintEnd_toStartOf="@+id/btn_laundry_send_request"
         app:layout_constraintTop_toBottomOf="@+id/lv_laundry" />

@@ -2,12 +2,14 @@ package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -136,37 +138,21 @@ class LaundryFragment : BaseFragment() {
                 laundryViewModel.laundryMasterLiveData.value?.data?.let {
                     Log.d("responce_laundryMaster", "handleStbMasterResponse:${it}")
                     laundry_list = it.laundryDataList
+                    var subCategoryList: ArrayList<SubCategoryList> = arrayListOf()
+                    var array_title = ArrayList<String>()
+                    var array_price = ArrayList<Double>()
+
+
+                    for(i in 0 until it.laundryDataList.size) {
+                        Log.e(
+                            "suncat",
+                            "handleLaundryMasterResponse:${laundry_list}",
+                        )
+                    }
 
                     laundry_adapter = LaundryAdapter(onMenuItemFocused = {
-                        var size = it.subCategoryList
-                        var array_title = ArrayList<String>()
-                        var array_price = ArrayList<String>()
+                        Log.e("subCategoryList", "handleLaundryMasterResponse:${it.subCategoryList} ", )
 
-                        for (i in 0 until size.size) {
-                            array_title.add(it.subCategoryList[i].title!!)
-                            array_price.add(it.subCategoryList[i].price.toString())
-                        }
-
-                        customAdapterLaundry = CustomAdapterLaundry(
-                            onMenuItemFocused = { isVisible, it ->
-                                if (isVisible) {
-                                    Log.e("isvisible", "handleLaundryMasterResponse:${it}")
-                                    selectedItems.remove(it)
-                                } else {
-                                    Log.e("isvisible_add", "handleLaundryMasterResponse:${it}")
-                                    selectedItems.add(it)
-                                    Log.d("selectedItems", "selectedItems $selectedItems")
-                                }
-                            },
-                            onLeftKeyPressed = {
-                                binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
-                            }, requireContext(), array_title, array_price
-                        )
-                        // laundry_list?.let {
-                        customAdapterLaundry.setNewsList(it.subCategoryList)
-                        //}
-                        customAdapterLaundry.setGradient(getGradient())
-                        binding.lvLaundry.adapter = customAdapterLaundry
 
                     }, onLeftKeyPressed = {},
                         onRightKeyPressed = {

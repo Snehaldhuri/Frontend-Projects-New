@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -40,6 +41,8 @@ class LaundryViewModel @Inject constructor(private val movieBeamRepository: Movi
         viewModelScope.launch(Dispatchers.IO) {
             _laundryMasterLiveData.postValue(Resource.Loading())
             val responce = movieBeamRepository.getLaundryDetails(ua, s)
+            Log.e("responce", "fetchlaundryDetails:${responce}", )
+
             if (responce == null) {
                 _laundryMasterLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {

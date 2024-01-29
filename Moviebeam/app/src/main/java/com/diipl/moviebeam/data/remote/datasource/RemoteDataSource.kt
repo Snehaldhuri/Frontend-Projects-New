@@ -202,6 +202,4 @@ class RemoteDataSource @Inject constructor(
         Log.e("result_laundry_rds", "laundryResponce:${result}")
         return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
     }
-
-
 }
