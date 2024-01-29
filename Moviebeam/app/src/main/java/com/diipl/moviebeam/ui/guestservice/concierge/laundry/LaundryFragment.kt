@@ -2,22 +2,18 @@ package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryRequestDTO
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
@@ -117,18 +113,6 @@ class LaundryFragment : BaseFragment() {
     }
 
 
-    private fun setFocus(cardView: Button) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
-
     fun handleLaundryMasterResponse(status: Resource<LaundryResponse>) {
         when (status) {
             is Resource.Loading -> {}
@@ -137,6 +121,8 @@ class LaundryFragment : BaseFragment() {
                     "data_laundry",
                     "handleLaundryMasterResponse: ${laundryViewModel.laundryMasterLiveData.value?.data}",
                 )
+
+
                 laundryViewModel.laundryMasterLiveData.value?.data?.let {
                     Log.d("responce_laundryMaster", "handleStbMasterResponse:${it}")
                     laundry_list = it.laundryDataList
@@ -145,17 +131,14 @@ class LaundryFragment : BaseFragment() {
                     var array_price = ArrayList<Double>()
 
 
-                    for(i in 0 until it.laundryDataList.size) {
-                        Log.e(
-                            "suncat",
-                            "handleLaundryMasterResponse:${laundry_list}",
-                        )
-                    }
-
-                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
-                        Log.e("subCategoryList", "handleLaundryMasterResponse:${it.subCategoryList} ", )
-
-
+                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {item ->
+                        Log.e("size_sub", "handleLaundryMasterResponse:${item.subCategoryList.size}")
+                        for (i in 0 until item.subCategoryList.size) {
+                            Log.e(
+                                "size_of_title",
+                                "handleLaundryMasterResponse:${item.subCategoryList[i].title}",
+                            )
+                        }
                     }, onLeftKeyPressed = {},
                         onRightKeyPressed = {
                             binding.lvLaundry.scrollToPosition(0)
@@ -175,6 +158,18 @@ class LaundryFragment : BaseFragment() {
         }
     }
 
+
+    private fun setFocus(cardView: Button) {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
+        )
+        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        cardView.background = gradientDrawable
+    }
 
     fun setGradientColor(startColor: String, endColor: String) {
         gradientStartColor = startColor

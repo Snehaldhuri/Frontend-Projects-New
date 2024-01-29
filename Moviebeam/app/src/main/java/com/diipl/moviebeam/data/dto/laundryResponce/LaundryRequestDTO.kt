@@ -5,7 +5,6 @@ data class LaundryRequestDTO(
     val langWiseList: Map<String, LaundryRequestDTO>,
     val laundryTypeId: Int,
     val subCategoryList: List<LaundryRequestDTO>,
-
     val dispPrice: String,
     val laundryItemId: Int,
     val laundryItemTypeId: Int,
