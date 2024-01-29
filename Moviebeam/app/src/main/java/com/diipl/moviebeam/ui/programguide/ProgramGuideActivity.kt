@@ -319,4 +319,9 @@ class ProgramGuideActivity : BaseActivity() {
         this.isFScreenExit = true
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.layoutVideo.videoView.player?.release()
+    }
+
 }
