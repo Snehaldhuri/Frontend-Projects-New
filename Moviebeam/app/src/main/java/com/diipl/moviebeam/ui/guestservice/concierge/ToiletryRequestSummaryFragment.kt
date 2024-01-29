@@ -73,7 +73,6 @@ class ToiletryRequestSummaryFragment(
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
         adapter.setItemList(selectedItems)
-
         binding.rvSummary.adapter = adapter
     }
 

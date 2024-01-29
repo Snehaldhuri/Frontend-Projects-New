@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
+import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.ItemToiletryRequestSummaryBinding
 import java.util.ArrayList
 
@@ -26,7 +27,6 @@ class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummary
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-
         if (itemList.isNotEmpty() && position < itemList.size) {
             val item = itemList[position]
             holder.binding.tvItems.text = item.name
@@ -51,5 +51,4 @@ class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummary
     fun setItemList(selectedItems: MutableList<ItemMenu>){
         this.itemList = selectedItems
     }
-
 }
