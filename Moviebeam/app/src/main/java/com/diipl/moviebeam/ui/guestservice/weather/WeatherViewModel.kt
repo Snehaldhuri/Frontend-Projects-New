@@ -23,7 +23,7 @@ class WeatherViewModel @Inject constructor(
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
 
     init {
-        fetchWeatherData("17205KKXLKF626")
+        fetchWeatherData(Constants.UA)
     }
 
     private fun fetchWeatherData(ua: String) {

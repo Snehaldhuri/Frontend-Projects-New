@@ -38,7 +38,6 @@ class FlightStatusFragment(
     private var isDep = true
     private var callType = Constants.DEPARTURE
     private var apCode = ""
-    private var ua = Constants.UA
 
     private var gradientButton: GradientDrawable? = null
     private var gradientTable: GradientDrawable? = null
@@ -146,7 +145,7 @@ class FlightStatusFragment(
     private fun fetchFlightStatus() {
         flightStatusViewModel.getFlightStatus(
             Constants.FLIGHT_STATUS_CMD,
-            ua,
+            Constants.UA,
             callType,
             apCode,
             Constants.MODE
