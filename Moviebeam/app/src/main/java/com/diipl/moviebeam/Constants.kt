@@ -247,16 +247,14 @@ object Constants {
 
     //Apps
     val SELECTED_APPS = listOf(
-        "Prime Video",
-        "Disney+",
+        "Netflix",
         "Hulu",
         "Max",
-        "Netflix",
         "Paramount+",
         "Peacock TV",
+        "Disney+",
         "YouTube",
-        "Crackle",
-        "AccuWeather"
+        "Prime Video"
     )
 
     //Guest Feedback
