@@ -27,7 +27,7 @@ class NewsViewModel @Inject constructor(
     val newsLiveData: LiveData<Resource<NewsResponse>> get() = _newsLiveData
 
     init {
-        fetchNewsHeader("17205KKXLKF626", 1)
+        fetchNewsHeader(Constants.UA, 1)
     }
 
     private fun fetchNewsHeader(ua: String, languageId: Int) {

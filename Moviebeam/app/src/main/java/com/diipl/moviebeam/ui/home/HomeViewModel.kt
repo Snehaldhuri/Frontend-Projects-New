@@ -42,7 +42,7 @@ class HomeViewModel @Inject constructor(
     init {
        /* fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
         fetchThemeDetails("17205KKXLKF626")*/
-        fetchAllApi("ACTIVATE", "17205KKXLKF626", "JSON")
+        fetchAllApi("ACTIVATE", Constants.UA, "JSON")
     }
 
     fun fetchAllApi(cmd: String,ua: String,mode: String){
