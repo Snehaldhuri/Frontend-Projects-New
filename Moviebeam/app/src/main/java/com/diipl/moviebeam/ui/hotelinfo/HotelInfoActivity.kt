@@ -5,7 +5,10 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
+import android.view.KeyEvent
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,6 +45,7 @@ class HotelInfoActivity : BaseActivity() {
     private lateinit var binding: ActivityHotelInfoBinding
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
+    private var helpInfoTabIndex = 0
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -163,6 +167,7 @@ class HotelInfoActivity : BaseActivity() {
                                 tabs.add(it.title)
                             }
                         }
+
                         else -> {
                             tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
                             tabs.add(service.categoryName)
@@ -171,6 +176,7 @@ class HotelInfoActivity : BaseActivity() {
                 }
                 tabs.add(Constants.HELP_INFO)
                 tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
+                helpInfoTabIndex = tabs.size - 1
 
                 val adapter = HotelInfoTabAdapter(itemList = tabs,
                     onItemFocused = { it, view ->
@@ -235,25 +241,18 @@ class HotelInfoActivity : BaseActivity() {
                         transaction.commit()
                     },
                     onHelpInfoTabClick = { it, pos, view ->
-                        val fragment = HelpInfoFragment() {
-                            if (it) {
-                                binding.fragmentContainerCarousel.toVisible()
-                                binding.rvHotelInfoHeader.toVisible()
-                                binding.tvHeaderTitle.toVisible()
-                                binding.btnBack.toVisible()
-                                binding.layoutHeader.tvTitle.text = Constants.HOTEL_INFORMATION
-                                view.requestFocus()
-                                //   binding.rvHotelInfoHeader.layoutManager?.scrollToPosition(pos)
-
-                            }
+                        val fragment = HelpInfoFragment {
+                            handleBackClick()
                         }
                         val mBundle = Bundle()
-                        mBundle.putString("gradientStartColor",gradientStartColor)
-                        mBundle.putString("gradientEndColor",gradientEndColor)
+                        mBundle.putString("gradientStartColor", gradientStartColor)
+                        mBundle.putString("gradientEndColor", gradientEndColor)
+                        binding.fragmentContainerHelpInfo.toVisible()
                         fragment.arguments = mBundle
                         supportFragmentManager.beginTransaction()
                             .add(R.id.fragment_container_help_info, fragment)
-                            .addToBackStack("Help Info").commit()
+//                            .addToBackStack("Help Info")
+                            .commit()
                         binding.fragmentContainerCarousel.toInvisible()
                         binding.rvHotelInfoHeader.toInvisible()
                         binding.tvHeaderTitle.toInvisible()
@@ -353,6 +352,35 @@ class HotelInfoActivity : BaseActivity() {
 
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
+    }
+
+    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_BACK -> {
+                Log.d("TAG1212", "onKeyDownMain: Back working")
+                handleBackClick()
+            }
+
+            KeyEvent.KEYCODE_ESCAPE -> {
+                Log.d("TAG1212", "onKeyDownMain: Esc working")
+                handleBackClick()
+            }
+        }
+        return false
+    }
+
+    private fun handleBackClick() {
+        if (binding.fragmentContainerHelpInfo.isVisible) {
+            binding.fragmentContainerHelpInfo.toInvisible()
+            binding.rvHotelInfoHeader.toVisible()
+            binding.rvHotelInfoHeader.findViewHolderForAdapterPosition(helpInfoTabIndex)?.itemView?.requestFocus()
+            binding.fragmentContainerCarousel.toVisible()
+            binding.tvHeaderTitle.toVisible()
+            binding.btnBack.toVisible()
+            binding.layoutHeader.tvTitle.text = Constants.HOTEL_INFORMATION
+        } else {
+            finish()
+        }
     }
 
 }

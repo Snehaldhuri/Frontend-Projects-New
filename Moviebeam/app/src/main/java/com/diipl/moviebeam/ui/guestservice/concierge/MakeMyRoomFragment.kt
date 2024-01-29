@@ -1,11 +1,9 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
 
-import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -37,7 +35,6 @@ class MakeMyRoomFragment(
     private var startColor = ""
     private var endColor = ""
 
-    @SuppressLint("ResourceAsColor")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -47,7 +44,18 @@ class MakeMyRoomFragment(
         layout_dt = binding.root.findViewById(R.id.layout_dt)
         layout_confirmation = binding.root.findViewById(R.id.layout_confirmation)
 
-        binding.btnCancel.setOnClickListener{
+        view?.setOnKeyListener { _, keycode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keycode) {
+                    KeyEvent.KEYCODE_BACK -> {
+                        onOkClicked()
+                    }
+                }
+            }
+            false
+        }
+
+        binding.btnCancel.setOnClickListener {
             onOkClicked()
         }
 
@@ -107,7 +115,6 @@ class MakeMyRoomFragment(
                 view.setBackgroundResource(R.drawable.border_bg)
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
-                        Log.d("keypressed", "keypressed")
                         when (keyCode) {
                             KeyEvent.KEYCODE_DPAD_UP -> {
                                 if (currentHour < 24) {
@@ -145,7 +152,6 @@ class MakeMyRoomFragment(
                 view.setBackgroundResource(R.drawable.border_bg)
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
-                        Log.d("keypressed", "keypressed")
                         when (keyCode) {
                             KeyEvent.KEYCODE_DPAD_UP -> {
                                 if (currentminute < 60) {
@@ -203,7 +209,6 @@ class MakeMyRoomFragment(
         this.date = cal.get(Calendar.DATE).toString()
         this.month = getMonth(cal.get(Calendar.MONTH))
         this.year = cal.get(Calendar.YEAR).toString()
-        Log.d("setDatedate", "onCreateView: $currentHour  $currentminute  $day  $date  ${month+1}  $year ${day + month + date + currentHour} ")
     }
 
     private fun getDay(day: Int): String {

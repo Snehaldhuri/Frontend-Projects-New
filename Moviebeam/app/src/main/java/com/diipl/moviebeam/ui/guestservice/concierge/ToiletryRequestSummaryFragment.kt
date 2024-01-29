@@ -3,34 +3,31 @@ package com.diipl.moviebeam.ui.guestservice.concierge
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
 import com.diipl.moviebeam.databinding.FragmentToiletryRequestSummaryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
-import java.util.ArrayList
 
 
-class ToiletryRequestSummaryFragment( private var onOkClicked: () -> Unit) : BaseFragment() {
+class ToiletryRequestSummaryFragment(
+    private var onOkClicked: () -> Unit
+) : BaseFragment() {
 
     private var _binding: FragmentToiletryRequestSummaryBinding? = null
     val binding get() = _binding!!
-    private var gradientStartColor = ""
-    private var gradientEndColor = ""
+    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private val adapter = ToiletryRequestSummaryAdapter()
     private var selectedItems: MutableList<ItemMenu> = mutableListOf()
-    override fun observeViewModel() {
+    override fun observeViewModel() {}
 
-    }
-
-    override fun initViewBinding() {
-
-    }
+    override fun initViewBinding() {}
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,16 +48,25 @@ class ToiletryRequestSummaryFragment( private var onOkClicked: () -> Unit) : Bas
         binding.btnConfirm.setOnClickListener {
             onOkClicked()
         }
+        binding.btnCancel.setOnClickListener {
+            onOkClicked()
+        }
         binding.btnConfirm.postDelayed({
             binding.btnConfirm.requestFocus()
         }, 1)
 
         binding.btnConfirm.setOnFocusChangeListener { view, hasFocus ->
-            if(hasFocus){
+            if (hasFocus) {
                 setFocus(binding.btnConfirm)
-            }
-            else{
+            } else {
                 binding.btnConfirm.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+        binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                setFocus(binding.btnCancel)
+            } else {
+                binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         binding.rvSummary.layoutManager =
@@ -69,13 +75,12 @@ class ToiletryRequestSummaryFragment( private var onOkClicked: () -> Unit) : Bas
         adapter.setItemList(selectedItems)
 
         binding.rvSummary.adapter = adapter
-
-
     }
 
-    fun setItemList(selectedItems: MutableList<ItemMenu>){
+    fun setItemList(selectedItems: MutableList<ItemMenu>) {
         this.selectedItems = selectedItems
     }
+
     private fun setFocus(cardView: Button) {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
@@ -87,6 +92,7 @@ class ToiletryRequestSummaryFragment( private var onOkClicked: () -> Unit) : Bas
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         cardView.background = gradientDrawable
     }
+
     fun setGradientColor(startColor: String, endColor: String) {
         this.gradientStartColor = startColor
         this.gradientEndColor = endColor

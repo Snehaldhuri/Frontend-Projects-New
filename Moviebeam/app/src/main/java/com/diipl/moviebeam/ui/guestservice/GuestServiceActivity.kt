@@ -5,9 +5,11 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.GridLayoutManager
@@ -19,10 +21,8 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -56,6 +56,7 @@ import javax.inject.Inject
 class GuestServiceActivity : BaseActivity() {
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
+    private var conciergeIndex = 0
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -72,7 +73,6 @@ class GuestServiceActivity : BaseActivity() {
         binding = ActivityGuestServiceBinding.inflate(layoutInflater)
         fetchDetails()
         setContentView(binding.root)
-        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         binding.btnBack.setOnFocusChangeListener(::handleBackClick)
         binding.btnBack.setOnClickListener { finish() }
         binding.rvTabLayout.layoutManager =
@@ -117,13 +117,11 @@ class GuestServiceActivity : BaseActivity() {
                 val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
                     gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
                 }
-
-                val menulist = guestServiceViewModel.accountSetupLiveData
-                    .value?.data?.itemMenuList
                 val adapter = GuestServiceTabAdapter { view, service ->
                     binding.tvServiceTitle.text = service.categoryName
                     when (service.btnId) {
                         Constants.CONCIERGE_ID -> {
+
                             binding.fvTabContent.toInvisible()
                             val conciergeListFromApi: List<Int>? =
                                 guestServiceViewModel.accountSetupLiveData
@@ -133,6 +131,7 @@ class GuestServiceActivity : BaseActivity() {
                                     conciergeListFromApi?.contains(concierge.serviceId) == true
                                 }
                             binding.rvTabContent.toVisible()
+                            conciergeIndex = 1
                             binding.rvTabContent.layoutManager = GridLayoutManager(this, 4)
                             val conciergeAdapter = ConciergeAdapter { conciergeService ->
                                 binding.tvServiceTitle.text = conciergeService.categoryName
@@ -143,6 +142,7 @@ class GuestServiceActivity : BaseActivity() {
                                             view.requestFocus()
                                             view.performClick()
                                         }
+
                                         fragment.setGradientColor(
                                             gradientStartColor,
                                             gradientEndColor
@@ -173,7 +173,7 @@ class GuestServiceActivity : BaseActivity() {
                                         binding.layoutHeader.tvTitle.text =
                                             getString(R.string.toiletry_requests)
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = ToiletryRequestFragment{
+                                        val fragment = ToiletryRequestFragment {
                                             view.requestFocus()
                                             view.performClick()
                                         }
@@ -182,7 +182,6 @@ class GuestServiceActivity : BaseActivity() {
                                         mBundle.putString("gradientEndColor", gradientEndColor)
                                         fragment.arguments = mBundle
                                         transaction.replace(R.id.fv_tab_content, fragment)
-                                        transaction.addToBackStack(null)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()
                                         transaction.commit()
@@ -263,6 +262,7 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         Constants.FLIGHT_STATUS_ID -> {
+                            conciergeIndex = 0
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()
                             val transaction1 = supportFragmentManager.beginTransaction()
@@ -279,6 +279,7 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         Constants.WEATHER_ID -> {
+                            conciergeIndex = 0
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
@@ -289,6 +290,7 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         Constants.NEWS_ID -> {
+                            conciergeIndex = 0
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
@@ -301,6 +303,7 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         Constants.GUEST_FEEDBACK_ID -> {
+                            conciergeIndex = 0
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
@@ -313,6 +316,7 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         Constants.LA_ID -> {
+                            conciergeIndex = 0
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
@@ -323,6 +327,7 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         Constants.IN_ROOM_ID -> {
+                            conciergeIndex = 0
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
@@ -417,4 +422,23 @@ class GuestServiceActivity : BaseActivity() {
         loadBg(intent.extras?.getString("themeBackgroundFileName"))
     }
 
+    private fun handleBackRemoteClick() {
+        if (conciergeIndex == 1) {
+            if (binding.fvTabContent.isVisible) {
+                binding.fvTabContent.toInvisible()
+                binding.rvTabContent.toVisible()
+            }
+        } else {
+            finish()
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_BACK -> {
+                handleBackRemoteClick()
+            }
+        }
+        return false
+    }
 }

@@ -21,6 +21,8 @@ object Constants {
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
     var UA = "14508KKMH0K299"
+    var SERIAL_NO = ""
+    var IS_API_CALLED = false
     const val ACCOUNTID = 7107
     const val ACTIVATE = "ACTIVATE"
     const val MODE = "JSON"

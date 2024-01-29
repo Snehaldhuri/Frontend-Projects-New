@@ -26,6 +26,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -64,7 +65,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
-    fun isNetworkAvailable(context: Context): Boolean {
+    private fun isNetworkAvailable(context: Context): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -84,7 +85,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         }
     }
 
-    fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: Int) {
+    private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
 
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
@@ -108,43 +109,43 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
             )
 
             if (result[0] == null) {
-                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "weatherApiResponse"))
+                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Weather Api"))
             } else {
                 _weatherLiveData.postValue(Resource.Success(result[0] as WeatherResponse))
             }
 
             if (result[1] == null) {
-                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "themeApiResponse"))
+                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Theme Api"))
             } else {
                 _themeLiveData.postValue(Resource.Success(result[1] as ThemeResponse))
             }
 
             if (result[2] == null) {
-                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "accountSetupApiResponse"))
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Account Setup Api"))
             } else {
                 _accountSetupLiveData.postValue(Resource.Success(result[2] as AccountSetupResponse))
             }
 
             if (result[3] == null) {
-                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "hotelServicesResponse"))
+                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Hotel Services Api"))
             } else {
                 _hotelServiceLiveData.postValue(Resource.Success(result[3] as HotelServiceResponse))
             }
 
             if (result[4] == null) {
-                _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "localAttractionResponse"))
+                _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Local Attraction Api"))
             } else {
                 _localAttractionLiveData.postValue(Resource.Success(result[4] as LocalAttractionResponse))
             }
 
             if (result[5] == null) {
-                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "releasesMoviesMoreResponse"))
+                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Api"))
             } else {
                 _moviesLiveData.postValue(Resource.Success(result[5] as MoviesResponse))
             }
 
             if (result[6] == null) {
-                _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + "showTimeResponse"))
+                _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in ShowTime Api"))
             } else {
                 _showtimeLiveData.postValue(Resource.Success(result[6] as ShowTimeResponse))
             }
@@ -154,7 +155,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
     // Get Response From DataStore
     fun getDataFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch {
-            preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.SERIAL_NO_KEY, "")
+            preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.SERIAL_NO, "")
                 .collect {
                     _serialNoLiveData.postValue(it)
                 }
@@ -422,6 +423,18 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
 
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
+    }
+
+    fun fetchApis(context: Context, preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch {
+            delay(5000)
+            if (isNetworkAvailable(context)) {
+                fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE, Constants.ACCOUNTID)
+            } else {
+                delay(5000)
+                fetchApis(context, preferenceDataStoreHelper)
+            }
+        }
     }
 
 }

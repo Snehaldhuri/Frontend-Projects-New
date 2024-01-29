@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.widget.EditText
 import androidx.activity.viewModels
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -30,17 +31,16 @@ class SerialActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
     }
 
     private fun handleDataStoreResponse(b: Boolean) {
-        if (b){
+        if (b) {
             startActivity(Intent(this, STBDetailsActivity::class.java))
             finish()
-        }else{
+        } else {
             showSerialNumberDialog()
         }
     }
@@ -59,8 +59,9 @@ class SerialActivity : BaseActivity() {
 
         builder.setPositiveButton("OK") { dialog, which ->
             m_Text = input.text.toString()
-            serialViewModel.setDataInDataStore(preferenceDataStoreHelper,true,m_Text)
-            startActivity(Intent(this@SerialActivity, STBDetailsActivity::class.java))
+            Constants.SERIAL_NO = m_Text
+            serialViewModel.setDataInDataStore(preferenceDataStoreHelper, true, m_Text)
+            startActivity(Intent(this, STBDetailsActivity::class.java))
             finish()
         }
         builder.setNegativeButton(

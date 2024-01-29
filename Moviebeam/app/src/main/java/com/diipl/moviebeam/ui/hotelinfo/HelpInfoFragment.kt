@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.hotelinfo
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +13,7 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 
-class HelpInfoFragment(private var onBackButtonClick: ((Boolean)) -> Unit) : Fragment() {
+class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     private var _binding: FragmentHelpInfoBinding? = null
     private val binding get() = _binding!!
@@ -24,7 +25,7 @@ class HelpInfoFragment(private var onBackButtonClick: ((Boolean)) -> Unit) : Fra
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
         arguments?.let {
 
@@ -32,18 +33,60 @@ class HelpInfoFragment(private var onBackButtonClick: ((Boolean)) -> Unit) : Fra
             gradientEndColor = it.getString("gradientEndColor").toString()
 
         }
+        binding.btnBack.post {
+            binding.btnBack.requestFocus()
+        }
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
-                binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
+                view.background = getGradient(gradientStartColor, gradientEndColor)
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                binding.rvHelpInfoHeader.post {
+                                    binding.rvHelpInfoHeader.requestFocus()
+                                }
+                                binding.rvHelpInfoHeader.setOnFocusChangeListener { b, focus ->
+                                    if (focus) {
+                                        b.background =
+                                            getGradient(gradientStartColor, gradientEndColor)
+                                        b.setOnKeyListener { _, keyCode, event ->
+                                            if (event.action == KeyEvent.ACTION_DOWN) {
+                                                when (keyCode) {
+                                                    KeyEvent.KEYCODE_DPAD_UP -> {
+                                                        binding.btnBack.post {
+                                                            binding.btnBack.requestFocus()
+                                                        }
+                                                        return@setOnKeyListener true
+                                                    }
+
+                                                }
+                                            }
+                                            false
+                                        }
+                                    } else {
+                                        b.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                                    }
+                                }
+                                return@setOnKeyListener true
+                            }
+                        }
+                    }
+                    false
+                }
+
             } else {
                 binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
 
         binding.btnBack.setOnClickListener {
-            parentFragmentManager.popBackStack()
-            onBackButtonClick(true)
+            handleBackClick()
         }
 
         val adapterForHelpInfo = HelpInfoTabAdapter(mutableListOf(Constants.SYSTEM_INFO))
@@ -53,8 +96,9 @@ class HelpInfoFragment(private var onBackButtonClick: ((Boolean)) -> Unit) : Fra
         binding.rvHelpInfoHeader.layoutManager =
             LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
         binding.rvHelpInfoHeader.adapter = adapterForHelpInfo
-        return binding.root
+
     }
+
 
     private fun getGradient(startColor: String, endColor: String): GradientDrawable {
         val gradientDrawable = GradientDrawable(
@@ -71,5 +115,7 @@ class HelpInfoFragment(private var onBackButtonClick: ((Boolean)) -> Unit) : Fra
         return gradientDrawable
     }
 
-
+    private fun handleBackClick() {
+        onBackButtonClick()
+    }
 }
