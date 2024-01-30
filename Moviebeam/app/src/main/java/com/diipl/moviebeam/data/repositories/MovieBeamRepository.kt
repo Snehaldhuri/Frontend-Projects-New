@@ -6,6 +6,7 @@ import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponse2
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
@@ -88,6 +89,10 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         return remoteDataSource.laundryResponce(ua, srno)
     }
 
+    suspend fun getLaundryDetails2(ua: String, srno: String): LaundryResponse2? {
+        return remoteDataSource.laundryResponce2(ua, srno)
+    }
+
     suspend fun kapingResponce(
         Q: String,
         UA: String,
@@ -138,8 +143,4 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
     ): FeedbackResponse? {
         return remoteDataSource.sendGuestFeedback(ua, feedback, stbTime)
     }
-
-
-
-
 }

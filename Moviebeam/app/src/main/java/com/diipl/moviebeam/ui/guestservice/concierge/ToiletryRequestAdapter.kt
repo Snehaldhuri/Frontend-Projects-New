@@ -119,7 +119,6 @@ class ToiletryRequestAdapter(
                 holder.binding.ivIconChecked.toVisible()
                 holder.binding.clQuantity.toVisible()
             }
-
         }
 
 

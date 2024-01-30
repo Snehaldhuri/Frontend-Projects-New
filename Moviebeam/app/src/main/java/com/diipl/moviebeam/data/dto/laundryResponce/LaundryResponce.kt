@@ -1,53 +1,47 @@
 package com.diipl.moviebeam.data.dto.laundryResponce
 
-import com.google.gson.annotations.SerializedName
 
 data class LaundryResponce(
-    @SerializedName("laundryDataList") var laundryDataList: ArrayList<LaundryDataList> = arrayListOf(),
-    @SerializedName("id") var id: Int? = null,
-    @SerializedName("type") var type: String? = null,
-    @SerializedName("version") var version: String? = null
+    val laundryDataList: List<LaundryDataList>,
+    val id: Long,
+    val type: String,
+    val version: String,
 )
-class EnUS(
-    @SerializedName("categoryName")
-    var categoryName: String? = null
-)
-
-class LangWiseList1(
-    @SerializedName("en-US") var enUS: EnUS? = EnUS()
+data class LaundryDataList(
+    val laundryTypeId: Long,
+    val langWiseList: LangWiseList,
+    val subCategoryList: List<SubCategoryList>,
+    val categoryName: String,
 )
 
-class EnUS2(
-    @SerializedName("subTitle") var subTitle: String? = null,
-    @SerializedName("title") var title: String? = null
+data class LangWiseList(
+    @JsonProperty("en-US")
+    val enUs: EnUs,
 )
 
+annotation class JsonProperty(val value: String)
 
-class LangWiseList2(
-
-    @SerializedName("en-US") var enUS: EnUS? = EnUS()
-
+data class EnUs(
+    val categoryName: String,
 )
 
-class SubCategoryList(
-
-    @SerializedName("subTitle") var subTitle: String? = null,
-    @SerializedName("price") var price: Double? = null,
-    @SerializedName("langWiseList") var langWiseList1: LangWiseList1? = LangWiseList1(),
-    @SerializedName("dispPrice") var dispPrice: String? = null,
-    @SerializedName("laundryItemId") var laundryItemId: Int? = null,
-    @SerializedName("title") var title: String? = null,
-    @SerializedName("categoryName") var categoryName: String? = null,
-    @SerializedName("laundryItemTypeId") var laundryItemTypeId: Int? = null
-
+data class SubCategoryList(
+    val subTitle: String,
+    val price: Double,
+    val langWiseList: LangWiseList2,
+    val dispPrice: String,
+    val laundryItemId: Long,
+    val title: String,
+    val categoryName: String,
+    val laundryItemTypeId: Long,
 )
 
+data class LangWiseList2(
+    @JsonProperty("en-US")
+    val enUs: EnUs2,
+)
 
-class LaundryDataList(
-
-    @SerializedName("laundryTypeId") var laundryTypeId: Int? = null,
-    @SerializedName("langWiseList") var langWiseList2: LangWiseList2? = LangWiseList2(),
-    @SerializedName("subCategoryList") var subCategoryList: ArrayList<SubCategoryList> = arrayListOf(),
-    @SerializedName("categoryName") var categoryName: String? = null
-
+data class EnUs2(
+    val subTitle: String,
+    val title: String,
 )
