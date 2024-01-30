@@ -30,7 +30,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/dp_32"
         android:fontFamily="@font/gloock_regular"
-        android:text="@string/hotel_information"
         android:textColor="@color/home_menu_title"
         android:textSize="@dimen/sp_30"
         app:layout_constraintBottom_toBottomOf="parent"

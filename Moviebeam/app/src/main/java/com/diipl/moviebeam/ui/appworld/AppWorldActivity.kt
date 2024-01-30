@@ -75,6 +75,8 @@ class AppWorldActivity : BaseActivity() {
         val installedApps = filterSystemApps(allApps)
         val selectedApps = installedApps.filter {
             Constants.SELECTED_APPS.contains(packageManager.getApplicationLabel(it))
+        }.sortedBy { app ->
+            Constants.SELECTED_APPS.indexOf(packageManager.getApplicationLabel(app))
         }
         adapter.setAppList(selectedApps)
         binding.rvApps.adapter = adapter

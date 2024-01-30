@@ -40,12 +40,12 @@ class HomeViewModel @Inject constructor(
     val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
 
     init {
-        /* fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
-         fetchThemeDetails("17205KKXLKF626")*/
-        fetchAllApi("ACTIVATE", "17205KKXLKF626", "JSON")
+       /* fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
+        fetchThemeDetails("17205KKXLKF626")*/
+        fetchAllApi("ACTIVATE", Constants.UA, "JSON")
     }
 
-    fun fetchAllApi(cmd: String, ua: String, mode: String) {
+    fun fetchAllApi(cmd: String,ua: String,mode: String){
         viewModelScope.launch(Dispatchers.IO) {
             _weatherLiveData.postValue(Resource.Loading())
             _themeLiveData.postValue(Resource.Loading())
@@ -54,41 +54,35 @@ class HomeViewModel @Inject constructor(
 
 
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
-            val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
+            val themeApiResponse = async {movieBeamRepository.getThemeDetails(ua) }
             val dateTimeApiResponse = async { movieBeamRepository.getDateTimeData(ua) }
-            val accountSetupApiResponse =
-                async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
+            val accountSetupApiResponse = async {  movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)}
 
 
-            val result = awaitAll(
-                weatherApiResponse,
-                themeApiResponse,
-                dateTimeApiResponse,
-                accountSetupApiResponse
-            )
+            val result = awaitAll(weatherApiResponse,themeApiResponse,dateTimeApiResponse,accountSetupApiResponse)
 
             if (result[0] == null) {
                 _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _weatherLiveData.postValue(Resource.Success(result[0] as WeatherResponse))
+                _weatherLiveData.postValue( Resource.Success(result[0] as WeatherResponse))
             }
 
             if (result[1] == null) {
                 _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _themeLiveData.postValue(Resource.Success(result[1] as ThemeResponse))
+                _themeLiveData.postValue( Resource.Success(result[1] as ThemeResponse))
             }
 
             if (result[2] == null) {
                 _dateTimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _dateTimeLiveData.postValue(Resource.Success(result[2] as DateTimeResponse))
+                _dateTimeLiveData.postValue( Resource.Success(result[2] as DateTimeResponse))
             }
 
             if (result[3] == null) {
                 _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
-                _accountSetupLiveData.postValue(Resource.Success(result[3] as AccountSetupResponse))
+                _accountSetupLiveData.postValue( Resource.Success(result[3] as AccountSetupResponse))
             }
         }
     }
@@ -222,6 +216,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
 
 
     fun setAccountSetupResponseData(

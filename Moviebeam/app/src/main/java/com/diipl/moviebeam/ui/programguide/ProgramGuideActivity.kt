@@ -23,7 +23,6 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.program.ProgramDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
@@ -34,7 +33,6 @@ import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
-import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
@@ -44,8 +42,6 @@ import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.lang.reflect.Type
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -222,8 +218,6 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.tvTime2.text = currentProgram.P2_DST
         binding.layoutProgramGuide.tvTime3.text = currentProgram.P3_DST
         binding.layoutProgramGuide.tvTime4.text = currentProgram.P4_DST
-        val format = DateTimeFormatter.ofPattern("MMM dd, yyyy")
-        binding.layoutProgramGuide.tvDate.text = LocalDate.now().format(format)
 
         currentPrograms.remove(currentProgram)
         this.channelList = currentPrograms

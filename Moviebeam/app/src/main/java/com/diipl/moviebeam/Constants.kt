@@ -20,6 +20,7 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
+    const val HOTEL_VIDEO_LOOP_COUNT = 3
     var UA = "14508KKMH0K299"
     var SERIAL_NO = ""
     var IS_API_CALLED = false
@@ -122,8 +123,8 @@ object Constants {
     val MOVIES_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
         BtnModel(FREE_MOVIES_ID, R.drawable.video_on_demand_icon, FREE_VOD),
-        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
-        BtnModel(ADULT_ID, R.drawable.adult, ADULT),
+//        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
+//        BtnModel(ADULT_ID, R.drawable.adult, ADULT),
     )
     val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
@@ -247,16 +248,14 @@ object Constants {
 
     //Apps
     val SELECTED_APPS = listOf(
-        "Prime Video",
-        "Disney+",
+        "Netflix",
         "Hulu",
         "Max",
-        "Netflix",
         "Paramount+",
         "Peacock TV",
+        "Disney+",
         "YouTube",
-        "Crackle",
-        "AccuWeather"
+        "Prime Video"
     )
 
     //Guest Feedback
@@ -270,7 +269,7 @@ object Constants {
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
     //Casting
-    const val CASTING_URL = "https://democast.movie-beam.com/"
+    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
 
     // Kaping
     const val KAPING = "KAPING"

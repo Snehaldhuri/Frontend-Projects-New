@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
@@ -29,26 +28,6 @@ class InRoomDiningGsVIewModel @Inject constructor(
 
     private val _themeLiveData = MutableLiveData<Resource<ThemeResponse>>()
     val themeLiveData: LiveData<Resource<ThemeResponse>> get() = _themeLiveData
-
-    private val _dateTimeLiveData = MutableLiveData<Resource<DateTimeResponse>>()
-    val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
-
-
-    init {
-        fetchDateTime(Constants.UA)
-    }
-
-    private fun fetchDateTime(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _dateTimeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getDateTimeData(ua)
-            if (response == null) {
-                _dateTimeLiveData.postValue(Resource.DataError(msg =Constants.SERVER_ERROR))
-            } else {
-                _dateTimeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
 
     // Get Response From DataStore
     fun getThemeResponseData(dataStore: DataStore<ThemeResponse>) {

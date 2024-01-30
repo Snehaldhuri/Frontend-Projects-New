@@ -92,7 +92,7 @@ class VelvetParkingFragment(
 
     private fun showSerialNumberDialog() {
         val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
-        builder.setTitle("Enter Velvet ticket Number")
+        builder.setTitle("Enter Valet ticket Number")
 
         // Serial No :- 29221HFGN30WLA
 

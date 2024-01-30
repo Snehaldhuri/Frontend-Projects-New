@@ -163,44 +163,44 @@ class MoviesActivity : BaseActivity() {
                                 parentAdapter.setMovieList(freeGenreMap)
                                 binding.parentRecyclerView.adapter = parentAdapter
                             }
-
-                            Constants.ADULT_DAY_PASS_ID -> {
-                                val adultGenreMap: HashMap<String, MutableList<ContentDto>> =
-                                    HashMap()
-                                response?.premiumContentList?.forEach {
-                                    if (it.genre1 == "Adult") {
-                                        if (adultGenreMap[it.genre1] != null) {
-                                            adultGenreMap[it.genre1]?.add(it)
-                                        } else {
-                                            val movieList = mutableListOf<ContentDto>()
-                                            movieList.add(it)
-                                            adultGenreMap[it.genre1] = movieList
-                                        }
-                                    }
-                                }
-                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
-                                parentAdapter.setMovieList(adultGenreMap)
-                                binding.parentRecyclerView.adapter = parentAdapter
-                            }
-
-                            Constants.ADULT_ID -> {
-                                val adultGenreMap: HashMap<String, MutableList<ContentDto>> =
-                                    HashMap()
-                                response?.premiumContentList?.forEach {
-                                    if (it.genre1 == "Adult") {
-                                        if (adultGenreMap[it.genre1] != null) {
-                                            adultGenreMap[it.genre1]?.add(it)
-                                        } else {
-                                            val movieList = mutableListOf<ContentDto>()
-                                            movieList.add(it)
-                                            adultGenreMap[it.genre1] = movieList
-                                        }
-                                    }
-                                }
-                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
-                                parentAdapter.setMovieList(adultGenreMap)
-                                binding.parentRecyclerView.adapter = parentAdapter
-                            }
+//
+//                            Constants.ADULT_DAY_PASS_ID -> {
+//                                val adultGenreMap: HashMap<String, MutableList<ContentDto>> =
+//                                    HashMap()
+//                                response?.premiumContentList?.forEach {
+//                                    if (it.genre1 == "Adult") {
+//                                        if (adultGenreMap[it.genre1] != null) {
+//                                            adultGenreMap[it.genre1]?.add(it)
+//                                        } else {
+//                                            val movieList = mutableListOf<ContentDto>()
+//                                            movieList.add(it)
+//                                            adultGenreMap[it.genre1] = movieList
+//                                        }
+//                                    }
+//                                }
+//                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
+//                                parentAdapter.setMovieList(adultGenreMap)
+//                                binding.parentRecyclerView.adapter = parentAdapter
+//                            }
+//
+//                            Constants.ADULT_ID -> {
+//                                val adultGenreMap: HashMap<String, MutableList<ContentDto>> =
+//                                    HashMap()
+//                                response?.premiumContentList?.forEach {
+//                                    if (it.genre1 == "Adult") {
+//                                        if (adultGenreMap[it.genre1] != null) {
+//                                            adultGenreMap[it.genre1]?.add(it)
+//                                        } else {
+//                                            val movieList = mutableListOf<ContentDto>()
+//                                            movieList.add(it)
+//                                            adultGenreMap[it.genre1] = movieList
+//                                        }
+//                                    }
+//                                }
+//                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
+//                                parentAdapter.setMovieList(adultGenreMap)
+//                                binding.parentRecyclerView.adapter = parentAdapter
+//                            }
 
                         }
                     },
