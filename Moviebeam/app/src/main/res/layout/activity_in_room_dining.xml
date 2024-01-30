@@ -60,7 +60,7 @@
     <ImageView
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@drawable/inroom_with_qrcode"
+        android:src="@drawable/inroom_withqrcode_menu"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_96"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="@id/gl_horizontal_27"
