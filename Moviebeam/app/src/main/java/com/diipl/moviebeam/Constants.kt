@@ -122,8 +122,8 @@ object Constants {
     val MOVIES_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
         BtnModel(FREE_MOVIES_ID, R.drawable.video_on_demand_icon, FREE_VOD),
-        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
-        BtnModel(ADULT_ID, R.drawable.adult, ADULT),
+//        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
+//        BtnModel(ADULT_ID, R.drawable.adult, ADULT),
     )
     val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
@@ -268,7 +268,7 @@ object Constants {
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
     //Casting
-    const val CASTING_URL = "https://democast.movie-beam.com/"
+    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
 
     // Kaping
     const val KAPING = "KAPING"

@@ -113,6 +113,9 @@ class MainMenuActivity : BaseActivity() {
 //                    Log.d("mainmenuVideo1","$videoUrl")
 //                    Log.d("mainmenuVideo", mainmenuVideo)
                 playVideoFromUrl("http://d1l6t4e2m4gzwb.cloudfront.net/7147_HotelVideo.m2t")
+//                playVideoFromUrl("https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/13827/hotelData/13827_2_Minutes.mp4")
+//                playVideoFromUrl("https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/7107/hotelData/7107.mp4")
+
             }
 
             override fun onSurfaceTextureSizeChanged(
