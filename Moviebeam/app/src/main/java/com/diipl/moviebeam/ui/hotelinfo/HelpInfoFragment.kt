@@ -118,4 +118,15 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
     private fun handleBackClick() {
         onBackButtonClick()
     }
+
+    private fun setData(){
+        binding.tvAccountId.text = "Hotel Code: " + Constants.ACCOUNT_ID
+        binding.tvRoomNo.text = "Room No: " + Constants.STB_ROOM_NO
+        binding.tvUa.text = "UA: " + Constants.UA
+        binding.tvSerialNo.text = "Serial No: " + Constants.SERIAL_NO
+
+        binding.tvSoftwareVersion.text = "Software Version: " + Constants.VERSION.toString()
+        binding.tvContentListVersion.text = "Content List Version: " + Constants.C_LIST_VERSION
+    }
+
 }

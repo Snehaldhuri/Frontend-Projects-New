@@ -23,6 +23,7 @@
         android:drawablePadding="@dimen/dp_10"
         android:fontFamily="@font/manrope_bold_700"
         android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/dp_10"
         android:text="@string/back"
         android:textColor="@color/home_menu_title"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,7 +60,7 @@
             android:layout_height="match_parent"
             android:columnCount="2"
             android:orientation="vertical"
-            android:padding="16dp"
+            android:padding="@dimen/dp_16"
             android:rowCount="2">
 
             <LinearLayout
@@ -81,6 +82,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tv_account_id"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Hotel Code 7147"
@@ -88,6 +90,7 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tv_room_no"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Room No LG503"
@@ -95,12 +98,14 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tv_ua"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="UA :14508KKMH0K299"
                         android:textSize="14sp" />
 
                     <TextView
+                        android:id="@+id/tv_serial_no"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Serial No: 508KKMH0K299"
@@ -127,6 +132,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tv_software_version"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Software Version: 7.7.5"
@@ -134,6 +140,7 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tv_content_list_version"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Content List Version: 20230"

@@ -25,7 +25,7 @@ class MovieBeamRepository @Inject constructor(private val remoteDataSource: Remo
         return remoteDataSource.getWeatherData(ua)
     }
 
-    suspend fun getHotelServiceInfo(accountId: Int): HotelServiceResponse? {
+    suspend fun getHotelServiceInfo(accountId: String): HotelServiceResponse? {
         return remoteDataSource.getHotelServiceInfo(accountId)
     }
 
