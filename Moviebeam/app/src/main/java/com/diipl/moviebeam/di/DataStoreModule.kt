@@ -49,8 +49,7 @@ object DataStoreModule {
             serializer = ThemeResponseSerializer(),
             produceFile = { appContext.dataStoreFile(THEME_RESPONSE_DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
-            migrations = listOf(
-            ),
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
@@ -75,8 +74,7 @@ object DataStoreModule {
             serializer = WeatherSerializer(),
             produceFile = { appContext.dataStoreFile(WEATHER_DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
-            migrations = listOf(
-            ),
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }

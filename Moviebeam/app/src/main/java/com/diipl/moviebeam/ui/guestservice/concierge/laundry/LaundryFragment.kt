@@ -14,9 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryRequestDTO
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponse2
 import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
@@ -115,42 +113,21 @@ class LaundryFragment : BaseFragment() {
     }
 
 
-    fun handleLaundryMasterResponse(status: Resource<LaundryResponce>) {
+    private fun handleLaundryMasterResponse(status: Resource<LaundryResponce>) {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
-                Log.e(
-                    "data_laundry",
-                    "handleLaundryMasterResponse: ${laundryViewModel.laundryMasterLiveData.value?.data}",
-                )
 
                 laundryViewModel.laundryMasterLiveData.value?.data?.let {
-                    Log.d("responce_laundryMaster", "handleStbMasterResponse:${it}")
                     laundry_list = it.laundryDataList
-                    var subCategoryList: List<LaundryDataList> = arrayListOf()
-                    var array_title = ArrayList<String>()
-                    var array_price = ArrayList<Double>()
-
 
                     laundry_adapter = LaundryAdapter(onMenuItemFocused = {
-                        Log.e(
-                            "size_of_subCategoryList",
-                            "handleLaundryMasterResponse: ${it}",
-                        )
-                        for (i in 0 until it.subCategoryList.size) {
-                            array_title.add(it.subCategoryList[i].title)
-                            array_price.add(it.subCategoryList[i].price.toDouble())
-                            Log.e(
-                                "title_price",
-                                "handleLaundryMasterResponse:${array_title}   ${array_price} ${subCategoryList.size}"
-                            )
-                        }
+
                         customAdapterLaundry = CustomAdapterLaundry(
                             onMenuItemFocused = {    },
                             onLeftKeyPressed = {
                                 binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
-                            }, requireContext(), array_title, array_price
-                        )
+                            })
 
                         binding.lvLaundry.adapter = customAdapterLaundry
                         // laundry_list?.let {

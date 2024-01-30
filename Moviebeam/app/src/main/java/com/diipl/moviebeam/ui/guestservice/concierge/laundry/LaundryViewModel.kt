@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponse2
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,6 +32,7 @@ class LaundryViewModel @Inject constructor(private val movieBeamRepository: Movi
 
     init {
         fetchlaundryDetails(Constants.UA,"3")
+//        fetchlaundryDetails("14508KKMH0K299","3")
     }
 
     private fun fetchlaundryDetails(ua: String, s: String) {
