@@ -159,7 +159,10 @@ class HotelInfoActivity : BaseActivity() {
                 val tabMap = mutableMapOf<String, TabListObj>()
                 val tabs = mutableListOf<String>()
                 val response = hotelInfoViewModel.hotelServiceLiveData.value?.data
-                for (service in response?.servicesList!!) {
+
+                val sortedServices = response?.servicesList?.sortedBy { response.servicesList.indexOf(it) }
+
+                for (service in sortedServices!!) {
                     when (service.categoryName) {
                         "All" -> {
                             service.serviceList.forEach {

@@ -87,6 +87,7 @@
         android:drawableStart="@drawable/back_button_image"
         android:drawablePadding="@dimen/dp_10"
         android:fontFamily="@font/manrope_bold_700"
+        android:paddingLeft="10dp"
         android:gravity="center_vertical"
         android:paddingEnd="@dimen/dp_10"
         android:text="@string/back"
