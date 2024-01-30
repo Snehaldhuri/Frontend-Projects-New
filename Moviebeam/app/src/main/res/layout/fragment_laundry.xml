@@ -56,15 +56,15 @@
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:layout_marginLeft="@dimen/dp_20"
         android:id="@+id/lv_laundry"
         android:layout_width="450dp"
         android:layout_height="200dp"
+        android:layout_marginLeft="@dimen/dp_20"
+        android:descendantFocusability="beforeDescendants"
         android:divider="@null"
         android:fadeScrollbars="false"
         android:focusable="true"
         android:scrollbars="vertical"
-        android:descendantFocusability="beforeDescendants"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_items" />

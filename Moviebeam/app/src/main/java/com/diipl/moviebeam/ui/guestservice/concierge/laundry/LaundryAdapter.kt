@@ -10,10 +10,11 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryRequestDTO
+import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.RecyclerLayoutLaundryBinding
 
 class LaundryAdapter(
-    private var onMenuItemFocused: (LaundryRequestDTO) -> Unit,
+    private var onMenuItemFocused: (LaundryDataList) -> Unit,
     private val onLeftKeyPressed: () -> Unit,
     var onRightKeyPressed: () -> Unit,
 ) :
@@ -24,7 +25,7 @@ class LaundryAdapter(
 
 
     private var gradient: GradientDrawable? = null
-    private var laundryList: List<LaundryRequestDTO> = emptyList()
+    private var laundryList: List<LaundryDataList> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding =
@@ -76,7 +77,7 @@ class LaundryAdapter(
 
 
 
-    fun setNewsList(laundryDataList: List<LaundryRequestDTO>) {
+    fun setNewsList(laundryDataList: List<LaundryDataList>) {
         this.laundryList = laundryDataList
     }
 

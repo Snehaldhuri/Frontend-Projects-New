@@ -18,7 +18,6 @@ open class NetworkHandler @Inject constructor(
                     return Resource.Success(body)
                 }
                 return Resource.DataError(msg = result.message(), code = result.code())
-
             }else{
                 return Resource.DataError(msg = Constants.INTERNET_ERROR_MESSAGE)
             }

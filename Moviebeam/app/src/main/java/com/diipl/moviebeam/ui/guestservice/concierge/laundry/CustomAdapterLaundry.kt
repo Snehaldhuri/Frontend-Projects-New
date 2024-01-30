@@ -17,6 +17,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryRequestDTO
 import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.CustomLaundryListViewBinding
 
@@ -146,7 +147,7 @@ class CustomAdapterLaundry(
     }
 
 
-    fun setNewsList(subCategoryList: ArrayList<SubCategoryList>) {
+    fun setNewsList(subCategoryList: List<SubCategoryList>) {
         this.sublList = subCategoryList
     }
 

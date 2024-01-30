@@ -7,10 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponse
-import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponse2
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,9 +21,8 @@ class LaundryViewModel @Inject constructor(private val movieBeamRepository: Movi
     ViewModel() {
 
 
-    private val _laundryMasterLiveData = MutableLiveData<Resource<LaundryResponse>>()
-    val laundryMasterLiveData: LiveData<Resource<LaundryResponse>> get() = _laundryMasterLiveData
-
+    private val _laundryMasterLiveData = MutableLiveData<Resource<LaundryResponce>>()
+    val laundryMasterLiveData: LiveData<Resource<LaundryResponce>> get() = _laundryMasterLiveData
 
 
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
@@ -41,10 +38,10 @@ class LaundryViewModel @Inject constructor(private val movieBeamRepository: Movi
     private fun fetchlaundryDetails(ua: String, s: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _laundryMasterLiveData.postValue(Resource.Loading())
-//            val responce = movieBeamRepository.getLaundryDetails(ua, s)
-            val responce = movieBeamRepository.getLaundryDetails2(ua, s)
-//            Log.e("fetchlaundryresponce", "fetchlaundryDetails:${responce}", )
-            Log.e("fetchlaundryresponce1", "fetchlaundryDetails:${responce}", )
+            val responce = movieBeamRepository.getLaundryDetails(ua, s)
+           // val responce = movieBeamRepository.getLaundryDetails2(ua, s)
+            Log.e("fetchlaundryresponce", "fetchlaundryDetails:${responce}", )
+         //   Log.e("fetchlaundryresponce1", "fetchlaundryDetails:${responce}", )
 
             if (responce == null) {
                 _laundryMasterLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
