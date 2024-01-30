@@ -239,9 +239,7 @@ class GuestServiceActivity : BaseActivity() {
 
                                     3 -> {
                                         val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = LaundryFragment(
-
-                                        )
+                                        val fragment = LaundryFragment()
 
                                         fragment.setGradientColor(
                                             gradientStartColor,

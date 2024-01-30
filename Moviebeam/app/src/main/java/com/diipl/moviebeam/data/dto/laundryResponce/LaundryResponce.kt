@@ -1,53 +1,69 @@
 package com.diipl.moviebeam.data.dto.laundryResponce
 
+
 import com.google.gson.annotations.SerializedName
 
 data class LaundryResponce(
-    @SerializedName("laundryDataList") var laundryDataList: ArrayList<LaundryDataList> = arrayListOf(),
-    @SerializedName("id") var id: Int? = null,
-    @SerializedName("type") var type: String? = null,
-    @SerializedName("version") var version: String? = null
+    @SerializedName("id")
+    var id: Int = 0,
+    @SerializedName("laundryDataList")
+    var laundryDataList: List<LaundryDataList>,
+    @SerializedName("type")
+    var type: String = "",
+    @SerializedName("version")
+    var version: String = ""
 )
-class EnUS(
+
+data class LaundryDataList(
     @SerializedName("categoryName")
-    var categoryName: String? = null
-)
+    var categoryName: String = "",
+    @SerializedName("langWiseList")
+    var langWiseList: LangWiseList = LangWiseList(),
+    @SerializedName("laundryTypeId")
+    var laundryTypeId: Int = 0,
+    @SerializedName("subCategoryList")
+    var subCategoryList: List<SubCategoryList>
+) {
+    data class LangWiseList(
+        @SerializedName("en-US")
+        var enUS: EnUS = EnUS()
+    ) {
+        data class EnUS(
+            @SerializedName("categoryName")
+            var categoryName: String = ""
+        )
+    }
 
-class LangWiseList1(
-    @SerializedName("en-US") var enUS: EnUS? = EnUS()
-)
-
-class EnUS2(
-    @SerializedName("subTitle") var subTitle: String? = null,
-    @SerializedName("title") var title: String? = null
-)
-
-
-class LangWiseList2(
-
-    @SerializedName("en-US") var enUS: EnUS? = EnUS()
-
-)
-
-class SubCategoryList(
-
-    @SerializedName("subTitle") var subTitle: String? = null,
-    @SerializedName("price") var price: Double? = null,
-    @SerializedName("langWiseList") var langWiseList1: LangWiseList1? = LangWiseList1(),
-    @SerializedName("dispPrice") var dispPrice: String? = null,
-    @SerializedName("laundryItemId") var laundryItemId: Int? = null,
-    @SerializedName("title") var title: String? = null,
-    @SerializedName("categoryName") var categoryName: String? = null,
-    @SerializedName("laundryItemTypeId") var laundryItemTypeId: Int? = null
-
-)
+}
 
 
-class LaundryDataList(
-
-    @SerializedName("laundryTypeId") var laundryTypeId: Int? = null,
-    @SerializedName("langWiseList") var langWiseList2: LangWiseList2? = LangWiseList2(),
-    @SerializedName("subCategoryList") var subCategoryList: ArrayList<SubCategoryList> = arrayListOf(),
-    @SerializedName("categoryName") var categoryName: String? = null
-
-)
+data class SubCategoryList(
+    @SerializedName("categoryName")
+    var categoryName: String = "",
+    @SerializedName("dispPrice")
+    var dispPrice: String = "",
+    @SerializedName("langWiseList")
+    var langWiseList: LangWiseList = LangWiseList(),
+    @SerializedName("laundryItemId")
+    var laundryItemId: Int = 0,
+    @SerializedName("laundryItemTypeId")
+    var laundryItemTypeId: Int = 0,
+    @SerializedName("price")
+    var price: Double = 0.0,
+    @SerializedName("subTitle")
+    var subTitle: String = "",
+    @SerializedName("title")
+    var title: String = ""
+) {
+    data class LangWiseList(
+        @SerializedName("en-US")
+        var enUS: EnUS = EnUS()
+    ) {
+        data class EnUS(
+            @SerializedName("subTitle")
+            var subTitle: String = "",
+            @SerializedName("title")
+            var title: String = ""
+        )
+    }
+}

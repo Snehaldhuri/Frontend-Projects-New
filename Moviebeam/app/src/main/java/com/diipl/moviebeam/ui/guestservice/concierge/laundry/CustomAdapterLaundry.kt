@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
@@ -23,11 +22,7 @@ import com.diipl.moviebeam.databinding.CustomLaundryListViewBinding
 
 class CustomAdapterLaundry(
     var onMenuItemFocused: (SubCategoryList) -> Unit,
-    var onLeftKeyPressed: () -> Unit?,
-    var context: Context,
-    var array_title: ArrayList<String>,
-    var array_price: ArrayList<Double>,
-
+    var onLeftKeyPressed: () -> Unit?
     ) : RecyclerView.Adapter<CustomAdapterLaundry.MyViewHolder>() {
 
     var sublList: List<SubCategoryList> = emptyList()
@@ -35,13 +30,14 @@ class CustomAdapterLaundry(
     var count = 1
     private var laundryList: List<LaundryDataList> = emptyList()
     var binding: CustomLaundryListViewBinding? = null
+    private lateinit var context: Context
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): MyViewHolder {
-        val layoutInflater =
-            context.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        context = parent.context
+        val layoutInflater = context.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
         binding = CustomLaundryListViewBinding.inflate(layoutInflater, parent, false)
 
 
@@ -68,14 +64,14 @@ class CustomAdapterLaundry(
     override fun onBindViewHolder(holder: MyViewHolder, p0: Int) {
 
         Log.e("sublist", "getView:${sublList.size} ")
-        holder.tv_lv_title.text = array_title[p0]
-        holder.tv_lv_price.text = array_price[p0].toString()
+        holder.tv_lv_title.text = sublList[p0].title
+        holder.tv_lv_price.text = sublList[p0].dispPrice
         var hide: Boolean = true
         val item = sublList[p0]
 
         holder.binding.root.setOnClickListener(View.OnClickListener {
 
-            var constraintset: ConstraintSet = ConstraintSet()
+            var constraintset = ConstraintSet()
             constraintset.clone(context, R.layout.custom_laundry_list_view)
 
             if (hide == true) {
@@ -146,7 +142,7 @@ class CustomAdapterLaundry(
     }
 
 
-    fun setNewsList(subCategoryList: ArrayList<SubCategoryList>) {
+    fun setNewsList(subCategoryList: List<SubCategoryList>) {
         this.sublList = subCategoryList
     }
 

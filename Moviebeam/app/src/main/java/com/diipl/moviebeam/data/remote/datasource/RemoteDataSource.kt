@@ -7,12 +7,11 @@ import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -204,9 +203,9 @@ class RemoteDataSource @Inject constructor(
         return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
     }
 
-    suspend fun laundryResponce2(UA: String, serviceId: String): LaundryResponse? {
+    suspend fun laundryResponce2(UA: String, serviceId: String): LaundryResponce? {
         val result = safeAPiCall { lgRestApiService.getLaundry(UA, serviceId) }
         Log.e("result_laundry_rds", "laundryResponce:${result}")
-        return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponse::class)
+        return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
     }
 }
