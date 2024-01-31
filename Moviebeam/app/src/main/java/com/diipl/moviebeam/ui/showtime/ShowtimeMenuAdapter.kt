@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.showtime
 
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -17,16 +16,20 @@ class ShowtimeMenuAdapter(
     private val itemList: List<BtnModel>,
     private val onMoviesMenuItemClicked: (contentType: String) -> Unit,
     private val onRightKeyPressed: () -> Unit
-) :
-    RecyclerView.Adapter<ShowtimeMenuAdapter.MyViewHolder>() {
-    var startColor = ""
-    var endColor = ""
+) : RecyclerView.Adapter<ShowtimeMenuAdapter.MyViewHolder>() {
+
+    private var gradient: GradientDrawable? = null
+
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
         val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
         val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
     }
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int ): ShowtimeMenuAdapter.MyViewHolder {
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): ShowtimeMenuAdapter.MyViewHolder {
 
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
         val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
@@ -36,7 +39,7 @@ class ShowtimeMenuAdapter(
         view.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                 when (keycode) {
-                    KeyEvent.KEYCODE_DPAD_RIGHT ->{
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
                         onRightKeyPressed()
                     }
                 }
@@ -50,40 +53,24 @@ class ShowtimeMenuAdapter(
         val item = itemList[position]
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
-
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
+        holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                fetchGradientColorsFromApi(holder.card)
+                view.background = gradient
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         holder.card.setOnClickListener {
             onMoviesMenuItemClicked(item.btnId)
-
         }
     }
-    override fun getItemCount(): Int =  itemList.size
 
-    private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
+    override fun getItemCount(): Int = itemList.size
 
-        gradientDrawable.cornerRadius = 20f
-
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-
-        cardView.background = gradientDrawable
+    fun setGradient(gradient: GradientDrawable?) {
+        this.gradient = gradient
     }
-    fun setGradientColor(startColor: String, endColor: String) {
-        this.startColor = startColor
-        this.endColor = endColor
-    }
+
 }

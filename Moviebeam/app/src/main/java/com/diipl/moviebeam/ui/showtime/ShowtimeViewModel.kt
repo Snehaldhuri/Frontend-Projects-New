@@ -1,93 +1,50 @@
 package com.diipl.moviebeam.ui.showtime
 
-import android.util.Log
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
-import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
-class ShowtimeViewModel @Inject constructor(
-    private val movieBeamRepository: MovieBeamRepository
-) : ViewModel() {
+class ShowtimeViewModel @Inject constructor() : ViewModel() {
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
 
-    private val _themeLiveData = MutableLiveData<Resource<ThemeResponse>>()
-    val themeLiveData: LiveData<Resource<ThemeResponse>> get() = _themeLiveData
-
-    private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
-    val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
-
     private val _showtimeLiveData = MutableLiveData<Resource<ShowTimeResponse>>()
     val showtimeLiveData: LiveData<Resource<ShowTimeResponse>> get() = _showtimeLiveData
 
-    init {
-        fetchShowtimeInfo(Constants.UA)
-        fetchThemeDetails(Constants.UA)
-        fetchWeatherData(Constants.UA)
-        fetchAccountSetupDetails(Constants.ACTIVATE_CMD, Constants.UA, Constants.MODE)
-    }
-    private fun fetchShowtimeInfo(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _showtimeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getShowtimeInfo(ua)
-            if (response == null) {
-                _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _showtimeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-    private fun fetchThemeDetails(ua: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _themeLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getThemeDetails(ua)
-            if (response == null) {
-                _themeLiveData.postValue(Resource.DataError(code = R.string.server_error))
-            } else {
-                _themeLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
 
-    fun fetchWeatherData(ua: String) {
+    fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
             _weatherLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getWeatherData(ua)
-            if (response == null) {
+            dataStore.data.catch {
                 _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _weatherLiveData.postValue(Resource.Success(response))
+            }.collect {
+                _weatherLiveData.postValue(Resource.Success(it))
             }
         }
     }
-    fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
 
+    fun getShowtimeResponseData(dataStore: DataStore<ShowTimeResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
-            _accountSetupLiveData.postValue(Resource.Loading())
-
-            val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
-            if (response == null) {
-                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _accountSetupLiveData.postValue(Resource.Success(response))
+            _showtimeLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _showtimeLiveData.postValue(Resource.Success(it))
             }
         }
     }

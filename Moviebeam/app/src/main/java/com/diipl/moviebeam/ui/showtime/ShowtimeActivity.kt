@@ -6,9 +6,11 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.KeyEvent
+import android.widget.Button
 import android.widget.Spinner
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
+import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -18,10 +20,8 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
-import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -32,42 +32,44 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ShowtimeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityShowtimeBinding
 
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
+    @Inject
+    lateinit var weatherDataStore: DataStore<WeatherResponse>
+
+    @Inject
+    lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
+
+    private var gradient: GradientDrawable? = null
 
     private val list: List<BtnModel> = Constants.SHOWTIME_PAGE_MENU_BUTTON_LIST
 
-    private val ShowtimeViewModel: ShowtimeViewModel by viewModels()
-    private val ShowtimeDetailFragment: ShowtimeDetailFragment = ShowtimeDetailFragment()
+    private val showtimeViewModel: ShowtimeViewModel by viewModels()
 
-    private var selectedHeaderItemPosition = 0
     override fun observeViewModel() {
-        observe(ShowtimeViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(ShowtimeViewModel.themeLiveData, ::handleThemeResponse)
-        observe(ShowtimeViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
+        observe(showtimeViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(showtimeViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
     }
 
     override fun initViewBinding() {
         binding = ActivityShowtimeBinding.inflate(layoutInflater)
-        binding.layoutHeader.tvTitle.setText("Showtime")
-        val view = binding.root
-        setContentView(view)
+        setContentView(binding.root)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        binding.btnBack.setOnFocusChangeListener { view, b ->
-            if (b) {
-                binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
+        fetchDetailsFromBundle()
+        fetchDataFromDataStore()
+        binding.btnBack.setOnFocusChangeListener { view, isFocused ->
+            if (isFocused) {
+                view.background = gradient
             } else {
-                binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         binding.btnBack.setOnClickListener {
@@ -87,11 +89,7 @@ class ShowtimeActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                val response = ShowtimeViewModel.showtimeLiveData.value?.data
-                ShowtimeViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-                }
-                loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
+                val response = showtimeViewModel.showtimeLiveData.value?.data
                 val showTimeGenreMap: Map<String, List<Detail>> =
                     response?.shoGenreList?.associate { genre ->
                         genre.name to genre.detailList
@@ -130,17 +128,17 @@ class ShowtimeActivity : BaseActivity() {
                     },
                     onRightKeyPressed = {
                         if (binding.fcvMovieDetail.isVisible) {
-                            binding.fcvMovieDetail.requestFocus()
-                            binding.fcvMovieDetail.postDelayed({
-                                val btnSeasonList: Spinner? =
-                                    binding.fcvMovieDetail.findViewById(R.id.btn_season_list)
-                                btnSeasonList?.requestFocus()
-                            }, 80)
+                            binding.fcvMovieDetail.post {
+                                binding.fcvMovieDetail.findViewById<Spinner>(R.id.btn_season_list)
+                                    ?.requestFocus()
+                            }
+                            binding.fcvMovieDetail.post {
+                                binding.fcvMovieDetail.findViewById<Button>(R.id.btn_rent_now)
+                                    ?.requestFocus()
+                            }
                         }
                     }
                 )
-
-
 
                 binding.fcvMovieDetail.toInvisible()
 
@@ -149,13 +147,13 @@ class ShowtimeActivity : BaseActivity() {
 
                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                 binding.parentRecyclerView.adapter = showtimeParentAdapter
-                adapter.setGradientColor(gradientStartColor, gradientEndColor)
+                adapter.setGradient(gradient)
                 binding.menuRecyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
             }
 
             else -> {
-                status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
+                status.errorCode?.let { showtimeViewModel.showToastMessage(getString(it)) }
             }
         }
     }
@@ -184,37 +182,32 @@ class ShowtimeActivity : BaseActivity() {
             })
     }
 
-    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
+    private fun getGradient(startColor: String?, endColor: String?): GradientDrawable {
         val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
+            GradientDrawable.Orientation.TR_BL,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
         )
-
         gradientDrawable.cornerRadius = 20f
-
         gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
     }
 
     private fun onShowsClick(shows: Detail, position: Int) {
         val transaction = supportFragmentManager.beginTransaction()
-        if (shows.episodesPresent == true) {
-
+        if (shows.episodesPresent) {
             val bundle = Bundle()
             bundle.putInt("movieReleaseId", shows.releaseId)
             val fragment = ShowtimeSeasonFragment()
             fragment.arguments = bundle
-            fragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
+            fragment.setGradient(gradient)
             transaction.replace(R.id.fcv_movie_detail, fragment)
         } else {
             val bundle = Bundle()
             bundle.putInt("movieReleaseId", shows.releaseId)
             val fragment = ShowtimeDetailFragment()
             fragment.arguments = bundle
-            fragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
+            fragment.setGradient(gradient)
             transaction.replace(R.id.fcv_movie_detail, fragment)
         }
         binding.parentRecyclerView.toInvisible()
@@ -227,8 +220,8 @@ class ShowtimeActivity : BaseActivity() {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    ShowtimeViewModel.weatherLiveData.value?.data?.tempCondition
-                ShowtimeViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
+                    showtimeViewModel.weatherLiveData.value?.data?.tempCondition
+                showtimeViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
                     )
@@ -237,44 +230,12 @@ class ShowtimeActivity : BaseActivity() {
             }
 
             else -> {
-                status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                ShowtimeViewModel.themeLiveData.value?.data?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                ShowtimeViewModel.themeLiveData.value?.data?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
-                ShowtimeDetailFragment.setGradient(
-                    getGradient(
-                        gradientStartColor,
-                        gradientEndColor
-                    )
-                )
-                ShowtimeViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-                }
-                loadBg(ShowtimeViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { ShowtimeViewModel.showToastMessage(getString(it)) }
+                status.errorCode?.let { showtimeViewModel.showToastMessage(getString(it)) }
             }
         }
     }
 
     fun gotoExoPlayerActivity(movieDetails: Detail, isTrailer: Boolean, isContent: Boolean) {
-//        val intent = Intent(this, ExoPlayerActivity::class.java)
-//        intent.putExtra(Constants.TRAILER_URL, movieDetails.videoPath)
-
         val bundle = Bundle()
         bundle.putString(Constants.RELEASE_ID, (movieDetails.releaseId).toString())
         bundle.putBoolean(Constants.IS_TRAILER, isTrailer)
@@ -286,7 +247,7 @@ class ShowtimeActivity : BaseActivity() {
         startActivity(intent)
     }
 
-    private fun handleBackClick(){
+    private fun handleBackClick() {
         if (binding.fcvMovieDetail.isVisible) {
             binding.fcvMovieDetail.toInvisible()
             binding.parentRecyclerView.toVisible()
@@ -303,6 +264,24 @@ class ShowtimeActivity : BaseActivity() {
         }
         return false
     }
+
+    private fun fetchDetailsFromBundle() {
+        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+        intent.extras?.let {
+            gradient =
+                getGradient(it.getString("gradientStartColor"), it.getString("gradientEndColor"))
+        }
+        intent.extras?.getString("themeLogoFileName")?.let {
+            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
+        }
+        loadBg(intent.extras?.getString("themeBackgroundFileName"))
+    }
+
+    private fun fetchDataFromDataStore() {
+        showtimeViewModel.getWeatherResponseData(weatherDataStore)
+        showtimeViewModel.getShowtimeResponseData(showtimeDataStore)
+    }
+
 }
 
 
