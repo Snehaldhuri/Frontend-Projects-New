@@ -38,7 +38,7 @@ class RemoteDataSource @Inject constructor(
         return ApiResponseParsing().getResponseAsObject(result.data, WeatherResponse::class)
     }
 
-    suspend fun getHotelServiceInfo(accountId: Int): HotelServiceResponse? {
+    suspend fun getHotelServiceInfo(accountId: String): HotelServiceResponse? {
         val result = safeAPiCall {
             lgRestApiService.getHotelServices(accountId)
         }

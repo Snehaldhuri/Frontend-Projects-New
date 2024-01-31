@@ -5,18 +5,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
-import androidx.core.view.marginLeft
-import androidx.core.view.setPadding
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeGenre
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
@@ -43,12 +36,12 @@ class ShowtimeDetailFragment : BaseFragment() {
             position = it.getInt("movieReleaseId")
         }
     }
+
     override fun observeViewModel() {
         observe(showtimeViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
     }
-    override fun initViewBinding() {
 
-    }
+    override fun initViewBinding() {}
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -60,43 +53,56 @@ class ShowtimeDetailFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnRentNow.setOnClickListener {
-            show?.let { it1 -> (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(it1,false,true) }
+            show?.let { it1 ->
+                (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(
+                    it1,
+                    false,
+                    true
+                )
+            }
         }
     }
+
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
-            is Resource.Loading -> { binding.loaderView.toVisible() }
+            is Resource.Loading -> {
+                binding.loaderView.toVisible()
+            }
+
             is Resource.Success -> {
                 val response = showtimeViewModel.showtimeLiveData.value?.data
 
                 val detail = response?.shoGenreList?.get(0)?.detailList?.find { detail ->
                     detail.releaseId == position
                 }
-                detail?.let { setShowDetails(it)  }
+                detail?.let { setShowDetails(it) }
 
                 binding.loaderView.toInvisible()
             }
+
             else -> {
                 status.errorCode?.let { showtimeViewModel.showToastMessage(getString(it)) }
             }
         }
     }
-    fun setShowDetails(show: Detail) {
+
+    private fun setShowDetails(show: Detail) {
         this.show = show
 
-        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
-        show.imagePathPoster =httpStreamingHotelvideoUrl+show.releaseId+"/"+show.releaseId+"_P.jpg"
+        val httpStreamingHotelVideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        show.imagePathPoster =
+            httpStreamingHotelVideoUrl + show.releaseId + "/" + show.releaseId + "_P.jpg"
         show.imagePathPoster.let {
             binding.ivMovieImage.loadImagesWithGlideExtPoster(it)
         }
         binding.ivMovieImage.setBackgroundResource(R.drawable.round_outline_5dp)
-        binding.ivMovieImage.clipToOutline =true
+        binding.ivMovieImage.clipToOutline = true
 
         binding.tvTitle.text = show.movieName
-        binding.tvHeading.isVisible=false
+        binding.tvHeading.isVisible = false
         binding.tvSynopsis.text = show.synopsis
-        binding.tvCastTitle.isVisible=false
-        binding.tvDirectorTitle.isVisible=false
+        binding.tvCastTitle.isVisible = false
+        binding.tvDirectorTitle.isVisible = false
         binding.btnRentNow.text = getString(R.string.watch_free)
 
         val layoutParams = binding.btnRentNow.layoutParams as ViewGroup.MarginLayoutParams
@@ -109,10 +115,11 @@ class ShowtimeDetailFragment : BaseFragment() {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-        binding.btnWatchTrailer.isVisible=false
+        binding.btnWatchTrailer.isVisible = false
         binding.btnRentNow.requestFocus()
     }
-    fun setGradient(gradient: GradientDrawable) {
+
+    fun setGradient(gradient: GradientDrawable?) {
         this.gradient = gradient
     }
 

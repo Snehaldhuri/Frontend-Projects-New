@@ -270,7 +270,7 @@ class HotelInfoActivity : BaseActivity() {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvHotelInfoHeader.adapter = adapter
-                binding.tvHeaderTitle.text = tabs[0].toString()
+                binding.tvHeaderTitle.text = tabs[0]
                 binding.pbLoader.toInvisible()
             }
 

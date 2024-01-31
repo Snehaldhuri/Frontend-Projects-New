@@ -137,6 +137,8 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {
                     stbDetailViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
+                    Constants.ACCOUNT_ID = it.accountId
+                    Constants.STB_ROOM_NO = it.roomNo
                     Log.d("DataStoreResponse", "handleAccountSetupResponse: $it")
                 }
             }
@@ -191,6 +193,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.moviesLiveData.value?.data?.let {
                     stbDetailViewModel.setMoviesResponseData(moviesDataStore, it)
+                    Constants.C_LIST_VERSION = it.version
                     Log.d("DataStoreResponse", "handleMoviesResponse: $it")
                 }
             }
@@ -230,6 +233,7 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun handleSerialNumberResponse(serialNo: String) {
         serialNumber = serialNo
+        Constants.SERIAL_NO = serialNo
         UA = "21$serialNumber"
         Constants.UA = UA
         stbDetailViewModel.setUAInDataStore(preferenceDataStoreHelper, UA)

@@ -7,9 +7,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 class HelpInfoActivity : BaseActivity() {
 
     private lateinit var binding: ActivityHelpInfoBinding
-    override fun observeViewModel() {
-
-    }
+    override fun observeViewModel() {}
 
     override fun initViewBinding() {
         binding = ActivityHelpInfoBinding.inflate(layoutInflater)

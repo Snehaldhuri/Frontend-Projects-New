@@ -84,7 +84,7 @@ class ShowtimeSeasonChildAdapter(
         notifyDataSetChanged()
     }
 
-    fun setGradient(gradient: GradientDrawable) {
+    fun setGradient(gradient: GradientDrawable?) {
         this.gradient = gradient
     }
 }
