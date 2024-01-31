@@ -28,8 +28,8 @@ import javax.inject.Inject
 class LocalAttractionGsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentLocalattractionBinding
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
+    private var gradientStartColor: String? = null
+    private var gradientEndColor: String? = null
 
     private val localAttractionViewModel: LocalAttractionGsViewModel by viewModels()
 
@@ -85,15 +85,14 @@ class LocalAttractionGsFragment : BaseFragment() {
                     cardAdapter.setList(it.serviceList)
                     cardAdapter.setGradientDrawable(
                         getGradient(
-                            gradientStartColor,
-                            gradientEndColor
+
                         )
                     )
                     binding.laCardCarousel.adapter = cardAdapter
                 }
 
                 adapter.setItemList(response?.servicesList!!)
-                adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
+                adapter.setGradientDrawable(getGradient())
                 binding.recyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
             }
@@ -104,17 +103,20 @@ class LocalAttractionGsFragment : BaseFragment() {
         }
     }
 
-    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
+    fun setGradientColor(startColor: String, endColor: String) {
+        gradientStartColor = startColor
+        gradientEndColor = endColor
+    }
+
+    private fun getGradient(
+    ): GradientDrawable {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
         )
-
-        gradientDrawable.cornerRadius = 20f
-
+        gradientDrawable.cornerRadius = 10f
         gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
         gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
     }

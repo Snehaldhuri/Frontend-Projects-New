@@ -319,6 +319,7 @@ class GuestServiceActivity : BaseActivity() {
                             binding.fvTabContent.toVisible()
                             val transaction = supportFragmentManager.beginTransaction()
                             val fragment = LocalAttractionGsFragment()
+                            fragment.setGradientColor(gradientStartColor, gradientEndColor)
                             transaction.replace(R.id.fv_tab_content, fragment)
                             transaction.commit()
 

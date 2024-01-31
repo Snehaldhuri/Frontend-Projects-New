@@ -85,7 +85,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         }
     }
 
-    private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: Int) {
+    private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: String) {
         viewModelScope.launch(Dispatchers.IO) {
 
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
@@ -96,7 +96,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
             val localAttractionResponse = async { movieBeamRepository.getLocalAttractionInfo(ua) }
             val releasesMoviesMoreResponse = async { movieBeamRepository.getMoviesInfo(ua) }
             val showTimeResponse = async { movieBeamRepository.getShowtimeInfo(ua) }
-
 
             val result = awaitAll(
                 weatherApiResponse,
@@ -429,7 +428,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         viewModelScope.launch {
             delay(5000)
             if (isNetworkAvailable(context)) {
-                fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE, Constants.ACCOUNTID)
+                fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE, Constants.ACCOUNT_ID)
             } else {
                 delay(5000)
                 fetchApis(context, preferenceDataStoreHelper)

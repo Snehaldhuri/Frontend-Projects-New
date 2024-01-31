@@ -63,7 +63,9 @@ class VelvetParkingFragment(
                 binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-
+        binding.btnCancel.setOnClickListener {
+            onOkClicked()
+        }
         binding.btnOk.setOnClickListener(View.OnClickListener {
             layout_velvet_parking_number.visibility = View.GONE
             layout_confirmation.visibility = View.VISIBLE

@@ -33,6 +33,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
             gradientEndColor = it.getString("gradientEndColor").toString()
 
         }
+        setHotelInfo()
         binding.btnBack.post {
             binding.btnBack.requestFocus()
         }
@@ -102,15 +103,11 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     private fun getGradient(startColor: String, endColor: String): GradientDrawable {
         val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
+            GradientDrawable.Orientation.TR_BL,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
         )
-
         gradientDrawable.cornerRadius = 20f
-
         gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
     }
@@ -118,4 +115,15 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
     private fun handleBackClick() {
         onBackButtonClick()
     }
+
+    private fun setHotelInfo() {
+        binding.tvAccountId.text = "Hotel Code: " + Constants.ACCOUNT_ID
+        binding.tvRoomNo.text = "Room No: " + Constants.STB_ROOM_NO
+        binding.tvUa.text = "UA: " + Constants.UA
+        binding.tvSerialNo.text = "Serial No: " + Constants.SERIAL_NO
+        binding.tvSoftwareVersion.text = "Software Version: " + Constants.VERSION.toString()
+        binding.tvContentListVersion.text = "Content List Version: " + Constants.C_LIST_VERSION
+    }
+
 }
+

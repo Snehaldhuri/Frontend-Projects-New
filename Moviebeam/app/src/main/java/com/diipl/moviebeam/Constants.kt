@@ -5,6 +5,9 @@ import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
+
+    const val VERSION = 1.0
+
     const val SPLASH_DELAY = 3000
     var timer = ""
     const val BASE_URL_LG_REST = "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
@@ -24,7 +27,9 @@ object Constants {
     var UA = "14508KKMH0K299"
     var SERIAL_NO = ""
     var IS_API_CALLED = false
-    const val ACCOUNTID = 7107
+    var ACCOUNT_ID = "7107"
+    var STB_ROOM_NO = ""
+    var C_LIST_VERSION = ""
     const val ACTIVATE = "ACTIVATE"
     const val MODE = "JSON"
     const val THEME_DIRECTORY = "ThemeImages"
@@ -269,7 +274,7 @@ object Constants {
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
     //Casting
-    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
+    const val CASTING_URL = "https://democast.movie-beam.com/"
 
     // Kaping
     const val KAPING = "KAPING"
