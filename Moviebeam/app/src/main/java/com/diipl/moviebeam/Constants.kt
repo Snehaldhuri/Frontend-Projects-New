@@ -6,7 +6,7 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
-    const val VERSION = 1.0
+    const val VERSION = 1.1
 
     const val SPLASH_DELAY = 3000
     var timer = ""
@@ -27,7 +27,7 @@ object Constants {
     var UA = "14508KKMH0K299"
     var SERIAL_NO = ""
     var IS_API_CALLED = false
-    const val ACCOUNTID = 13827
+    var ACCOUNT_ID = "13827"
     var STB_ROOM_NO = ""
     var C_LIST_VERSION = ""
     const val ACTIVATE = "ACTIVATE"
