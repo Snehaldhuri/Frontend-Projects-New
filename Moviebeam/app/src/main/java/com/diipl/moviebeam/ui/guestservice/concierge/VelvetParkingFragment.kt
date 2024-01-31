@@ -1,12 +1,9 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,13 +13,12 @@ import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentVelvetParkingBinding
-import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.utils.showKeyboard
 
 
 class VelvetParkingFragment(
     private var onOkClicked: () -> Unit
 ) : Fragment() {
-
 
 
     private var _binding: FragmentVelvetParkingBinding? = null
@@ -45,31 +41,31 @@ class VelvetParkingFragment(
 
         binding.edtTicketNo.requestFocus()
         binding.edtTicketNo.setOnFocusChangeListener { view, hasFocus ->
-            if(hasFocus){
-//                    setVelvetFocus(binding.edtTicketNo)
-                showSerialNumberDialog()
-            }
-            else{
+            if (hasFocus) {
+//                setVelvetFocus(view)
+//                showSerialNumberDialog()
+                view.showKeyboard()
+            } else {
                 binding.edtTicketNo.setBackgroundResource(R.drawable.rounded_corner_border)
             }
         }
         binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
-            if(hasFocus){
+            if (hasFocus) {
                 setFocus(binding.btnOk)
-            }
-            else{
+            } else {
                 binding.btnOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
-            if(hasFocus){
+            if (hasFocus) {
                 setFocus(binding.btnCancel)
-            }
-            else{
+            } else {
                 binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-
+        binding.btnCancel.setOnClickListener {
+            onOkClicked()
+        }
         binding.btnOk.setOnClickListener(View.OnClickListener {
             layout_velvet_parking_number.visibility = View.GONE
             layout_confirmation.visibility = View.VISIBLE
@@ -79,10 +75,9 @@ class VelvetParkingFragment(
             }, 1)
 
             binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
-                if(hasFocus){
+                if (hasFocus) {
                     setFocus(binding.btnPopOk)
-                }
-                else{
+                } else {
                     binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 }
             }
@@ -96,6 +91,7 @@ class VelvetParkingFragment(
 
         return binding.root
     }
+
     private fun showSerialNumberDialog() {
         val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
         builder.setTitle("Enter Valet ticket Number")
@@ -119,6 +115,7 @@ class VelvetParkingFragment(
 
         builder.show()
     }
+
     private fun setFocus(cardView: Button) {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
@@ -130,7 +127,8 @@ class VelvetParkingFragment(
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         cardView.background = gradientDrawable
     }
-    private fun setVelvetFocus(cardView: EditText) {
+
+    private fun setVelvetFocus(cardView: View) {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -141,6 +139,7 @@ class VelvetParkingFragment(
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         cardView.background = gradientDrawable
     }
+
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor
         this.endColor = endColor

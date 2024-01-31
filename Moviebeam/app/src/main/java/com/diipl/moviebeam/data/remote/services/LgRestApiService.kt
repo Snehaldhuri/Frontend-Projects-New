@@ -94,6 +94,8 @@ interface LgRestApiService {
         @Query("UA") UA: String,
         @Query("serviceId") serviceId: String
     ) : Response<String>
+
+
     @GET("process/stbMaster")
      fun getstbMasterService(
         @Query("UA") UA: String,

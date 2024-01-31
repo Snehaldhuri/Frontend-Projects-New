@@ -92,6 +92,7 @@
         <activity
             android:name=".ui.guestservice.GuestServiceActivity"
             android:exported="false"
+            android:windowSoftInputMode="adjustNothing|adjustPan"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity

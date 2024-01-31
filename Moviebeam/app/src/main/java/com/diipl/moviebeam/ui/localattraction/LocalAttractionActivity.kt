@@ -31,8 +31,12 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LocalAttractionActivity : BaseActivity() {
     private lateinit var binding: ActivityLocalAttractionBinding
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
+//    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+//    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
+
+    private var gradientStartColor: String? = null
+    private var gradientEndColor: String? = null
+
 
     private val localAttractionViewModel: LocalAttractionViewModel by viewModels()
 
@@ -70,7 +74,7 @@ class LocalAttractionActivity : BaseActivity() {
 
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
-                binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
+                binding.btnBack.background = getGradient()
             } else {
                 binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
@@ -112,17 +116,12 @@ class LocalAttractionActivity : BaseActivity() {
 
                     }
                     cardAdapter.setList(it.serviceList)
-                    cardAdapter.setGradientDrawable(
-                        getGradient(
-                            gradientStartColor,
-                            gradientEndColor
-                        )
-                    )
+                    cardAdapter.setGradientDrawable(getGradient())
                     binding.laCardCarousel.adapter = cardAdapter
                 }
 
                 adapter.setItemList(response?.servicesList!!)
-                adapter.setGradientDrawable(getGradient(gradientStartColor, gradientEndColor))
+                adapter.setGradientDrawable(getGradient())
                 binding.recyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
             }
@@ -179,21 +178,6 @@ class LocalAttractionActivity : BaseActivity() {
         }
     }
 
-    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-
-        gradientDrawable.cornerRadius = 20f
-
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
-    }
-
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
@@ -207,5 +191,22 @@ class LocalAttractionActivity : BaseActivity() {
 
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
+    }
+    fun setGradientColor(startColor: String, endColor: String) {
+        gradientStartColor = startColor
+        gradientEndColor = endColor
+    }
+
+    private fun getGradient(
+    ): GradientDrawable {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
+        )
+        gradientDrawable.cornerRadius = 10f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
     }
 }
