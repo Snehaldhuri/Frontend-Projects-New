@@ -23,6 +23,8 @@ class NewsHeaderTabAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding = CardNewsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+
+
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
         binding.root.setOnKeyListener { _, keycode, keyEvent ->

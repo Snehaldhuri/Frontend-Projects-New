@@ -15,7 +15,6 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
-import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.observe
@@ -25,20 +24,17 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class LaundryFragment : BaseFragment() {
     private val laundryViewModel: LaundryViewModel by viewModels()
-    lateinit var serail_num: String
+
     lateinit var laundry_adapter: LaundryAdapter
     lateinit var customAdapterLaundry: CustomAdapterLaundry
-
     lateinit var laundry_list: List<LaundryDataList>
-
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null
-
     private var _binding: FragmentLaundryBinding? = null
     val binding get() = _binding!!
     private var laundryHeaderPosition: Int = 0
     private var laundrySubCategoryPosition: Int = 0
-    private var selectedItems: MutableList<SubCategoryList> = mutableListOf()
+    private var selectedItems: MutableList<LaundryResponce> = mutableListOf()
 
 
     override fun observeViewModel() {
@@ -121,10 +117,17 @@ class LaundryFragment : BaseFragment() {
                 laundryViewModel.laundryMasterLiveData.value?.data?.let {
                     laundry_list = it.laundryDataList
 
-                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
+                    customAdapterLaundry = CustomAdapterLaundry(
+                        onMenuItemFocused = { },
+                        onLeftKeyPressed = {
+                            binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+                        })
 
+
+                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
+                        Log.e("data_onfocus", "handleLaundryMasterResponse:${it}", )
                         customAdapterLaundry = CustomAdapterLaundry(
-                            onMenuItemFocused = {    },
+                            onMenuItemFocused = { },
                             onLeftKeyPressed = {
                                 binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
                             })
@@ -134,11 +137,11 @@ class LaundryFragment : BaseFragment() {
                         customAdapterLaundry.setNewsList(it.subCategoryList)
                         //}
                         customAdapterLaundry.setGradient(getGradient())
-
-
                     }, onLeftKeyPressed = {},
                         onRightKeyPressed = {
-                            binding.lvLaundry.scrollToPosition(0)
+                            binding.rvLaundry.clearFocus()
+                            binding.lvLaundry.requestFocus()
+                            binding.lvLaundry.getChildAdapterPosition(binding.lvLaundry.getFocusedChild());
                         })
                     laundry_list.let {
                         laundry_adapter.setNewsList(it)

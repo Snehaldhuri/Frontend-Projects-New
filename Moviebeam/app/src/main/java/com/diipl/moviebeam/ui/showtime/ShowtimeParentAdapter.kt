@@ -45,6 +45,6 @@ class ShowtimeParentAdapter(
     fun setShowsList(map: Map<String, List<Detail>>) {
         showsList = map.keys.toList()
         genreMap = map
-        notifyDataSetChanged()
+            notifyDataSetChanged()
     }
 }

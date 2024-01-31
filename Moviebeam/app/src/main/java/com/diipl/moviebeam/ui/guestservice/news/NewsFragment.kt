@@ -63,7 +63,6 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                         binding.rvNews.findViewHolderForAdapterPosition(selectedMenuItemPosition)?.itemView?.requestFocus();
                     }, onLeftKeyPressed = {
                         onLeftKeyPressed()
-
                     }
                 )
                 newsHeaderDetails?.newsHeaderList?.let {

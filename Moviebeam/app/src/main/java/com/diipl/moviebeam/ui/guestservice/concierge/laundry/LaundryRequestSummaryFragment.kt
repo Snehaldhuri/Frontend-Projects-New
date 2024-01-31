@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.databinding.FragmentLaundryRequestSummaryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 
@@ -20,7 +20,7 @@ class LaundryRequestSummaryFragment(private var onOkClicked: () -> Unit) : BaseF
     private var gradientStartColor = ""
     private var gradientEndColor = ""
     private val adapter = LaundryRequestSummaryAdapter()
-    private var selectedItems: MutableList<SubCategoryList> = mutableListOf()
+    private var selectedItems: MutableList<LaundryResponce> = mutableListOf()
     override fun observeViewModel() {
     }
 
@@ -60,7 +60,7 @@ class LaundryRequestSummaryFragment(private var onOkClicked: () -> Unit) : BaseF
         binding?.rvSummary?.adapter = adapter
     }
 
-    fun setItemList(selectedItems: MutableList<SubCategoryList>) {
+    fun setItemList(selectedItems: MutableList<LaundryResponce>) {
         this.selectedItems = selectedItems
     }
 

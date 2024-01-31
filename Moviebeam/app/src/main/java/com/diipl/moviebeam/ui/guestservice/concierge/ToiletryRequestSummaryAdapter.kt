@@ -1,13 +1,11 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
-import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.ItemToiletryRequestSummaryBinding
-import java.util.ArrayList
+
 
 class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummaryAdapter.MyViewHolder>() {
 
@@ -41,11 +39,7 @@ class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummary
             val total = quantity * cost
 
             holder.binding.tvTotal.text = "$" + total.toString()
-
-
-
         }
-
     }
 
     fun setItemList(selectedItems: MutableList<ItemMenu>){
