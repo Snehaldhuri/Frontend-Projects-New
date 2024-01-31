@@ -193,10 +193,10 @@ class GuestServiceActivity : BaseActivity() {
                                             view.requestFocus()
                                             view.performClick()
                                         }
-                                        fragment.setGradientColor(
-                                            gradientStartColor,
-                                            gradientEndColor
-                                        )
+//                                        fragment.setGradientColor(
+//                                            gradientStartColor,
+//                                            gradientEndColor
+//                                        )
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()
@@ -211,10 +211,13 @@ class GuestServiceActivity : BaseActivity() {
                                             view.requestFocus()
                                             view.performClick()
                                         }
-                                        fragment.setGradientColor(
-                                            gradientStartColor,
-                                            gradientEndColor
-                                        )
+//                                        fragment.setGradientColor(
+//                                            gradientStartColor,
+//                                            gradientEndColor
+//                                        )  fragment.setGradientColor(
+//                                            gradientStartColor,
+//                                            gradientEndColor
+//                                        )
                                         transaction.replace(R.id.fv_tab_content, fragment)
                                         binding.rvTabContent.toInvisible()
                                         binding.fvTabContent.toVisible()
@@ -426,6 +429,9 @@ class GuestServiceActivity : BaseActivity() {
             if (binding.fvTabContent.isVisible) {
                 binding.fvTabContent.toInvisible()
                 binding.rvTabContent.toVisible()
+            }
+            else{
+                finish()
             }
         } else {
             finish()

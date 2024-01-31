@@ -218,9 +218,12 @@ class HotelInfoActivity : BaseActivity() {
                                 binding.tvHeaderTitle.text = it
                                 val bundle = Bundle()
                                 bundle.putString("title", it)
+
                                 bundle.putString(
                                     "desc",
-                                    hotelInfoViewModel.accountSetupLiveData.value?.data?.address
+                                    "4970 Pepelani Loop Princeville, \n" +
+                                            "Kauai,\n"+ "HI 96722.\n\n" +
+                                            "Ph - (808)826-2802"
                                 )
                                 val fragment = HotelServiceInfoFragment()
                                 fragment.arguments = bundle

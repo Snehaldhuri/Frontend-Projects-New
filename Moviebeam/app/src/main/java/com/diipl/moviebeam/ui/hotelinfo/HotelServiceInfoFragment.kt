@@ -42,9 +42,6 @@ class HotelServiceInfoFragment : Fragment() {
             binding.ivServiceImg.layoutParams = layoutParams
         } else {
             binding.tvServiceDesc.text = description.replace("<br/>", "", true)
-            if(title == "Restaurants"){
-                binding.tvServiceDesc.setText(description + "\n\nPlease scan QR Code to begin your Dining Experience.")
-            }
         }
         if (serviceImgUrl != "null") {
             binding.ivServiceImg.loadImagesWithGlideExtHS(serviceImgUrl)
