@@ -136,6 +136,9 @@ class LaundryFragment : BaseFragment() {
                         // laundry_list?.let {
                         customAdapterLaundry.setNewsList(it.subCategoryList)
                         //}
+                        customAdapterLaundry.setGradientColor(gradientStartColor!!,
+                            gradientEndColor!!
+                        )
                         customAdapterLaundry.setGradient(getGradient())
                     }, onLeftKeyPressed = {},
                         onRightKeyPressed = {
@@ -146,6 +149,7 @@ class LaundryFragment : BaseFragment() {
                     laundry_list.let {
                         laundry_adapter.setNewsList(it)
                     }
+
                     laundry_adapter.setGradient(getGradient())
                     binding.rvLaundry.adapter = laundry_adapter
                 }
