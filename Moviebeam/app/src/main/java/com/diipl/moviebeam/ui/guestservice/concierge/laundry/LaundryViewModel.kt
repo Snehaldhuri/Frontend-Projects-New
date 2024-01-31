@@ -31,9 +31,9 @@ class LaundryViewModel @Inject constructor(private val movieBeamRepository: Movi
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
     init {
-        fetchlaundryDetails(Constants.UA,"3")
-//        fetchlaundryDetails("14508KKMH0K299","3")
-    }
+       // fetchlaundryDetails(Constants.UA,"3")
+        fetchlaundryDetails("14508KKMH0K299","3")
+    }                       //14508KKMH0K299
 
     private fun fetchlaundryDetails(ua: String, s: String) {
         viewModelScope.launch(Dispatchers.IO) {

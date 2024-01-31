@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
 import android.content.Context
 import android.content.Context.LAYOUT_INFLATER_SERVICE
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.KeyEvent
@@ -31,6 +32,9 @@ class CustomAdapterLaundry(
     private var laundryList: List<LaundryDataList> = emptyList()
     var binding: CustomLaundryListViewBinding? = null
     private lateinit var context: Context
+
+    private var startColor = ""
+    private var endColor = ""
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -111,17 +115,101 @@ class CustomAdapterLaundry(
 
 
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
-            onMenuItemFocused(item)
             if (isFocused) {
-                holder.tv_lv_title.background = gradient2
+                setFocus(holder.binding.tvLvTitle)
+
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                                holder.binding.imgAdd.postDelayed(
+                                    {
+                                        holder.binding.imgAdd.requestFocus()
+                                    }, 50
+                                )
+                                holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
+                                    if (hasFocus) {
+                                        setImageFocus(holder.binding.imgAdd)
+                                        view.setOnKeyListener { _, keyCode, event ->
+                                            if (event.action == KeyEvent.ACTION_DOWN) {
+                                                when (keyCode) {
+                                                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                                                        holder.binding.imgRemove.postDelayed(
+                                                            {
+                                                                holder.binding.imgRemove.requestFocus()
+                                                            }, 50
+                                                        )
+                                                        holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
+                                                            if (hasFocus) {
+                                                                setImageFocus(holder.binding.imgRemove)
+                                                            } else {
+                                                                holder.binding.imgRemove.setBackgroundResource(
+                                                                    R.drawable.btn_bg_gradient_default
+                                                                )
+                                                            }
+                                                        }
+                                                        return@setOnKeyListener true
+                                                    }
+
+                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
+                                                        holder.binding.laundryData.postDelayed({
+                                                            holder.binding.laundryData.requestFocus()
+                                                        }, 50)
+                                                        holder.binding.laundryData.setOnFocusChangeListener { view, hasFocus ->
+                                                            if (hasFocus) {
+                                                                setFocus(holder.binding.tvLvTitle)
+                                                            } else {
+                                                                holder.binding.tvLvTitle.setBackgroundResource(
+                                                                    R.color.transparent
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            false
+                                        }
+                                    } else {
+                                        holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                                    }
+                                }
+                                setImageFocus(holder.binding.imgAdd)
+                                return@setOnKeyListener true
+                            }
+                        }
+                    }
+                    false
+                }
             } else {
-                holder.tv_lv_title.setBackgroundResource(R.color.transparent)
+                holder.binding.tvLvTitle.setBackgroundResource(R.color.transparent)
             }
         }
     }
 
 
+    private fun setImageFocus(cardView: ImageView) {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+        )
+//        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        cardView.background = gradientDrawable
+    }
 
+    private fun setFocus(cardView: TextView) {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+        )
+//        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        cardView.background = gradientDrawable
+    }
 
     class MyViewHolder(val binding: CustomLaundryListViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -146,6 +234,10 @@ class CustomAdapterLaundry(
         this.sublList = subCategoryList
     }
 
+    fun setGradientColor(startColor: String, endColor: String) {
+        this.startColor = startColor
+        this.endColor = endColor
+    }
     fun setGradient(gradient: GradientDrawable) {
         this.gradient2 = gradient
     }

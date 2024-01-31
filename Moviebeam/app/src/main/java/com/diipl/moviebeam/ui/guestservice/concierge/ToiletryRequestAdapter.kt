@@ -41,9 +41,12 @@ class ToiletryRequestAdapter(
         val item = itemList[position]
         holder.binding.tvItem.text = item.name
         holder.binding.tvCharges.text = item.dispPrice
+
+
         holder.binding.clToiletryItems.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 setFocus(holder.binding.clItem)
+
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
