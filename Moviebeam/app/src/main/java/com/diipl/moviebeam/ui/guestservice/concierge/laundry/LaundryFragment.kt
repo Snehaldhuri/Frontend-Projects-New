@@ -117,11 +117,14 @@ class LaundryFragment : BaseFragment() {
                 laundryViewModel.laundryMasterLiveData.value?.data?.let {
                     laundry_list = it.laundryDataList
 
+
                     customAdapterLaundry = CustomAdapterLaundry(
                         onMenuItemFocused = { },
                         onLeftKeyPressed = {
                             binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
                         })
+
+                    binding.lvLaundry.adapter = customAdapterLaundry
 
 
                     laundry_adapter = LaundryAdapter(onMenuItemFocused = {

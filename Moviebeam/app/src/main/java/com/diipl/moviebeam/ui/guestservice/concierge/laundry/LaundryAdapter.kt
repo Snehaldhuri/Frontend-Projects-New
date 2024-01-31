@@ -29,6 +29,7 @@ class LaundryAdapter(
 
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
+        binding.root.requestFocus()
         binding.root.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                 when (keycode) {
