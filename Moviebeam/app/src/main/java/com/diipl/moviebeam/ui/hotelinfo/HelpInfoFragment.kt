@@ -2,16 +2,19 @@ package com.diipl.moviebeam.ui.hotelinfo
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
+import com.diipl.moviebeam.utils.intToString
 
 class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
@@ -37,6 +40,17 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         binding.btnBack.post {
             binding.btnBack.requestFocus()
         }
+
+        val wifiManager = requireActivity().applicationContext.getSystemService(AppCompatActivity.WIFI_SERVICE) as WifiManager
+        val dhcpInfo = wifiManager.dhcpInfo
+        val ipAddress = "IP Address: "+dhcpInfo.ipAddress.intToString()
+        val netmask = "Net Mask: "+dhcpInfo.netmask.intToString()
+        val gateway = "Gateway: "+dhcpInfo.gateway.intToString()
+
+        binding.tvIpAddress.text = ipAddress
+        binding.tvNetMask.text = netmask
+        binding.tvGateway.text = gateway
+
         return binding.root
     }
 

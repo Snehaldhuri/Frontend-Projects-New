@@ -159,10 +159,7 @@ class HotelInfoActivity : BaseActivity() {
                 val tabMap = mutableMapOf<String, TabListObj>()
                 val tabs = mutableListOf<String>()
                 val response = hotelInfoViewModel.hotelServiceLiveData.value?.data
-
-                val sortedServices = response?.servicesList?.sortedBy { response.servicesList.indexOf(it) }
-
-                for (service in sortedServices!!) {
+                for (service in response?.servicesList!!) {
                     when (service.categoryName) {
                         "All" -> {
                             service.serviceList.forEach {
@@ -267,7 +264,7 @@ class HotelInfoActivity : BaseActivity() {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvHotelInfoHeader.adapter = adapter
-                binding.tvHeaderTitle.text = tabs[0]
+                binding.tvHeaderTitle.text = tabs[0].toString()
                 binding.pbLoader.toInvisible()
             }
 

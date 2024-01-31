@@ -50,9 +50,7 @@ class LaundryFragment : BaseFragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentLaundryBinding.inflate(inflater, container, false)
@@ -102,8 +100,7 @@ class LaundryFragment : BaseFragment() {
             summaryFragment.setItemList(selectedItems)
 
             fragmentTransaction.replace(
-                R.id.fv_tab_content,
-                summaryFragment
+                R.id.fv_tab_content, summaryFragment
             )
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
@@ -118,25 +115,26 @@ class LaundryFragment : BaseFragment() {
             is Resource.Loading -> {}
             is Resource.Success -> {
 
-                laundryViewModel.laundryMasterLiveData.value?.data?.let {
+                laundryViewModel.laundryMasterLiveData.value?.data?.let { it ->
                     laundry_list = it.laundryDataList
 
-                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
+                    laundry_adapter = LaundryAdapter(
+                        onMenuItemFocused = {
 
-                        customAdapterLaundry = CustomAdapterLaundry(
-                            onMenuItemFocused = {    },
-                            onLeftKeyPressed = {
-                                binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
-                            })
+                            customAdapterLaundry =
+                                CustomAdapterLaundry(onMenuItemFocused = { }, onLeftKeyPressed = {
+                                    binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+                                })
 
-                        binding.lvLaundry.adapter = customAdapterLaundry
-                        // laundry_list?.let {
-                        customAdapterLaundry.setNewsList(it.subCategoryList)
-                        //}
-                        customAdapterLaundry.setGradient(getGradient())
+                            binding.lvLaundry.adapter = customAdapterLaundry
+                            customAdapterLaundry.setNewsList(it.subCategoryList)
+                            customAdapterLaundry.setGradient(getGradient())
 
 
-                    }, onLeftKeyPressed = {},
+                        },
+                        onLeftKeyPressed = {
+
+                        },
                         onRightKeyPressed = {
                             binding.lvLaundry.scrollToPosition(0)
                         })

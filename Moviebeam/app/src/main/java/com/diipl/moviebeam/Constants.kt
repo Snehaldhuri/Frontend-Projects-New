@@ -23,7 +23,9 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
-    const val HOTEL_VIDEO_LOOP_COUNT = 3
+    var HOTEL_VIDEO_LOOP_COUNT = 3
+    var HOTEL_VIDEO_DURATION = 0L
+    var HOTEL_VIDEO_URL = ""
     var UA = "14508KKMH0K299"
     var SERIAL_NO = ""
     var IS_API_CALLED = false

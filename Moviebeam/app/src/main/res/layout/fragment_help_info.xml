@@ -46,9 +46,9 @@
     <androidx.cardview.widget.CardView
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
-        android:backgroundTint="@color/semiTransparentBlackColor"
-        android:elevation="@dimen/dp_0"
-        app:cardCornerRadius="@dimen/dp_5"
+        app:cardBackgroundColor="@color/semiTransparentBlackColor"
+        app:cardElevation="@dimen/dp_0"
+        app:cardCornerRadius="@dimen/dp_8"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/rv_help_info_header"
@@ -168,6 +168,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tv_ip_address"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/manrope_semibold_600"
@@ -175,6 +176,7 @@
                         android:textSize="@dimen/sp_15" />
 
                     <TextView
+                        android:id="@+id/tv_net_mask"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/manrope_semibold_600"
@@ -182,6 +184,7 @@
                         android:textSize="@dimen/sp_15" />
 
                     <TextView
+                        android:id="@+id/tv_gateway"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/manrope_semibold_600"
@@ -189,6 +192,7 @@
                         android:textSize="@dimen/sp_15" />
 
                     <TextView
+                        android:id="@+id/tv_connectivity"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/manrope_semibold_600"

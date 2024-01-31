@@ -6,21 +6,22 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.Constants.HOTEL_VIDEO_DURATION
+import com.diipl.moviebeam.Constants.HOTEL_VIDEO_LOOP_COUNT
+import com.diipl.moviebeam.Constants.HOTEL_VIDEO_URL
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -59,14 +60,18 @@ import java.io.FileOutputStream
 import java.io.IOException
 import javax.inject.Inject
 
+
+private const val TAG = "MainMenuActivity"
+
 @AndroidEntryPoint
 class MainMenuActivity : BaseActivity() {
+
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private lateinit var binding: ActivityMainMenuBinding
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private var isServiceStarted = false
-    private var player: ExoPlayer? = null
+    private lateinit var player: ExoPlayer
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -79,22 +84,24 @@ class MainMenuActivity : BaseActivity() {
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
+    @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+
+        player = ExoPlayer.Builder(this).build()
+        player.trackSelectionParameters = player.trackSelectionParameters
+            .buildUpon()
+            .setMaxVideoSizeSd()
+            .build()
+
 
         // call below function to get data from datastore
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
 
-//        UA = intent.extras?.getString("UA")
-
-        // start the endless service
-//        if (!isServiceStarted) {
-//            actionOnService(Actions.START)
-//        }
     }
 
     override fun observeViewModel() {
@@ -113,17 +120,100 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
+        HOTEL_VIDEO_DURATION = player.currentPosition
+        player.pause()
         super.onPause()
-        if (player != null) {
-            player?.pause()
-        }
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (player != null) {
-            player?.play()
+    override fun onRestart() {
+        super.onRestart()
+        Log.e(
+            TAG,
+            "onRestart: $HOTEL_VIDEO_URL   -->  $HOTEL_VIDEO_DURATION   -->  $HOTEL_VIDEO_LOOP_COUNT"
+        )
+
+    }
+
+        override fun onResume() {
+            super.onResume()
+
+            initializePlayer()
+
         }
+
+
+    private fun resumePlay() {
+        val playerView = binding.videoView
+        playerView.player = player
+        player.playWhenReady = true
+        player.addListener(playerListener)
+        player.prepare()
+        player.play()
+    }
+
+
+    private fun initializePlayer() {
+//        lifecycleScope.launch {
+            binding.videoView.toVisible()
+            val playerView = binding.videoView
+//        playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
+            playerView.player = player
+//        player.repeatMode = Player.REPEAT_MODE_ALL
+            player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
+            player.repeatMode = Player.REPEAT_MODE_ALL
+            player.playWhenReady = true
+//        player.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+            player.addListener(playerListener)
+            player.prepare()
+            player.play()
+            player.seekTo(HOTEL_VIDEO_DURATION)
+//        }
+
+    }
+
+    private fun playBgVideo() {
+        initializePlayer()
+    }
+
+
+    private val playerListener = object : Player.Listener {
+        override fun onEvents(player: Player, events: Player.Events) {
+            super.onEvents(player, events)
+            if (HOTEL_VIDEO_LOOP_COUNT == 0) {
+                releaseVideoPlayer()
+            }
+            Log.e(
+                TAG,
+                "${createTime(player.contentDuration)}   ${createTime(player.currentPosition)}  ${
+                    createTime(player.contentBufferedPosition)
+                }"
+            )
+//            resumePlay()
+        }
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            super.onMediaItemTransition(mediaItem, reason)
+            HOTEL_VIDEO_LOOP_COUNT--
+        }
+
+    }
+
+    fun createTime(duration: Long): String {
+        var time = ""
+        var minute = ""
+        var secs = ""
+        val min = duration / 1000 / 60
+        val sec = duration / 1000 % 60
+        minute = if (min < 10) "0$min" else "" + min
+        secs = if (sec < 10) "0$sec" else "" + sec
+        time = "$minute:$secs"
+        return time
+    }
+
+
+    private fun releaseVideoPlayer() {
+        binding.videoView.toInvisible()
+        player.release()
     }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
@@ -184,9 +274,10 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 val response = mainMenuViewModel.accountSetupLiveData.value?.data
 
-//                val videoUrl =
-//                    response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
-//                playBgVideo(videoUrl)
+                HOTEL_VIDEO_URL =
+                    response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
+
+                playBgVideo()
 
                 binding.tvGreeting.text = response?.hotelInfo
                 val btnListFromApi: List<String>? = response?.buttonsList?.map {
@@ -364,54 +455,5 @@ class MainMenuActivity : BaseActivity() {
         return false
     }
 
-    private fun playBgVideo(videoUrl: String) {
-        initializePlayer(videoUrl)
-        binding.layoutVideo.root.toVisible()
-    }
-
-    @SuppressLint("UnsafeOptInUsageError")
-    private fun initializePlayer(videoUrl: String) {
-        player = ExoPlayer.Builder(this)
-            .setRenderersFactory(DefaultRenderersFactory(this).setEnableDecoderFallback(true))
-            .build()
-        val playerView = binding.layoutVideo.videoView
-        playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-        playerView.player?.release()
-        playerView.player = player
-        val mediaItems = getMediaItems(videoUrl)
-        player?.let {
-            it.setMediaItems(mediaItems)
-            it.playWhenReady = true
-            it.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-            it.addListener(playerListener())
-            it.prepare()
-            it.play()
-        }
-    }
-
-    private fun getMediaItems(videoUrl: String): List<MediaItem> {
-        val mediaItems = mutableListOf<MediaItem>()
-        for (num in Constants.HOTEL_VIDEO_LOOP_COUNT downTo 1) {
-            mediaItems.add(MediaItem.fromUri(videoUrl))
-        }
-        return mediaItems
-    }
-
-    private fun playerListener() = object : Player.Listener {
-        @SuppressLint("SwitchIntDef")
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            when (playbackState) {
-                ExoPlayer.STATE_ENDED -> {
-                    releaseVideoPlayer()
-                }
-            }
-        }
-    }
-
-    private fun releaseVideoPlayer() {
-        binding.layoutVideo.root.toInvisible()
-        player?.release()
-        player = null
-    }
 
 }

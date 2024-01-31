@@ -65,7 +65,6 @@ class MoviesBtnAdapter(
         }
         holder.card.setOnClickListener {
             onMoviesMenuItemClicked(item.btnId)
-
          }
     }
 
