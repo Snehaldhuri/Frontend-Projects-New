@@ -19,7 +19,6 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -62,6 +61,12 @@ class MoviesActivity : BaseActivity() {
         observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(moviesViewModel.themeLiveData, ::handleThemeResponse)
         observe(moviesViewModel.moviesLiveData, ::handleMoviesServiceResponse)
+
+        moviesViewModel.getThemeResponseData(themeDataStore)
+        moviesViewModel.getWeatherResponseData(weatherDataStore)
+        moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
+
+
     }
 
     override fun initViewBinding() {
@@ -75,10 +80,6 @@ class MoviesActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         // call below function to get data from datastore
-
-        moviesViewModel.getThemeResponseData(themeDataStore)
-        moviesViewModel.getWeatherResponseData(weatherDataStore)
-        moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
 
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
@@ -110,7 +111,7 @@ class MoviesActivity : BaseActivity() {
                     binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                 }
                 loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                var genreMap: LinkedHashMap<String, MutableList<ContentDto>> = LinkedHashMap()
+                val genreMap: LinkedHashMap<String, MutableList<ContentDto>> = LinkedHashMap()
                 response?.premiumContentList?.forEach {
                     if (it.genre1 != "Adult") {
                         if (genreMap[it.genre1] != null) {

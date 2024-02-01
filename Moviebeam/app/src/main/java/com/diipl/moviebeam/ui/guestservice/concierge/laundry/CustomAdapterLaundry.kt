@@ -75,10 +75,10 @@ class CustomAdapterLaundry(
 
         holder.binding.root.setOnClickListener(View.OnClickListener {
 
-            var constraintset = ConstraintSet()
+            val constraintset = ConstraintSet()
             constraintset.clone(context, R.layout.custom_laundry_list_view)
 
-            if (hide == true) {
+            if (hide) {
                 holder.ll.visibility = View.VISIBLE
                 holder.binding.ivIconChecked.visibility = View.VISIBLE
                 hide = false
@@ -216,16 +216,11 @@ class CustomAdapterLaundry(
 
         var convertView = binding.root
         var count = 1
-        var tv_lv_title: TextView =
-            convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_lv_title)
-        var tv_lv_price: TextView =
-            convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_lv_price)
-        var img_add: ImageView =
-            convertView.findViewById<ImageView>(com.diipl.moviebeam.R.id.img_add)
-        var img_remove: ImageView =
-            convertView.findViewById<ImageView>(com.diipl.moviebeam.R.id.img_remove)
-        var tv_count: TextView =
-            convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_count)
+        var tv_lv_title: TextView = convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_lv_title)
+        var tv_lv_price: TextView = convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_lv_price)
+        var img_add: ImageView = convertView.findViewById<ImageView>(com.diipl.moviebeam.R.id.img_add)
+        var img_remove: ImageView = convertView.findViewById<ImageView>(com.diipl.moviebeam.R.id.img_remove)
+        var tv_count: TextView = convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_count)
         var ll: LinearLayout = convertView.findViewById(R.id.ll_cart)
     }
 

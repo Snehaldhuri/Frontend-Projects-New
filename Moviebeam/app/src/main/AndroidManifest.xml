@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
@@ -32,8 +33,7 @@
             android:name=".ui.inroomdining.InRoomDiningActivity"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
-            />
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.kaping.KapingActivity"
             android:exported="false" />
@@ -68,9 +68,10 @@
             android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
@@ -92,9 +93,9 @@
         <activity
             android:name=".ui.guestservice.GuestServiceActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustNothing|adjustPan"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:windowSoftInputMode="adjustNothing|adjustPan" />
         <activity
             android:name=".ui.hotelinfo.HelpInfoActivity"
             android:exported="false"
@@ -114,7 +115,7 @@
             android:name=".ui.exoplayer.ExoPlayerActivity"
             android:exported="true"
             android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
             android:banner="@drawable/app_icon_your_company"
@@ -125,7 +126,9 @@
             android:theme="@style/Theme.AppCompat.NoActionBar">
 
             <intent-filter>
-                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
@@ -152,6 +155,11 @@
 
         <service
             android:name=".ui.kappingservice.EndlessService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name="com.diipl.moviebeam.service.PlayService"
             android:enabled="true"
             android:exported="false" />
 
