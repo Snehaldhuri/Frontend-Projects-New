@@ -35,7 +35,7 @@ class MovieDetailFragment : Fragment() {
             movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,true,false) }
         }
         binding.btnRentNow.setOnClickListener {
-            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,false,true) }
+            movie?.let { it1 -> (activity as MoviesActivity?)?.gotoExoPlayerActivity(it1,true,false) }
         }
     }
 

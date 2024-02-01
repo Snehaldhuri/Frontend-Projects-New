@@ -159,10 +159,7 @@ class HotelInfoActivity : BaseActivity() {
                 val tabMap = mutableMapOf<String, TabListObj>()
                 val tabs = mutableListOf<String>()
                 val response = hotelInfoViewModel.hotelServiceLiveData.value?.data
-
-                val sortedServices = response?.servicesList?.sortedBy { response.servicesList.indexOf(it) }
-
-                for (service in sortedServices!!) {
+                for (service in response?.servicesList!!) {
                     when (service.categoryName) {
                         "All" -> {
                             service.serviceList.forEach {
@@ -218,9 +215,12 @@ class HotelInfoActivity : BaseActivity() {
                                 binding.tvHeaderTitle.text = it
                                 val bundle = Bundle()
                                 bundle.putString("title", it)
+
                                 bundle.putString(
                                     "desc",
-                                    hotelInfoViewModel.accountSetupLiveData.value?.data?.address
+                                    "4970 Pepelani Loop Princeville, \n" +
+                                            "Kauai,\n"+ "HI 96722.\n\n" +
+                                            "Ph - (808)826-2802"
                                 )
                                 val fragment = HotelServiceInfoFragment()
                                 fragment.arguments = bundle
@@ -267,7 +267,7 @@ class HotelInfoActivity : BaseActivity() {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvHotelInfoHeader.adapter = adapter
-                binding.tvHeaderTitle.text = tabs[0]
+                binding.tvHeaderTitle.text = tabs[0].toString()
                 binding.pbLoader.toInvisible()
             }
 

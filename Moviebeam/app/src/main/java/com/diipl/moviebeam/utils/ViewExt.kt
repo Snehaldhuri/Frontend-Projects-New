@@ -1,6 +1,8 @@
 package com.diipl.moviebeam.utils
 
+import android.app.ActivityManager
 import android.app.Service
+import android.content.Context
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -13,6 +15,26 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.diipl.moviebeam.R
 import com.google.android.material.snackbar.Snackbar
+
+fun Int.intToString(): String {
+    val ip = this
+    val b1 = (ip and 0xff).toByte()
+    val b2 = ((ip shr 8) and 0xff).toByte()
+    val b3 = ((ip shr 16) and 0xff).toByte()
+    val b4 = ((ip shr 24) and 0xff).toByte()
+
+    // Convert bytes to a string in dot-decimal notation
+    return "$b1.$b2.$b3.$b4"
+}
+
+fun String.isServiceRunning(context: Context): Boolean{
+    val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    for (service in manager.getRunningServices(Int.MAX_VALUE)){
+        if (this.equals(service.service.className))
+            return true
+    }
+    return false
+}
 
 
 fun View.showKeyboard() {

@@ -3,14 +3,14 @@ package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.databinding.ItemLaundryRequestSummaryBinding
 import com.diipl.moviebeam.databinding.ItemToiletryRequestSummaryBinding
 
 class LaundryRequestSummaryAdapter :
     RecyclerView.Adapter<LaundryRequestSummaryAdapter.MyViewHolder>() {
 
-    private var itemList: List<SubCategoryList> = mutableListOf()
+    private var itemList: List<LaundryResponce> = mutableListOf()
 
     inner class MyViewHolder(val binding: ItemLaundryRequestSummaryBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -33,12 +33,12 @@ class LaundryRequestSummaryAdapter :
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         if (itemList.isNotEmpty() && position < itemList.size) {
             val item = itemList[position]
-            holder.binding.tvItems.text = item.title
-            holder.binding.tvQty.text = item.dispPrice
+            holder.binding.tvItems.text = item.laundryDataList[position].subCategoryList[position].title
+            holder.binding.tvQty.text = item.laundryDataList[position].subCategoryList[position].dispPrice
         }
     }
 
-    fun setItemList(selectedItems: MutableList<SubCategoryList>) {
+    fun setItemList(selectedItems: MutableList<LaundryResponce>) {
         this.itemList = selectedItems
     }
 }

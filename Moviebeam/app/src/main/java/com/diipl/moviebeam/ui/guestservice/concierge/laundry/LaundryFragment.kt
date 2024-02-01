@@ -15,7 +15,6 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
-import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.observe
@@ -25,20 +24,17 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class LaundryFragment : BaseFragment() {
     private val laundryViewModel: LaundryViewModel by viewModels()
-    lateinit var serail_num: String
+
     lateinit var laundry_adapter: LaundryAdapter
     lateinit var customAdapterLaundry: CustomAdapterLaundry
-
     lateinit var laundry_list: List<LaundryDataList>
-
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null
-
     private var _binding: FragmentLaundryBinding? = null
     val binding get() = _binding!!
     private var laundryHeaderPosition: Int = 0
     private var laundrySubCategoryPosition: Int = 0
-    private var selectedItems: MutableList<SubCategoryList> = mutableListOf()
+    private var selectedItems: MutableList<LaundryResponce> = mutableListOf()
 
 
     override fun observeViewModel() {
@@ -50,9 +46,7 @@ class LaundryFragment : BaseFragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentLaundryBinding.inflate(inflater, container, false)
@@ -102,8 +96,7 @@ class LaundryFragment : BaseFragment() {
             summaryFragment.setItemList(selectedItems)
 
             fragmentTransaction.replace(
-                R.id.fv_tab_content,
-                summaryFragment
+                R.id.fv_tab_content, summaryFragment
             )
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
@@ -118,31 +111,47 @@ class LaundryFragment : BaseFragment() {
             is Resource.Loading -> {}
             is Resource.Success -> {
 
-                laundryViewModel.laundryMasterLiveData.value?.data?.let {
+                laundryViewModel.laundryMasterLiveData.value?.data?.let { it ->
                     laundry_list = it.laundryDataList
 
-                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
+                    laundry_adapter = LaundryAdapter(
+                        onMenuItemFocused = {
 
+                            customAdapterLaundry =
+                                CustomAdapterLaundry(onMenuItemFocused = { }, onLeftKeyPressed = {
+                                    binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+                                })
+
+                            binding.lvLaundry.adapter = customAdapterLaundry
+
+
+                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
+                        Log.e("data_onfocus", "handleLaundryMasterResponse:${it}", )
                         customAdapterLaundry = CustomAdapterLaundry(
-                            onMenuItemFocused = {    },
+                            onMenuItemFocused = { },
                             onLeftKeyPressed = {
                                 binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
                             })
 
                         binding.lvLaundry.adapter = customAdapterLaundry
-                        // laundry_list?.let {
-                        customAdapterLaundry.setNewsList(it.subCategoryList)
-                        //}
-                        customAdapterLaundry.setGradient(getGradient())
+                            customAdapterLaundry.setNewsList(it.subCategoryList)
+                        customAdapterLaundry.setGradientColor(gradientStartColor!!,
+                            gradientEndColor!!
+                        )
+                            customAdapterLaundry.setGradient(getGradient())
+                        },
+                        onLeftKeyPressed = {
 
-
-                    }, onLeftKeyPressed = {},
+                        },
                         onRightKeyPressed = {
-                            binding.lvLaundry.scrollToPosition(0)
+                            binding.rvLaundry.clearFocus()
+                            binding.lvLaundry.requestFocus()
+                            binding.lvLaundry.getChildAdapterPosition(binding.lvLaundry.getFocusedChild());
                         })
                     laundry_list.let {
                         laundry_adapter.setNewsList(it)
                     }
+
                     laundry_adapter.setGradient(getGradient())
                     binding.rvLaundry.adapter = laundry_adapter
                 }

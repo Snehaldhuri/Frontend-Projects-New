@@ -42,10 +42,22 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.95" />
 
+<!--
     <include
         android:id="@+id/layout_video"
         layout="@layout/video_background"
         android:visibility="gone" />
+-->
+
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/video_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:show_buffering="never"
+        android:visibility="gone"
+        app:resize_mode="fill"
+        app:use_controller="false" />
+
 
     <ImageView
         android:id="@+id/iv_hotel_logo"

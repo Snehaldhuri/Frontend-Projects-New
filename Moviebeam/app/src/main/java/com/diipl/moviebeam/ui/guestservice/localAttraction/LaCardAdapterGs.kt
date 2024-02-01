@@ -13,13 +13,11 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAService
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLA
 
 class LaCardAdapterGs(
     private var onMenuItemClicked: (String) -> Unit
-) :
-    RecyclerView.Adapter<LaCardAdapterGs.MyViewHolder>() {
+) : RecyclerView.Adapter<LaCardAdapterGs.MyViewHolder>() {
     private val defaultColor = "#FFFFFF"
     private var gradientDrawable: GradientDrawable? = null
 
@@ -33,8 +31,7 @@ class LaCardAdapterGs(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.la_carousel, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.la_carousel, parent, false)
         view.isClickable = true
 
         view.findViewById<CardView>(R.id.front_card).background.setTint(

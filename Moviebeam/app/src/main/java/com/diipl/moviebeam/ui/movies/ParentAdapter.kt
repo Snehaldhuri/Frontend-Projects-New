@@ -35,11 +35,11 @@ class ParentAdapter(
         holder.titleTv.text = parentItem[0].genre1
 
         holder.childRecyclerView.setHasFixedSize(true)
-        holder.childRecyclerView.layoutManager =
-            LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
+        holder.childRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
 
         val adapter = ChildAdapter(parentItem, onItemClicked)
         holder.childRecyclerView.adapter = adapter
+
     }
 
     fun setMovieList(map: Map<String, List<ContentDto>>) {

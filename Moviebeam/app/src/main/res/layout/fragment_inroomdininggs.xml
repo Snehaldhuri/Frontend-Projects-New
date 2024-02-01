@@ -10,6 +10,6 @@
       android:layout_height="match_parent"
       android:scaleType="fitXY"
       android:padding="10dp"
-      android:src="@drawable/test_inroom_dining_with_qr"/>
+      android:src="@drawable/inroom_gs"/>
 
 </FrameLayout>
