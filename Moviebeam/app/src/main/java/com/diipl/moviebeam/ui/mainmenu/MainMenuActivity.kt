@@ -238,11 +238,8 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 val response = mainMenuViewModel.accountSetupLiveData.value?.data
 
-//                HOTEL_VIDEO_URL =
-//                    response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
-
                 HOTEL_VIDEO_URL =
-                    response?.httpStreamingHotelvideoUrl + "15712_HotelVideo.m2t"
+                    response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
 
                 initializePlayer()
 
