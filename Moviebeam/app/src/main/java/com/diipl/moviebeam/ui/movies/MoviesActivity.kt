@@ -34,6 +34,7 @@ import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+private const val TAG = "MoviesActivity"
 
 @AndroidEntryPoint
 class MoviesActivity : BaseActivity() {
@@ -81,7 +82,7 @@ class MoviesActivity : BaseActivity() {
 
         // call below function to get data from datastore
 
-        binding.btnBack.setOnFocusChangeListener { view, b ->
+        binding.btnBack.setOnFocusChangeListener { v, b ->
             if (b) {
                 binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
             } else {
@@ -94,8 +95,34 @@ class MoviesActivity : BaseActivity() {
 
         val parentRecyclerView: RecyclerView = binding.parentRecyclerView
         parentRecyclerView.setHasFixedSize(true)
-        binding.parentRecyclerView.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        parentRecyclerView.layoutManager = layoutManager
+
+     /*   val snapHelper = LinearSnapHelper()
+        snapHelper.attachToRecyclerView(parentRecyclerView)
+
+        parentRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val position = layoutManager.findFirstVisibleItemPosition()
+                parentRecyclerView.smoothScrollToPosition(position)
+            }
+        })
+
+
+        binding.nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener {
+                v, scrollX, scrollY, oldScrollX, oldScrollY ->
+//            Log.e(TAG, "nestedScroll:  $scrollX  $oldScrollX  $scrollY  $oldScrollY")
+            val position = layoutManager.findFirstVisibleItemPosition()
+            parentRecyclerView.smoothScrollToPosition(position)
+            Log.e(TAG, "nestedScroll:  $position")
+            if (scrollY < oldScrollY){
+                Log.e(TAG, "onCreate: TOP SCROLL ")
+            } else {
+                Log.e(TAG, "onCreate: BOTTOM SCROLL")
+            }
+         })*/
+
 
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
@@ -331,7 +358,7 @@ class MoviesActivity : BaseActivity() {
         startActivity(intent)
     }
 
-    private fun handleBackClick(){
+    private fun handleBackClick() {
         if (binding.fcvMovieDetail.isVisible) {
             binding.fcvMovieDetail.toInvisible()
             binding.parentRecyclerView.toVisible()
