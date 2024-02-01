@@ -146,6 +146,9 @@ class ExoPlayerActivity : BaseActivity() {
                 else -> "UNKNOWN_STATE             -"
             }
             Log.d("ExoPlayer state", "changed state to $stateString")
+            when(playbackState){
+                ExoPlayer.STATE_ENDED -> finish()
+            }
         }
 
     }
