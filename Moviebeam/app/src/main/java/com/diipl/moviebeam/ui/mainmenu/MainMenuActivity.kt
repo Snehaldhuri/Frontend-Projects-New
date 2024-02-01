@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
@@ -96,11 +95,11 @@ class MainMenuActivity : BaseActivity() {
             .setMaxVideoSizeSd()
             .build()
 
-
         // call below function to get data from datastore
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
+
 
     }
 
@@ -120,59 +119,31 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
+        player.playWhenReady = false
         HOTEL_VIDEO_DURATION = player.currentPosition
         player.pause()
+        player.release()
         super.onPause()
     }
 
     override fun onRestart() {
+        player = ExoPlayer.Builder(this).build()
+//        if (HOTEL_VIDEO_URL.isNotEmpty())
+        initializePlayer()
         super.onRestart()
-        Log.e(
-            TAG,
-            "onRestart: $HOTEL_VIDEO_URL   -->  $HOTEL_VIDEO_DURATION   -->  $HOTEL_VIDEO_LOOP_COUNT"
-        )
-
-    }
-
-        override fun onResume() {
-            super.onResume()
-
-            initializePlayer()
-
-        }
-
-
-    private fun resumePlay() {
-        val playerView = binding.videoView
-        playerView.player = player
-        player.playWhenReady = true
-        player.addListener(playerListener)
-        player.prepare()
-        player.play()
     }
 
 
     private fun initializePlayer() {
-//        lifecycleScope.launch {
-            binding.videoView.toVisible()
-            val playerView = binding.videoView
-//        playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-            playerView.player = player
-//        player.repeatMode = Player.REPEAT_MODE_ALL
-            player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
-            player.repeatMode = Player.REPEAT_MODE_ALL
-            player.playWhenReady = true
-//        player.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-            player.addListener(playerListener)
-            player.prepare()
-            player.play()
-            player.seekTo(HOTEL_VIDEO_DURATION)
-//        }
-
-    }
-
-    private fun playBgVideo() {
-        initializePlayer()
+        binding.videoView.toVisible()
+        binding.videoView.player = player
+        player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
+        player.repeatMode = Player.REPEAT_MODE_ALL
+        player.playWhenReady = true
+        player.addListener(playerListener)
+        player.prepare()
+        player.play()
+        player.seekTo(HOTEL_VIDEO_DURATION)
     }
 
 
@@ -182,13 +153,6 @@ class MainMenuActivity : BaseActivity() {
             if (HOTEL_VIDEO_LOOP_COUNT == 0) {
                 releaseVideoPlayer()
             }
-            Log.e(
-                TAG,
-                "${createTime(player.contentDuration)}   ${createTime(player.currentPosition)}  ${
-                    createTime(player.contentBufferedPosition)
-                }"
-            )
-//            resumePlay()
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -277,7 +241,7 @@ class MainMenuActivity : BaseActivity() {
                 HOTEL_VIDEO_URL =
                     response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
 
-                playBgVideo()
+                initializePlayer()
 
                 binding.tvGreeting.text = response?.hotelInfo
                 val btnListFromApi: List<String>? = response?.buttonsList?.map {

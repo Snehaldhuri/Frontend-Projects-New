@@ -158,11 +158,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <service
-            android:name="com.diipl.moviebeam.service.PlayService"
-            android:enabled="true"
-            android:exported="false" />
-
         <receiver
             android:name=".ui.kappingservice.StartReceiver"
             android:enabled="true"

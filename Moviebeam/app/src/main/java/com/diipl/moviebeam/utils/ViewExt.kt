@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.media3.exoplayer.ExoPlayer
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.diipl.moviebeam.R
@@ -48,15 +49,18 @@ fun View.hideKeyboard() {
 }
 
 fun View.toVisible() {
-    this.visibility = View.VISIBLE
+    if (this.visibility != View.VISIBLE)
+        this.visibility = View.VISIBLE
 }
 
 fun View.toGone() {
-    this.visibility = View.GONE
+    if (this.visibility != View.GONE)
+        this.visibility = View.GONE
 }
 
 fun View.toInvisible() {
-    this.visibility = View.GONE
+    if (this.visibility != View.GONE)
+        this.visibility = View.GONE
 }
 
 
