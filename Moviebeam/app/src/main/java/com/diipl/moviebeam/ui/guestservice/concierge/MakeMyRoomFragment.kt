@@ -55,6 +55,14 @@ class MakeMyRoomFragment(
             false
         }
 
+        val hourPicker = binding.layoutDateTimeSelector.timeSelectorLayout.hourPicker
+        val minutePicker = binding.layoutDateTimeSelector.timeSelectorLayout.minutePicker
+
+        hourPicker.post {
+            hourPicker.requestFocus()
+        }
+
+
         binding.btnCancel.setOnClickListener {
             onOkClicked()
         }
@@ -62,6 +70,7 @@ class MakeMyRoomFragment(
         binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 setFocus(binding.btnOk)
+
             } else {
                 binding.btnOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
@@ -69,6 +78,18 @@ class MakeMyRoomFragment(
         binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 setFocus(binding.btnCancel)
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+                                hourPicker.requestFocus()
+                                return@setOnKeyListener true
+                            }
+
+                        }
+                    }
+                    false
+                }
             } else {
                 binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
@@ -106,10 +127,8 @@ class MakeMyRoomFragment(
             currentminute.toString()
 
 
-        val hourPicker = binding.layoutDateTimeSelector.timeSelectorLayout.hourPicker
-        val minutePicker = binding.layoutDateTimeSelector.timeSelectorLayout.minutePicker
 
-        hourPicker.requestFocus()
+
         hourPicker.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 view.setBackgroundResource(R.drawable.border_bg)

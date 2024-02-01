@@ -43,12 +43,26 @@ class LocalAttractionGsAdapter(private var onItemClicked: ((LAServices)) -> Unit
         holder.textView.text = item.categoryName
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
+        holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                holder.card.background = gradientDrawable
+                view.background = gradientDrawable
                 onItemClicked(item)
             } else {
-                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+
+            if (position == 0) {
+                if (hasFocus) {
+                    view.nextFocusUpId = view.id
+                } else {
+                    view.nextFocusUpId = View.NO_ID
+                }
+            } else if (position == itemList.size - 1) {
+                if (hasFocus) {
+                    view.nextFocusDownId = view.id
+                } else {
+                    view.nextFocusDownId = View.NO_ID
+                }
             }
         }
 //        holder.card.setOnClickListener {

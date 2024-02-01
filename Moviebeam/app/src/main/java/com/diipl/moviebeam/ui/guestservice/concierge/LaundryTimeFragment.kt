@@ -47,6 +47,12 @@ class LaundryTimeFragment(
         setDate()
         layout_confirmation = binding.root.findViewById(R.id.layout_confirmation)
 
+        val hourPicker = binding.layoutDateTimeSelector.timeSelectorLayout.hourPicker
+        val minutePicker = binding.layoutDateTimeSelector.timeSelectorLayout.minutePicker
+
+        hourPicker.post {
+            hourPicker.requestFocus()
+        }
         binding.btnCancel.setOnClickListener(View.OnClickListener {
             onOkClicked()
         })
@@ -61,6 +67,18 @@ class LaundryTimeFragment(
         binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 setFocus(binding.btnCancel)
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+                                hourPicker.requestFocus()
+                                return@setOnKeyListener true
+                            }
+
+                        }
+                    }
+                    false
+                }
             } else {
                 binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
@@ -98,10 +116,6 @@ class LaundryTimeFragment(
             currentminute.toString()
 
 
-        val hourPicker = binding.layoutDateTimeSelector.timeSelectorLayout.hourPicker
-        val minutePicker = binding.layoutDateTimeSelector.timeSelectorLayout.minutePicker
-
-        hourPicker.requestFocus()
         hourPicker.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 view.setBackgroundResource(R.drawable.border_bg)

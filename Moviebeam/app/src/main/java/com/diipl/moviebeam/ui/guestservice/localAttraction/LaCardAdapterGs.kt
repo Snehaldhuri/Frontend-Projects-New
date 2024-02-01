@@ -39,22 +39,7 @@ class LaCardAdapterGs(
                 defaultColor
             )
         )
-        view.setOnFocusChangeListener { it, hasFocus ->
-            if (hasFocus) {
-                it.findViewById<CardView>(R.id.front_card).background = gradientDrawable
 
-                val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.02f)
-                val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.02f)
-
-                val scaleAnimatorSet = AnimatorSet()
-                scaleAnimatorSet.duration = 200
-                scaleAnimatorSet.playTogether(scaleX, scaleY)
-                scaleAnimatorSet.start()
-            } else {
-                it.scaleX = 1.0f
-                it.scaleY = 1.0f
-            }
-        }
         return MyViewHolder(view)
     }
 
@@ -66,6 +51,38 @@ class LaCardAdapterGs(
         holder.imageView.loadImagesWithGlideExtLA(item.imagePathPoster)
         holder.textView.text = item.title
         holder.description.text = item.description.replace("<br/>", "")
+
+        holder.frontCard.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                view.background = gradientDrawable
+
+                val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1.0f, 1.02f)
+                val scaleY = ObjectAnimator.ofFloat(view, View.SCALE_Y, 1.0f, 1.02f)
+
+                val scaleAnimatorSet = AnimatorSet()
+                scaleAnimatorSet.duration = 200
+                scaleAnimatorSet.playTogether(scaleX, scaleY)
+                scaleAnimatorSet.start()
+            } else {
+                view.scaleX = 1.0f
+                view.scaleY = 1.0f
+            }
+
+            if (position == 0) {
+                if (hasFocus) {
+                    view.nextFocusUpId = view.id
+                } else {
+                    view.nextFocusUpId = View.NO_ID
+                }
+            } else if (position == itemList.size - 1) {
+                if (hasFocus) {
+                    view.nextFocusDownId = view.id
+                } else {
+                    view.nextFocusDownId = View.NO_ID
+                }
+            }
+
+        }
 
         holder.frontCard.visibility = View.VISIBLE
     }
