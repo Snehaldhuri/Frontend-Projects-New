@@ -46,7 +46,9 @@ class LaundryFragment : BaseFragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentLaundryBinding.inflate(inflater, container, false)
@@ -96,7 +98,8 @@ class LaundryFragment : BaseFragment() {
             summaryFragment.setItemList(selectedItems)
 
             fragmentTransaction.replace(
-                R.id.fv_tab_content, summaryFragment
+                R.id.fv_tab_content,
+                summaryFragment
             )
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
@@ -111,22 +114,21 @@ class LaundryFragment : BaseFragment() {
             is Resource.Loading -> {}
             is Resource.Success -> {
 
-                laundryViewModel.laundryMasterLiveData.value?.data?.let { it ->
+                laundryViewModel.laundryMasterLiveData.value?.data?.let {
                     laundry_list = it.laundryDataList
 
-                    laundry_adapter = LaundryAdapter(
-                        onMenuItemFocused = {
 
-                            customAdapterLaundry =
-                                CustomAdapterLaundry(onMenuItemFocused = { }, onLeftKeyPressed = {
-                                    binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
-                                })
+                    customAdapterLaundry = CustomAdapterLaundry(
+                        onMenuItemFocused = { },
+                        onLeftKeyPressed = {
+                            binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+                        })
 
-                            binding.lvLaundry.adapter = customAdapterLaundry
+                    binding.lvLaundry.adapter = customAdapterLaundry
 
 
                     laundry_adapter = LaundryAdapter(onMenuItemFocused = {
-                        Log.e("data_onfocus", "handleLaundryMasterResponse:${it}", )
+                        Log.e("data_onfocus", "handleLaundryMasterResponse:${it}")
                         customAdapterLaundry = CustomAdapterLaundry(
                             onMenuItemFocused = { },
                             onLeftKeyPressed = {
@@ -134,15 +136,15 @@ class LaundryFragment : BaseFragment() {
                             })
 
                         binding.lvLaundry.adapter = customAdapterLaundry
-                            customAdapterLaundry.setNewsList(it.subCategoryList)
-                        customAdapterLaundry.setGradientColor(gradientStartColor!!,
+                        // laundry_list?.let {
+                        customAdapterLaundry.setNewsList(it.subCategoryList)
+                        //}
+                        customAdapterLaundry.setGradientColor(
+                            gradientStartColor!!,
                             gradientEndColor!!
                         )
-                            customAdapterLaundry.setGradient(getGradient())
-                        },
-                        onLeftKeyPressed = {
-
-                        },
+                        customAdapterLaundry.setGradient(getGradient())
+                    }, onLeftKeyPressed = {},
                         onRightKeyPressed = {
                             binding.rvLaundry.clearFocus()
                             binding.lvLaundry.requestFocus()
