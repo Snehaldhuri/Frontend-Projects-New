@@ -49,8 +49,6 @@ class MoviesActivity : BaseActivity() {
 
     private val moviesViewModel: MoviesViewModel by viewModels()
     private val movieDetailFragment: MovieDetailFragment = MovieDetailFragment()
-    private lateinit var moviesListFragment: MoviesListFragment
-    //    private lateinit var moviesListFragment: MoviesListFragment
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
