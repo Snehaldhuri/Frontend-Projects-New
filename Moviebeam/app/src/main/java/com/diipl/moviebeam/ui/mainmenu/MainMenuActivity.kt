@@ -102,6 +102,13 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
 
+        // UA = intent.extras?.getString("UA")
+
+        // start the endless service
+        if (!isServiceStarted) {
+            actionOnService(Actions.START)
+        }
+
     }
 
     override fun observeViewModel() {

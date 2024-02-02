@@ -13,6 +13,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.util.Log
 import android.widget.Toast
 import androidx.databinding.ktx.BuildConfig
 import androidx.datastore.core.DataStore
@@ -25,6 +26,8 @@ import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.kaping.CmdDto
+import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
@@ -278,9 +281,9 @@ class EndlessService : Service() {
             log("prefix epoch ->  $epoch")
             epochTime = epoch
         }
-        if (kapingCMD == "00"){
+        if (kapingCMD == "00") {
             CMDRES = ""
-        }else{
+        } else {
             CMDRES = "$kapingCMD$epochTime$transactionId$kapingCmdExecutionResponse"
         }
         log("CMDRES -> $CMDRES")
@@ -313,18 +316,25 @@ class EndlessService : Service() {
             ) {
                 if (response.isSuccessful) {
                     val data = response.body()
+                    Log.d("TAG kapp", "onResponse: $data")
                     val result = KapingResponseParsing().getResponseAsObject(
                         data,
                         KapingResponse::class
                     )
+                    Log.d("TAG kapp", "onResponse: $result")
 
                     val cmdres = result?.CMD
                     cmdres?.let {
-                        kapingCMD = it.substring(0,2)
-                        transactionId = it.substring(11,minOf(it.length, 19))
+                        kapingCMD = it.substring(0, 2)
+                        transactionId = it.substring(11, minOf(it.length, 19))
+                        Log.d("TAG Kaping", "onResponse: $kapingCMD")
                     }
                     // Handle the data here
                     log(result.toString())
+//                    parseCmd(result.CMD)
+                    result?.CMD?.let {
+                        Log.d("TAG parseCmd", "onResponse: ${parseCmd(it)}")
+                    }
                 } else {
                     // Handle unsuccessful response
                 }
@@ -337,6 +347,60 @@ class EndlessService : Service() {
 
         })
 
+    }
+
+    private fun parseCmd(cmd: String): CmdDto{
+        val cmd2 = cmd.substring(0, 2)
+        val epochTime = cmd.substring(2, 11)
+        val transactionId = cmd.substring(11, minOf(cmd.length, 19))
+        var cmdDataDto:CmdDataDto? = null
+        if(cmd2 == "07" || cmd2 == "08"){
+            val cmdData = cmd.substring(19, cmd.length)
+            val sessionId = cmdData.substring(5, 15)
+            var adultContentDisabled: Boolean? = null
+            val message = cmdData.substringAfter(" ")
+            var passCode: String?  = null
+            var parentSessionId: String? = null
+            var guestFirstName: String? = null
+            var guestLastName: String? = null
+            var adultLocked: Boolean? = null
+            if(cmd2 == "07"){
+                adultContentDisabled = cmdData[0] != '0'
+                parentSessionId = cmdData.substring(15, 25)
+//                val nameAndPass = cmdData.split(" ")[3]
+                val nameAndPass = cmdData.substring(cmdData.indexOf("Welcome"))
+                guestFirstName =nameAndPass.split(" ")[1]
+                val lastNameAndPass = nameAndPass.split(" ")[2]
+                guestLastName = lastNameAndPass.substring(0, lastNameAndPass.length-4)
+                passCode = lastNameAndPass.substring(lastNameAndPass.length-5)
+                if(passCode != "____"){
+                    passCode = null
+                    adultLocked = true
+                }else
+                    adultLocked = false
+            }
+
+            cmdDataDto = CmdDataDto(sessionId, parentSessionId, adultContentDisabled, message, guestFirstName, guestLastName, adultLocked, passCode)
+
+
+        }
+        val cmdDto = CmdDto(cmd2, epochTime, transactionId, cmdDataDto)
+        return cmdDto
+    }
+
+    private fun handleKaping(kapingResponse: KapingResponse) {
+        var cmd = ""
+        var transactionId = ""
+        kapingResponse.CMD?.let {
+            cmd = it.substring(0, 2)
+            transactionId = it.substring(11, minOf(it.length, 19))
+        }
+        when(cmd){
+            "07" -> {
+                Log.d("TAG kapppp", "handleKaping: $kapingResponse")
+
+            }
+        }
     }
 
     private fun getVersionNumber(): String {
