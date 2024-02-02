@@ -6,11 +6,14 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
+import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
@@ -54,11 +57,15 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.inject.Inject
-
 
 private const val TAG = "MainMenuActivity"
 
@@ -100,6 +107,8 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
 
+//        val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
+//        startDownload(url)
 
     }
 
@@ -110,6 +119,44 @@ class MainMenuActivity : BaseActivity() {
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
+    }
+
+    fun startDownload(fileURL: String) = CoroutineScope(Dispatchers.Default).launch {
+        try {
+            val url = URL(fileURL)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.connect()
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val directory = File(externalMediaDirs[0].path + "/APK")
+                if (!directory.exists()) directory.mkdirs()
+                val file = File(directory, url.path.substringAfterLast("/"))
+                val outputStream = FileOutputStream(file)
+                val inputStream = connection.inputStream
+                val buffer = ByteArray(4096)
+                var bytesRead: Int
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                }
+                inputStream.close()
+                outputStream.close()
+                Log.e(TAG, "startDownload: Completed  --->  ${file.absolutePath}")
+
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setDataAndType(file.toUri(), "application/vnd.android.package-archive")
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+                Log.e(TAG, "startDownload: Installed  --->  ${file.absolutePath}")
+
+            } else {
+                // Handle the error or show a message if download fails
+                Log.e(TAG, "startDownload: Failed")
+            }
+            connection.disconnect()
+
+        } catch (e: Exception) {
+            Log.e(TAG, "startDownload Exception: ${e.message}")
+        }
     }
 
     override fun initViewBinding() {
@@ -127,27 +174,33 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onRestart() {
-        player = ExoPlayer.Builder(this).build()
-//        if (HOTEL_VIDEO_URL.isNotEmpty())
-        initializePlayer()
         super.onRestart()
+        player = ExoPlayer.Builder(this).build()
+        initializePlayer()
     }
 
 
     private fun initializePlayer() {
-        binding.videoView.toVisible()
-        binding.videoView.player = player
-        player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
-        player.repeatMode = Player.REPEAT_MODE_ALL
-        player.playWhenReady = true
-        player.addListener(playerListener)
-        player.prepare()
-        player.play()
-        player.seekTo(HOTEL_VIDEO_DURATION)
+        if (HOTEL_VIDEO_URL.isNotEmpty()) {
+            binding.videoView.toVisible()
+            binding.videoView.player = player
+            player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
+            player.repeatMode = Player.REPEAT_MODE_ALL
+            player.playWhenReady = true
+            player.addListener(playerListener)
+            player.prepare()
+            player.play()
+            player.seekTo(HOTEL_VIDEO_DURATION)
+        }
     }
 
 
     private val playerListener = object : Player.Listener {
+        override fun onPlayerError(error: PlaybackException) {
+            super.onPlayerError(error)
+            releaseVideoPlayer()
+        }
+
         override fun onEvents(player: Player, events: Player.Events) {
             super.onEvents(player, events)
             if (HOTEL_VIDEO_LOOP_COUNT == 0) {

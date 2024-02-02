@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -48,6 +49,8 @@ class MoviesActivity : BaseActivity() {
 
     private val moviesViewModel: MoviesViewModel by viewModels()
     private val movieDetailFragment: MovieDetailFragment = MovieDetailFragment()
+    private lateinit var moviesListFragment: MoviesListFragment
+    private var focusedPosition = 0
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -93,37 +96,21 @@ class MoviesActivity : BaseActivity() {
             handleBackClick()
         }
 
+        moviesListFragment = MoviesListFragment()
+        supportFragmentManager.beginTransaction().replace(binding.frame.id, moviesListFragment)
+            .commit()
+
         val parentRecyclerView: RecyclerView = binding.parentRecyclerView
         parentRecyclerView.setHasFixedSize(true)
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         parentRecyclerView.layoutManager = layoutManager
 
-     /*   val snapHelper = LinearSnapHelper()
-        snapHelper.attachToRecyclerView(parentRecyclerView)
 
-        parentRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                val position = layoutManager.findFirstVisibleItemPosition()
-                parentRecyclerView.smoothScrollToPosition(position)
+        binding.nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            if (scrollY < oldScrollY) {
+                v.scrollTo(scrollX, scrollY.minus(100))
             }
         })
-
-
-        binding.nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener {
-                v, scrollX, scrollY, oldScrollX, oldScrollY ->
-//            Log.e(TAG, "nestedScroll:  $scrollX  $oldScrollX  $scrollY  $oldScrollY")
-            val position = layoutManager.findFirstVisibleItemPosition()
-            parentRecyclerView.smoothScrollToPosition(position)
-            Log.e(TAG, "nestedScroll:  $position")
-            if (scrollY < oldScrollY){
-                Log.e(TAG, "onCreate: TOP SCROLL ")
-            } else {
-                Log.e(TAG, "onCreate: BOTTOM SCROLL")
-            }
-         })*/
-
-
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -173,6 +160,7 @@ class MoviesActivity : BaseActivity() {
 
                                 parentAdapter.setMovieList(sortedGenreMap)
                                 binding.parentRecyclerView.adapter = parentAdapter
+//                                moviesListFragment.bindData(sortedGenreMap)
                             }
 
                             Constants.FREE_MOVIES_ID -> {
@@ -190,6 +178,7 @@ class MoviesActivity : BaseActivity() {
                                 val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
                                 parentAdapter.setMovieList(freeGenreMap)
                                 binding.parentRecyclerView.adapter = parentAdapter
+//                                moviesListFragment.bindData(freeGenreMap)
                             }
 //
 //                            Constants.ADULT_DAY_PASS_ID -> {
@@ -248,11 +237,11 @@ class MoviesActivity : BaseActivity() {
                 transition.replace(R.id.fcv_movie_detail, movieDetailFragment)
                 transition.commit()
                 binding.fcvMovieDetail.toInvisible()
-                val parentAdapter = ParentAdapter {
+                val parentAdapter = ParentAdapter(onItemClicked = {
                     movieDetailFragment.setMovieDetails(it)
                     binding.parentRecyclerView.toInvisible()
                     binding.fcvMovieDetail.toVisible()
-                }
+                })
                 parentAdapter.setMovieList(genreMap)
                 binding.parentRecyclerView.adapter = parentAdapter
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
@@ -265,6 +254,7 @@ class MoviesActivity : BaseActivity() {
             }
         }
     }
+
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {

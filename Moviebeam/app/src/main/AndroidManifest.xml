@@ -66,14 +66,15 @@
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
+<!-- TODO Uncomment this for release-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity
             android:name=".ui.appworld.AppWorldActivity"
@@ -129,6 +130,8 @@
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
             </intent-filter>
 
         </activity>

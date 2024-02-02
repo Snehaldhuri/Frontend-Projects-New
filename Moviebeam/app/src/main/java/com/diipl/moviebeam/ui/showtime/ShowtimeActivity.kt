@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.widget.Spinner
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -18,7 +19,6 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -78,6 +78,12 @@ class ShowtimeActivity : BaseActivity() {
         parentRecyclerView.setHasFixedSize(true)
         binding.parentRecyclerView.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
+        binding.nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            if (scrollY < oldScrollY) {
+                v.scrollTo(scrollX, scrollY.minus(100))
+            }
+        })
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
