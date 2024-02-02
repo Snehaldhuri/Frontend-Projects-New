@@ -33,6 +33,10 @@ class ChildAdapter(
         view.isFocusable = true
         view.isClickable = true
 
+ /*       val params = view.layoutParams
+        params.width = getWidthInPercent(parent.context, 10)
+        params.height = getHeightInPercent(parent.context, 24)*/
+
         return ChildViewHolder(view)
     }
 
@@ -72,6 +76,7 @@ class ChildAdapter(
                 it.scaleX = 1.0f
                 it.scaleY = 1.0f
             }
+            holder.itemView.invalidate()
         }
         if(item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID){
             holder.title.toInvisible()

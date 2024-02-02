@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.movies
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,14 +44,9 @@ class ParentAdapter(
             LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
 
         val adapter = ChildAdapter(parentItem, onItemClicked)
+        holder.childRecyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
         holder.childRecyclerView.adapter = adapter
 
-       this.position = holder.oldPosition
-
-        Log.e(
-            "ParentAdapter: ",
-            "${holder.adapterPosition}   ${holder.oldPosition}"
-        )
     }
 
     fun setMovieList(map: Map<String, List<ContentDto>>) {
