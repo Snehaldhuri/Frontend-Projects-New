@@ -215,19 +215,6 @@ class MainMenuActivity : BaseActivity() {
 
     }
 
-    fun createTime(duration: Long): String {
-        var time = ""
-        var minute = ""
-        var secs = ""
-        val min = duration / 1000 / 60
-        val sec = duration / 1000 % 60
-        minute = if (min < 10) "0$min" else "" + min
-        secs = if (sec < 10) "0$sec" else "" + sec
-        time = "$minute:$secs"
-        return time
-    }
-
-
     private fun releaseVideoPlayer() {
         binding.videoView.toInvisible()
         player.release()

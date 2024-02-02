@@ -8,7 +8,9 @@
     android:clickable="true"
     android:layout_gravity="center"
     android:focusable="true"
+    android:theme="@style/Theme.MaterialComponents"
     app:cardCornerRadius="@dimen/dp_8"
+    android:animateLayoutChanges="true"
     app:cardBackgroundColor="@android:color/transparent"
     app:cardElevation="0dp"
     app:cardPreventCornerOverlap="true"
@@ -20,19 +22,27 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <ImageView
-            android:id="@+id/childLogoIv"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:src="@drawable/help"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:clipToOutline="true"
-            android:background="@drawable/round_outline_5dp"
+            app:cardBackgroundColor="@color/transparent"
+            android:id="@+id/img_card"
+            app:strokeColor="@color/transparent"
+            app:strokeWidth="@dimen/dp_2"
+            app:cardCornerRadius="@dimen/dp_8"
+            >
+            <ImageView
+                android:id="@+id/childLogoIv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/help"
+                android:adjustViewBounds="true"
+                android:scaleType="fitXY"
+                />
+        </com.google.android.material.card.MaterialCardView>
 
-            />
+
         <TextView
             android:id="@+id/childTitleTv"
             android:layout_width="match_parent"

@@ -14,6 +14,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.ActivityExoPlayerBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 
+private const val TAG = "ExoPlayerActivity"
 class ExoPlayerActivity : BaseActivity() {
 
     private lateinit var binding: ActivityExoPlayerBinding
@@ -136,14 +137,36 @@ class ExoPlayerActivity : BaseActivity() {
         player = null
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
+    }
+
     private fun playerListener() = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             val stateString: String = when (playbackState) {
                 ExoPlayer.STATE_IDLE -> "ExoPlayer.STATE_IDLE      -"
                 ExoPlayer.STATE_BUFFERING -> "ExoPlayer.STATE_BUFFERING -"
                 ExoPlayer.STATE_READY -> "ExoPlayer.STATE_READY     -"
-                ExoPlayer.STATE_ENDED -> "ExoPlayer.STATE_ENDED     -"
+                ExoPlayer.STATE_ENDED -> {
+                    "ExoPlayer.STATE_ENDED     -"
+                }
                 else -> "UNKNOWN_STATE             -"
+            }
+            when(playbackState){
+                ExoPlayer.STATE_ENDED -> {
+                    releasePlayer()
+                    onBackPressed()
+                }
+
+                Player.STATE_BUFFERING -> {
+                }
+
+                Player.STATE_IDLE -> {
+                }
+
+                Player.STATE_READY -> {
+                }
             }
             Log.d("ExoPlayer state", "changed state to $stateString")
             when(playbackState){
