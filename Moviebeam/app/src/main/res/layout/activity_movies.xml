@@ -106,7 +106,6 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:visibility="gone"
-        android:name="com.diipl.moviebeam.ui.movies.MoviesListFragment"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toEndOf="@id/gl_vertical_98"
         app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
