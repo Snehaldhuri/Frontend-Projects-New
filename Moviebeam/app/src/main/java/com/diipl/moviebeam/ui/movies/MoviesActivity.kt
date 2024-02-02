@@ -49,8 +49,6 @@ class MoviesActivity : BaseActivity() {
 
     private val moviesViewModel: MoviesViewModel by viewModels()
     private val movieDetailFragment: MovieDetailFragment = MovieDetailFragment()
-    private lateinit var moviesListFragment: MoviesListFragment
-    private var focusedPosition = 0
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -95,10 +93,10 @@ class MoviesActivity : BaseActivity() {
         binding.btnBack.setOnClickListener {
             handleBackClick()
         }
-
-        moviesListFragment = MoviesListFragment()
-        supportFragmentManager.beginTransaction().replace(binding.frame.id, moviesListFragment)
-            .commit()
+//
+//        moviesListFragment = MoviesListFragment()
+//        supportFragmentManager.beginTransaction().replace(binding.frame.id, moviesListFragment)
+//            .commit()
 
         val parentRecyclerView: RecyclerView = binding.parentRecyclerView
         parentRecyclerView.setHasFixedSize(true)

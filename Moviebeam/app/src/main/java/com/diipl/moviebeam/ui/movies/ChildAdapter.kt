@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.movies
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
+import com.diipl.moviebeam.databinding.MoviegenreChildlistItemBinding
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 import com.diipl.moviebeam.utils.toInvisible
 
@@ -22,41 +24,27 @@ class ChildAdapter(
 ) :
     RecyclerView.Adapter<ChildAdapter.ChildViewHolder>() {
 
-    inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class ChildViewHolder(val binding: MoviegenreChildlistItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         val logo: ImageView = itemView.findViewById(R.id.childLogoIv)
         val title: TextView = itemView.findViewById(R.id.childTitleTv)
         val movieview: CardView = itemView.findViewById(R.id.cv_movie_card)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChildViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.moviegenre_childlist_item, parent, false)
-        view.isFocusable = true
-        view.isClickable = true
+        val binding = MoviegenreChildlistItemBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        binding.root.isFocusable = true
+        binding.root.isClickable = true
 
- /*       val params = view.layoutParams
-        params.width = getWidthInPercent(parent.context, 10)
-        params.height = getHeightInPercent(parent.context, 24)*/
+        /*       val params = view.layoutParams
+               params.width = getWidthInPercent(parent.context, 10)
+               params.height = getHeightInPercent(parent.context, 24)*/
 
-        return ChildViewHolder(view)
-    }
-
-    override fun getItemCount(): Int = childList.size
-
-    override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
-        val item = childList[position]
-
-        val httpStreamingHotelvideoUrl ="http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
-        item.imagePathSushi = httpStreamingHotelvideoUrl+item.releaseId+"/"+item.releaseId+"_S.jpg"
-
-        holder.logo.loadImagesWithGlideExtSushi(item.imagePathSushi)
-        if(item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID){
-            holder.title.toInvisible()
-        }else{
-            holder.title.text =
-                holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
-        }
-
-        holder.movieview.setOnFocusChangeListener { it, hasFocus ->
+        binding.root.setOnFocusChangeListener { it, hasFocus ->
             val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.1f)
             val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.1f)
 
@@ -64,23 +52,48 @@ class ChildAdapter(
             scaleAnimatorSet.duration = 200
             scaleAnimatorSet.playTogether(scaleX, scaleY)
 
-            val focusedColor = ContextCompat.getColor(holder.title.context, R.color.home_page_greeting_text_color)
-            val unfocusedColor = ContextCompat.getColor(holder.title.context, R.color.text_color_primary)
+            val focusedColor = ContextCompat.getColor(parent.context, R.color.home_page_greeting_text_color)
+            val unfocusedColor = ContextCompat.getColor(parent.context, R.color.text_color_primary)
 
             if (hasFocus) {
-                holder.title.setTextColor(focusedColor)
-                scaleAnimatorSet.start()
+                it.scaleX = 1.12f
+                it.scaleY = 1.12f
+                binding.childTitleTv.setTextColor(focusedColor)
+//                scaleAnimatorSet.start()
+                binding.imgCard.strokeColor = focusedColor
             } else {
-                holder.title.setTextColor(unfocusedColor)
-                scaleAnimatorSet.cancel()
                 it.scaleX = 1.0f
                 it.scaleY = 1.0f
+                binding.childTitleTv.setTextColor(unfocusedColor)
+//                scaleAnimatorSet.cancel()
+                binding.imgCard.strokeColor = Color.TRANSPARENT
             }
-            holder.itemView.invalidate()
         }
-        if(item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID){
+
+
+        return ChildViewHolder(binding)
+    }
+
+    override fun getItemCount(): Int = childList.size
+
+    override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
+        val item = childList[position]
+
+        val httpStreamingHotelvideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        item.imagePathSushi =
+            httpStreamingHotelvideoUrl + item.releaseId + "/" + item.releaseId + "_S.jpg"
+
+        holder.logo.loadImagesWithGlideExtSushi(item.imagePathSushi)
+        if (item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID) {
             holder.title.toInvisible()
-        }else{
+        } else {
+            holder.title.text =
+                holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
+        }
+
+        if (item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID) {
+            holder.title.toInvisible()
+        } else {
             holder.title.text =
                 holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
         }
