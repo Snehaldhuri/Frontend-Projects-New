@@ -92,7 +92,11 @@
                 android:layout_height="wrap_content"
                 android:text="@string/offerText"
                 android:textColor="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:textAlignment="center"
                 android:textSize="14sp"
+
                 app:layout_constraintTop_toBottomOf="@id/tv_la_card_desc" />
 
             <Button
@@ -103,7 +107,7 @@
                 android:background="@drawable/btn_bg_gradient_default"
                 android:clickable="true"
                 android:focusable="true"
-                android:text="Back"
+                android:text="More"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_offer" />
@@ -115,8 +119,8 @@
         android:id="@+id/back_card"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
         android:fadingEdgeLength="@dimen/dp_0"
+        android:visibility="gone"
         app:cardCornerRadius="@dimen/dp_12"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -137,8 +141,6 @@
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toTopOf="@+id/text2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -173,9 +175,10 @@
                 android:id="@+id/text3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Press ok to go back"
+                android:text="Press OK to go back"
                 android:textColor="@color/white"
                 android:textSize="16sp"
+                android:textAlignment="center"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/img" />

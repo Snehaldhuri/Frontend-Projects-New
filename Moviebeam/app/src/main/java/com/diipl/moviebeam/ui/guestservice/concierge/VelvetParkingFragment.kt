@@ -108,7 +108,7 @@ class VelvetParkingFragment(
                 }
             }
             binding.tvMessage.text =
-                "Thank you.Your request has been sent .Please proceed with valet desk to retrive your vehicle"
+                "Thank you.Your request has been sent.\nPlease proceed with valet desk to retrive your vehicle."
 
             binding.btnPopOk.setOnClickListener {
                 onOkClicked()
