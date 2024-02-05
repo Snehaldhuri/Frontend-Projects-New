@@ -36,8 +36,7 @@ class ShowtimeChildAdapter(
         binding.root.isClickable = true
 
         binding.root.setOnFocusChangeListener { it, hasFocus ->
-            val focusedColor =
-                ContextCompat.getColor(parent.context, R.color.home_page_greeting_text_color)
+            val focusedColor = ContextCompat.getColor(parent.context, R.color.home_page_greeting_text_color)
             val unfocusedColor = ContextCompat.getColor(parent.context, R.color.text_color_primary)
 
             if (hasFocus) {
@@ -45,11 +44,13 @@ class ShowtimeChildAdapter(
                 it.scaleY = 1.12f
                 binding.childTitleTv.setTextColor(focusedColor)
                 binding.imgCard.strokeColor = focusedColor
+//                binding.childTitleTv.toVisible()
             } else {
                 it.scaleX = 1.0f
                 it.scaleY = 1.0f
                 binding.childTitleTv.setTextColor(unfocusedColor)
                 binding.imgCard.strokeColor = Color.TRANSPARENT
+//                binding.childTitleTv.toInvisible()
             }
         }
 
@@ -67,6 +68,8 @@ class ShowtimeChildAdapter(
             httpStreamingHotelvideoUrl + item.releaseId + "/" + item.releaseId + "_S.jpg"
 
         holder.logo.loadImagesWithGlideExtSushi(item.imagePathSushi)
+//        holder.binding.childTitleTv.text = item.movieName
+//        holder.binding.childTitleTv.toInvisible()
         holder.movieview.setOnClickListener {
             onItemClicked(item, item.releaseId)
         }

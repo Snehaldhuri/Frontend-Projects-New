@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -86,6 +85,23 @@ class HotelInfoViewModel @Inject constructor(
                 _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             }.collect {
                 _hotelServiceLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun setHotelServicesResponseData(
+        dataStore: DataStore<HotelServiceResponse>,
+        data: HotelServiceResponse
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    servicesList = data.servicesList,
+                    type = data.type,
+                    version = data.version
+                )
+
             }
         }
     }

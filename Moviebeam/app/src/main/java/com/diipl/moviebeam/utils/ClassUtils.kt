@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.utils
 
 import android.content.Context
+import com.diipl.moviebeam.Constants
 
 fun getWidthInPercent(context: Context, percent: Int): Int {
     val width = context.resources.displayMetrics.widthPixels
@@ -10,6 +11,18 @@ fun getWidthInPercent(context: Context, percent: Int): Int {
 fun getHeightInPercent(context: Context, percent: Int): Int {
     val width = context.resources.displayMetrics.heightPixels
     return (width * percent) / 100
+}
+
+fun replaceDegreeSymbol(temp: String?): String {
+    var temperature = ""
+    temp?.let {
+        temperature = if (it.contains("&deg C")) {
+            it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
+        } else {
+            it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
+        }
+    }
+    return temperature
 }
 
 fun Long.toTimeFormat(): String {

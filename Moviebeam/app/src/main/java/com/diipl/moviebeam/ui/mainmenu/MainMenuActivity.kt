@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
-import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.media3.common.MediaItem
@@ -21,9 +20,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.Constants.HOTEL_VIDEO_DURATION
+import com.diipl.moviebeam.Constants.ALL_SERVICES
 import com.diipl.moviebeam.Constants.HOTEL_VIDEO_LOOP_COUNT
 import com.diipl.moviebeam.Constants.HOTEL_VIDEO_URL
+import com.diipl.moviebeam.Constants.IN_ROOM_ID
+import com.diipl.moviebeam.Constants.LA_ID
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -37,12 +38,10 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
-import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.kappingservice.Actions
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.kappingservice.ServiceState
 import com.diipl.moviebeam.ui.kappingservice.getServiceState
-import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
@@ -107,7 +106,7 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
 
-//        val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
+        val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
 //        startDownload(url)
 
     }
@@ -142,12 +141,6 @@ class MainMenuActivity : BaseActivity() {
                 outputStream.close()
                 Log.e(TAG, "startDownload: Completed  --->  ${file.absolutePath}")
 
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.setDataAndType(file.toUri(), "application/vnd.android.package-archive")
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-                Log.e(TAG, "startDownload: Installed  --->  ${file.absolutePath}")
-
             } else {
                 // Handle the error or show a message if download fails
                 Log.e(TAG, "startDownload: Failed")
@@ -166,10 +159,10 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        player.playWhenReady = false
-        HOTEL_VIDEO_DURATION = player.currentPosition
+//        HOTEL_VIDEO_DURATION = player.currentPosition
         player.pause()
         player.release()
+        HOTEL_VIDEO_LOOP_COUNT = 3
         super.onPause()
     }
 
@@ -190,7 +183,7 @@ class MainMenuActivity : BaseActivity() {
             player.addListener(playerListener)
             player.prepare()
             player.play()
-            player.seekTo(HOTEL_VIDEO_DURATION)
+//            player.seekTo(HOTEL_VIDEO_DURATION)
         }
     }
 
@@ -322,7 +315,8 @@ class MainMenuActivity : BaseActivity() {
                         }
 
                         Constants.LOCAL_ATTRACTION_ID -> {
-                            intent = Intent(this, LocalAttractionActivity::class.java)
+                            intent = Intent(this, GuestServiceActivity::class.java)
+                            intent.putExtra("btnId", LA_ID)
                         }
 
                         Constants.VOD_ID -> {
@@ -331,6 +325,7 @@ class MainMenuActivity : BaseActivity() {
 
                         Constants.GUEST_SERVICES_ID -> {
                             intent = Intent(this, GuestServiceActivity::class.java)
+                            intent.putExtra("btnId", ALL_SERVICES)
                         }
 
                         Constants.APPS_ID -> {
@@ -350,7 +345,8 @@ class MainMenuActivity : BaseActivity() {
                         }
 
                         Constants.IN_ROOM_DINING_ID -> {
-                            intent = Intent(this, InRoomDiningActivity::class.java)
+                            intent = Intent(this, GuestServiceActivity::class.java)
+                            intent.putExtra("btnId", IN_ROOM_ID)
                         }
 
                         else -> {

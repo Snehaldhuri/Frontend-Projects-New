@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
@@ -86,6 +87,16 @@ class ProgramGuideActivity : BaseActivity() {
         if (isFScreenExit) {
             playChannelVideoBg(null)
         }
+
+        binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
+            when(code){
+                KeyEvent.KEYCODE_DPAD_CENTER or KeyEvent.KEYCODE_ENTER -> {
+
+                }
+            }
+            return@setOnKeyListener false
+        }
+
     }
 
     private fun fetchDetails() {

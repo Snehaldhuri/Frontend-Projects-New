@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.Constants.ALL_SERVICES
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -46,6 +47,7 @@ import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
@@ -54,6 +56,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class GuestServiceActivity : BaseActivity() {
+
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
     private var conciergeIndex = 0
@@ -67,6 +70,7 @@ class GuestServiceActivity : BaseActivity() {
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private var gradient: GradientDrawable? = null
+    private var btnId: String = ""
 
     override fun initViewBinding() {
         fetchDataFromDatastore()
@@ -75,8 +79,19 @@ class GuestServiceActivity : BaseActivity() {
         setContentView(binding.root)
         binding.btnBack.setOnFocusChangeListener(::handleBackClick)
         binding.btnBack.setOnClickListener { finish() }
-        binding.rvTabLayout.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
+        btnId = intent.getStringExtra("btnId").toString()
+        if (btnId == ALL_SERVICES) {
+            binding.rvTabLayout.layoutManager =
+                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+            binding.rvTabLayout.toVisible()
+            binding.tvServiceTitle.toVisible()
+        } else {
+            binding.rvTabLayout.toGone()
+            binding.tvServiceTitle.toGone()
+            bindAdapterView(binding.root, btnId)
+        }
+
     }
 
     override fun observeViewModel() {
@@ -119,233 +134,20 @@ class GuestServiceActivity : BaseActivity() {
                 }
                 val adapter = GuestServiceTabAdapter { view, service ->
                     binding.tvServiceTitle.text = service.categoryName
-                    when (service.btnId) {
-                        Constants.CONCIERGE_ID -> {
-
-                            binding.fvTabContent.toInvisible()
-                            val conciergeListFromApi: List<Int>? =
-                                guestServiceViewModel.accountSetupLiveData
-                                    .value?.data?.conciergeList?.map { concierge -> concierge.serviceId }
-                            val conciergeModelList: List<ConciergeBtnModel> =
-                                Constants.CONCIERGE_BUTTON_LIST.filter { concierge ->
-                                    conciergeListFromApi?.contains(concierge.serviceId) == true
-                                }
-                            binding.rvTabContent.toVisible()
-                            conciergeIndex = 1
-                            binding.rvTabContent.layoutManager = GridLayoutManager(this, 4)
-                            val conciergeAdapter = ConciergeAdapter { conciergeService ->
-                                binding.tvServiceTitle.text = conciergeService.categoryName
-                                when (conciergeService.serviceId) {
-                                    1 -> {
-                                        val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = MakeMyRoomFragment {
-                                            view.requestFocus()
-                                            view.performClick()
-                                        }
-
-                                        fragment.setGradientColor(
-                                            gradientStartColor,
-                                            gradientEndColor
-                                        )
-                                        transaction.replace(R.id.fv_tab_content, fragment)
-                                        binding.rvTabContent.toInvisible()
-                                        transaction.commit()
-                                        binding.fvTabContent.toVisible()
-                                    }
-
-                                    2 -> {
-                                        val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = VelvetParkingFragment {
-                                            view.requestFocus()
-                                            view.performClick()
-                                        }
-                                        transaction.replace(R.id.fv_tab_content, fragment)
-                                        binding.rvTabContent.toInvisible()
-                                        binding.fvTabContent.toVisible()
-                                        fragment.setGradientColor(
-                                            gradientStartColor,
-                                            gradientEndColor
-                                        )
-                                        transaction.commit()
-                                    }
-
-                                    4 -> {
-                                        binding.layoutHeader.tvTitle.text =
-                                            getString(R.string.toiletry_requests)
-                                        val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = ToiletryRequestFragment {
-                                            view.requestFocus()
-                                            view.performClick()
-                                        }
-                                        val mBundle = Bundle()
-                                        mBundle.putString("gradientStartColor", gradientStartColor)
-                                        mBundle.putString("gradientEndColor", gradientEndColor)
-                                        fragment.arguments = mBundle
-                                        transaction.replace(R.id.fv_tab_content, fragment)
-                                        binding.rvTabContent.toInvisible()
-                                        binding.fvTabContent.toVisible()
-                                        transaction.commit()
-                                    }
-
-                                    5 -> {
-                                        val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = SpaFragment {
-                                            view.requestFocus()
-                                            view.performClick()
-                                        }
-                                        fragment.setGradientColor(
-                                            gradientStartColor,
-                                            gradientEndColor
-                                        )
-                                        transaction.replace(R.id.fv_tab_content, fragment)
-                                        binding.rvTabContent.toInvisible()
-                                        binding.fvTabContent.toVisible()
-                                        transaction.commit()
-
-                                    }
-
-                                    6 -> {
-
-                                        val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = GolfFragment {
-                                            view.requestFocus()
-                                            view.performClick()
-                                        }
-                                        fragment.setGradientColor(
-                                            gradientStartColor,
-                                            gradientEndColor
-                                        )
-                                        transaction.replace(R.id.fv_tab_content, fragment)
-                                        binding.rvTabContent.toInvisible()
-                                        binding.fvTabContent.toVisible()
-                                        transaction.commit()
-                                    }
-
-                                    7 -> {
-                                        val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = LaundryTimeFragment {
-                                            view.requestFocus()
-                                            view.performClick()
-                                        }
-                                        fragment.setGradientColor(
-                                            gradientStartColor,
-                                            gradientEndColor
-                                        )
-                                        transaction.replace(R.id.fv_tab_content, fragment)
-                                        binding.rvTabContent.toInvisible()
-                                        binding.fvTabContent.toVisible()
-                                        transaction.commit()
-                                    }
-
-                                    3 -> {
-                                        val transaction = supportFragmentManager.beginTransaction()
-                                        val fragment = LaundryFragment()
-
-                                        fragment.setGradientColor(
-                                            gradientStartColor,
-                                            gradientEndColor
-                                        )
-                                        transaction.replace(R.id.fv_tab_content, fragment)
-                                        binding.rvTabContent.toInvisible()
-                                        binding.fvTabContent.toVisible()
-                                        transaction.commit()
-                                    }
-                                }
-                            }
-
-                            conciergeAdapter.setButtonList(conciergeModelList)
-                            conciergeAdapter.setGradientColor(gradientStartColor, gradientEndColor)
-                            binding.rvTabContent.adapter = conciergeAdapter
-
-                        }
-
-                        Constants.FLIGHT_STATUS_ID -> {
-                            conciergeIndex = 0
-                            binding.rvTabContent.toInvisible()
-                            binding.fvTabContent.toVisible()
-                            val transaction1 = supportFragmentManager.beginTransaction()
-
-                            val fragment = FlightStatusFragment {
-                                view.requestFocus()
-                            }
-                            guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
-                                fragment.setAirportList(airports)
-                            }
-                            fragment.setGradientColor(gradientStartColor, gradientEndColor)
-                            transaction1.replace(R.id.fv_tab_content, fragment)
-                            transaction1.commit()
-                        }
-
-                        Constants.WEATHER_ID -> {
-                            conciergeIndex = 0
-                            binding.rvTabContent.toInvisible()
-                            binding.fvTabContent.toVisible()
-                            val transaction = supportFragmentManager.beginTransaction()
-                            val fragment = WeatherFragment()
-                            transaction.replace(R.id.fv_tab_content, fragment)
-                            transaction.commit()
-
-                        }
-
-                        Constants.NEWS_ID -> {
-                            conciergeIndex = 0
-                            binding.rvTabContent.toInvisible()
-                            binding.fvTabContent.toVisible()
-                            val transaction = supportFragmentManager.beginTransaction()
-                            val fragment = NewsFragment {
-                                view.requestFocus()
-                            }
-                            fragment.setGradientColor(gradientStartColor, gradientEndColor)
-                            transaction.replace(R.id.fv_tab_content, fragment)
-                            transaction.commit()
-                        }
-
-                        Constants.GUEST_FEEDBACK_ID -> {
-                            conciergeIndex = 0
-                            binding.rvTabContent.toInvisible()
-                            binding.fvTabContent.toVisible()
-                            val transaction = supportFragmentManager.beginTransaction()
-                            val fragment = FeedbackFragment {
-                                view.requestFocus()
-                            }
-                            fragment.setGradientColor(gradientStartColor, gradientEndColor)
-                            transaction.replace(R.id.fv_tab_content, fragment)
-                            transaction.commit()
-                        }
-
-                        Constants.LA_ID -> {
-                            conciergeIndex = 0
-                            binding.rvTabContent.toInvisible()
-                            binding.fvTabContent.toVisible()
-                            val transaction = supportFragmentManager.beginTransaction()
-                            val fragment = LocalAttractionGsFragment()
-                            fragment.setGradientColor(gradientStartColor, gradientEndColor)
-                            transaction.replace(R.id.fv_tab_content, fragment)
-                            transaction.commit()
-
-                        }
-
-                        Constants.IN_ROOM_ID -> {
-                            conciergeIndex = 0
-                            binding.rvTabContent.toInvisible()
-                            binding.fvTabContent.toVisible()
-                            val transaction = supportFragmentManager.beginTransaction()
-                            val fragment = InRoomDiningGsFragment()
-                            transaction.replace(R.id.fv_tab_content, fragment)
-                            transaction.commit()
-                        }
-                    }
+                    bindAdapterView(view, service.btnId)
                 }
                 binding.rvTabContent.toInvisible()
-                val transaction = supportFragmentManager.beginTransaction()
-                val fragment = WeatherFragment()
-                transaction.replace(R.id.fv_tab_content, fragment)
-                transaction.commit()
+                if (btnId == ALL_SERVICES) {
+                    val transaction = supportFragmentManager.beginTransaction()
+                    val fragment = WeatherFragment()
+                    transaction.replace(R.id.fv_tab_content, fragment)
+                    transaction.commit()
 
-                adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
-                adapter.setGradientColor(gradientStartColor, gradientEndColor)
+                    adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
+                    adapter.setGradientColor(gradientStartColor, gradientEndColor)
 
-                binding.rvTabLayout.adapter = adapter
+                    binding.rvTabLayout.adapter = adapter
+                }
                 binding.loaderView.toInvisible()
             }
 
@@ -353,6 +155,227 @@ class GuestServiceActivity : BaseActivity() {
                 status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
             }
         }
+    }
+
+    private fun bindAdapterView(view: View, btnId: String) {
+        when (btnId) {
+
+            Constants.CONCIERGE_ID -> {
+
+                binding.fvTabContent.toInvisible()
+                val conciergeListFromApi: List<Int>? =
+                    guestServiceViewModel.accountSetupLiveData
+                        .value?.data?.conciergeList?.map { concierge -> concierge.serviceId }
+                val conciergeModelList: List<ConciergeBtnModel> =
+                    Constants.CONCIERGE_BUTTON_LIST.filter { concierge ->
+                        conciergeListFromApi?.contains(concierge.serviceId) == true
+                    }
+                binding.rvTabContent.toVisible()
+                conciergeIndex = 1
+                binding.rvTabContent.layoutManager = GridLayoutManager(this, 4)
+                val conciergeAdapter = ConciergeAdapter { conciergeService ->
+                    binding.tvServiceTitle.text = conciergeService.categoryName
+                    when (conciergeService.serviceId) {
+                        1 -> {
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = MakeMyRoomFragment {
+                                view.requestFocus()
+                                view.performClick()
+                            }
+
+                            fragment.setGradientColor(
+                                gradientStartColor,
+                                gradientEndColor
+                            )
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            binding.rvTabContent.toInvisible()
+                            transaction.commit()
+                            binding.fvTabContent.toVisible()
+                        }
+
+                        2 -> {
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = VelvetParkingFragment {
+                                view.requestFocus()
+                                view.performClick()
+                            }
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
+                            fragment.setGradientColor(
+                                gradientStartColor,
+                                gradientEndColor
+                            )
+                            transaction.commit()
+                        }
+
+                        4 -> {
+                            binding.layoutHeader.tvTitle.text =
+                                getString(R.string.toiletry_requests)
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = ToiletryRequestFragment {
+                                view.requestFocus()
+                                view.performClick()
+                            }
+                            val mBundle = Bundle()
+                            mBundle.putString("gradientStartColor", gradientStartColor)
+                            mBundle.putString("gradientEndColor", gradientEndColor)
+                            fragment.arguments = mBundle
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
+                            transaction.commit()
+                        }
+
+                        5 -> {
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = SpaFragment {
+                                view.requestFocus()
+                                view.performClick()
+                            }
+                            fragment.setGradientColor(
+                                gradientStartColor,
+                                gradientEndColor
+                            )
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
+                            transaction.commit()
+
+                        }
+
+                        6 -> {
+
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = GolfFragment {
+                                view.requestFocus()
+                                view.performClick()
+                            }
+                            fragment.setGradientColor(
+                                gradientStartColor,
+                                gradientEndColor
+                            )
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
+                            transaction.commit()
+                        }
+
+                        7 -> {
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = LaundryTimeFragment {
+                                view.requestFocus()
+                                view.performClick()
+                            }
+                            fragment.setGradientColor(
+                                gradientStartColor,
+                                gradientEndColor
+                            )
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
+                            transaction.commit()
+                        }
+
+                        3 -> {
+                            val transaction = supportFragmentManager.beginTransaction()
+                            val fragment = LaundryFragment()
+
+                            fragment.setGradientColor(
+                                gradientStartColor,
+                                gradientEndColor
+                            )
+                            transaction.replace(R.id.fv_tab_content, fragment)
+                            binding.rvTabContent.toInvisible()
+                            binding.fvTabContent.toVisible()
+                            transaction.commit()
+                        }
+                    }
+                }
+
+                conciergeAdapter.setButtonList(conciergeModelList)
+                conciergeAdapter.setGradientColor(gradientStartColor, gradientEndColor)
+                binding.rvTabContent.adapter = conciergeAdapter
+
+            }
+
+            Constants.FLIGHT_STATUS_ID -> {
+                conciergeIndex = 0
+                binding.rvTabContent.toInvisible()
+                binding.fvTabContent.toVisible()
+                val transaction1 = supportFragmentManager.beginTransaction()
+
+                val fragment = FlightStatusFragment {
+                    view.requestFocus()
+                }
+                guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
+                    fragment.setAirportList(airports)
+                }
+                fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                transaction1.replace(R.id.fv_tab_content, fragment)
+                transaction1.commit()
+            }
+
+            Constants.WEATHER_ID -> {
+                conciergeIndex = 0
+                binding.rvTabContent.toInvisible()
+                binding.fvTabContent.toVisible()
+                val transaction = supportFragmentManager.beginTransaction()
+                val fragment = WeatherFragment()
+                transaction.replace(R.id.fv_tab_content, fragment)
+                transaction.commit()
+
+            }
+
+            Constants.NEWS_ID -> {
+                conciergeIndex = 0
+                binding.rvTabContent.toInvisible()
+                binding.fvTabContent.toVisible()
+                val transaction = supportFragmentManager.beginTransaction()
+                val fragment = NewsFragment {
+                    view.requestFocus()
+                }
+                fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                transaction.replace(R.id.fv_tab_content, fragment)
+                transaction.commit()
+            }
+
+            Constants.GUEST_FEEDBACK_ID -> {
+                conciergeIndex = 0
+                binding.rvTabContent.toInvisible()
+                binding.fvTabContent.toVisible()
+                val transaction = supportFragmentManager.beginTransaction()
+                val fragment = FeedbackFragment {
+                    view.requestFocus()
+                }
+                fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                transaction.replace(R.id.fv_tab_content, fragment)
+                transaction.commit()
+            }
+
+            Constants.LA_ID -> {
+                conciergeIndex = 0
+                binding.rvTabContent.toInvisible()
+                binding.fvTabContent.toVisible()
+                val transaction = supportFragmentManager.beginTransaction()
+                val fragment = LocalAttractionGsFragment()
+                fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                transaction.replace(R.id.fv_tab_content, fragment)
+                transaction.commit()
+
+            }
+
+            Constants.IN_ROOM_ID -> {
+                conciergeIndex = 0
+                binding.rvTabContent.toInvisible()
+                binding.fvTabContent.toVisible()
+                val transaction = supportFragmentManager.beginTransaction()
+                val fragment = InRoomDiningGsFragment()
+                transaction.replace(R.id.fv_tab_content, fragment)
+                transaction.commit()
+            }
+        }
+
     }
 
     private fun loadBg(imgUrl: String?) {

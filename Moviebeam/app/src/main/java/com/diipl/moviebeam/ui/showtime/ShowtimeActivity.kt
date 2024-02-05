@@ -55,7 +55,7 @@ class ShowtimeActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityShowtimeBinding.inflate(layoutInflater)
-        binding.layoutHeader.tvTitle.setText("Showtime")
+        binding.layoutHeader.tvTitle.text = "Showtime"
         val view = binding.root
         setContentView(view)
     }
@@ -207,7 +207,7 @@ class ShowtimeActivity : BaseActivity() {
 
     private fun onShowsClick(shows: Detail, position: Int) {
         val transaction = supportFragmentManager.beginTransaction()
-        if (shows.episodesPresent == true) {
+        if (shows.episodesPresent) {
 
             val bundle = Bundle()
             bundle.putInt("movieReleaseId", shows.releaseId)
