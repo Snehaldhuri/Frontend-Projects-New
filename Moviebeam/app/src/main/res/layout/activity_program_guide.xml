@@ -95,16 +95,22 @@
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
-    <TextView
+    <EditText
         android:id="@+id/tv_service_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        android:visibility="gone"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/dp_20"
+        android:layout_marginHorizontal="@dimen/dp_20"
+        android:background="@color/white"
         android:fontFamily="@font/manrope_semibold_600"
-        android:textColor="@color/text_color_primary"
+        android:textColor="@color/black"
         android:textSize="@dimen/sp_25"
-        app:layout_constraintBaseline_toBaselineOf="@+id/btn_back"
-        app:layout_constraintStart_toEndOf="@+id/gl_vertical_27" />
+        android:inputType="text"
+        android:imeOptions="actionDone"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
+        app:layout_constraintEnd_toStartOf="@+id/btn_Search"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_27"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
     <Button
         android:id="@+id/btn_Search"

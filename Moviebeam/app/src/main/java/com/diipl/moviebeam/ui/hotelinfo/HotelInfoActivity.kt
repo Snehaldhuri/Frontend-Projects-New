@@ -41,6 +41,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class HotelInfoActivity : BaseActivity() {
+
     private val hotelInfoViewModel: HotelInfoViewModel by viewModels()
     private lateinit var binding: ActivityHotelInfoBinding
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
@@ -156,6 +157,10 @@ class HotelInfoActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+                hotelInfoViewModel.hotelServiceLiveData.value?.data?.let {
+                    hotelInfoViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
+                }
+
                 val tabMap = mutableMapOf<String, TabListObj>()
                 val tabs = mutableListOf<String>()
                 val response = hotelInfoViewModel.hotelServiceLiveData.value?.data

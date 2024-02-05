@@ -59,7 +59,7 @@ class ShowtimeActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityShowtimeBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding.layoutHeader.tvTitle.text = "Showtime"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

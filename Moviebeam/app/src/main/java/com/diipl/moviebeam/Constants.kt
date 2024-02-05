@@ -143,6 +143,7 @@ object Constants {
     const val FREE_MOVIE_RELEASE_TYPE_ID =1
 
     //Guest Service Button Id
+    const val ALL_SERVICES = "ALL_SERVICES"
     const val WEATHER_ID = "weather"
     const val FLIGHT_STATUS_ID = "flightStatus"
     const val NEWS_ID = "news"

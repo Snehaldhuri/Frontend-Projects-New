@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.serial_info
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -58,7 +59,7 @@ class SerialActivity : BaseActivity() {
     }
 
     private fun showSerialNumberDialog() {
-        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
         builder.setTitle("Enter Serial Number")
 
 

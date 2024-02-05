@@ -109,10 +109,10 @@
         android:id="@+id/fv_tab_content"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
-        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginStart="8dp"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
-        app:layout_constraintStart_toStartOf="@+id/gl_vertical_29"
+        app:layout_constraintStart_toEndOf="@+id/rv_tab_layout"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
     <androidx.recyclerview.widget.RecyclerView
