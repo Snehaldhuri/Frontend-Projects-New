@@ -26,7 +26,7 @@
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Press ok to Enter velvet ticket number"
+            android:text="Press ok to Enter Valet ticket number"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_20"
             app:layout_constraintEnd_toEndOf="parent"

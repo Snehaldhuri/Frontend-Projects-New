@@ -92,4 +92,5 @@
     <string name="total_content_count_icon">Total Content Count Icon</string>
     <string name="network_icon">Network Icon</string>
     <string name="sync_icon">Sync Icon</string>
+    <string name="offerText">Get 10% off on Your Order, click button below to redeem</string>
 </resources>
