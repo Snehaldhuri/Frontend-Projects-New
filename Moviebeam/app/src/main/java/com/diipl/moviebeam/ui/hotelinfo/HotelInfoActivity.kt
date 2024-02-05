@@ -223,9 +223,7 @@ class HotelInfoActivity : BaseActivity() {
 
                                 bundle.putString(
                                     "desc",
-                                    "4970 Pepelani Loop Princeville, \n" +
-                                            "Kauai,\n"+ "HI 96722.\n\n" +
-                                            "Ph - (808)826-2802"
+                                    hotelInfoViewModel.accountSetupLiveData.value?.data?.address
                                 )
                                 val fragment = HotelServiceInfoFragment()
                                 fragment.arguments = bundle

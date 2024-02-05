@@ -233,10 +233,10 @@ class GuestServiceActivity : BaseActivity() {
                                 view.requestFocus()
                                 view.performClick()
                             }
-                            fragment.setGradientColor(
+                           /* fragment.setGradientColor(
                                 gradientStartColor,
                                 gradientEndColor
-                            )
+                            )*/
                             transaction.replace(R.id.fv_tab_content, fragment)
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()
@@ -251,10 +251,10 @@ class GuestServiceActivity : BaseActivity() {
                                 view.requestFocus()
                                 view.performClick()
                             }
-                            fragment.setGradientColor(
+                       /*     fragment.setGradientColor(
                                 gradientStartColor,
                                 gradientEndColor
-                            )
+                            )*/
 //                                            gradientStartColor,
 //                                            gradientEndColor
 //                                        )

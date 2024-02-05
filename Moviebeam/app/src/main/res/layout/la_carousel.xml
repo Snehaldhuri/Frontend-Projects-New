@@ -115,8 +115,8 @@
         android:id="@+id/back_card"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fadingEdgeLength="@dimen/dp_0"
         android:visibility="gone"
+        android:fadingEdgeLength="@dimen/dp_0"
         app:cardCornerRadius="@dimen/dp_12"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -126,7 +126,7 @@
             android:id="@+id/back_card_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="30dp">
+            android:padding="15dp">
 
             <!-- Back card content -->
             <TextView
@@ -135,7 +135,7 @@
                 android:layout_height="wrap_content"
                 android:text="Get 10% off on your order"
                 android:textColor="@color/white"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 app:layout_constraintBottom_toTopOf="@+id/text2"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -145,9 +145,9 @@
                 android:id="@+id/text2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Scan Qr code to claim offer"
+                android:text="Scan QR code to claim offer"
                 android:textColor="@color/white"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 app:layout_constraintBottom_toTopOf="@+id/img"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -175,7 +175,7 @@
                 android:layout_height="wrap_content"
                 android:text="Press ok to go back"
                 android:textColor="@color/white"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/img" />
@@ -188,7 +188,7 @@
                 android:background="@drawable/btn_bg_gradient_default"
                 android:clickable="true"
                 android:focusable="true"
-                android:text="Back"
+                android:text="@string/OK"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/text3" />

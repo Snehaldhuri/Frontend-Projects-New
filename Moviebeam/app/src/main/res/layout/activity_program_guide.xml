@@ -116,6 +116,7 @@
         android:id="@+id/btn_Search"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:background="@drawable/btn_bg_gradient_default"
         android:drawableStart="@drawable/search_icon"
         android:drawablePadding="@dimen/dp_10"

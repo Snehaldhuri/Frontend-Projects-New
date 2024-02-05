@@ -74,7 +74,7 @@ class ProgramGuideActivity : BaseActivity() {
         fetchDataFromDatastore()
         setContentView(binding.root)
         binding.btnBack.setOnFocusChangeListener(::handleBtnFocus)
-        binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
+//        binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
         binding.btnBack.setOnClickListener { finish() }
         parseData()
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {

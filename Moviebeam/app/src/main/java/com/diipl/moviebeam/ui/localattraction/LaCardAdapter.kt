@@ -53,8 +53,8 @@ class LaCardAdapter(
     override fun getItemCount(): Int = itemList.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val item = itemList[position]
 
+        val item = itemList[position]
         holder.imageView.loadImagesWithGlideExtLA(item.imagePathPoster)
         holder.textView.text = item.title
         holder.description.text = item.description.replace("<br/>", "")
@@ -89,17 +89,17 @@ class LaCardAdapter(
         holder.flipButton.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN) {
                 when (keyCode) {
-                    KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                    KeyEvent.KEYCODE_ENTER -> {
                         if (isFront) {
                             flipImage(holder.frontCard, holder.backCard)
                         } else {
                             unFlipImage(holder.frontCard, holder.backCard)
                         }
-                        return@setOnKeyListener true
+
                     }
                 }
             }
-            return@setOnKeyListener false
+             false
         }
 
 
