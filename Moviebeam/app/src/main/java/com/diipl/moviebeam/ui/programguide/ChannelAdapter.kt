@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.programguide
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ class ChannelAdapter(
 ) : RecyclerView.Adapter<ChannelAdapter.MyViewHolder>() {
 
     private var channelList: List<ProgramDTO> = emptyList()
+    private var focusIndex = -1
 
     inner class MyViewHolder(val binding: ChannelCardBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -32,6 +34,11 @@ class ChannelAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = channelList[position]
         holder.binding.tvChannelNo.text = item.CNO.toString()
+
+        if (focusIndex == holder.absoluteAdapterPosition){
+            holder.binding.root.requestFocus()
+        } else holder.binding.root.clearFocus()
+
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 onChannelFocused(item)
@@ -52,6 +59,16 @@ class ChannelAdapter(
 
     fun setChannelList(list: List<ProgramDTO>) {
         this.channelList = list
+    }
+
+    fun getChannelList(): List<ProgramDTO>{
+        return channelList
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateFocus(focusIndex: Int) {
+        this.focusIndex = focusIndex
+        notifyDataSetChanged()
     }
 
 }

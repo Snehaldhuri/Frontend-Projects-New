@@ -1,13 +1,16 @@
 package com.diipl.moviebeam.ui.programguide
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.activity.viewModels
@@ -28,6 +31,7 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.program.ProgramDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
+import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.hideKeyboard
@@ -37,7 +41,6 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
-import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
@@ -51,6 +54,7 @@ import java.util.Calendar
 import javax.inject.Inject
 
 private const val TAG = "ProgramGuideActivity"
+
 @AndroidEntryPoint
 class ProgramGuideActivity : BaseActivity() {
 
@@ -62,6 +66,7 @@ class ProgramGuideActivity : BaseActivity() {
     private var channelList: List<ProgramDTO> = emptyList()
     private var cNo = 0
     private var isFScreenExit = false
+    private var isSearched = false
 
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
@@ -78,13 +83,24 @@ class ProgramGuideActivity : BaseActivity() {
         fetchDataFromDatastore()
         setContentView(binding.root)
         binding.btnBack.setOnFocusChangeListener(::handleBtnFocus)
-//        binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
+        binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
         binding.btnBack.setOnClickListener { finish() }
         parseData("")
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
             binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
         }
     }
+
+    /*
+        override fun onBackPressed() {
+            if (isSearched){
+                parseData("")
+            } else {
+                super.onBackPressed()
+                finish()
+            }
+        }
+    */
 
     override fun onResume() {
         super.onResume()
@@ -93,28 +109,68 @@ class ProgramGuideActivity : BaseActivity() {
         }
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
-            when(code){
+            when (code) {
                 KeyEvent.KEYCODE_DPAD_CENTER -> {
-                    if (binding.btnSearch.isFocused) {
-                        binding.etSearch.toVisible()
-                        binding.etSearch.requestFocus()
-                        binding.etSearch.showKeyboard()
+                    if (view.isFocused) {
+                        showSearchDialog()
+                        view.clearFocus()
                     }
                 }
             }
             false
         }
 
-        binding.etSearch.setOnEditorActionListener { textView, id, keyEvent ->
-            when(id){
+    }
+
+    private fun showSearchDialog() {
+        val builder = AlertDialog.Builder(this)
+        val dialogBinding =
+            DialogSearchProgramBinding.inflate(LayoutInflater.from(applicationContext))
+        builder.setView(dialogBinding.root)
+        val dialog = builder.create()
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.show()
+
+        dialogBinding.etSearch.requestFocus()
+        dialogBinding.etSearch.showKeyboard()
+        dialogBinding.etSearch.background = getGradient(
+            intent.extras?.getString(Constants.GRADIENT_START_COLOR_PARAM),
+            intent.extras?.getString(Constants.GRADIENT_END_COLOR_PARAM)
+        )
+
+        dialogBinding.etSearch.setOnEditorActionListener { textView, id, keyEvent ->
+            when (id) {
                 EditorInfo.IME_ACTION_DONE -> {
-                    binding.etSearch.hideKeyboard()
-                    binding.etSearch.toGone()
-                    parseData(textView.text.toString().trim())
+                    dialog.dismiss()
+                    dialogBinding.etSearch.hideKeyboard()
+                    searchInAdapter(textView.text.toString().trim())
+                    binding.layoutProgramGuide.layoutPrgGuide.rvProgram.requestFocus()
                 }
             }
             false
         }
+
+
+    }
+
+    private fun searchInAdapter(name: String) {
+        val adapter = binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter as ChannelAdapter
+        val list = adapter.getChannelList()
+        var focusIndex = -1
+        list.forEachIndexed { index, model ->
+            if (name.isNotEmpty()) {
+                if (model.CN.contains(name, true) or (model.CNO.toString().contains(name, true))) {
+                    focusIndex = index
+                }
+            }
+        }
+
+        if (focusIndex >= 0) {
+            binding.layoutProgramGuide.layoutPrgGuide.rvChannel.scrollToPosition(focusIndex)
+            binding.layoutProgramGuide.layoutPrgGuide.rvProgram.scrollToPosition(focusIndex)
+        } else programGuideViewModel.showToastMessage("No such channel with $name")
+        adapter.updateFocus(focusIndex)
 
     }
 
@@ -236,20 +292,29 @@ class ProgramGuideActivity : BaseActivity() {
         return str.reverse().toString()
     }
 
-    @SuppressLint("NewApi")
     private fun parseData(text: String) {
         val programs = readJson()
         val key = fetchCurrentProgramDetails()
         val current = programs[key]
         val data = mapToDto(current as List<*>)
-        val currentPrograms = mutableListOf<ProgramDTO>()
-        if (text.isNotEmpty()){
-           for (model in data){
-               if (model.CN.lowercase().contains(text.lowercase())){
-                   currentPrograms.add(model)
-               }
-           }
-        } else currentPrograms.addAll(data)
+        val currentPrograms = data.toMutableList()
+        /* val currentPrograms = mutableListOf<ProgramDTO>()
+         if (text.isNotEmpty()){
+            for (model in data){
+                if (model.CN.lowercase().contains(text.lowercase()) or (model.CNO.toString().lowercase() == text.lowercase())){
+                    currentPrograms.add(model)
+                }
+            }
+             isSearched = if (currentPrograms.isEmpty()){
+                 currentPrograms.addAll(data)
+                 programGuideViewModel.showToastMessage("No such channel with $text")
+                 false
+             } else true
+
+         } else {
+             currentPrograms.addAll(data)
+             isSearched = false
+         }*/
 
         val currentProgram = data[0]
         binding.layoutProgramGuide.tvTime1.text = currentProgram.P1_DST

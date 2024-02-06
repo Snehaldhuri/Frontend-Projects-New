@@ -72,14 +72,14 @@ class STBDetailsActivity : BaseActivity() {
 
     //observe class
     override fun observeViewModel() {
+        observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
         observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
         observe(stbDetailViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-        observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
         observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
         observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
-        observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
+        observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
 
         observeSnackBarMessages(stbDetailViewModel.showSnackBar)
         observeToast(stbDetailViewModel.showToast)
@@ -139,6 +139,7 @@ class STBDetailsActivity : BaseActivity() {
                     stbDetailViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
+                    stbDetailViewModel.fetchHotelService()
                     Log.d("DataStoreResponse", "handleAccountSetupResponse: $it")
                 }
             }
