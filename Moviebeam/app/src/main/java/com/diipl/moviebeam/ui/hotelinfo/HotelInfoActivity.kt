@@ -43,6 +43,7 @@ import javax.inject.Inject
 class HotelInfoActivity : BaseActivity() {
 
     private val hotelInfoViewModel: HotelInfoViewModel by viewModels()
+
     private lateinit var binding: ActivityHotelInfoBinding
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
@@ -62,6 +63,9 @@ class HotelInfoActivity : BaseActivity() {
 
     @Inject
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
+
+    private lateinit var adapter : HotelInfoTabAdapter
+
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
@@ -183,7 +187,7 @@ class HotelInfoActivity : BaseActivity() {
                 tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
                 helpInfoTabIndex = tabs.size - 1
 
-                val adapter = HotelInfoTabAdapter(itemList = tabs,
+                adapter = HotelInfoTabAdapter(itemList = tabs,
                     onItemFocused = { it, view ->
 
                         val transaction = supportFragmentManager.beginTransaction()
@@ -270,7 +274,7 @@ class HotelInfoActivity : BaseActivity() {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvHotelInfoHeader.adapter = adapter
-                binding.tvHeaderTitle.text = tabs[0].toString()
+                binding.tvHeaderTitle.text = tabs[0]
                 binding.pbLoader.toInvisible()
             }
 

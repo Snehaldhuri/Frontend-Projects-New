@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,8 +14,12 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.isNetworkAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -55,6 +60,61 @@ class HotelInfoViewModel @Inject constructor(
             }
         }
     }
+
+    fun fetchApis(context: Context) {
+        viewModelScope.launch {
+            delay(1000)
+            if (isNetworkAvailable(context)) {
+                fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE, Constants.ACCOUNT_ID)
+            } else {
+                delay(5000)
+                fetchApis(context)
+            }
+        }
+    }
+
+    private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+
+            val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
+            val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
+            val accountSetupApiResponse = async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
+            val hotelServicesResponse = async { movieBeamRepository.getHotelServiceInfo(accountId) }
+
+            val result = awaitAll(
+                weatherApiResponse,
+                themeApiResponse,
+                accountSetupApiResponse,
+                hotelServicesResponse
+            )
+
+            if (result[0] == null) {
+                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Weather Api"))
+            } else {
+                _weatherLiveData.postValue(Resource.Success(result[0] as WeatherResponse))
+            }
+
+            if (result[1] == null) {
+                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Theme Api"))
+            } else {
+                _themeLiveData.postValue(Resource.Success(result[1] as ThemeResponse))
+            }
+
+            if (result[2] == null) {
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Account Setup Api"))
+            } else {
+                _accountSetupLiveData.postValue(Resource.Success(result[2] as AccountSetupResponse))
+            }
+
+            if (result[3] == null) {
+                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Hotel Services Api"))
+            } else {
+                _hotelServiceLiveData.postValue(Resource.Success(result[3] as HotelServiceResponse))
+            }
+
+        }
+    }
+
 
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
