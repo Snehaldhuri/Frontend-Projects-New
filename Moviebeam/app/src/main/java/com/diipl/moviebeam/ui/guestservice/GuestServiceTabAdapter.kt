@@ -46,6 +46,12 @@ class GuestServiceTabAdapter(
 
 //        holder.imageView.setImageResource(item.defaultImage)
         holder.textView.text = item.categoryName
+        holder.card.postDelayed({
+            if (position == 0) {
+                holder.card.requestFocus()
+            }
+        }, 1000)
+
         if (item.isClicked) {
             holder.imageView.setImageResource(item.spotlightImage)
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))

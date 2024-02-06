@@ -65,7 +65,7 @@ class HotelInfoActivity : BaseActivity() {
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
 
     private lateinit var adapter : HotelInfoTabAdapter
-
+    private var hsCount = 0
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
@@ -173,6 +173,18 @@ class HotelInfoActivity : BaseActivity() {
                         "All" -> {
                             service.serviceList.forEach {
                                 tabMap[it.title] = TabListObj(2, it, null)
+                                if(hsCount == 0) {
+                                    if (it.title == "Help & Info") {
+                                        tabMap[it.title] = TabListObj(2, it, null)
+                                        hsCount = 1
+                                    }
+//                                    else {
+//                                        tabs.add(Constants.HELP_INFO)
+//                                        tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
+//                                        helpInfoTabIndex = tabs.size - 1
+//                                        hsCount = 1
+//                                    }
+                                }
                                 tabs.add(it.title)
                             }
                         }
@@ -183,9 +195,9 @@ class HotelInfoActivity : BaseActivity() {
                         }
                     }
                 }
-                tabs.add(Constants.HELP_INFO)
-                tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
-                helpInfoTabIndex = tabs.size - 1
+//                tabs.add(Constants.HELP_INFO)
+//                tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
+//                helpInfoTabIndex = tabs.size - 1
 
                 adapter = HotelInfoTabAdapter(itemList = tabs,
                     onItemFocused = { it, view ->

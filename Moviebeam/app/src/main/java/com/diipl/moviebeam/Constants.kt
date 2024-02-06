@@ -6,7 +6,7 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
-    const val VERSION = 1.2
+    const val VERSION = 1.3
 
     const val SPLASH_DELAY = 3000
     var timer = ""
