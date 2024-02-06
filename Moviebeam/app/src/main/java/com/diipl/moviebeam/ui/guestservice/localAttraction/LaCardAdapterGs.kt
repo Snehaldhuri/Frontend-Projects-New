@@ -69,15 +69,16 @@ class LaCardAdapterGs(
         val text = "Press <font color='#FFB81A'>OK</font> to go back"
         holder.pressOkText.text = Html.fromHtml(text)
 
-//        holder.flipButton.setOnClickListener {
-//            flipImage(holder.frontCard, holder.backCard)
-//            holder.itemView.requestFocus()
-//        }
-//
-//        holder.scanImage.setOnClickListener {
-//            unFlipImage(holder.frontCard, holder.backCard)
-//            holder.itemView.requestFocus()
-//        }
+        holder.flipButton.setOnClickListener {
+            flipImage(holder.frontCard, holder.backCard)
+            holder.itemView.requestFocus()
+        }
+
+        holder.scanImage.setOnClickListener {
+            unFlipImage(holder.frontCard, holder.backCard)
+            holder.itemView.requestFocus()
+        }
+
         holder.itemView.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 holder.frontCard.isClickable = false
@@ -98,7 +99,7 @@ class LaCardAdapterGs(
                                 if (holder.frontCard.visibility == View.VISIBLE) {
                                     flipImage(holder.frontCard, holder.backCard)
 //                                    holder.okButton.background = gradientDrawable
-//                                    holder.scanImage.requestFocus()
+//                                    holder.backCard.requestFocus()
                                 }
                                 if (holder.backCard.visibility == View.VISIBLE) {
                                     holder.scanImage.post {
@@ -111,6 +112,7 @@ class LaCardAdapterGs(
                                                     when (keyCode) {
                                                         KeyEvent.KEYCODE_DPAD_CENTER ,KeyEvent.KEYCODE_ENTER -> {
                                                             unFlipImage(holder.frontCard, holder.backCard)
+                                                            holder.flipButton.requestFocus()
                                                         }
 
                                                     }
