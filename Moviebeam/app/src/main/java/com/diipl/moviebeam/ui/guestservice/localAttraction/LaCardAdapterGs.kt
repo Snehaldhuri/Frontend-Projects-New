@@ -6,6 +6,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.text.Html
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -37,8 +38,10 @@ class LaCardAdapterGs(
 
         val backCard: CardView = itemView.findViewById(R.id.back_card)
         val flipButton: Button = itemView.findViewById(R.id.btn_MoreInfo)
+        val pressOkText = itemView.findViewById<TextView>(R.id.text3)
 
-        val okButton: Button = itemView.findViewById(R.id.btn_backInfo)
+
+        val scanImage: ImageView = itemView.findViewById(R.id.scan_qr_iv)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -63,15 +66,18 @@ class LaCardAdapterGs(
         holder.textView.text = item.title
         holder.description.text = item.description.replace("<br/>", "")
 
-        holder.flipButton.setOnClickListener {
-            flipImage(holder.frontCard, holder.backCard)
-            holder.itemView.requestFocus()
-        }
+        val text = "Press <font color='#FFB81A'>OK</font> to go back"
+        holder.pressOkText.text = Html.fromHtml(text)
 
-        holder.okButton.setOnClickListener {
-            unFlipImage(holder.frontCard, holder.backCard)
-            holder.itemView.requestFocus()
-        }
+//        holder.flipButton.setOnClickListener {
+//            flipImage(holder.frontCard, holder.backCard)
+//            holder.itemView.requestFocus()
+//        }
+//
+//        holder.scanImage.setOnClickListener {
+//            unFlipImage(holder.frontCard, holder.backCard)
+//            holder.itemView.requestFocus()
+//        }
         holder.itemView.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 holder.frontCard.isClickable = false
@@ -88,17 +94,33 @@ class LaCardAdapterGs(
                 holder.itemView.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
-                            KeyEvent.KEYCODE_DPAD_CENTER -> {
+                            KeyEvent.KEYCODE_DPAD_CENTER ,KeyEvent.KEYCODE_ENTER -> {
                                 if (holder.frontCard.visibility == View.VISIBLE) {
                                     flipImage(holder.frontCard, holder.backCard)
-                                    holder.okButton.background = gradientDrawable
-                                    holder.okButton.requestFocus()
-                                } else {
-                                    unFlipImage(holder.frontCard, holder.backCard)
-                                    holder.flipButton.background = gradientDrawable
-                                    holder.flipButton.requestFocus()
+//                                    holder.okButton.background = gradientDrawable
+//                                    holder.scanImage.requestFocus()
                                 }
+                                if (holder.backCard.visibility == View.VISIBLE) {
+                                    holder.scanImage.post {
+                                        holder.scanImage.requestFocus()
+                                    }
+                                    holder.scanImage.setOnFocusChangeListener { b, focus ->
+                                        if (focus) {
+                                            b.setOnKeyListener { _, keyCode, event ->
+                                                if (event.action == KeyEvent.ACTION_DOWN) {
+                                                    when (keyCode) {
+                                                        KeyEvent.KEYCODE_DPAD_CENTER ,KeyEvent.KEYCODE_ENTER -> {
+                                                            unFlipImage(holder.frontCard, holder.backCard)
+                                                        }
 
+                                                    }
+                                                }
+                                                false
+                                            }
+                                        }
+                                    }
+                                    return@setOnKeyListener true
+                                }
                             }
                         }
                     }
@@ -110,11 +132,10 @@ class LaCardAdapterGs(
                 holder.itemView.scaleX = 1.0f
                 holder.itemView.scaleY = 1.0f
                 if (holder.frontCard.visibility == View.VISIBLE) {
-                    holder.okButton.background = gradientDrawable
-                    holder.okButton.requestFocus()
-                } else {
                     holder.flipButton.background = gradientDrawable
                     holder.flipButton.requestFocus()
+                } else {
+                    holder.scanImage.requestFocus()
                 }
             }
         }

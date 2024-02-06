@@ -40,7 +40,6 @@ class LaCardAdapter(
         val backCard: CardView = itemView.findViewById(R.id.back_card)
         val flipButton: Button = itemView.findViewById(R.id.btn_MoreInfo)
 
-        val okButton: Button = itemView.findViewById(R.id.btn_backInfo)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -64,10 +63,6 @@ class LaCardAdapter(
             flipImage(holder.frontCard, holder.backCard)
         }
 
-        holder.okButton.setOnClickListener {
-            Log.e("onBindViewHolder:", "okButton")
-            unFlipImage(holder.frontCard, holder.backCard)
-        }
         holder.flipButton.requestFocus()
         holder.flipButton.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {

@@ -120,8 +120,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fadingEdgeLength="@dimen/dp_0"
-        android:visibility="gone"
         app:cardCornerRadius="@dimen/dp_12"
+        android:visibility="gone"
+        app:cardBackgroundColor="#101010"
+        android:alpha="0.9"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -130,16 +132,18 @@
             android:id="@+id/back_card_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="15dp">
+            android:padding="17dp">
 
             <!-- Back card content -->
             <TextView
                 android:id="@android:id/text1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Get 10% off on your order"
+                android:text="Get 10% Off on Your Order"
+                android:layout_marginTop="6dp"
+                android:letterSpacing="-0.05"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 app:layout_constraintBottom_toTopOf="@+id/text2"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -147,26 +151,26 @@
                 android:id="@+id/text2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Scan QR code to claim offer"
+                android:text="Scan QR Code to claim offer"
                 android:textColor="@color/white"
-                android:textSize="16sp"
-                app:layout_constraintBottom_toTopOf="@+id/img"
+                android:layout_marginTop="3dp"
+                android:letterSpacing="-0.02"
+                android:textSize="14sp"
+                android:layout_marginStart="1dp"
+                android:layout_marginBottom="@dimen/dp_14"
+                app:layout_constraintBottom_toTopOf="@+id/scan_qr_iv"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/gl_horizontal_80"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintGuide_percent="0.80" />
-
             <ImageView
-                android:id="@+id/img"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:id="@+id/scan_qr_iv"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:background="@drawable/sample_qr_code"
-                app:layout_constraintBottom_toTopOf="@id/gl_horizontal_80"
+                app:layout_constraintBottom_toTopOf="@id/text2"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.70"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -175,26 +179,14 @@
                 android:id="@+id/text3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Press OK to go back"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textAlignment="center"
+                android:layout_marginTop="15dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/img" />
+                app:layout_constraintTop_toBottomOf="@+id/scan_qr_iv" />
 
-            <Button
-                android:id="@+id/btn_backInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:clickable="true"
-                android:focusable="true"
-                android:text="@string/OK"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/text3" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
