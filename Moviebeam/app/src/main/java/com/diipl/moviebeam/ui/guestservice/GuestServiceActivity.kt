@@ -255,9 +255,6 @@ class GuestServiceActivity : BaseActivity() {
                                 gradientStartColor,
                                 gradientEndColor
                             )*/
-//                                            gradientStartColor,
-//                                            gradientEndColor
-//                                        )
                             transaction.replace(R.id.fv_tab_content, fragment)
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()

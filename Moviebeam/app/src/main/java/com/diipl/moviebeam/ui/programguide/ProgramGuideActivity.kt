@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
@@ -29,11 +30,14 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
+import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
@@ -46,7 +50,7 @@ import java.lang.reflect.Type
 import java.util.Calendar
 import javax.inject.Inject
 
-
+private const val TAG = "ProgramGuideActivity"
 @AndroidEntryPoint
 class ProgramGuideActivity : BaseActivity() {
 
@@ -76,7 +80,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.btnBack.setOnFocusChangeListener(::handleBtnFocus)
 //        binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
         binding.btnBack.setOnClickListener { finish() }
-        parseData()
+        parseData("")
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
             binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
         }
@@ -90,11 +94,26 @@ class ProgramGuideActivity : BaseActivity() {
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when(code){
-                KeyEvent.KEYCODE_DPAD_CENTER or KeyEvent.KEYCODE_ENTER -> {
-
+                KeyEvent.KEYCODE_DPAD_CENTER -> {
+                    if (binding.btnSearch.isFocused) {
+                        binding.etSearch.toVisible()
+                        binding.etSearch.requestFocus()
+                        binding.etSearch.showKeyboard()
+                    }
                 }
             }
-            return@setOnKeyListener false
+            false
+        }
+
+        binding.etSearch.setOnEditorActionListener { textView, id, keyEvent ->
+            when(id){
+                EditorInfo.IME_ACTION_DONE -> {
+                    binding.etSearch.hideKeyboard()
+                    binding.etSearch.toGone()
+                    parseData(textView.text.toString().trim())
+                }
+            }
+            false
         }
 
     }
@@ -218,13 +237,21 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     @SuppressLint("NewApi")
-    private fun parseData() {
+    private fun parseData(text: String) {
         val programs = readJson()
         val key = fetchCurrentProgramDetails()
         val current = programs[key]
-        val currentPrograms = mapToDto(current as List<*>)
+        val data = mapToDto(current as List<*>)
+        val currentPrograms = mutableListOf<ProgramDTO>()
+        if (text.isNotEmpty()){
+           for (model in data){
+               if (model.CN.lowercase().contains(text.lowercase())){
+                   currentPrograms.add(model)
+               }
+           }
+        } else currentPrograms.addAll(data)
 
-        val currentProgram = currentPrograms[0]
+        val currentProgram = data[0]
         binding.layoutProgramGuide.tvTime1.text = currentProgram.P1_DST
         binding.layoutProgramGuide.tvTime2.text = currentProgram.P2_DST
         binding.layoutProgramGuide.tvTime3.text = currentProgram.P3_DST
