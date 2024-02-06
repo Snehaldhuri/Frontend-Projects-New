@@ -38,6 +38,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.kappingservice.Actions
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.kappingservice.ServiceState
@@ -345,9 +346,9 @@ class MainMenuActivity : BaseActivity() {
                         }
 
                         Constants.IN_ROOM_DINING_ID -> {
-//                            intent = Intent(this, InRoomDiningActivity::class.java)
-                            intent = Intent(this, GuestServiceActivity::class.java)
-                            intent.putExtra("btnId", IN_ROOM_ID)
+                            intent = Intent(this, InRoomDiningActivity::class.java)
+//                            intent = Intent(this, GuestServiceActivity::class.java)
+//                            intent.putExtra("btnId", IN_ROOM_ID)
                         }
 
                         else -> {
