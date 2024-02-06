@@ -10,9 +10,7 @@ import androidx.datastore.core.DataStore
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -108,13 +106,12 @@ class LocalAttractionGsFragment : BaseFragment() {
         gradientEndColor = endColor
     }
 
-    private fun getGradient(
-    ): GradientDrawable {
+    private fun getGradient(): GradientDrawable {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
         )
-        gradientDrawable.cornerRadius = 10f
+        gradientDrawable.cornerRadius = 16f
         gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
         gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
