@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
@@ -42,7 +43,6 @@ class LaundryFragment : BaseFragment() {
     }
 
     override fun initViewBinding() {
-        TODO("Not yet implemented")
     }
 
     override fun onCreateView(
@@ -107,8 +107,6 @@ class LaundryFragment : BaseFragment() {
         }
         return binding.root
     }
-
-
     private fun handleLaundryMasterResponse(status: Resource<LaundryResponce>) {
         when (status) {
             is Resource.Loading -> {}
@@ -128,7 +126,7 @@ class LaundryFragment : BaseFragment() {
 
 
                     laundry_adapter = LaundryAdapter(onMenuItemFocused = {
-                        Log.e("data_onfocus", "handleLaundryMasterResponse:${it}")
+//                        Log.e("data_onfocus", "handleLaundryMasterResponse:${it}")
                         customAdapterLaundry = CustomAdapterLaundry(
                             onMenuItemFocused = { },
                             onLeftKeyPressed = {
@@ -151,7 +149,7 @@ class LaundryFragment : BaseFragment() {
                             binding.lvLaundry.getChildAdapterPosition(binding.lvLaundry.getFocusedChild());
                         })
                     laundry_list.let {
-                        laundry_adapter.setNewsList(it)
+                        laundry_adapter.setLaundryList(it)
                     }
 
                     laundry_adapter.setGradient(getGradient())
@@ -165,7 +163,6 @@ class LaundryFragment : BaseFragment() {
             }
         }
     }
-
 
     private fun setFocus(cardView: Button) {
         val gradientDrawable = GradientDrawable(
@@ -195,5 +192,9 @@ class LaundryFragment : BaseFragment() {
         gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
+    }
+
+    fun setLaundryData(laundryData: LaundryDataResponse) {
+        Log.d("gaurav","$laundryData")
     }
 }

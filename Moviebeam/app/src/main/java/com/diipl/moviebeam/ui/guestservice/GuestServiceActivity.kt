@@ -24,6 +24,7 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -51,7 +52,10 @@ import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -79,7 +83,6 @@ class GuestServiceActivity : BaseActivity() {
         setContentView(binding.root)
         binding.btnBack.setOnFocusChangeListener(::handleBackClick)
         binding.btnBack.setOnClickListener { finish() }
-
         btnId = intent.getStringExtra("btnId").toString()
         if (btnId == ALL_SERVICES) {
             binding.rvTabLayout.layoutManager =
@@ -100,6 +103,44 @@ class GuestServiceActivity : BaseActivity() {
         observeSnackBarMessages(guestServiceViewModel.showSnackBar)
         observeToast(guestServiceViewModel.showToast)
     }
+//    data class LaundryData(
+//        val laundryDataList: List<LaundryCategory>
+//    )
+//
+//    data class LaundryCategory(
+//        val categoryName: String,
+//        val id: Int,
+//        val langWiseList: Map<String, LangWiseCategory>,
+//        val subCategoryList: List<LaundrySubCategory>
+//    )
+//
+//    data class LangWiseCategory(
+//        val categoryName: String
+//    )
+//
+//    data class LaundrySubCategory(
+//        val title: String,
+//        val dispPrice: String,
+//        val price: Double,
+//        val id: Int,
+//        val categoryName: String,
+//        val subTitle: String,
+//        val langWiseList: Map<String, LangWiseSubCategory>
+//    )
+//
+//    data class LangWiseSubCategory(
+//        val title: String,
+//        val subTitle: String
+//    )
+
+
+    private fun readJson(): LaundryDataResponse?  {
+        val gson = Gson()
+        val inputStream = this.assets.open("LaundryData.json")
+        val br = BufferedReader(InputStreamReader(inputStream))
+        return gson.fromJson(br, LaundryDataResponse::class.java)
+    }
+
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -285,6 +326,10 @@ class GuestServiceActivity : BaseActivity() {
                                 gradientStartColor,
                                 gradientEndColor
                             )
+                            val laundryData = readJson() // Assuming you have this function to read JSON data
+                            if (laundryData != null) {
+                                fragment.setLaundryData(laundryData)
+                            }
                             transaction.replace(R.id.fv_tab_content, fragment)
                             binding.rvTabContent.toInvisible()
                             binding.fvTabContent.toVisible()

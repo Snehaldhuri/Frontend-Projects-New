@@ -1,0 +1,400 @@
+{
+	"laundryDataList" : [
+		{
+	"categoryName": "Wash & Fold",
+	"id": 18,
+	"langWiseList" : {
+		"en-US": {
+			"categoryName" : "Wash & Fold"
+		},
+		"es-MX" : {
+			"categoryName" : "Lavado y doblado"
+		}
+	},
+	"subCategoryList": [
+		{
+			"title": "Shirt",
+			"dispPrice": "$4.99",
+			"price": 4.99,
+			"id" : 101,
+			"categoryName": "Wash & Fold",
+			"subTitle": "Shirt (Wash & Fold)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Shirt",
+					"subTitle": "Shirt (Wash & Fold)"
+				},
+				"es-MX" : {
+					"title" : "Camisa",
+					"subTitle": "Camisa (Lavado y Doblado)"
+				}
+			}
+		},
+		{
+			"title": "Trouser",
+			"dispPrice": "$7.99",
+			"price": 7.99,
+			"id" : 102,
+			"categoryName": "Wash & Fold",
+			"subTitle": "Trouser (Wash & Fold)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Trouser",
+					"subTitle": "Trouser (Wash & Fold)"
+				},
+				"es-MX" : {
+					"title" : "Pantalón",
+					"subTitle": "Pantalón (Lavado y Doblado)"
+				}
+			}
+		},
+		{
+			"title": "Socks",
+			"dispPrice": "$5.99",
+			"price": 5.99,
+			"id" : 103,
+			"categoryName": "Wash & Fold",
+			"subTitle": "Socks (Wash & Fold)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Socks",
+					"subTitle": "Socks (Wash & Fold)"
+				},
+				"es-MX" : {
+					"title" : "Calcetines",
+					"subTitle": "Calcetines (Lavado y Doblado)"
+				}
+			}
+		},
+		{
+			"title": "T-Shirt",
+			"dispPrice": "$4.99",
+			"price": 4.99,
+			"id" : 104,
+			"categoryName": "Wash & Fold",
+			"subTitle": "T-Shirt (Wash & Fold)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "T-Shirt",
+					"subTitle": "T-Shirt (Wash & Fold)"
+				},
+				"es-MX" : {
+					"title" : "Playera",
+					"subTitle": "Playera (Lavado y Doblado)"
+				}
+			}
+		},
+		{
+			"title": "Jacket",
+			"dispPrice": "$5.99",
+			"price": 5.99,
+			"id" : 105,
+			"categoryName": "Wash & Fold",
+			"subTitle": "Jacket (Wash & Fold)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Jacket",
+					"subTitle": "Jacket (Wash & Fold)"
+				},
+				"es-MX" : {
+					"title" : "Chaqueta",
+					"subTitle": "Chaqueta (Lavado y Doblado)"
+				}
+			}
+		},
+		{
+			"title": "Undergarments",
+			"dispPrice": "$3.99",
+			"price": 3.99,
+			"id" : 106,
+			"categoryName": "Wash & Fold",
+			"subTitle": "Undergarments (Wash & Fold)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Undergarments",
+					"subTitle": "Undergarments (Wash & Fold)"
+				},
+				"es-MX" : {
+					"title" : "Ropa interior",
+					"subTitle": "Ropa Interior (Lavado y Doblado)"
+				}
+			}
+		},
+		{
+			"title": "Skirt",
+			"dispPrice": "$6.99",
+			"price": 6.99,
+			"id" : 107,
+			"categoryName": "Wash & Fold",
+			"subTitle": "Skirt (Wash & Fold)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Skirt",
+					"subTitle": "Skirt (Wash & Fold)"
+				},
+				"es-MX" : {
+					"title" : "Falda",
+					"subTitle": "Falda (Lavado y Planchado)"
+				}
+			}
+		}
+	]
+},
+		{
+	"categoryName": "Wash & Press",
+	"id": 19,"langWiseList" : {
+		"en-US": {
+			"categoryName" : "Wash & Press"
+		},
+		"es-MX" : {
+			"categoryName" : "Lavado y planchado"
+		}
+	},
+	"subCategoryList": [
+		{
+			"title": "Shirt",
+			"dispPrice": "$6.99",
+			"price": 6.99,
+			"id" : 21,
+			"categoryName": "Wash & Press",
+			"subTitle": "Shirt (Wash & Press)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Shirt",
+					"subTitle": "Shirt (Wash & Press)"
+				},
+				"es-MX" : {
+					"title" : "Camisa",
+					"subTitle": "Camisa (Lavado y Planchado)"
+				}
+			}
+		},
+		{
+			"title": "Trouser",
+			"dispPrice": "$8.99",
+			"price": 8.99,
+			"id" : 22,
+			"categoryName": "Wash & Press",
+			"subTitle": "Trouser (Wash & Press)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Trouser",
+					"subTitle": "Trouser (Wash & Press)"
+				},
+				"es-MX" : {
+					"title" : "Pantalón",
+					"subTitle": "Pantalón (Lavado y Planchado)"
+				}
+			}
+		},
+		{
+			"title": "Suit",
+			"dispPrice": "$6.99",
+			"price": 6.99,
+			"id" : 32,
+			"categoryName": "Wash & Press",
+			"subTitle": "Suit (Wash & Press)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Suit",
+					"subTitle": "Suit (Wash & Press)"
+				},
+				"es-MX" : {
+					"title" : "Traje",
+					"subTitle": "Traje (Lavado y Planchado)"
+				}
+			}
+		},
+		{
+			"title": "Jacket",
+			"dispPrice": "$8.99",
+			"price": 8.99,
+			"id" : 33,
+			"categoryName": "Wash & Press",
+			"subTitle": "Jacket (Wash & Press)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Jacket",
+					"subTitle": "Jacket (Wash & Press)"
+				},
+				"es-MX" : {
+					"title" : "Chaqueta",
+					"subTitle": "Chaqueta (Lavado y Planchado)"
+				}
+			}
+		}
+	]
+},
+		{
+	"categoryName": "Press Only",
+	"id": 20,
+	"langWiseList" : {
+		"en-US": {
+			"categoryName" : "Press Only"
+		},
+		"es-MX" : {
+			"categoryName" : "Planchado"
+		}
+	},
+	"subCategoryList": [
+		{
+			"title": "Shirt",
+			"dispPrice": "$2.99",
+			"price": 2.99,
+			"id" : 23,
+			"categoryName": "Press Only",
+			"subTitle": "Shirt (Press Only)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Shirt",
+					"subTitle": "Shirt (Press Only)"
+				},
+				"es-MX" : {
+					"title" : "Camisa",
+					"subTitle": "Camisa (Planchado)"
+				}
+			}
+		},
+		{
+			"title": "Trouser",
+			"dispPrice": "$3.99",
+			"price": 3.99,
+			"id" : 24,
+			"categoryName": "Press Only",
+			"subTitle": "Trouser (Press Only)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Trouser",
+					"subTitle": "Trouser (Press Only)"
+				},
+				"es-MX" : {
+					"title" : "Pantalón",
+					"subTitle": "Pantalón (Planchado)"
+				}
+			}
+		},
+		{
+			"title": "Suit",
+			"dispPrice": "$4.99",
+			"price": 4.99,
+			"id" : 25,
+			"categoryName": "Press Only",
+			"subTitle": "Suit (Press Only)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Suit",
+					"subTitle": "Suit (Press Only)"
+				},
+				"es-MX" : {
+					"title" : "Traje",
+					"subTitle": "Traje (Planchado)"
+				}
+			}
+		},
+		{
+			"title": "Jacket",
+			"dispPrice": "$4.99",
+			"price": 4.99,
+			"id" : 26,
+			"categoryName": "Press Only",
+			"subTitle": "Jacket (Press Only)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Jacket",
+					"subTitle": "Jacket (Press Only)"
+				},
+				"es-MX" : {
+					"title" : "Chaqueta",
+					"subTitle": "Chaqueta (Planchado)"
+				}
+			}
+		}
+	]
+},
+		{
+	"categoryName": "Dry Cleaning",
+	"id":30,
+	"langWiseList" : {
+		"en-US": {
+			"categoryName" : "Dry Cleaning"
+		},
+		"es-MX" : {
+			"categoryName" : "Tintorería"
+		}
+	},
+	"subCategoryList": [
+		{
+			"title": "Shirt",
+			"dispPrice": "$9.99",
+			"price": 9.99,
+			"id" : 27,
+			"categoryName": "Dry Cleaning",
+			"subTitle": "Shirt (Dry Cleaning)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Shirt",
+					"subTitle": "Shirt (Dry Cleaning)"
+				},
+				"es-MX" : {
+					"title" : "Camisa",
+					"subTitle": "Cmisa (Tintorería)"
+				}
+			}
+		},
+		{
+			"title": "Trouser",
+			"dispPrice": "$10.99",
+			"price": 10.99,
+			"id" : 31,
+			"categoryName": "Dry Cleaning",
+			"subTitle": "Trouser (Dry Cleaning)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Trouser",
+					"subTitle": "Trouser (Dry Cleaning)"
+				},
+				"es-MX" : {
+					"title" : "Pantalón",
+					"subTitle": "Pantalón (Tintorería)"
+				}
+			}
+		},
+		{
+			"title": "Suit",
+			"dispPrice": "$8.99",
+			"price": 8.99,
+			"id" : 28,
+			"categoryName": "Dry Cleaning",
+			"subTitle": "Suit (Dry Cleaning)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Suit",
+					"subTitle": "Suit (Dry Cleaning)"
+				},
+				"es-MX" : {
+					"title" : "Traje",
+					"subTitle": "Traje (Tintorería)"
+				}
+			}
+		},
+		{
+			"title": "Jacket",
+			"dispPrice": "$8.99",
+			"price": 8.99,
+			"id" : 29,
+			"categoryName": "Dry Cleaning",
+			"subTitle": "Jacket (Dry Cleaning)",
+			"langWiseList" : {
+				"en-US": {
+					"title" : "Jacket",
+					"subTitle": "Jacket (Dry Cleaning)"
+				},
+				"es-MX" : {
+					"title" : "Chaqueta",
+					"subTitle": "Chaqueta (Tintorería)"
+				}
+			}
+		}
+	]
+}]
+}
