@@ -23,6 +23,7 @@ class MainMenuViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
 
+
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
 

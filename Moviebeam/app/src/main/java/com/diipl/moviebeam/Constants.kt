@@ -6,7 +6,7 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
-    const val VERSION = 1.1
+    const val VERSION = 1.3
 
     const val SPLASH_DELAY = 3000
     var timer = ""
@@ -143,6 +143,7 @@ object Constants {
     const val FREE_MOVIE_RELEASE_TYPE_ID =1
 
     //Guest Service Button Id
+    const val ALL_SERVICES = "ALL_SERVICES"
     const val WEATHER_ID = "weather"
     const val FLIGHT_STATUS_ID = "flightStatus"
     const val NEWS_ID = "news"

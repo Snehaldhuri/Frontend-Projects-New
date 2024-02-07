@@ -1,4 +1,4 @@
 <resources>
 
-    <style name="Theme.Moviebeam" parent="@style/Theme.Leanback" />
+    <style name="Theme.Moviebeam" parent="@style/Theme.MaterialComponents" />
 </resources>

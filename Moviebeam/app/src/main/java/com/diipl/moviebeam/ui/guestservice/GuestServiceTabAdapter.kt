@@ -2,13 +2,11 @@ package com.diipl.moviebeam.ui.guestservice
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
@@ -48,6 +46,12 @@ class GuestServiceTabAdapter(
 
 //        holder.imageView.setImageResource(item.defaultImage)
         holder.textView.text = item.categoryName
+        holder.card.postDelayed({
+            if (position == 0) {
+                holder.card.requestFocus()
+            }
+        }, 1000)
+
         if (item.isClicked) {
             holder.imageView.setImageResource(item.spotlightImage)
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
@@ -67,7 +71,8 @@ class GuestServiceTabAdapter(
                             btn.isClicked = true
                             onMenuItemClicked(it, item)
                         } else {
-                            if(btn.isClicked) notifyItemChanged(itemList.indexOf(btn))
+                            if(btn.isClicked)
+                                notifyItemChanged(itemList.indexOf(btn))
                             btn.isClicked = false
                             holder.imageView.setImageResource(item.spotlightImage)
                             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))

@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,6 +35,7 @@ import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+private const val TAG = "MoviesActivity"
 
 @AndroidEntryPoint
 class MoviesActivity : BaseActivity() {
@@ -81,7 +83,7 @@ class MoviesActivity : BaseActivity() {
 
         // call below function to get data from datastore
 
-        binding.btnBack.setOnFocusChangeListener { view, b ->
+        binding.btnBack.setOnFocusChangeListener { v, b ->
             if (b) {
                 binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
             } else {
@@ -91,12 +93,22 @@ class MoviesActivity : BaseActivity() {
         binding.btnBack.setOnClickListener {
             handleBackClick()
         }
+//
+//        moviesListFragment = MoviesListFragment()
+//        supportFragmentManager.beginTransaction().replace(binding.frame.id, moviesListFragment)
+//            .commit()
 
         val parentRecyclerView: RecyclerView = binding.parentRecyclerView
         parentRecyclerView.setHasFixedSize(true)
-        binding.parentRecyclerView.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        parentRecyclerView.layoutManager = layoutManager
 
+
+        binding.nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            if (scrollY < oldScrollY) {
+                v.scrollTo(scrollX, scrollY.minus(100))
+            }
+        })
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -146,6 +158,7 @@ class MoviesActivity : BaseActivity() {
 
                                 parentAdapter.setMovieList(sortedGenreMap)
                                 binding.parentRecyclerView.adapter = parentAdapter
+//                                moviesListFragment.bindData(sortedGenreMap)
                             }
 
                             Constants.FREE_MOVIES_ID -> {
@@ -163,6 +176,7 @@ class MoviesActivity : BaseActivity() {
                                 val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
                                 parentAdapter.setMovieList(freeGenreMap)
                                 binding.parentRecyclerView.adapter = parentAdapter
+//                                moviesListFragment.bindData(freeGenreMap)
                             }
 //
 //                            Constants.ADULT_DAY_PASS_ID -> {
@@ -221,11 +235,11 @@ class MoviesActivity : BaseActivity() {
                 transition.replace(R.id.fcv_movie_detail, movieDetailFragment)
                 transition.commit()
                 binding.fcvMovieDetail.toInvisible()
-                val parentAdapter = ParentAdapter {
+                val parentAdapter = ParentAdapter(onItemClicked = {
                     movieDetailFragment.setMovieDetails(it)
                     binding.parentRecyclerView.toInvisible()
                     binding.fcvMovieDetail.toVisible()
-                }
+                })
                 parentAdapter.setMovieList(genreMap)
                 binding.parentRecyclerView.adapter = parentAdapter
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
@@ -238,6 +252,7 @@ class MoviesActivity : BaseActivity() {
             }
         }
     }
+
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -331,7 +346,7 @@ class MoviesActivity : BaseActivity() {
         startActivity(intent)
     }
 
-    private fun handleBackClick(){
+    private fun handleBackClick() {
         if (binding.fcvMovieDetail.isVisible) {
             binding.fcvMovieDetail.toInvisible()
             binding.parentRecyclerView.toVisible()

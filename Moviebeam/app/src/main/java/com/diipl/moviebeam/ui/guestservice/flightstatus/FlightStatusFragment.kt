@@ -77,6 +77,18 @@ class FlightStatusFragment(
         binding.btnArrDep.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 view.background = gradientButton
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+                                view.nextFocusUpId = View.NO_ID
+                                return@setOnKeyListener true
+                            }
+
+                        }
+                    }
+                    false
+                }
             } else {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
@@ -95,12 +107,26 @@ class FlightStatusFragment(
                 view.findViewById<TextView>(R.id.tv_title)?.let {
                     it.isSelected = true
                 }
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+                                    view.nextFocusUpId = View.NO_ID
+                                return@setOnKeyListener true
+                            }
+
+                        }
+                    }
+                    false
+                }
+
             } else {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 view.findViewById<TextView>(R.id.tv_title)?.let {
                     it.isSelected = false
                 }
             }
+
         }
         dropdown.requestFocus()
         dropdown.setOnKeyListener { _, keycode, keyEvent ->

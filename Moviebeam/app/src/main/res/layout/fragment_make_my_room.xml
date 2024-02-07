@@ -123,7 +123,7 @@
 
         <TextView
             android:id="@+id/tv_message"
-            android:layout_width="350dp"
+            android:layout_width="530dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"

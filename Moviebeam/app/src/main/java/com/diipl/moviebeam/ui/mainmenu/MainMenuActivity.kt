@@ -12,6 +12,7 @@ import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
@@ -19,9 +20,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.Constants.HOTEL_VIDEO_DURATION
+import com.diipl.moviebeam.Constants.ALL_SERVICES
 import com.diipl.moviebeam.Constants.HOTEL_VIDEO_LOOP_COUNT
 import com.diipl.moviebeam.Constants.HOTEL_VIDEO_URL
+import com.diipl.moviebeam.Constants.IN_ROOM_ID
+import com.diipl.moviebeam.Constants.LA_ID
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -40,7 +43,6 @@ import com.diipl.moviebeam.ui.kappingservice.Actions
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.kappingservice.ServiceState
 import com.diipl.moviebeam.ui.kappingservice.getServiceState
-import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
@@ -55,11 +57,15 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.inject.Inject
-
 
 private const val TAG = "MainMenuActivity"
 
@@ -96,11 +102,13 @@ class MainMenuActivity : BaseActivity() {
             .setMaxVideoSizeSd()
             .build()
 
-
         // call below function to get data from datastore
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
+
+        val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
+//        startDownload(url)
 
         // UA = intent.extras?.getString("UA")
 
@@ -120,6 +128,38 @@ class MainMenuActivity : BaseActivity() {
         observeToast(mainMenuViewModel.showToast)
     }
 
+    fun startDownload(fileURL: String) = CoroutineScope(Dispatchers.Default).launch {
+        try {
+            val url = URL(fileURL)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.connect()
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val directory = File(externalMediaDirs[0].path + "/APK")
+                if (!directory.exists()) directory.mkdirs()
+                val file = File(directory, url.path.substringAfterLast("/"))
+                val outputStream = FileOutputStream(file)
+                val inputStream = connection.inputStream
+                val buffer = ByteArray(4096)
+                var bytesRead: Int
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                }
+                inputStream.close()
+                outputStream.close()
+                Log.e(TAG, "startDownload: Completed  --->  ${file.absolutePath}")
+
+            } else {
+                // Handle the error or show a message if download fails
+                Log.e(TAG, "startDownload: Failed")
+            }
+            connection.disconnect()
+
+        } catch (e: Exception) {
+            Log.e(TAG, "startDownload Exception: ${e.message}")
+        }
+    }
+
     override fun initViewBinding() {
         binding = ActivityMainMenuBinding.inflate(layoutInflater)
         val view = binding.root
@@ -127,75 +167,46 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        HOTEL_VIDEO_DURATION = player.currentPosition
+//        HOTEL_VIDEO_DURATION = player.currentPosition
         player.pause()
+        player.release()
+        HOTEL_VIDEO_LOOP_COUNT = 3
         super.onPause()
     }
 
     override fun onRestart() {
         super.onRestart()
-        Log.e(
-            TAG,
-            "onRestart: $HOTEL_VIDEO_URL   -->  $HOTEL_VIDEO_DURATION   -->  $HOTEL_VIDEO_LOOP_COUNT"
-        )
-
-    }
-
-        override fun onResume() {
-            super.onResume()
-
-            initializePlayer()
-
-        }
-
-
-    private fun resumePlay() {
-        val playerView = binding.videoView
-        playerView.player = player
-        player.playWhenReady = true
-        player.addListener(playerListener)
-        player.prepare()
-        player.play()
-    }
-
-
-    private fun initializePlayer() {
-//        lifecycleScope.launch {
-            binding.videoView.toVisible()
-            val playerView = binding.videoView
-//        playerView.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-            playerView.player = player
-//        player.repeatMode = Player.REPEAT_MODE_ALL
-            player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
-            player.repeatMode = Player.REPEAT_MODE_ALL
-            player.playWhenReady = true
-//        player.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-            player.addListener(playerListener)
-            player.prepare()
-            player.play()
-            player.seekTo(HOTEL_VIDEO_DURATION)
-//        }
-
-    }
-
-    private fun playBgVideo() {
+        player = ExoPlayer.Builder(this).build()
         initializePlayer()
     }
 
 
+    private fun initializePlayer() {
+        if (HOTEL_VIDEO_URL.isNotEmpty()) {
+            binding.videoView.toVisible()
+            binding.videoView.player = player
+            player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
+            player.repeatMode = Player.REPEAT_MODE_ALL
+            player.playWhenReady = true
+            player.addListener(playerListener)
+            player.prepare()
+            player.play()
+//            player.seekTo(HOTEL_VIDEO_DURATION)
+        }
+    }
+
+
     private val playerListener = object : Player.Listener {
+        override fun onPlayerError(error: PlaybackException) {
+            super.onPlayerError(error)
+            releaseVideoPlayer()
+        }
+
         override fun onEvents(player: Player, events: Player.Events) {
             super.onEvents(player, events)
             if (HOTEL_VIDEO_LOOP_COUNT == 0) {
                 releaseVideoPlayer()
             }
-            Log.e(
-                TAG,
-                "${createTime(player.contentDuration)}   ${createTime(player.currentPosition)}  ${
-                    createTime(player.contentBufferedPosition)
-                }"
-            )
-//            resumePlay()
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -204,19 +215,6 @@ class MainMenuActivity : BaseActivity() {
         }
 
     }
-
-    fun createTime(duration: Long): String {
-        var time = ""
-        var minute = ""
-        var secs = ""
-        val min = duration / 1000 / 60
-        val sec = duration / 1000 % 60
-        minute = if (min < 10) "0$min" else "" + min
-        secs = if (sec < 10) "0$sec" else "" + sec
-        time = "$minute:$secs"
-        return time
-    }
-
 
     private fun releaseVideoPlayer() {
         binding.videoView.toInvisible()
@@ -284,7 +282,7 @@ class MainMenuActivity : BaseActivity() {
                 HOTEL_VIDEO_URL =
                     response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
 
-                playBgVideo()
+                initializePlayer()
 
                 binding.tvGreeting.text = response?.hotelInfo
                 val btnListFromApi: List<String>? = response?.buttonsList?.map {
@@ -325,7 +323,8 @@ class MainMenuActivity : BaseActivity() {
                         }
 
                         Constants.LOCAL_ATTRACTION_ID -> {
-                            intent = Intent(this, LocalAttractionActivity::class.java)
+                            intent = Intent(this, GuestServiceActivity::class.java)
+                            intent.putExtra("btnId", LA_ID)
                         }
 
                         Constants.VOD_ID -> {
@@ -334,6 +333,7 @@ class MainMenuActivity : BaseActivity() {
 
                         Constants.GUEST_SERVICES_ID -> {
                             intent = Intent(this, GuestServiceActivity::class.java)
+                            intent.putExtra("btnId", ALL_SERVICES)
                         }
 
                         Constants.APPS_ID -> {
@@ -354,6 +354,8 @@ class MainMenuActivity : BaseActivity() {
 
                         Constants.IN_ROOM_DINING_ID -> {
                             intent = Intent(this, InRoomDiningActivity::class.java)
+//                            intent = Intent(this, GuestServiceActivity::class.java)
+//                            intent.putExtra("btnId", IN_ROOM_ID)
                         }
 
                         else -> {

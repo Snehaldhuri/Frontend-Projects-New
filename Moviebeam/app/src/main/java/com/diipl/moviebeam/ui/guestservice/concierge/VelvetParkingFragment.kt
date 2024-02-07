@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.InputType
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,6 +46,19 @@ class VelvetParkingFragment(
 //                setVelvetFocus(view)
 //                showSerialNumberDialog()
                 view.showKeyboard()
+
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_CENTER -> {
+                                binding.btnOk.requestFocus()
+                                return@setOnKeyListener true
+                            }
+
+                        }
+                    }
+                    false
+                }
             } else {
                 binding.edtTicketNo.setBackgroundResource(R.drawable.rounded_corner_border)
             }
@@ -52,6 +66,18 @@ class VelvetParkingFragment(
         binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 setFocus(binding.btnOk)
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+                                binding.edtTicketNo.requestFocus()
+                                return@setOnKeyListener true
+                            }
+
+                        }
+                    }
+                    false
+                }
             } else {
                 binding.btnOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
@@ -82,7 +108,7 @@ class VelvetParkingFragment(
                 }
             }
             binding.tvMessage.text =
-                "Thank you.Your request has been sent .Please proceed with valet desk to retrive your vehicle"
+                "Thank you.Your request has been sent.\nPlease proceed with valet desk to retrive your vehicle."
 
             binding.btnPopOk.setOnClickListener {
                 onOkClicked()
@@ -128,17 +154,6 @@ class VelvetParkingFragment(
         cardView.background = gradientDrawable
     }
 
-    private fun setVelvetFocus(cardView: View) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
 
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor

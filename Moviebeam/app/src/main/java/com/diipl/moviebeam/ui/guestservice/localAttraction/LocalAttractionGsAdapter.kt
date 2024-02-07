@@ -1,6 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice.localAttraction
 
-import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
@@ -8,15 +8,21 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAServices
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 
-class LocalAttractionGsAdapter(private var onItemClicked: ((LAServices)) -> Unit) :
+private const val TAG = "LocalAttractionGsAdapter"
 
-    RecyclerView.Adapter<LocalAttractionGsAdapter.MyViewHolder>() {
+class LocalAttractionGsAdapter(
+    private var onItemClicked: ((LAServices)) -> Unit
+) : RecyclerView.Adapter<LocalAttractionGsAdapter.MyViewHolder>() {
+
     private var gradientDrawable: GradientDrawable? = null
-
     private var itemList = listOf<LAServices>()
+    private var selectedPosition = -1
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
@@ -34,27 +40,47 @@ class LocalAttractionGsAdapter(private var onItemClicked: ((LAServices)) -> Unit
         return MyViewHolder(view)
     }
 
-    override fun getItemCount(): Int =
-        itemList.size
-
+    override fun getItemCount(): Int = itemList.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
         holder.textView.text = item.categoryName
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                holder.card.background = gradientDrawable
-                onItemClicked(item)
-            } else {
-                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
-//        holder.card.setOnClickListener {
-//            onItemClicked(item)
-//        }
+        updateFocus(holder)
 
+        holder.itemView.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                view.background = gradientDrawable
+                holder.card.setOnClickListener {
+                    onItemClicked(item)
+                    holder.itemView.isSelected = true
+                    selectedPosition = holder.absoluteAdapterPosition
+                    updateFocus(holder)
+                    notifyUI()
+                }
+            } else {
+                updateFocus(holder)
+            }
+
+        }
+    }
+
+    private fun notifyUI() {
+        itemList.forEachIndexed { index, laServices ->
+            if (selectedPosition != index)
+                notifyItemChanged(index)
+        }
+    }
+
+    private fun updateFocus(holder: MyViewHolder) {
+        if (selectedPosition == holder.absoluteAdapterPosition && holder.itemView.isSelected) {
+            holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+            holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
+        } else {
+            holder.textView.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+            holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+        }
     }
 
     fun setGradientDrawable(gradient: GradientDrawable) {
@@ -65,14 +91,5 @@ class LocalAttractionGsAdapter(private var onItemClicked: ((LAServices)) -> Unit
         itemList = btnList
     }
 
-    private fun getWidthInPercent(context: Context, percent: Int): Int {
-        val width = context.resources.displayMetrics.widthPixels ?: 0
-        return (width * percent) / 100
-    }
-
-    private fun getHeightInPercent(context: Context, percent: Int): Int {
-        val width = context.resources.displayMetrics.heightPixels ?: 0
-        return (width * percent) / 100
-    }
 
 }

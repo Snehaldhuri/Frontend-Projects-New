@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="240dp"
+    android:theme="@style/Theme.MaterialComponents"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardBackgroundColor="@color/menu_list_bg"
+    android:layout_margin="@dimen/dp_8"
+    app:cardCornerRadius="@dimen/dp_16">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/dp_16"
+        >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/sp_18"
+            android:textColor="@color/white"
+            android:text="Enter channel name or number to search"
+            android:gravity="center"
+            android:padding="@dimen/dp_8"
+            android:textStyle="bold"
+            />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_48"
+            app:cardCornerRadius="@dimen/dp_24"
+            app:strokeWidth="@dimen/dp_2"
+            app:strokeColor="@color/white"
+            app:cardBackgroundColor="@color/white"
+            android:id="@+id/et_card"
+            android:layout_margin="@dimen/dp_16"
+            >
+            <EditText
+                android:id="@+id/et_search"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="@dimen/dp_20"
+                android:paddingVertical="@dimen/dp_4"
+                android:background="@color/white"
+                android:layout_gravity="center"
+                android:fontFamily="@font/manrope_semibold_600"
+                android:textColor="@color/black"
+                android:textSize="@dimen/sp_25"
+                android:inputType="text"
+                android:imeOptions="actionDone"
+                />
+        </com.google.android.material.card.MaterialCardView>
+
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

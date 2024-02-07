@@ -48,6 +48,11 @@ class ConciergeAdapter(
 
         holder.imageView.setImageResource(item.defaultImage)
         holder.textView.text = item.categoryName
+        holder.card.postDelayed({
+            if (position == 0) {
+                holder.card.requestFocus()
+            }
+        }, 1)
 
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {

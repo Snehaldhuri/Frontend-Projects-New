@@ -39,7 +39,7 @@
     <string name="watch_trailer">Watch Trailer</string>
     <string name="price_dollar">$ %1$s</string>
     <string name="app_image">App Image</string>
-    <string name="OK">Ok</string>
+    <string name="OK">OK</string>
     <string name="Cancel">Cancel</string>
     <string name="status">Status</string>
     <string name="gate">Gate</string>
@@ -92,4 +92,5 @@
     <string name="total_content_count_icon">Total Content Count Icon</string>
     <string name="network_icon">Network Icon</string>
     <string name="sync_icon">Sync Icon</string>
+    <string name="offerText">Get 10% off on Your Order, click button below to redeem</string>
 </resources>

@@ -41,7 +41,9 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class HotelInfoActivity : BaseActivity() {
+
     private val hotelInfoViewModel: HotelInfoViewModel by viewModels()
+
     private lateinit var binding: ActivityHotelInfoBinding
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
@@ -61,6 +63,9 @@ class HotelInfoActivity : BaseActivity() {
 
     @Inject
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
+
+    private lateinit var adapter : HotelInfoTabAdapter
+    private var hsCount = 0
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
@@ -156,6 +161,10 @@ class HotelInfoActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+                hotelInfoViewModel.hotelServiceLiveData.value?.data?.let {
+                    hotelInfoViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
+                }
+
                 val tabMap = mutableMapOf<String, TabListObj>()
                 val tabs = mutableListOf<String>()
                 val response = hotelInfoViewModel.hotelServiceLiveData.value?.data
@@ -164,6 +173,18 @@ class HotelInfoActivity : BaseActivity() {
                         "All" -> {
                             service.serviceList.forEach {
                                 tabMap[it.title] = TabListObj(2, it, null)
+                                if(hsCount == 0) {
+                                    if (it.title == "Help & Info") {
+                                        tabMap[it.title] = TabListObj(2, it, null)
+                                        hsCount = 1
+                                    }
+//                                    else {
+//                                        tabs.add(Constants.HELP_INFO)
+//                                        tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
+//                                        helpInfoTabIndex = tabs.size - 1
+//                                        hsCount = 1
+//                                    }
+                                }
                                 tabs.add(it.title)
                             }
                         }
@@ -174,11 +195,11 @@ class HotelInfoActivity : BaseActivity() {
                         }
                     }
                 }
-                tabs.add(Constants.HELP_INFO)
-                tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
-                helpInfoTabIndex = tabs.size - 1
+//                tabs.add(Constants.HELP_INFO)
+//                tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
+//                helpInfoTabIndex = tabs.size - 1
 
-                val adapter = HotelInfoTabAdapter(itemList = tabs,
+                adapter = HotelInfoTabAdapter(itemList = tabs,
                     onItemFocused = { it, view ->
 
                         val transaction = supportFragmentManager.beginTransaction()
@@ -218,9 +239,7 @@ class HotelInfoActivity : BaseActivity() {
 
                                 bundle.putString(
                                     "desc",
-                                    "4970 Pepelani Loop Princeville, \n" +
-                                            "Kauai,\n"+ "HI 96722.\n\n" +
-                                            "Ph - (808)826-2802"
+                                    hotelInfoViewModel.accountSetupLiveData.value?.data?.address
                                 )
                                 val fragment = HotelServiceInfoFragment()
                                 fragment.arguments = bundle
@@ -267,7 +286,7 @@ class HotelInfoActivity : BaseActivity() {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvHotelInfoHeader.adapter = adapter
-                binding.tvHeaderTitle.text = tabs[0].toString()
+                binding.tvHeaderTitle.text = tabs[0]
                 binding.pbLoader.toInvisible()
             }
 

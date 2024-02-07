@@ -11,5 +11,5 @@
         android:layout_height="match_parent"
         android:scaleType="fitXY"
         android:padding="10dp"
-        android:src="@drawable/spa_gs"/>
+        android:src="@drawable/spa_new_gs"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

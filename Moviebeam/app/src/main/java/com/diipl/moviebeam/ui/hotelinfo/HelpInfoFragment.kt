@@ -1,9 +1,15 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.media.tv.TvInputManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +22,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.utils.intToString
 
+private const val TAG = "HelpInfoFragment"
 class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     private var _binding: FragmentHelpInfoBinding? = null
@@ -50,6 +57,29 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         binding.tvIpAddress.text = ipAddress
         binding.tvNetMask.text = netmask
         binding.tvGateway.text = gateway
+
+
+        val tvInputManager = requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
+        val tvInputInfos = tvInputManager.tvInputList[1].loadLabel(requireActivity())
+        if (tvInputInfos.isNotEmpty()) {
+            Log.e(TAG, "Device is connected to an STB $tvInputInfos")
+        } else {
+            Log.e(TAG, "Device is not connected to an STB")
+        }
+
+        val connectivityManager = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            connectivityManager.activeNetwork
+        } else {
+            TODO("VERSION.SDK_INT < M")
+        }
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+        if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            Log.e(TAG, "Device is connected to an WiFi")
+        } else {
+            Log.e(TAG, "Device is connected to an WiFi")
+        }
+
 
         return binding.root
     }

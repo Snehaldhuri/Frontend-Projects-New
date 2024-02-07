@@ -15,14 +15,18 @@ class ParentAdapter(
     RecyclerView.Adapter<ParentAdapter.ParentViewHolder>() {
 
     private var movieList: MutableList<List<ContentDto>> = mutableListOf()
+    var position = 0
 
     inner class ParentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val titleTv: TextView = itemView.findViewById(R.id.parentTitleTv)
         val childRecyclerView: RecyclerView = itemView.findViewById(R.id.langRecyclerView)
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParentViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.moviegenre_parent_item, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.moviegenre_parent_item, parent, false)
+
         return ParentViewHolder(view)
     }
 
@@ -34,22 +38,25 @@ class ParentAdapter(
         val parentItem = movieList[position]
         holder.titleTv.text = parentItem[0].genre1
 
+
         holder.childRecyclerView.setHasFixedSize(true)
-        holder.childRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
+        holder.childRecyclerView.layoutManager =
+            LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
 
         val adapter = ChildAdapter(parentItem, onItemClicked)
+        holder.childRecyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
         holder.childRecyclerView.adapter = adapter
 
     }
 
     fun setMovieList(map: Map<String, List<ContentDto>>) {
         val list: MutableList<List<ContentDto>> = mutableListOf()
-            val keys = map.keys.toMutableList()
-            keys.remove("New Releases")
-            keys.add(0, "New Releases")
-            keys.remove("All Pay Movies")
-            keys.add(1, "All Pay Movies")
-            keys.forEach {
+        val keys = map.keys.toMutableList()
+        keys.remove("New Releases")
+        keys.add(0, "New Releases")
+        keys.remove("All Pay Movies")
+        keys.add(1, "All Pay Movies")
+        keys.forEach {
             map[it]?.let { genre ->
                 list.add(genre)
             }

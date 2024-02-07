@@ -85,14 +85,26 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         }
     }
 
+    fun fetchHotelService(){
+        viewModelScope.launch(Dispatchers.IO) {
+            val hotelServicesResponse = async { movieBeamRepository.getHotelServiceInfo(Constants.ACCOUNT_ID) }
+            val result = awaitAll(
+                hotelServicesResponse
+            )
+            if (result[0] == null) {
+                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Hotel Services Api"))
+            } else {
+                _hotelServiceLiveData.postValue(Resource.Success(result[0] as HotelServiceResponse))
+            }
+        }
+    }
+
     private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: String) {
         viewModelScope.launch(Dispatchers.IO) {
 
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
             val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
-            val accountSetupApiResponse =
-                async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
-            val hotelServicesResponse = async { movieBeamRepository.getHotelServiceInfo(accountId) }
+            val accountSetupApiResponse = async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
             val localAttractionResponse = async { movieBeamRepository.getLocalAttractionInfo(ua) }
             val releasesMoviesMoreResponse = async { movieBeamRepository.getMoviesInfo(ua) }
             val showTimeResponse = async { movieBeamRepository.getShowtimeInfo(ua) }
@@ -101,7 +113,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                 weatherApiResponse,
                 themeApiResponse,
                 accountSetupApiResponse,
-                hotelServicesResponse,
                 localAttractionResponse,
                 releasesMoviesMoreResponse,
                 showTimeResponse
@@ -126,27 +137,21 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
             }
 
             if (result[3] == null) {
-                _hotelServiceLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Hotel Services Api"))
+                _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Local Attraction Api"))
             } else {
-                _hotelServiceLiveData.postValue(Resource.Success(result[3] as HotelServiceResponse))
+                _localAttractionLiveData.postValue(Resource.Success(result[3] as LocalAttractionResponse))
             }
 
             if (result[4] == null) {
-                _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Local Attraction Api"))
+                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Api"))
             } else {
-                _localAttractionLiveData.postValue(Resource.Success(result[4] as LocalAttractionResponse))
+                _moviesLiveData.postValue(Resource.Success(result[4] as MoviesResponse))
             }
 
             if (result[5] == null) {
-                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Api"))
-            } else {
-                _moviesLiveData.postValue(Resource.Success(result[5] as MoviesResponse))
-            }
-
-            if (result[6] == null) {
                 _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in ShowTime Api"))
             } else {
-                _showtimeLiveData.postValue(Resource.Success(result[6] as ShowTimeResponse))
+                _showtimeLiveData.postValue(Resource.Success(result[5] as ShowTimeResponse))
             }
         }
     }

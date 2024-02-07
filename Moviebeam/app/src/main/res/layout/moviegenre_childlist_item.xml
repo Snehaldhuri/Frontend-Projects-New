@@ -3,44 +3,61 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cv_movie_card"
-    android:layout_width="106dp"
+    android:layout_width="108dp"
     android:layout_height="match_parent"
     android:clickable="true"
+    android:layout_gravity="center"
     android:focusable="true"
+    android:theme="@style/Theme.MaterialComponents"
+    app:cardCornerRadius="@dimen/dp_8"
+    android:animateLayoutChanges="true"
     app:cardBackgroundColor="@android:color/transparent"
     app:cardElevation="0dp"
     app:cardPreventCornerOverlap="true"
    >
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="7dp">
+        android:orientation="vertical"
+        android:padding="8dp">
 
-        <ImageView
-            android:id="@+id/childLogoIv"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/help"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:clipToOutline="true"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/round_outline_5dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:cardBackgroundColor="@color/transparent"
+            android:id="@+id/img_card"
+            app:strokeColor="@color/transparent"
+            app:strokeWidth="@dimen/dp_2"
+            app:cardCornerRadius="@dimen/dp_8"
+            >
+            <ImageView
+                android:id="@+id/childLogoIv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/help"
+                android:adjustViewBounds="true"
+                android:scaleType="fitXY"
+                />
+        </com.google.android.material.card.MaterialCardView>
 
-            />
+
         <TextView
             android:id="@+id/childTitleTv"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
+            android:layout_marginTop="@dimen/dp_4"
             android:textSize="12sp"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:gravity="center"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/childLogoIv" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>
