@@ -15,7 +15,6 @@ import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
 
 private const val TAG = "LocalAttractionGsAdapter"
-
 class LocalAttractionGsAdapter(
     private var onItemClicked: ((LAServices)) -> Unit
 ) : RecyclerView.Adapter<LocalAttractionGsAdapter.MyViewHolder>() {
@@ -30,8 +29,7 @@ class LocalAttractionGsAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.hotel_info_tab, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.hotel_info_tab, parent, false)
 
         val params = view.layoutParams
         params.width = getWidthInPercent(parent.context, 23)

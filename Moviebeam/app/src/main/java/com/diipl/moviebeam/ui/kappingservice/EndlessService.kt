@@ -162,7 +162,6 @@ class EndlessService : Service() {
         versionNumber = getVersionNumber().replace(".", "").trim()
         log(versionNumber)
 
-
         val notification = createNotification()
         startForeground(1, notification)
     }

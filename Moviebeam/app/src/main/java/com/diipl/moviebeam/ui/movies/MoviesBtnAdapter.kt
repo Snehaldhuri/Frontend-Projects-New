@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.movies
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
@@ -10,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 
@@ -21,13 +23,18 @@ class MoviesBtnAdapter(
     RecyclerView.Adapter<MoviesBtnAdapter.MyViewHolder>() {
     var startColor = ""
     var endColor = ""
+    private var selectedPosition = -1
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
         val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
         val card: ConstraintLayout = itemView.findViewById(R.id.clHomeMenuButton)
     }
-    override fun onCreateViewHolder( parent: ViewGroup, viewType: Int ): MoviesBtnAdapter.MyViewHolder {
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): MoviesBtnAdapter.MyViewHolder {
 
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
         val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
@@ -37,7 +44,7 @@ class MoviesBtnAdapter(
         view.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                 when (keycode) {
-                    KeyEvent.KEYCODE_DPAD_RIGHT ->{
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
                         onRightKeyPressed()
                     }
                 }
@@ -54,21 +61,49 @@ class MoviesBtnAdapter(
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
 
-        holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+        if (selectedPosition == -1) {
+            holder.itemView.isSelected = true
+            selectedPosition = 0
+        }
+        updateFocus(holder)
 
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 fetchGradientColorsFromApi(holder.card)
+                holder.card.setOnClickListener {
+                    onMoviesMenuItemClicked(item.btnId)
+                    holder.itemView.isSelected = true
+                    selectedPosition = holder.absoluteAdapterPosition
+                    updateFocus(holder)
+                    notifyUI()
+                }
             } else {
-                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+//                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                updateFocus(holder)
             }
         }
-        holder.card.setOnClickListener {
-            onMoviesMenuItemClicked(item.btnId)
-         }
     }
 
-    override fun getItemCount(): Int =  itemList.size
+    private fun notifyUI() {
+        itemList.forEachIndexed { index, laServices ->
+            if (selectedPosition != index)
+                notifyItemChanged(index)
+        }
+    }
+
+    private fun updateFocus(holder: MyViewHolder) {
+        if (selectedPosition == holder.absoluteAdapterPosition && holder.itemView.isSelected) {
+            holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+            holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
+            holder.imageView.imageTintList = ColorStateList.valueOf(Color.BLACK)
+        } else {
+            holder.textView.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+            holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            holder.imageView.imageTintList = ColorStateList.valueOf(Color.WHITE)
+        }
+    }
+
+    override fun getItemCount(): Int = itemList.size
 
     private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
 
