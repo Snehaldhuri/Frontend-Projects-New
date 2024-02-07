@@ -11,6 +11,7 @@ import android.view.KeyEvent
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -23,7 +24,6 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.Constants.ALL_SERVICES
 import com.diipl.moviebeam.Constants.HOTEL_VIDEO_LOOP_COUNT
 import com.diipl.moviebeam.Constants.HOTEL_VIDEO_URL
-import com.diipl.moviebeam.Constants.IN_ROOM_ID
 import com.diipl.moviebeam.Constants.LA_ID
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
@@ -90,6 +90,15 @@ class MainMenuActivity : BaseActivity() {
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
+    override fun observeViewModel() {
+        observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
+        observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+
+        observeSnackBarMessages(mainMenuViewModel.showSnackBar)
+        observeToast(mainMenuViewModel.showToast)
+    }
+
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,15 +119,40 @@ class MainMenuActivity : BaseActivity() {
         val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
 //        startDownload(url)
 
+        val packageName = "com.google.android.apps.tv.launcherx"
+//        disablePackage(packageName)
+
     }
 
-    override fun observeViewModel() {
-        observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
-        observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+    fun disablePackage(packageName: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val adbCommand = "adb shell pm disable-user --user 0 $packageName"
 
-        observeSnackBarMessages(mainMenuViewModel.showSnackBar)
-        observeToast(mainMenuViewModel.showToast)
+                Runtime.getRuntime().exec(adbCommand)
+
+           /*     val processBuilder = ProcessBuilder("su", "-c", adbCommand)
+                processBuilder.redirectErrorStream(true)
+
+                val process = processBuilder.start()
+                val reader = BufferedReader(InputStreamReader(process.inputStream))
+                val stringBuilder = StringBuilder()
+                var line: String?
+
+                while (reader.readLine().also { line = it } != null) {
+                    stringBuilder.append(line).append("\n")
+                }
+
+                process.waitFor()
+                process.destroy()*/
+
+                Log.e(TAG, "disablePackage: Disabled")
+            } catch (e: Exception) {
+//            e.printStackTrace()
+                Log.e(TAG, "disablePackage: error ${e.message}")
+            }
+
+        }
     }
 
     fun startDownload(fileURL: String) = CoroutineScope(Dispatchers.Default).launch {
@@ -165,6 +199,7 @@ class MainMenuActivity : BaseActivity() {
         player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
         super.onPause()
+        Log.e(TAG, "onPause: ")
     }
 
     override fun onRestart() {

@@ -53,8 +53,8 @@
         <activity
             android:name=".ui.programguide.ProgramGuideActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustNothing|adjustPan"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:windowSoftInputMode="adjustNothing|adjustPan" />
         <activity
             android:name=".ui.stbdetail.STBDetailsActivity"
             android:exported="true"
@@ -64,11 +64,12 @@
             android:name=".ui.serial_info.SerialActivity"
             android:banner="@drawable/app_icon_your_company"
             android:exported="true"
+            android:windowSoftInputMode="adjustPan|adjustNothing"
             android:icon="@drawable/app_icon_your_company"
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
-            <!-- TODO Uncomment this for release -->
+            <!-- TODO Uncomment this for release-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
@@ -127,7 +128,6 @@
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
-
             <intent-filter>
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />

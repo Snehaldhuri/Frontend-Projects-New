@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -101,6 +102,12 @@ class ProgramGuideActivity : BaseActivity() {
             }
         }
     */
+
+    override fun onStop() {
+        super.onStop()
+        Log.e(TAG, "onStop: ")
+    }
+
 
     override fun onResume() {
         super.onResume()
@@ -419,6 +426,7 @@ class ProgramGuideActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         binding.layoutVideo.videoView.player?.release()
+        Log.e(TAG, "onDestroy: ")
     }
 
 }
