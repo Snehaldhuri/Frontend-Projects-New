@@ -65,7 +65,6 @@ class HotelInfoActivity : BaseActivity() {
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
 
     private lateinit var adapter : HotelInfoTabAdapter
-    private var hsCount = 0
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
@@ -171,21 +170,21 @@ class HotelInfoActivity : BaseActivity() {
                 for (service in response?.servicesList!!) {
                     when (service.categoryName) {
                         "All" -> {
+                            var helpInfoAdded = false
                             service.serviceList.forEach {
-                                tabMap[it.title] = TabListObj(2, it, null)
-                                if(hsCount == 0) {
-                                    if (it.title == "Help & Info") {
-                                        tabMap[it.title] = TabListObj(2, it, null)
-                                        hsCount = 1
-                                    }
-//                                    else {
-//                                        tabs.add(Constants.HELP_INFO)
-//                                        tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
-//                                        helpInfoTabIndex = tabs.size - 1
-//                                        hsCount = 1
-//                                    }
+                                if (it.title == "Help & Info") {
+                                    tabMap[it.title] = TabListObj(2, it, null)
+                                    tabs.add(it.title)
+                                    helpInfoAdded = true
+                                } else {
+                                    tabMap[it.title] = TabListObj(2, it, null)
+                                    tabs.add(it.title)
                                 }
-                                tabs.add(it.title)
+                            }
+
+                            if (!helpInfoAdded) {
+                                tabs.add(Constants.HELP_INFO)
+                                tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
                             }
                         }
 
@@ -195,9 +194,6 @@ class HotelInfoActivity : BaseActivity() {
                         }
                     }
                 }
-//                tabs.add(Constants.HELP_INFO)
-//                tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
-//                helpInfoTabIndex = tabs.size - 1
 
                 adapter = HotelInfoTabAdapter(itemList = tabs,
                     onItemFocused = { it, view ->

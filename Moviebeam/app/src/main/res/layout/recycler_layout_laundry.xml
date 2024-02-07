@@ -4,13 +4,13 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginVertical="@dimen/dp_2"
+    android:id="@+id/cl_main_card_laundry"
     app:cardCornerRadius="@dimen/dp_5">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_card_laundry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/btn_bg_gradient_default_5dp"
         android:paddingHorizontal="@dimen/dp_10"
         android:paddingVertical="@dimen/dp_14">
 

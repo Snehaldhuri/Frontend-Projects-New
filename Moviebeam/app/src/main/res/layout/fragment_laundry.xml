@@ -14,46 +14,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/dp_20"
-        android:layout_marginRight="@dimen/dp_20"
-        android:layout_weight="1"
-        android:ellipsize="none"
-        android:maxLines="2"
-        android:scrollHorizontally="false"
-        android:text="Please click OK to select/deselect the laundry items.Pres +/- to increase/decrease quantity"
-        android:textAlignment="center"
-        android:textSize="@dimen/sp_12"
-        app:flow_wrapMode="aligned"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/rv_laundry"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_items"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dp_20"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="270dp"
-        android:text="Items"
-        android:textColor="@color/fastlane_background"
-        app:layout_constraintEnd_toStartOf="@+id/tv_charges"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
-
-    <TextView
-        android:id="@+id/tv_charges"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_20"
-        android:layout_marginRight="@dimen/dp_20"
-        android:text="Charges"
-        android:textColor="@color/fastlane_background"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/lv_laundry"
@@ -67,7 +27,7 @@
         android:scrollbars="vertical"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_items" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <Button
