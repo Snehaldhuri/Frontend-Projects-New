@@ -2,27 +2,22 @@ package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
 import android.graphics.drawable.GradientDrawable
 import android.util.Log
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
-import com.diipl.moviebeam.databinding.ItemToiletryRequestBinding
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryCategory
 import com.diipl.moviebeam.databinding.RecyclerLayoutLaundryBinding
-import kotlin.coroutines.coroutineContext
 
 class LaundryAdapter(
-    private var onMenuItemFocused: (LaundryDataList) -> Unit,
+    private var onMenuItemFocused: (LaundryCategory) -> Unit,
     private val onLeftKeyPressed: () -> Unit,
     var onRightKeyPressed: () -> Unit,
 ) :
     RecyclerView.Adapter<LaundryAdapter.MyViewHolder>() {
 
     private var gradient: GradientDrawable? = null
-    private var laundryList: List<LaundryDataList> = emptyList()
+    private var laundryList: List<LaundryCategory> = emptyList()
 
     inner class MyViewHolder(val binding: RecyclerLayoutLaundryBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -73,7 +68,7 @@ class LaundryAdapter(
         }
     }
 
-    fun setLaundryList(laundryDataList: List<LaundryDataList>) {
+    fun setLaundryList(laundryDataList: List<LaundryCategory>) {
         this.laundryList = laundryDataList
     }
 

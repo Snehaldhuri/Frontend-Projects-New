@@ -9,10 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryCategory
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
@@ -28,7 +30,7 @@ class LaundryFragment : BaseFragment() {
 
     lateinit var laundry_adapter: LaundryAdapter
     lateinit var customAdapterLaundry: CustomAdapterLaundry
-    lateinit var laundry_list: List<LaundryDataList>
+    lateinit var laundry_list: List<LaundryCategory>
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null
     private var _binding: FragmentLaundryBinding? = null
@@ -36,10 +38,11 @@ class LaundryFragment : BaseFragment() {
     private var laundryHeaderPosition: Int = 0
     private var laundrySubCategoryPosition: Int = 0
     private var selectedItems: MutableList<LaundryResponce> = mutableListOf()
+    private lateinit var laundryDetailResponse: LaundryDataResponse
 
 
     override fun observeViewModel() {
-        observe(laundryViewModel.laundryMasterLiveData, ::handleLaundryMasterResponse)
+//        observe(laundryViewModel.laundryMasterLiveData, ::handleLaundryMasterResponse)
     }
 
     override fun initViewBinding() {
@@ -57,7 +60,8 @@ class LaundryFragment : BaseFragment() {
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
         binding.lvLaundry.layoutManager =
-            LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            GridLayoutManager(context, 2)
+
         val cardRecyclerView2: RecyclerView = binding.rvLaundry
 
         cardRecyclerView2.layoutManager = LinearLayoutManager(context)
@@ -81,8 +85,7 @@ class LaundryFragment : BaseFragment() {
                 binding.btnLaundrySendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-
-
+        setLaundryDetailData()
 
         binding.btnLaundrySendRequest.setOnClickListener {
 
@@ -106,62 +109,6 @@ class LaundryFragment : BaseFragment() {
             Log.d("TAG1212", "handleAccountSetupResponse: $selectedItems")
         }
         return binding.root
-    }
-    private fun handleLaundryMasterResponse(status: Resource<LaundryResponce>) {
-        when (status) {
-            is Resource.Loading -> {}
-            is Resource.Success -> {
-
-                laundryViewModel.laundryMasterLiveData.value?.data?.let {
-                    laundry_list = it.laundryDataList
-
-
-                    customAdapterLaundry = CustomAdapterLaundry(
-                        onMenuItemFocused = { },
-                        onLeftKeyPressed = {
-                            binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
-                        })
-
-                    binding.lvLaundry.adapter = customAdapterLaundry
-
-
-                    laundry_adapter = LaundryAdapter(onMenuItemFocused = {
-//                        Log.e("data_onfocus", "handleLaundryMasterResponse:${it}")
-                        customAdapterLaundry = CustomAdapterLaundry(
-                            onMenuItemFocused = { },
-                            onLeftKeyPressed = {
-                                binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
-                            })
-
-                        binding.lvLaundry.adapter = customAdapterLaundry
-                        // laundry_list?.let {
-                        customAdapterLaundry.setNewsList(it.subCategoryList)
-                        //}
-                        customAdapterLaundry.setGradientColor(
-                            gradientStartColor!!,
-                            gradientEndColor!!
-                        )
-                        customAdapterLaundry.setGradient(getGradient())
-                    }, onLeftKeyPressed = {},
-                        onRightKeyPressed = {
-                            binding.rvLaundry.clearFocus()
-                            binding.lvLaundry.requestFocus()
-                            binding.lvLaundry.getChildAdapterPosition(binding.lvLaundry.getFocusedChild());
-                        })
-                    laundry_list.let {
-                        laundry_adapter.setLaundryList(it)
-                    }
-
-                    laundry_adapter.setGradient(getGradient())
-                    binding.rvLaundry.adapter = laundry_adapter
-                }
-            }
-
-            else -> {
-                status.errorCode?.let { laundryViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { laundryViewModel.showToastMessage(it) }
-            }
-        }
     }
 
     private fun setFocus(cardView: Button) {
@@ -195,6 +142,50 @@ class LaundryFragment : BaseFragment() {
     }
 
     fun setLaundryData(laundryData: LaundryDataResponse) {
-        Log.d("gaurav","$laundryData")
+        this.laundryDetailResponse = laundryData
     }
+    fun setLaundryDetailData() {
+        laundry_list = laundryDetailResponse.laundryDataList
+
+        // Check if _binding is initialized
+        if (_binding != null) {
+            customAdapterLaundry = CustomAdapterLaundry(
+                onMenuItemFocused = { },
+                onLeftKeyPressed = {
+                    binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+                }
+            )
+            binding.lvLaundry.adapter = customAdapterLaundry
+
+            laundry_adapter = LaundryAdapter(
+                onMenuItemFocused = {
+                    customAdapterLaundry = CustomAdapterLaundry(
+                        onMenuItemFocused = { },
+                        onLeftKeyPressed = {
+                            binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+                        }
+                    )
+                    binding.lvLaundry.adapter = customAdapterLaundry
+                    customAdapterLaundry.setNewsList(it.subCategoryList)
+                    customAdapterLaundry.setGradientColor(gradientStartColor!!, gradientEndColor!!)
+                    customAdapterLaundry.setGradient(getGradient())
+                },
+                onLeftKeyPressed = {},
+                onRightKeyPressed = {
+                    binding.rvLaundry.clearFocus()
+                    binding.lvLaundry.requestFocus()
+                    binding.lvLaundry.getChildAdapterPosition(binding.lvLaundry.getFocusedChild())
+                }
+            )
+            laundry_list.let {
+                laundry_adapter.setLaundryList(it)
+            }
+            laundry_adapter.setGradient(getGradient())
+            binding.rvLaundry.adapter = laundry_adapter
+        } else {
+            Log.e("LaundryFragment", "_binding is null")
+        }
+    }
+
 }
+

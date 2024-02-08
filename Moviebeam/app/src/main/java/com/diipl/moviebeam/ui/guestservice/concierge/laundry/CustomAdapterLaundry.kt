@@ -17,18 +17,22 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundrySubCategory
 import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
 import com.diipl.moviebeam.databinding.CustomLaundryListViewBinding
+import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtFomAssets
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtLA
 
 
 class CustomAdapterLaundry(
-    var onMenuItemFocused: (SubCategoryList) -> Unit,
+    var onMenuItemFocused: (LaundrySubCategory) -> Unit,
     var onLeftKeyPressed: () -> Unit?
     ) : RecyclerView.Adapter<CustomAdapterLaundry.MyViewHolder>() {
 
-    var sublList: List<SubCategoryList> = emptyList()
+    var sublList: List<LaundrySubCategory> = emptyList()
     var gradient2: GradientDrawable? = null
-    var count = 1
+    var count = 0
     private var laundryList: List<LaundryDataList> = emptyList()
     var binding: CustomLaundryListViewBinding? = null
     private lateinit var context: Context
@@ -70,136 +74,74 @@ class CustomAdapterLaundry(
         Log.e("sublist", "getView:${sublList.size} ")
         holder.tv_lv_title.text = sublList[p0].title
         holder.tv_lv_price.text = sublList[p0].dispPrice
-        var hide: Boolean = true
-        val item = sublList[p0]
-
-        holder.binding.root.setOnClickListener(View.OnClickListener {
-
-            val constraintset = ConstraintSet()
-            constraintset.clone(context, R.layout.custom_laundry_list_view)
-
-            if (hide) {
-                holder.ll.visibility = View.VISIBLE
-                holder.binding.ivIconChecked.visibility = View.VISIBLE
-                hide = false
-                val params: ConstraintLayout.LayoutParams =
-                    holder.tv_lv_title.layoutParams as ConstraintLayout.LayoutParams
-                params.setMargins(100, 0, 200, 0)
-                holder.tv_lv_title.layoutParams = params
-
-                //function focus for left key pressed on selection of this item
-             //   focus(onLeftKeyPressed = {holder.tv_lv_title.id},item,holder)
-
-            } else {
-                holder.ll.visibility = View.GONE
-                hide = true
-                holder.binding.ivIconChecked.visibility = View.GONE
-                val params: ConstraintLayout.LayoutParams =
-                    holder.tv_lv_title.layoutParams as ConstraintLayout.LayoutParams
-                params.setMargins(0, 0, 550, 0)
-                holder.tv_lv_title.layoutParams = params
-            }
-        })
+        holder.item_img.loadImagesWithGlideExtFomAssets(sublList[p0].imgSrc)
 
         holder.img_add.setOnClickListener(View.OnClickListener {
             count += 1
             holder.tv_count.text = count.toString()
         })
         holder.img_remove.setOnClickListener(View.OnClickListener {
-            if (count == 1) {
+            if (count == 0) {
             } else {
                 count -= 1
                 holder.tv_count.text = count.toString()
             }
         })
-
-
-        holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+//        holder.binding.imgAdd.postDelayed({
+//            if (p0 == 0) {
+//                holder.binding.imgAdd.requestFocus()
+//            }
+//        }, 1)
+//        holder.binding.imgAdd.requestFocus()
+        holder.binding.root.setOnFocusChangeListener{ view, isFocused ->
             if (isFocused) {
-                setFocus(holder.binding.tvLvTitle)
-
+                holder.binding.imgAdd.requestFocus()
+                setImageFocus(holder.binding.imgAdd)
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
                             KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                                holder.binding.imgAdd.postDelayed(
-                                    {
-                                        holder.binding.imgAdd.requestFocus()
-                                    }, 50
-                                )
-                                holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
+                                holder.binding.imgRemove.requestFocus()
+                                holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
                                     if (hasFocus) {
-                                        setImageFocus(holder.binding.imgAdd)
+                                        setImageFocus(holder.binding.imgRemove)
                                         view.setOnKeyListener { _, keyCode, event ->
                                             if (event.action == KeyEvent.ACTION_DOWN) {
                                                 when (keyCode) {
-                                                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                                                        holder.binding.imgRemove.postDelayed(
-                                                            {
-                                                                holder.binding.imgRemove.requestFocus()
-                                                            }, 50
-                                                        )
-                                                        holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
-                                                            if (hasFocus) {
-                                                                setImageFocus(holder.binding.imgRemove)
-                                                            } else {
-                                                                holder.binding.imgRemove.setBackgroundResource(
-                                                                    R.drawable.btn_bg_gradient_default
-                                                                )
-                                                            }
-                                                        }
-                                                        return@setOnKeyListener true
-                                                    }
-
-                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
-                                                        holder.binding.laundryData.postDelayed({
-                                                            holder.binding.laundryData.requestFocus()
-                                                        }, 50)
-                                                        holder.binding.laundryData.setOnFocusChangeListener { view, hasFocus ->
-                                                            if (hasFocus) {
-                                                                setFocus(holder.binding.tvLvTitle)
-                                                            } else {
-                                                                holder.binding.tvLvTitle.setBackgroundResource(
-                                                                    R.color.transparent
-                                                                )
-                                                            }
-                                                        }
-                                                    }
+//                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
+//                                                        holder.binding.imgAdd.requestFocus()
+//
+//                                                        holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
+//                                                            if (hasFocus) {
+//                                                                setImageFocus(holder.binding.imgAdd)
+//                                                            } else {
+//                                                                holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
+//                                                            }
+//                                                        }
+//                                                    }
                                                 }
                                             }
                                             false
                                         }
-                                    } else {
-                                        holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                                    }
+                                    else {
+                                        holder.binding.imgRemove.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
                                     }
                                 }
-                                setImageFocus(holder.binding.imgAdd)
                                 return@setOnKeyListener true
                             }
                         }
                     }
                     false
                 }
-            } else {
-                holder.binding.tvLvTitle.setBackgroundResource(R.color.transparent)
+            }
+            else{
+                holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
             }
         }
     }
 
-
     private fun setImageFocus(cardView: ImageView) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-//        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
-
-    private fun setFocus(cardView: TextView) {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -215,9 +157,10 @@ class CustomAdapterLaundry(
         RecyclerView.ViewHolder(binding.root) {
 
         var convertView = binding.root
-        var count = 1
+        var count = 0
         var tv_lv_title: TextView = convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_lv_title)
         var tv_lv_price: TextView = convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_lv_price)
+        var item_img: ImageView = convertView.findViewById<ImageView>(R.id.iv_item)
         var img_add: ImageView = convertView.findViewById<ImageView>(com.diipl.moviebeam.R.id.img_add)
         var img_remove: ImageView = convertView.findViewById<ImageView>(com.diipl.moviebeam.R.id.img_remove)
         var tv_count: TextView = convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_count)
@@ -225,7 +168,7 @@ class CustomAdapterLaundry(
     }
 
 
-    fun setNewsList(subCategoryList: List<SubCategoryList>) {
+    fun setNewsList(subCategoryList: List<LaundrySubCategory>) {
         this.sublList = subCategoryList
     }
 

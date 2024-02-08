@@ -3,6 +3,7 @@ package com.diipl.moviebeam.utils
 import android.app.ActivityManager
 import android.app.Service
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -16,6 +17,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.diipl.moviebeam.R
 import com.google.android.material.snackbar.Snackbar
+import java.io.IOException
+import java.io.InputStream
 
 fun Int.intToString(): String {
     val ip = this
@@ -115,6 +118,20 @@ fun View.showToast(
             }
         }
     })
+}
+
+fun ImageView.loadImagesWithGlideExtFomAssets(path: String) {
+    try {
+        val inputStream = context.assets.open(path)
+        val drawable = Drawable.createFromStream(inputStream, null)
+        Glide.with(this)
+            .load(drawable)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(this)
+        inputStream.close()
+    } catch (e: IOException) {
+        Log.e("Glide", "Failed to load image from assets: $path", e)
+    }
 }
 
 fun ImageView.loadImagesWithGlideExt(url: String) {

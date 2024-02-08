@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.data.dto.laundryResponce
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -8,15 +9,21 @@ data class LaundryDataResponse(
 )
 
 @Serializable
-    data class LaundryCategory(
-        val categoryName: String,
-        val id: Int,
-        val langWiseList: Map<String, LangWiseCategory>,
-        val subCategoryList: List<LaundrySubCategory>
-    )
+data class LaundryCategory(
+    val categoryName: String,
+    val id: Int,
+    val langWiseList: Map<String, LangWiseCategory>,
+    val subCategoryList: List<LaundrySubCategory>
+)
 
 @Serializable
 data class LangWiseCategory(
+    @SerialName("en-US") val enUS: LangWiseItem,
+    @SerialName("es-MX") val esMX: LangWiseItem
+)
+
+@Serializable
+data class LangWiseItem(
     val categoryName: String
 )
 
@@ -26,15 +33,14 @@ data class LaundrySubCategory(
     val dispPrice: String,
     val price: Double,
     val id: Int,
+    val imgSrc: String,
     val categoryName: String,
     val subTitle: String,
     val langWiseList: Map<String, LangWiseSubCategory>
 )
 
-
 @Serializable
 data class LangWiseSubCategory(
-    val title: String,
-    val subTitle: String
+    @SerialName("en-US") val enUS: LangWiseItem,
+    @SerialName("es-MX") val esMX: LangWiseItem
 )
-
