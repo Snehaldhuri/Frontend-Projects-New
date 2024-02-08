@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.movies
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,8 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 
+private const val TAG = "ParentAdapter"
 class ParentAdapter(
-    private var onItemClicked: (ContentDto) -> Unit
+    private var onItemClicked: (ContentDto) -> Unit,
+    private val onLeftKey: (Boolean) -> Unit
 ) :
     RecyclerView.Adapter<ParentAdapter.ParentViewHolder>() {
 
@@ -43,9 +46,13 @@ class ParentAdapter(
         holder.childRecyclerView.layoutManager =
             LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
 
-        val adapter = ChildAdapter(parentItem, onItemClicked)
+        val adapter = ChildAdapter(parentItem, onItemClicked){
+            onLeftKey(it)
+            Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
+        }
         holder.childRecyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
         holder.childRecyclerView.adapter = adapter
+
 
     }
 

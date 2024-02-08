@@ -4,10 +4,8 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.text.Html
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -19,15 +17,17 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAService
-import com.diipl.moviebeam.ui.localattraction.LaCardAdapter
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLA
 
+private const val TAG = "LaCardAdapterGs"
 class LaCardAdapterGs(
-    private var onMenuItemClicked: (String) -> Unit
+    private var onLeftKeyClicked: (View) -> Unit
 ) : RecyclerView.Adapter<LaCardAdapterGs.MyViewHolder>() {
     private val defaultColor = "#FFFFFF"
     private var gradientDrawable: GradientDrawable? = null
-
+    private var selectedPos = 0
     private var itemList: List<LAService> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -40,19 +40,23 @@ class LaCardAdapterGs(
         val flipButton: Button = itemView.findViewById(R.id.btn_MoreInfo)
         val pressOkText = itemView.findViewById<TextView>(R.id.text3)
 
-
         val scanImage: ImageView = itemView.findViewById(R.id.scan_qr_iv)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.la_carousel, parent, false)
-//        view.isClickable = true
-//
-//        view.findViewById<CardView>(R.id.front_card).background.setTint(
-//            Color.parseColor(
-//                defaultColor
-//            )
-//        )
+
+        val params = view.layoutParams
+        params.width = getWidthInPercent(parent.context, 40)
+        params.height = getHeightInPercent(parent.context, 67)
+
+        view.setOnFocusChangeListener { v, b ->
+            if (b){
+                v.background = gradientDrawable
+            } else {
+                v.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
 
         return MyViewHolder(view)
     }
@@ -79,8 +83,23 @@ class LaCardAdapterGs(
             holder.itemView.requestFocus()
         }
 
-        holder.itemView.setOnFocusChangeListener { _, hasFocus ->
+        holder.itemView.setOnFocusChangeListener { view, hasFocus ->
+            if (position == 0) {
+                if (hasFocus) {
+                    view.nextFocusUpId = view.id
+                } else {
+                    view.nextFocusUpId = View.NO_ID
+                }
+            } else if (position == itemList.size.minus(1)) {
+                if (hasFocus) {
+                    view.nextFocusDownId = view.id
+                } else {
+                    view.nextFocusDownId = View.NO_ID
+                }
+            }
+
             if (hasFocus) {
+
                 holder.frontCard.isClickable = false
                 holder.flipButton.background = gradientDrawable
 
@@ -92,9 +111,9 @@ class LaCardAdapterGs(
                 scaleAnimatorSet.playTogether(scaleX, scaleY)
                 scaleAnimatorSet.start()
 
-                holder.itemView.setOnKeyListener { _, keyCode, event ->
+                view.setOnKeyListener { _, code, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
-                        when (keyCode) {
+                        when (code) {
                             KeyEvent.KEYCODE_DPAD_CENTER ,KeyEvent.KEYCODE_ENTER -> {
                                 if (holder.frontCard.visibility == View.VISIBLE) {
                                     flipImage(holder.frontCard, holder.backCard)
@@ -124,6 +143,11 @@ class LaCardAdapterGs(
                                     return@setOnKeyListener true
                                 }
                             }
+                        }
+                    }
+                    when(code){
+                        KeyEvent.KEYCODE_DPAD_LEFT -> {
+                            onLeftKeyClicked(view)
                         }
                     }
                     false

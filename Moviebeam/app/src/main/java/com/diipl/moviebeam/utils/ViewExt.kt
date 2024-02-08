@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.media3.exoplayer.ExoPlayer
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.diipl.moviebeam.R
@@ -59,8 +58,8 @@ fun View.toGone() {
 }
 
 fun View.toInvisible() {
-    if (this.visibility != View.GONE)
-        this.visibility = View.GONE
+    if (this.visibility != View.INVISIBLE)
+        this.visibility = View.INVISIBLE
 }
 
 

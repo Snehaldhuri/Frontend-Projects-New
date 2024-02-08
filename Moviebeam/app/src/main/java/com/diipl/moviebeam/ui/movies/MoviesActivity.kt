@@ -5,7 +5,9 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import android.widget.Button
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
@@ -58,6 +60,7 @@ class MoviesActivity : BaseActivity() {
 
     @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
+    private var selectedView : View? = null
 
     override fun observeViewModel() {
         observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -114,6 +117,14 @@ class MoviesActivity : BaseActivity() {
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
     }
 
+    private fun requestFocus() {
+        binding.menuRecyclerView.post {
+            selectedView?.let {
+                binding.menuRecyclerView.findContainingItemView(it)?.requestFocus()
+            }
+        }
+    }
+
     private fun handleMoviesServiceResponse(status: Resource<MoviesResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
@@ -148,13 +159,19 @@ class MoviesActivity : BaseActivity() {
                 val sortedGenreMap = genreMap.toList().sortedBy { it.first }.toMap()
 
                 val adapter = MoviesBtnAdapter(list,
-                    onMoviesMenuItemClicked = { btnId ->
+                    onMoviesMenuItemClicked = { view, btnId ->
                         binding.fcvMovieDetail.toInvisible()
                         binding.parentRecyclerView.toVisible()
+                        selectedView = view
                         when (btnId) {
 
                             Constants.MOVIE_RENTALS_ID -> {
-                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
+                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick){
+                                    if (it){
+                                        requestFocus()
+                                    }
+                                    Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
+                                }
 
                                 parentAdapter.setMovieList(sortedGenreMap)
                                 binding.parentRecyclerView.adapter = parentAdapter
@@ -173,7 +190,12 @@ class MoviesActivity : BaseActivity() {
                                         freeGenreMap[it.genre1] = movieList
                                     }
                                 }
-                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick)
+                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick){
+                                    if (it){
+                                        requestFocus()
+                                    }
+                                    Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
+                                }
                                 parentAdapter.setMovieList(freeGenreMap)
                                 binding.parentRecyclerView.adapter = parentAdapter
 //                                moviesListFragment.bindData(freeGenreMap)
@@ -239,7 +261,13 @@ class MoviesActivity : BaseActivity() {
                     movieDetailFragment.setMovieDetails(it)
                     binding.parentRecyclerView.toInvisible()
                     binding.fcvMovieDetail.toVisible()
-                })
+                },
+                onLeftKey = {
+                        if (it){
+                            requestFocus()
+                        }
+                    Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
+                    })
                 parentAdapter.setMovieList(genreMap)
                 binding.parentRecyclerView.adapter = parentAdapter
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)

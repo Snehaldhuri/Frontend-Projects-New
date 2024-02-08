@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.guestservice
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +15,8 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 class GuestServiceTabAdapter(
-    private var onMenuItemClicked: (View, GsBtnModel) -> Unit
+    private var onMenuItemClicked: (View, GsBtnModel) -> Unit,
+    private var onRightClicked: (View) -> Unit
 ) : RecyclerView.Adapter<GuestServiceTabAdapter.MyViewHolder>() {
 
     private var startColor = ""
@@ -80,6 +82,16 @@ class GuestServiceTabAdapter(
                         }
                     }
                 }
+
+                holder.card.setOnKeyListener { view, code, keyEvent ->
+                    when(code){
+                        KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                            onRightClicked(view)
+                        }
+                    }
+                    false
+                }
+
             } else {
                 if (item.isClicked) {
                     holder.imageView.setImageResource(item.spotlightImage)
@@ -93,20 +105,6 @@ class GuestServiceTabAdapter(
             }
         }
 
-
-//            if (btn.isClicked) {
-//
-//            } else {
-//                btn.isClicked = false
-//            }
-
-//        holder.card.setOnClickListener {
-//            item.isClicked = true
-//
-//
-//            onMenuItemClicked(it, item)
-////            it.setBackgroundColor(Color.parseColor("#EBEBEB"))
-//        }
     }
 
     private fun setFocus(cardView: ConstraintLayout) {

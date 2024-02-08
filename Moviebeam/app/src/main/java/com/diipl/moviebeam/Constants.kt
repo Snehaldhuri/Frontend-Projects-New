@@ -310,5 +310,7 @@ object Constants {
     const val BG_IMAGE_URL = "bgImageUrl"
     const val LOGO_IMAGE_URL = "logoImageUrl"
 
+    var NEXT_BUTTON_STATE = 0
+
 }
 
