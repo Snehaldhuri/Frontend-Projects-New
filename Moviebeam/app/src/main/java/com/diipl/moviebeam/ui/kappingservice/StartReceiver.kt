@@ -4,7 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.log
+
 
 class StartReceiver : BroadcastReceiver() {
 
@@ -20,6 +23,13 @@ class StartReceiver : BroadcastReceiver() {
                 log("Starting the service in < 26 Mode from a BroadcastReceiver")
                 context.startService(it)
             }
+        }
+        if (intent.extras?.getString("onstop").equals("RESTART")) {
+            Log.e("StartReceiver", "RESTART to start MainMenuActivity")
+            val i = Intent(context, MainMenuActivity::class.java)
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            context.startActivity(i)
+
         }
     }
 }

@@ -1,10 +1,9 @@
 package com.diipl.moviebeam.ui.movies
 
-import android.animation.AnimatorSet
-import android.animation.ObjectAnimator
 import android.graphics.Color
+import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
@@ -18,9 +17,12 @@ import com.diipl.moviebeam.databinding.MoviegenreChildlistItemBinding
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 import com.diipl.moviebeam.utils.toInvisible
 
+private const val TAG = "ChildAdapter"
+
 class ChildAdapter(
     private val childList: List<ContentDto>,
-    private var onItemClicked: (ContentDto) -> Unit
+    private var onItemClicked: (ContentDto) -> Unit,
+    private val onLeftKey: (Boolean) -> Unit
 ) :
     RecyclerView.Adapter<ChildAdapter.ChildViewHolder>() {
 
@@ -40,32 +42,20 @@ class ChildAdapter(
         binding.root.isFocusable = true
         binding.root.isClickable = true
 
-        /*       val params = view.layoutParams
-               params.width = getWidthInPercent(parent.context, 10)
-               params.height = getHeightInPercent(parent.context, 24)*/
-
         binding.root.setOnFocusChangeListener { it, hasFocus ->
-            val scaleX = ObjectAnimator.ofFloat(it, View.SCALE_X, 1.0f, 1.1f)
-            val scaleY = ObjectAnimator.ofFloat(it, View.SCALE_Y, 1.0f, 1.1f)
-
-            val scaleAnimatorSet = AnimatorSet()
-            scaleAnimatorSet.duration = 200
-            scaleAnimatorSet.playTogether(scaleX, scaleY)
-
-            val focusedColor = ContextCompat.getColor(parent.context, R.color.home_page_greeting_text_color)
+            val focusedColor =
+                ContextCompat.getColor(parent.context, R.color.home_page_greeting_text_color)
             val unfocusedColor = ContextCompat.getColor(parent.context, R.color.text_color_primary)
 
             if (hasFocus) {
                 it.scaleX = 1.12f
                 it.scaleY = 1.12f
                 binding.childTitleTv.setTextColor(focusedColor)
-//                scaleAnimatorSet.start()
                 binding.imgCard.strokeColor = focusedColor
             } else {
                 it.scaleX = 1.0f
                 it.scaleY = 1.0f
                 binding.childTitleTv.setTextColor(unfocusedColor)
-//                scaleAnimatorSet.cancel()
                 binding.imgCard.strokeColor = Color.TRANSPARENT
             }
         }
@@ -96,6 +86,18 @@ class ChildAdapter(
         } else {
             holder.title.text =
                 holder.movieview.context.getString(R.string.price_dollar, item.price.toString())
+        }
+
+        holder.itemView.setOnKeyListener { v, keycode, keyEvent ->
+            when (keycode) {
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (holder.absoluteAdapterPosition == 1) {
+                        onLeftKey(true)
+                        Log.e(TAG, "KEYCODE_DPAD_LEFT ${holder.absoluteAdapterPosition} ")
+                    }
+                }
+            }
+            false
         }
 
         holder.movieview.setOnClickListener {

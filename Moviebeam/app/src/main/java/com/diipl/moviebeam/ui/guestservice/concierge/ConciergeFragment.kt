@@ -1,27 +1,52 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.GridLayoutManager
-import com.diipl.moviebeam.R
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.databinding.FragmentConciergeBinding
-import com.diipl.moviebeam.databinding.FragmentHotelServiceInfoBinding
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
-class ConciergeFragment : Fragment() {
-private var _binding: FragmentConciergeBinding? = null
-    val binding get() = _binding!!
+class ConciergeFragment(private var onClick: (View, ConciergeBtnModel) -> Unit) : Fragment() {
+
+    private lateinit var binding: FragmentConciergeBinding
+    private var viewAdapt: View? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout for this fragment
-        _binding = FragmentConciergeBinding.inflate(inflater, container, false)
-        binding.rvContent.layoutManager = GridLayoutManager(binding.root.context, 4)
+        binding = FragmentConciergeBinding.inflate(inflater, container, false)
+
         return binding.root
+    }
+
+    fun setAdapter(
+        conciergeModelList: List<ConciergeBtnModel>,
+        gradientStartColor: String,
+        gradientEndColor: String,
+        positionView: View?
+    ) {
+        val conciergeAdapter = ConciergeAdapter { view, conciergeService ->
+            onClick(view, conciergeService)
+        }
+
+        conciergeAdapter.setButtonList(conciergeModelList)
+        conciergeAdapter.setGradientColor(gradientStartColor, gradientEndColor)
+        lifecycleScope.launch {
+            delay(500)
+            binding.rvContent.adapter = conciergeAdapter
+        }
+        binding.rvContent.post {
+            positionView?.let {
+                binding.rvContent.findContainingItemView(it)?.requestFocus()
+            }
+        }
     }
 }

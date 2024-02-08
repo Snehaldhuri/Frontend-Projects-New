@@ -15,9 +15,10 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 
+private const val TAG = "MoviesBtnAdapter"
 class MoviesBtnAdapter(
     private val itemList: List<BtnModel>,
-    private val onMoviesMenuItemClicked: (contentType: String) -> Unit,
+    private val onMoviesMenuItemClicked: (View, contentType: String) -> Unit,
     private val onRightKeyPressed: () -> Unit
 ) :
     RecyclerView.Adapter<MoviesBtnAdapter.MyViewHolder>() {
@@ -67,11 +68,11 @@ class MoviesBtnAdapter(
         }
         updateFocus(holder)
 
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
+        holder.card.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 fetchGradientColorsFromApi(holder.card)
                 holder.card.setOnClickListener {
-                    onMoviesMenuItemClicked(item.btnId)
+                    onMoviesMenuItemClicked(v, item.btnId)
                     holder.itemView.isSelected = true
                     selectedPosition = holder.absoluteAdapterPosition
                     updateFocus(holder)

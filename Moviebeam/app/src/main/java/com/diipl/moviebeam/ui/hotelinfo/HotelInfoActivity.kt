@@ -64,7 +64,7 @@ class HotelInfoActivity : BaseActivity() {
     @Inject
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
 
-    private lateinit var adapter : HotelInfoTabAdapter
+    private lateinit var adapter: HotelInfoTabAdapter
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
@@ -197,7 +197,6 @@ class HotelInfoActivity : BaseActivity() {
 
                 adapter = HotelInfoTabAdapter(itemList = tabs,
                     onItemFocused = { it, view ->
-
                         val transaction = supportFragmentManager.beginTransaction()
                         when (tabMap[it]?.serviceType) {
                             1 -> {
@@ -220,9 +219,12 @@ class HotelInfoActivity : BaseActivity() {
                                 tabMap[it]?.service?.description?.let { desc ->
                                     bundle.putString("desc", desc)
                                 }
-                                tabMap[it]?.service?.serviceImageList?.get(0)?.let { url ->
-                                    bundle.putString("imgUrl", url)
+                                val list = tabMap[it]?.service?.serviceImageList
+                                var imgUrl = "null"
+                                if (list!!.isNotEmpty()) {
+                                    imgUrl = list[0]
                                 }
+                                bundle.putString("imgUrl", imgUrl)
                                 val fragment = HotelServiceInfoFragment()
                                 fragment.arguments = bundle
                                 transaction.replace(R.id.fragment_container_carousel, fragment)

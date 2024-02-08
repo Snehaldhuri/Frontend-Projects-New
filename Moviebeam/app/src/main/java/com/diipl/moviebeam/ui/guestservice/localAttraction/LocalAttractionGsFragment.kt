@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.guestservice.localAttraction
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LocalAttractionGsFragment : BaseFragment() {
+class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : BaseFragment() {
 
     private lateinit var binding: FragmentLocalattractionBinding
     private var gradientStartColor: String? = null
@@ -76,9 +77,15 @@ class LocalAttractionGsFragment : BaseFragment() {
                 localAttractionViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                val adapter = LocalAttractionGsAdapter {
-                    val cardAdapter = LaCardAdapterGs {
-
+                var lastView: View? = null
+                val adapter = LocalAttractionGsAdapter(onItemClicked = { view, it ->
+                    val cardAdapter = LaCardAdapterGs { v ->
+                        if (v.isFocused) {
+                            lastView = v
+                            binding.recyclerView.post {
+                                binding.recyclerView.findContainingItemView(view)?.requestFocus()
+                            }
+                        }
                     }
                     cardAdapter.setList(it.serviceList)
                     cardAdapter.setGradientDrawable(
@@ -87,12 +94,34 @@ class LocalAttractionGsFragment : BaseFragment() {
                         )
                     )
                     binding.laCardCarousel.adapter = cardAdapter
+                    binding.laCardCarousel.post {
+                        binding.laCardCarousel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                    }
+                }, onLeftKeyClicked = { view ->
+                    view.setOnKeyListener { v, i, keyEvent ->
+                        if (i == KeyEvent.KEYCODE_DPAD_LEFT){
+                            onItemClicked(v)
+                        }
+                        true
+                    }
+                }, onRightKeyClicked = {
+                    if (lastView != null){
+                        binding.laCardCarousel.post {
+                            lastView?.let {
+                                binding.laCardCarousel.findContainingItemView(it)?.requestFocus()
+                            }
+                        }
+                    }
                 }
+                )
 
                 adapter.setItemList(response?.servicesList!!)
                 adapter.setGradientDrawable(getGradient())
                 binding.recyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
+                binding.recyclerView.post {
+                    binding.recyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                }
             }
 
             else -> {
