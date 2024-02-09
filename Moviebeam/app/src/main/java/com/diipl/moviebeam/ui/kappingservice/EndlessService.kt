@@ -20,18 +20,24 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.KapingConstants
+import com.diipl.moviebeam.PanelConstants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.kaping.CmdDto
 import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.data.kaping.CmdDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
+import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
 import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.log
 import com.google.gson.GsonBuilder
@@ -56,6 +62,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+
 @AndroidEntryPoint
 class EndlessService : Service() {
 
@@ -77,6 +84,7 @@ class EndlessService : Service() {
     private var transactionId = ""
     private var kapingCmdExecutionResponse = "00"
 
+
     private val _themeLiveData = MutableLiveData<ThemeResponse>()
     val themeLiveData: LiveData<ThemeResponse> get() = _themeLiveData
 
@@ -90,6 +98,9 @@ class EndlessService : Service() {
     val hotelServicesLiveData: LiveData<HotelServiceResponse> get() = _hotelServicesLiveData
 
     @Inject
+    lateinit var movieBeamRepository: MovieBeamRepository
+
+    @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
 
     @Inject
@@ -99,7 +110,13 @@ class EndlessService : Service() {
     lateinit var moviesDataStore: DataStore<MoviesResponse>
 
     @Inject
+    lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
+
+    @Inject
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
+
+    @Inject
+    lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
     companion object {
         val gson = GsonBuilder()
@@ -164,7 +181,6 @@ class EndlessService : Service() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         versionNumber = getVersionNumber().replace(".", "").trim()
         log(versionNumber)
-
 
         val notification = createNotification()
         startForeground(1, notification)
@@ -316,25 +332,16 @@ class EndlessService : Service() {
             ) {
                 if (response.isSuccessful) {
                     val data = response.body()
-                    Log.d("TAG kapp", "onResponse: $data")
                     val result = KapingResponseParsing().getResponseAsObject(
                         data,
                         KapingResponse::class
                     )
-                    Log.d("TAG kapp", "onResponse: $result")
-
-                    val cmdres = result?.CMD
-                    cmdres?.let {
-                        kapingCMD = it.substring(0, 2)
-                        transactionId = it.substring(11, minOf(it.length, 19))
-                        Log.d("TAG Kaping", "onResponse: $kapingCMD")
+                    result?.CMD?.let {
+                        result.cmdData = parseCmd(it)
                     }
                     // Handle the data here
                     log(result.toString())
-//                    parseCmd(result.CMD)
-                    result?.CMD?.let {
-                        Log.d("TAG parseCmd", "onResponse: ${parseCmd(it)}")
-                    }
+                    handleKaping(result)
                 } else {
                     // Handle unsuccessful response
                 }
@@ -349,58 +356,264 @@ class EndlessService : Service() {
 
     }
 
-    private fun parseCmd(cmd: String): CmdDto{
-        val cmd2 = cmd.substring(0, 2)
+    private fun parseCmd(cmd: String): CmdDto {
+        kapingCMD = cmd.substring(0, 2)
         val epochTime = cmd.substring(2, 11)
-        val transactionId = cmd.substring(11, minOf(cmd.length, 19))
-        var cmdDataDto:CmdDataDto? = null
-        if(cmd2 == "07" || cmd2 == "08"){
+        transactionId = cmd.substring(11, minOf(cmd.length, 19))
+        var cmdDataDto: CmdDataDto? = null
+        if (kapingCMD == "07" || kapingCMD == "08") {
             val cmdData = cmd.substring(19, cmd.length)
             val sessionId = cmdData.substring(5, 15)
             var adultContentDisabled: Boolean? = null
-            val message = cmdData.substringAfter(" ")
-            var passCode: String?  = null
+            val message = cmdData.substringAfter(" ").trim()
+            var passCode: String? = null
             var parentSessionId: String? = null
             var guestFirstName: String? = null
             var guestLastName: String? = null
             var adultLocked: Boolean? = null
-            if(cmd2 == "07"){
+            if (kapingCMD == "07") {
                 adultContentDisabled = cmdData[0] != '0'
                 parentSessionId = cmdData.substring(15, 25)
-//                val nameAndPass = cmdData.split(" ")[3]
                 val nameAndPass = cmdData.substring(cmdData.indexOf("Welcome"))
-                guestFirstName =nameAndPass.split(" ")[1]
+                guestFirstName = nameAndPass.split(" ")[1]
                 val lastNameAndPass = nameAndPass.split(" ")[2]
-                guestLastName = lastNameAndPass.substring(0, lastNameAndPass.length-4)
-                passCode = lastNameAndPass.substring(lastNameAndPass.length-5)
-                if(passCode != "____"){
-                    passCode = null
-                    adultLocked = true
-                }else
-                    adultLocked = false
+//                guestLastName = lastNameAndPass.substring(0, lastNameAndPass.length-4)
+//                passCode = lastNameAndPass.substring(lastNameAndPass.length-5)
+//                if(passCode != "____"){
+//                    passCode = null
+//                    adultLocked = true
+//                }else
+//                    adultLocked = false
+
+                guestLastName = lastNameAndPass
+                adultLocked = false
             }
 
-            cmdDataDto = CmdDataDto(sessionId, parentSessionId, adultContentDisabled, message, guestFirstName, guestLastName, adultLocked, passCode)
+            cmdDataDto = CmdDataDto(
+                sessionId,
+                parentSessionId,
+                adultContentDisabled,
+                message,
+                guestFirstName,
+                guestLastName,
+                adultLocked,
+                passCode
+            )
 
 
         }
-        val cmdDto = CmdDto(cmd2, epochTime, transactionId, cmdDataDto)
-        return cmdDto
+        return CmdDto(kapingCMD, epochTime, transactionId, cmdDataDto)
     }
 
-    private fun handleKaping(kapingResponse: KapingResponse) {
-        var cmd = ""
-        var transactionId = ""
-        kapingResponse.CMD?.let {
-            cmd = it.substring(0, 2)
-            transactionId = it.substring(11, minOf(it.length, 19))
+    private fun handleKaping(kapingResponse: KapingResponse?) {
+        when (kapingResponse?.cmdData?.cmd) {
+
+            KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE,
+            KapingConstants.KAP_CMD_CHECK_IN,
+            KapingConstants.KAP_CMD_CHECK_OUT,
+            KapingConstants.KAP_CMD_THEME_CHANGE,
+            KapingConstants.KAP_CMD_REBOOT -> {
+                handleCmdInRefreshingUi(kapingResponse)
+            }
+
+            KapingConstants.KAP_CMD_HS_CHANGE -> {
+                if (activityStack.size > 0) {
+                    when (activityStack.last()) {
+                        PanelConstants.HOTEL_SERVICE_ACTIVITY_LOCAL_NAME -> {
+                            handleCmdInRefreshingUi(kapingResponse)
+                        }
+
+                        else -> {
+                            fetchHotelServiceInfo(Constants.UA)
+                        }
+                    }
+
+                } else {
+                    fetchHotelServiceInfo(Constants.UA)
+                }
+            }
+
+            KapingConstants.KAP_CMD_LA_CHANGE -> {
+                if (activityStack.size > 0) {
+
+                    when (activityStack.last()) {
+                        PanelConstants.Local_ATTRACTION_ACTIVITY_LOCAL_NAME,
+                        PanelConstants.GUEST_SERVICE_ACTIVITY_LOCAL_NAME -> {
+                            handleCmdInRefreshingUi(kapingResponse)
+                        }
+
+                        else -> {
+                            fetchLocalAttractionInfo(Constants.UA)
+                        }
+                    }
+                } else {
+                    fetchLocalAttractionInfo(Constants.UA)
+                }
+            }
+
+            KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> {
+                if (activityStack.size > 0) {
+
+                    when (activityStack.last()) {
+                        PanelConstants.MOVIES_ACTIVITY_LOCAL_NAME,
+                        PanelConstants.EXO_PLAYER_ACTIVITY_LOCAL_NAME -> {
+                            handleCmdInRefreshingUi(kapingResponse)
+                        }
+
+                        else -> {
+                            fetchSyncList(Constants.UA)
+                        }
+                    }
+                } else {
+                    fetchSyncList(Constants.UA)
+                }
+            }
+
+            KapingConstants.KAP_CMD_FETCH_SHOWTIME_DATA -> {
+                if (activityStack.size > 0) {
+
+                    when (activityStack.last()) {
+                        PanelConstants.SHOWTIME_ACTIVITY_LOCAL_NAME,
+                        PanelConstants.EXO_PLAYER_ACTIVITY_LOCAL_NAME -> {
+                            handleCmdInRefreshingUi(kapingResponse)
+                        }
+
+                        else -> {
+                            fetchShowtimeData(Constants.UA)
+                        }
+                    }
+                } else {
+                    fetchShowtimeData(Constants.UA)
+                }
+            }
+
         }
-        when(cmd){
-            "07" -> {
-                Log.d("TAG kapppp", "handleKaping: $kapingResponse")
+
+    }
+
+
+    private fun fetchHotelServiceInfo(ua: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val response = movieBeamRepository.getHotelServiceInfo(ua)
+            if (response == null) {
+                //Error
+            } else {
+                updateHotelServices(hotelServicesDataStore, response)
+            }
+        }
+    }
+
+    private fun fetchLocalAttractionInfo(ua: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val response = movieBeamRepository.getLocalAttractionInfo(ua)
+            if (response == null) {
+                //Error
+            } else {
+                updateLocalAttractions(localAttractionsDataStore, response)
+            }
+        }
+    }
+
+    private fun fetchSyncList(ua: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val response = movieBeamRepository.getMoviesInfo(ua)
+            if (response == null) {
+                //Error
+            } else {
+                setMoviesResponseData(moviesDataStore, response)
+            }
+        }
+    }
+
+    private fun fetchShowtimeData(ua: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val response = movieBeamRepository.getShowtimeInfo(ua)
+            if (response == null) {
+                //Error
+            } else {
+                updateShowTimeData(showtimeDataStore, response)
+            }
+        }
+    }
+
+    private fun updateHotelServices(
+        dataStore: DataStore<HotelServiceResponse>,
+        data: HotelServiceResponse
+    ) {
+        GlobalScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    servicesList = data.servicesList,
+                    type = data.type,
+                    version = data.version
+                )
+            }
+        }
+    }
+
+    private fun updateLocalAttractions(
+        dataStore: DataStore<LocalAttractionResponse>,
+        data: LocalAttractionResponse
+    ) {
+        GlobalScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    servicesList = data.servicesList,
+                    type = data.type,
+                    version = data.version
+                )
+            }
+        }
+    }
+
+    private fun setMoviesResponseData(
+        dataStore: DataStore<MoviesResponse>,
+        data: MoviesResponse
+    ) {
+
+        GlobalScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    accountId = data.accountId,
+                    adultDayPassPrice = data.adultDayPassPrice,
+                    freeContentList = data.freeContentList,
+                    freeGenreList = data.freeGenreList,
+                    premiumContentList = data.premiumContentList,
+                    premiumGenreList = data.premiumGenreList,
+                    id = data.id,
+                    type = data.type,
+                    version = data.version
+                )
 
             }
         }
+    }
+
+    fun updateShowTimeData(
+        dataStore: DataStore<ShowTimeResponse>,
+        data: ShowTimeResponse
+    ) {
+        GlobalScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    accountId = data.accountId,
+                    id = data.id,
+                    shoContentList = data.shoContentList,
+                    shoGenreList = data.shoGenreList,
+                    type = data.type,
+                    version = data.version
+                )
+            }
+        }
+    }
+
+    private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
+        val i = Intent(applicationContext, RefreshingUiActivity::class.java)
+        i.putExtra("response", kapingResponse)
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        applicationContext.startActivity(i)
     }
 
     private fun getVersionNumber(): String {
@@ -449,10 +662,10 @@ class EndlessService : Service() {
             }
 
         val builder: Notification.Builder =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Notification.Builder(
-                this,
-                notificationChannelId
-            ) else Notification.Builder(this)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                Notification.Builder(this, notificationChannelId) else Notification.Builder(this)
+
+        Log.e("createNotification: ", "Endless")
 
         return builder
             .setContentTitle("Endless Service")

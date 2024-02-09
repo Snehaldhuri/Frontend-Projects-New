@@ -17,4 +17,8 @@ object PreferenceDataStoreConstants {
     val UA = stringPreferencesKey("UA")
 
 
+    // Kaping Keys
+    val IS_GUEST_CHECKED_IN = booleanPreferencesKey("IS_GUEST_CHECKED_IN")
+    val GUEST_DETAILS = stringPreferencesKey("GUEST_DETAILS")
+
 }

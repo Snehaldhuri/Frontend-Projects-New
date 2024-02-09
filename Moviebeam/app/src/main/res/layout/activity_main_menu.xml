@@ -36,26 +36,33 @@
         app:layout_constraintGuide_percent="0.05" />
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_vertical_55"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.55" />
+
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_95"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.95" />
 
-<!--
-    <include
-        android:id="@+id/layout_video"
-        layout="@layout/video_background"
-        android:visibility="gone" />
--->
+    <!--
+        <include
+            android:id="@+id/layout_video"
+            layout="@layout/video_background"
+            android:visibility="gone" />
+    -->
 
     <androidx.media3.ui.PlayerView
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:show_buffering="never"
         android:visibility="gone"
         app:resize_mode="fill"
+        app:show_buffering="never"
         app:use_controller="false" />
 
 
@@ -77,9 +84,10 @@
         android:layout_marginStart="@dimen/dp_10"
         android:layout_marginTop="@dimen/dp_20"
         android:fontFamily="@font/gloock_regular"
+        android:includeFontPadding="false"
         android:text="Welcome John Appleseed"
         android:textColor="@color/white"
-        android:textSize="@dimen/sp_30"
+        android:textSize="@dimen/sp_45"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo" />
@@ -91,8 +99,8 @@
         android:layout_marginStart="@dimen/dp_12"
         android:fontFamily="@font/manrope_semibold_600"
         android:textColor="@color/home_page_greeting_text_color"
-        android:textSize="@dimen/sp_17"
-        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
+        android:textSize="@dimen/sp_25"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_55"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/tv_welcome" />
 

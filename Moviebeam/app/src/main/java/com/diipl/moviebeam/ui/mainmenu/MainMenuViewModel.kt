@@ -10,6 +10,9 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +35,12 @@ class MainMenuViewModel @Inject constructor(
 
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
+
+    private val _guestDetailsLiveData = MutableLiveData<Resource<CmdDataDto>>()
+    val guestDetailsLiveData: LiveData<Resource<CmdDataDto>> get() = _guestDetailsLiveData
+
+    private var _isGuestCheckedInLiveData = MutableLiveData<Boolean>()
+    val isGuestCheckedInLiveData: LiveData<Boolean> get() = _isGuestCheckedInLiveData
 
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
     val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
@@ -115,6 +124,28 @@ class MainMenuViewModel @Inject constructor(
                 _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             }.collect {
                 _accountSetupLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun validateSession(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferenceDataStoreHelper.getPreference(
+                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                false
+            ).collect {
+                _isGuestCheckedInLiveData.postValue(it)
+            }
+        }
+    }
+
+    fun getGuestDetails(dataStore: DataStore<CmdDataDto>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _guestDetailsLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _guestDetailsLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _guestDetailsLiveData.postValue(Resource.Success(it))
             }
         }
     }

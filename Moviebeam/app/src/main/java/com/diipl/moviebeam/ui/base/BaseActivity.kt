@@ -1,10 +1,12 @@
 package com.diipl.moviebeam.ui.base
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.diipl.moviebeam.PanelConstants
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
@@ -20,6 +22,17 @@ abstract class BaseActivity : AppCompatActivity() {
         initViewBinding()
         observeViewModel()
 //        CustomThreadExecutor()
+
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        currentActivity = this
+        activityStack.add(currentActivity?.localClassName)
+        if (currentActivity?.localClassName == PanelConstants.MAIN_MENU_ACTIVITY_LOCAL_NAME) {
+            activityStack.clear()
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -67,7 +80,8 @@ abstract class BaseActivity : AppCompatActivity() {
             scheduledExecutorService = Executors.newScheduledThreadPool(2)
 
             scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(
-                { tempImageFetch() }, 0, 60, TimeUnit.SECONDS)
+                { tempImageFetch() }, 0, 60, TimeUnit.SECONDS
+            )
         }
 
         fun shutdownScheduler() {
@@ -86,5 +100,7 @@ abstract class BaseActivity : AppCompatActivity() {
     companion object {
         const val ADD_FRAGMENT = 0
         const val REPLACE_FRAGMENT = 1
+        var currentActivity: Activity? = null
+        val activityStack: MutableList<String?> = mutableListOf()
     }
 }

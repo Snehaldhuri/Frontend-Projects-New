@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lb_grey"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".ui.refreshingui.RefreshingUiActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center_horizontal"
+        android:text="INFORMATION"
+        android:textSize="@dimen/sp_24" />
+
+    <TextView
+        android:id="@+id/tv_"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dp_24"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center_horizontal"
+        android:text="New Session Requested"
+        android:textSize="@dimen/sp_18" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="center_horizontal"
+        android:text="Refreshing UI..."
+        android:textSize="@dimen/sp_18" />
+
+
+</LinearLayout>

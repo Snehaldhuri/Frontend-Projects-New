@@ -23,7 +23,6 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.Constants.ALL_SERVICES
 import com.diipl.moviebeam.Constants.HOTEL_VIDEO_LOOP_COUNT
 import com.diipl.moviebeam.Constants.HOTEL_VIDEO_URL
-import com.diipl.moviebeam.Constants.IN_ROOM_ID
 import com.diipl.moviebeam.Constants.LA_ID
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
@@ -31,6 +30,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
@@ -88,6 +88,9 @@ class MainMenuActivity : BaseActivity() {
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
+    @Inject
+    lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
+
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     @SuppressLint("UnsafeOptInUsageError")
@@ -106,6 +109,7 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
+        mainMenuViewModel.validateSession(preferenceDataStoreHelper)
 
         val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
 //        startDownload(url)
@@ -123,6 +127,8 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+        observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
+        observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
@@ -372,6 +378,37 @@ class MainMenuActivity : BaseActivity() {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvMenuButton.adapter = adapter
+                binding.pbLoader.toInvisible()
+            }
+
+            else -> {
+                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleValidateSessionResponse(status: Boolean) {
+//        val response = mainMenuViewModel.isGuestCheckedInLiveData.value ?: false
+
+        if (status) {
+            mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
+        } else {
+            binding.tvWelcome.text = ""
+            binding.tvWelcome.toInvisible()
+        }
+        binding.pbLoader.toInvisible()
+
+
+    }
+
+    private fun handleGuestDetailsResponse(status: Resource<CmdDataDto>) {
+        when (status) {
+            is Resource.Loading -> binding.pbLoader.toVisible()
+            is Resource.Success -> {
+                val response = mainMenuViewModel.guestDetailsLiveData.value?.data
+
+                binding.tvWelcome.text = response?.message
+
                 binding.pbLoader.toInvisible()
             }
 

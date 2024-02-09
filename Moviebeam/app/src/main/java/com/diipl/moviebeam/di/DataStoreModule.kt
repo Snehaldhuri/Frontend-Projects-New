@@ -14,6 +14,7 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.kaping.CmdDataDto
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,6 +38,7 @@ private const val HOTEL_SERVICE_DATA_STORE_FILE_NAME = "hotel_service_prefs.pb"
 private const val LOCAL_ATTRACTION_DATA_STORE_FILE_NAME = "local_attraction_prefs.pb"
 private const val MOVIES__DATA_STORE_FILE_NAME = "movies_prefs.pb"
 private const val SHOWTIME__DATA_STORE_FILE_NAME = "showtime_prefs.pb"
+private const val GUEST_DETAILS_DATA_STORE_FILE_NAME = "guests_details.pb"
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -140,6 +142,18 @@ object DataStoreModule {
             corruptionHandler = null,
             migrations = listOf(
             ),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideGuestDetailsDataStore(@ApplicationContext appContext: Context): DataStore<CmdDataDto> {
+        return DataStoreFactory.create(
+            serializer = GuestDetailsSerializer(),
+            produceFile = { appContext.dataStoreFile(GUEST_DETAILS_DATA_STORE_FILE_NAME) },
+            corruptionHandler = null,
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
@@ -316,6 +330,29 @@ class ShowTimeSerializer @Inject constructor() : Serializer<ShowTimeResponse> {
     override suspend fun writeTo(t: ShowTimeResponse, output: OutputStream) {
         output.write(
             Json.encodeToString(ShowTimeResponse.serializer(), t)
+                .encodeToByteArray()
+        )
+    }
+}
+
+@Singleton
+class GuestDetailsSerializer @Inject constructor() : Serializer<CmdDataDto> {
+    override val defaultValue: CmdDataDto
+        get() = CmdDataDto()
+
+    override suspend fun readFrom(input: InputStream): CmdDataDto =
+        try {
+            Json.decodeFromString(
+                CmdDataDto.serializer(),
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read Settings", serialization)
+        }
+
+    override suspend fun writeTo(t: CmdDataDto, output: OutputStream) {
+        output.write(
+            Json.encodeToString(CmdDataDto.serializer(), t)
                 .encodeToByteArray()
         )
     }
