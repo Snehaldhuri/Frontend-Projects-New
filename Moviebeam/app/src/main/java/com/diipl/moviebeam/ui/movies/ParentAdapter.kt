@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.movies
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +17,6 @@ class ParentAdapter(
     RecyclerView.Adapter<ParentAdapter.ParentViewHolder>() {
 
     private var movieList: MutableList<List<ContentDto>> = mutableListOf()
-    var position = 0
 
     inner class ParentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val titleTv: TextView = itemView.findViewById(R.id.parentTitleTv)
@@ -41,18 +39,15 @@ class ParentAdapter(
         val parentItem = movieList[position]
         holder.titleTv.text = parentItem[0].genre1
 
-
         holder.childRecyclerView.setHasFixedSize(true)
         holder.childRecyclerView.layoutManager =
             LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
 
         val adapter = ChildAdapter(parentItem, onItemClicked){
             onLeftKey(it)
-            Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
         }
         holder.childRecyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
         holder.childRecyclerView.adapter = adapter
-
 
     }
 

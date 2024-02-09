@@ -27,7 +27,6 @@ class LaCardAdapterGs(
 ) : RecyclerView.Adapter<LaCardAdapterGs.MyViewHolder>() {
     private val defaultColor = "#FFFFFF"
     private var gradientDrawable: GradientDrawable? = null
-    private var selectedPos = 0
     private var itemList: List<LAService> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

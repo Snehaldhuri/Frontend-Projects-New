@@ -6,6 +6,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.Toast
@@ -17,7 +18,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.diipl.moviebeam.R
 import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
-import java.io.InputStream
 
 fun Int.intToString(): String {
     val ip = this
@@ -54,6 +54,23 @@ fun View.toVisible() {
     if (this.visibility != View.VISIBLE)
         this.visibility = View.VISIBLE
 }
+
+fun View.toDelayVisible() {
+    if (this.visibility != View.VISIBLE){
+        this.postDelayed({
+            this.visibility = View.VISIBLE
+        }, 200)
+    }
+}
+
+fun View.toAnimVisible() {
+    if (this.visibility != View.VISIBLE){
+        this.post{
+            this.animation = AnimationUtils.loadAnimation(this.context, android.R.anim.slide_in_left)
+        }
+    }
+}
+
 
 fun View.toGone() {
     if (this.visibility != View.GONE)
