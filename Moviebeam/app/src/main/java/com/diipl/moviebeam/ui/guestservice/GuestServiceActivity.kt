@@ -48,6 +48,7 @@ import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toDelayVisible
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -79,12 +80,26 @@ class GuestServiceActivity : BaseActivity() {
     private var focusView: View? = null
 
     override fun initViewBinding() {
-        fetchDataFromDatastore()
         binding = ActivityGuestServiceBinding.inflate(layoutInflater)
-        fetchDetails()
         setContentView(binding.root)
-        binding.btnBack.setOnFocusChangeListener(::handleBackClick)
-        binding.btnBack.setOnClickListener { finish() }
+    }
+
+    override fun observeViewModel() {
+        observe(guestServiceViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+        observeSnackBarMessages(guestServiceViewModel.showSnackBar)
+        observeToast(guestServiceViewModel.showToast)
+
+        guestServiceViewModel.getWeatherResponseData(weatherDataStore)
+        guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
+
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        fetchDetails()
+
         btnId = intent.getStringExtra("btnId").toString()
         if (btnId == ALL_SERVICES) {
             binding.rvTabLayout.layoutManager =
@@ -97,43 +112,10 @@ class GuestServiceActivity : BaseActivity() {
             bindAdapterView(binding.root, btnId)
         }
 
+        binding.btnBack.toDelayVisible()
+        binding.btnBack.setOnFocusChangeListener(::handleBackClick)
+        binding.btnBack.setOnClickListener { finish() }
     }
-
-    override fun observeViewModel() {
-        observe(guestServiceViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-        observeSnackBarMessages(guestServiceViewModel.showSnackBar)
-        observeToast(guestServiceViewModel.showToast)
-    }
-//    data class LaundryData(
-//        val laundryDataList: List<LaundryCategory>
-//    )
-//
-//    data class LaundryCategory(
-//        val categoryName: String,
-//        val id: Int,
-//        val langWiseList: Map<String, LangWiseCategory>,
-//        val subCategoryList: List<LaundrySubCategory>
-//    )
-//
-//    data class LangWiseCategory(
-//        val categoryName: String
-//    )
-//
-//    data class LaundrySubCategory(
-//        val title: String,
-//        val dispPrice: String,
-//        val price: Double,
-//        val id: Int,
-//        val categoryName: String,
-//        val subTitle: String,
-//        val langWiseList: Map<String, LangWiseSubCategory>
-//    )
-//
-//    data class LangWiseSubCategory(
-//        val title: String,
-//        val subTitle: String
-//    )
 
 
     private fun readJson(): LaundryDataResponse? {
@@ -165,7 +147,9 @@ class GuestServiceActivity : BaseActivity() {
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
+            is Resource.Loading -> {
+                binding.loaderView.toVisible()
+            }
             is Resource.Success -> {
                 val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
                     .value?.data?.gsButtonsList?.map { it.buttonName }
@@ -180,22 +164,19 @@ class GuestServiceActivity : BaseActivity() {
                     adapterView = view
                     bindAdapterView(view, service.btnId)
                 }, onRightClicked = {
-                    focusView?.let {
-                        findViewById<View>(it.id).requestFocus()
-                    }
+
                 })
-                binding.rvTabContent.toInvisible()
-                if (btnId == ALL_SERVICES) {
-                    val transaction = supportFragmentManager.beginTransaction()
-                    val fragment = WeatherFragment()
-                    transaction.replace(R.id.fv_tab_content, fragment)
-                    transaction.commit()
 
-                    adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
-                    adapter.setGradientColor(gradientStartColor, gradientEndColor)
+                val transaction = supportFragmentManager.beginTransaction()
+                val fragment = WeatherFragment()
+                transaction.replace(R.id.fv_tab_content, fragment)
+                transaction.commit()
 
-                    binding.rvTabLayout.adapter = adapter
-                }
+                adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
+                adapter.setGradientColor(gradientStartColor, gradientEndColor)
+
+                binding.rvTabLayout.adapter = adapter
+
                 binding.loaderView.toInvisible()
             }
 
@@ -305,18 +286,17 @@ class GuestServiceActivity : BaseActivity() {
                         3 -> {
                             val fragment = LaundryFragment()
 
-                            changeFragment(fragment)
 
                             fragment.setGradientColor(
                                 gradientStartColor,
                                 gradientEndColor
                             )
-                            val laundryData =
-                                readJson() // Assuming you have this function to read JSON data
+                            val laundryData = readJson() // Assuming you have this function to read JSON data
                             if (laundryData != null) {
                                 fragment.setLaundryData(laundryData)
                             }
 
+                            changeFragment(fragment)
                         }
                     }
                 }
@@ -344,12 +324,12 @@ class GuestServiceActivity : BaseActivity() {
                 val fragment = FlightStatusFragment {
                     view.requestFocus()
                 }
-                changeFragment(fragment)
 
                 guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
                     fragment.setAirportList(airports)
                 }
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -449,10 +429,6 @@ class GuestServiceActivity : BaseActivity() {
         }
     }
 
-    private fun fetchDataFromDatastore() {
-        guestServiceViewModel.getWeatherResponseData(weatherDataStore)
-        guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
-    }
 
     private fun fetchDetails() {
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")

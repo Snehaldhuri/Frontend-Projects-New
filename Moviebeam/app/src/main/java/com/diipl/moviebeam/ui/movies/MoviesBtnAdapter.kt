@@ -65,6 +65,7 @@ class MoviesBtnAdapter(
         if (selectedPosition == -1) {
             holder.itemView.isSelected = true
             selectedPosition = 0
+            onMoviesMenuItemClicked(holder.card, item.btnId)
         }
         updateFocus(holder)
 
@@ -86,7 +87,7 @@ class MoviesBtnAdapter(
     }
 
     private fun notifyUI() {
-        itemList.forEachIndexed { index, laServices ->
+        itemList.forEachIndexed { index, _ ->
             if (selectedPosition != index)
                 notifyItemChanged(index)
         }

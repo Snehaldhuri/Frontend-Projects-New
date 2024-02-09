@@ -3,15 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/clHomeMenuButton"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/dp_85"
+    android:layout_height="85dp"
     android:layout_margin="@dimen/dp_4"
     android:background="?android:attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
-    android:padding="@dimen/dp_8"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
+    android:padding="@dimen/dp_8">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_40"

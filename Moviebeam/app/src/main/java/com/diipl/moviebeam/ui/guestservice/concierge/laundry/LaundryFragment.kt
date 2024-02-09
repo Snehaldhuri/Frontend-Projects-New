@@ -9,23 +9,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryCategory
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
-import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
 class LaundryFragment : BaseFragment() {
+
     private val laundryViewModel: LaundryViewModel by viewModels()
 
     lateinit var laundry_adapter: LaundryAdapter
@@ -33,8 +34,7 @@ class LaundryFragment : BaseFragment() {
     lateinit var laundry_list: List<LaundryCategory>
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null
-    private var _binding: FragmentLaundryBinding? = null
-    val binding get() = _binding!!
+    private lateinit var binding: FragmentLaundryBinding
     private var laundryHeaderPosition: Int = 0
     private var laundrySubCategoryPosition: Int = 0
     private var selectedItems: MutableList<LaundryResponce> = mutableListOf()
@@ -54,7 +54,7 @@ class LaundryFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentLaundryBinding.inflate(inflater, container, false)
+        binding = FragmentLaundryBinding.inflate(inflater, container, false)
 
         binding.rvLaundry.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
@@ -148,7 +148,8 @@ class LaundryFragment : BaseFragment() {
         laundry_list = laundryDetailResponse.laundryDataList
 
         // Check if _binding is initialized
-        if (_binding != null) {
+        lifecycleScope.launch {
+            delay(100)
             customAdapterLaundry = CustomAdapterLaundry(
                 onMenuItemFocused = { },
                 onLeftKeyPressed = {
@@ -182,8 +183,6 @@ class LaundryFragment : BaseFragment() {
             }
             laundry_adapter.setGradient(getGradient())
             binding.rvLaundry.adapter = laundry_adapter
-        } else {
-            Log.e("LaundryFragment", "_binding is null")
         }
     }
 

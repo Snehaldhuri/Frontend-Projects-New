@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 
 class GuestServiceTabAdapter(
     private var onMenuItemClicked: (View, GsBtnModel) -> Unit,
@@ -35,9 +37,11 @@ class GuestServiceTabAdapter(
         viewType: Int
     ): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
-        val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
-        layoutParams.setMargins(0, 0, 0, 3)
-        view.layoutParams = layoutParams
+
+        val params = view.layoutParams
+        params.width = getWidthInPercent(parent.context, 22)
+        params.height = getHeightInPercent(parent.context, 15)
+
         return MyViewHolder(view)
     }
 
@@ -46,14 +50,7 @@ class GuestServiceTabAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 
-//        holder.imageView.setImageResource(item.defaultImage)
         holder.textView.text = item.categoryName
-        holder.card.postDelayed({
-            if (position == 0) {
-                holder.card.requestFocus()
-            }
-        }, 1000)
-
         if (item.isClicked) {
             holder.imageView.setImageResource(item.spotlightImage)
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
@@ -105,6 +102,13 @@ class GuestServiceTabAdapter(
             }
         }
 
+        holder.itemView.post{
+            if (holder.absoluteAdapterPosition == 0) {
+                holder.card.requestFocus()
+//                item.isClicked = true
+//                onMenuItemClicked(holder.card, item)
+            }
+        }
     }
 
     private fun setFocus(cardView: ConstraintLayout) {

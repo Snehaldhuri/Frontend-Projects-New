@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.guestservice.localAttraction
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -59,11 +58,15 @@ class LocalAttractionGsAdapter(
         holder.textView.text = item.categoryName
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
+        if (selectedPosition == -1){
+            onItemClicked(holder.itemView, item)
+            holder.itemView.isSelected = true
+            selectedPosition = holder.absoluteAdapterPosition
+        }
         updateFocus(holder)
 
-
         holder.itemView.setOnFocusChangeListener { view, hasFocus ->
-            /*if (position == 0) {
+            if (position == 0) {
                 if (hasFocus) {
                     view.nextFocusUpId = view.id
                 } else {
@@ -75,10 +78,10 @@ class LocalAttractionGsAdapter(
                 } else {
                     view.nextFocusDownId = View.NO_ID
                 }
-            }*/
+            }
             if (hasFocus) {
                 view.background = gradientDrawable
-                holder.card.setOnKeyListener { v, code, keyEvent ->
+                view.setOnKeyListener { _, code, _ ->
                     when (code) {
                         KeyEvent.KEYCODE_DPAD_CENTER -> {
                             onItemClicked(view, item)
@@ -87,13 +90,9 @@ class LocalAttractionGsAdapter(
                             updateFocus(holder)
                             notifyUI()
                         }
+
                         KeyEvent.KEYCODE_DPAD_LEFT -> {
-                            onLeftKeyClicked(v)
-                            Log.e(TAG, "KEYCODE_DPAD_LEFT ")
-                        }
-                        KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                            onRightKeyClicked(v)
-                            Log.e(TAG, "KEYCODE_DPAD_RIGHT ")
+                            onLeftKeyClicked(view)
                         }
                     }
                     false
@@ -103,6 +102,10 @@ class LocalAttractionGsAdapter(
             }
 
         }
+
+    }
+
+    private fun onClick(code: Int, item: LAServices, holder: MyViewHolder) {
 
     }
 

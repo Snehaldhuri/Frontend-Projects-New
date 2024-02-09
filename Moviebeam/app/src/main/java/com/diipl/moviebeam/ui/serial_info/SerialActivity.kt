@@ -73,7 +73,12 @@ class SerialActivity : BaseActivity() {
         input.imeOptions = EditorInfo.IME_ACTION_DONE
         builder.setView(input)
 
-
+/* TODO Uncomment this before release
+        if (BuildConfig.DEBUG){
+            input.setText("29221HFGN30WLA")
+            input.hideKeyboard()
+        }
+        */
         builder.setPositiveButton("OK") { dialog, which ->
             m_Text = input.text.toString().uppercase()
             Constants.SERIAL_NO = m_Text

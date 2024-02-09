@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.KeyEvent
+import android.view.View
 import android.widget.Button
 import android.widget.Spinner
 import androidx.activity.viewModels
@@ -51,6 +52,7 @@ class ShowtimeActivity : BaseActivity() {
     private val list: List<BtnModel> = Constants.SHOWTIME_PAGE_MENU_BUTTON_LIST
 
     private val showtimeViewModel: ShowtimeViewModel by viewModels()
+    private var selectedView: View? = null
 
     override fun observeViewModel() {
         observe(showtimeViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -92,6 +94,14 @@ class ShowtimeActivity : BaseActivity() {
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
     }
 
+    private fun requestFocus() {
+        selectedView?.let {
+            binding.menuRecyclerView.post {
+                binding.menuRecyclerView.findContainingItemView(it)?.requestFocus()
+            }
+        }
+    }
+
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
@@ -103,14 +113,18 @@ class ShowtimeActivity : BaseActivity() {
                     } ?: emptyMap()
 
                 val adapter = ShowtimeMenuAdapter(list,
-                    onMoviesMenuItemClicked = { btnId ->
+                    onMoviesMenuItemClicked = { view, btnId ->
                         binding.fcvMovieDetail.toInvisible()
                         binding.parentRecyclerView.toVisible()
-
+                        selectedView = view
                         when (btnId) {
                             Constants.ALL_SHOWS_ID -> {
                                 val showtimeParentAdapter =
-                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick){
+                                        if (it) {
+                                            requestFocus()
+                                        }
+                                    }
                                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                                 binding.parentRecyclerView.adapter = showtimeParentAdapter
                             }
@@ -127,7 +141,11 @@ class ShowtimeActivity : BaseActivity() {
                                     } ?: emptyMap()
 
                                 val showtimeParentAdapter =
-                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick){
+                                        if (it) {
+                                            requestFocus()
+                                        }
+                                    }
                                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                                 binding.parentRecyclerView.adapter = showtimeParentAdapter
                             }
@@ -150,7 +168,11 @@ class ShowtimeActivity : BaseActivity() {
                 binding.fcvMovieDetail.toInvisible()
 
                 val showtimeParentAdapter =
-                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick)
+                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick){
+                        if (it) {
+                            requestFocus()
+                        }
+                    }
 
                 showtimeParentAdapter.setShowsList(showTimeGenreMap)
                 binding.parentRecyclerView.adapter = showtimeParentAdapter

@@ -40,6 +40,7 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
 
     @Inject
     lateinit var localAttractionDataStore: DataStore<LocalAttractionResponse>
+    private var lastView: View? = null
 
     override fun observeViewModel() {
         observe(localAttractionViewModel.localAttractionLiveData, ::handleLAServiceResponse)
@@ -77,14 +78,11 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
                 localAttractionViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
                 }
-                var lastView: View? = null
                 val adapter = LocalAttractionGsAdapter(onItemClicked = { view, it ->
                     val cardAdapter = LaCardAdapterGs { v ->
-                        if (v.isFocused) {
-                            lastView = v
-                            binding.recyclerView.post {
-                                binding.recyclerView.findContainingItemView(view)?.requestFocus()
-                            }
+                        lastView = v
+                        binding.recyclerView.post {
+                            binding.recyclerView.findContainingItemView(view)?.requestFocus()
                         }
                     }
                     cardAdapter.setList(it.serviceList)
@@ -98,19 +96,25 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
                         binding.laCardCarousel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
                     }
                 }, onLeftKeyClicked = { view ->
-                    view.setOnKeyListener { v, i, keyEvent ->
-                        if (i == KeyEvent.KEYCODE_DPAD_LEFT){
+                    if (lastView == null)
+                        onItemClicked(view)
+                    else
+                        view.setOnKeyListener { v, i, _ ->
+                        if (i == KeyEvent.KEYCODE_DPAD_LEFT) {
                             onItemClicked(v)
                         }
-                        true
+                        false
                     }
-                }, onRightKeyClicked = {
-                    if (lastView != null){
-                        binding.laCardCarousel.post {
-                            lastView?.let {
-                                binding.laCardCarousel.findContainingItemView(it)?.requestFocus()
+                }, onRightKeyClicked = {v->
+                    v.setOnKeyListener { _, i, _ ->
+                        if (lastView != null && i == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                            binding.laCardCarousel.post {
+                                lastView?.let {
+                                    binding.laCardCarousel.findContainingItemView(it)?.requestFocus()
+                                }
                             }
                         }
+                        false
                     }
                 }
                 )
@@ -120,7 +124,10 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
                 binding.recyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
                 binding.recyclerView.post {
-                    binding.recyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                    if (lastView == null)
+                        binding.recyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+                    else
+                        binding.recyclerView.findContainingItemView(lastView!!)?.requestFocus()
                 }
             }
 

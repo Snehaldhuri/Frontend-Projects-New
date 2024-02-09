@@ -1,8 +1,11 @@
 package com.diipl.moviebeam.ui.showtime
 
 import android.graphics.Color
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
@@ -15,9 +18,12 @@ import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 
 class ShowtimeChildAdapter(
     private val childList: List<Detail>,
-    private var onItemClicked: (Detail, Int) -> Unit
+    private var onItemClicked: (Detail, Int) -> Unit,
+    private val onLeftKey: (Boolean) -> Unit
 ) :
     RecyclerView.Adapter<ShowtimeChildAdapter.ChildViewHolder>() {
+
+    private var pos = "-1"
 
     inner class ChildViewHolder(val binding: MoviegenreChildlistItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -39,7 +45,17 @@ class ShowtimeChildAdapter(
             val focusedColor = ContextCompat.getColor(parent.context, R.color.home_page_greeting_text_color)
             val unfocusedColor = ContextCompat.getColor(parent.context, R.color.text_color_primary)
 
+            var anim: Animation = AnimationUtils.loadAnimation(parent.context, R.anim.scale_out_animation)
+            binding.imgCard.strokeColor = Color.TRANSPARENT
+
             if (hasFocus) {
+                anim = AnimationUtils.loadAnimation(parent.context, R.anim.scale_in_animation)
+                binding.imgCard.strokeColor = focusedColor
+            }
+            binding.root.startAnimation(anim)
+            anim.fillAfter = true
+
+           /* if (hasFocus) {
                 it.scaleX = 1.12f
                 it.scaleY = 1.12f
                 binding.childTitleTv.setTextColor(focusedColor)
@@ -51,7 +67,7 @@ class ShowtimeChildAdapter(
                 binding.childTitleTv.setTextColor(unfocusedColor)
                 binding.imgCard.strokeColor = Color.TRANSPARENT
 //                binding.childTitleTv.toInvisible()
-            }
+            }*/
         }
 
 
@@ -73,5 +89,32 @@ class ShowtimeChildAdapter(
         holder.movieview.setOnClickListener {
             onItemClicked(item, item.releaseId)
         }
+
+        holder.itemView.setOnKeyListener { v, keycode, _ ->
+            when (keycode) {
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (holder.absoluteAdapterPosition == 0 && pos == "-1"){
+                        onLeftKey(true)
+                    }
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != "0"){
+                        "-1"
+                    } else {
+                        holder.absoluteAdapterPosition.toString()
+                    }
+                }
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    pos = holder.absoluteAdapterPosition.toString()
+                }
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    pos = holder.absoluteAdapterPosition.toString()
+                }
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    pos = holder.absoluteAdapterPosition.toString()
+                }
+            }
+            false
+        }
+
+
     }
 }
