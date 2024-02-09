@@ -2,6 +2,8 @@ package com.diipl.moviebeam.ui.guestservice.localAttraction
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,10 +16,12 @@ import com.diipl.moviebeam.data.dto.localattraction.LAServices
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
 
-private const val TAG = "LocalAttractionGsAdapter"
+private const val TAG = "LAGsAdapter"
 
 class LocalAttractionGsAdapter(
-    private var onItemClicked: ((LAServices)) -> Unit
+    private var onItemClicked: (View, (LAServices)) -> Unit,
+    private var onLeftKeyClicked: (View) -> Unit,
+    private var onRightKeyClicked: (View) -> Unit
 ) : RecyclerView.Adapter<LocalAttractionGsAdapter.MyViewHolder>() {
 
     private var gradientDrawable: GradientDrawable? = null
@@ -37,6 +41,14 @@ class LocalAttractionGsAdapter(
         params.width = getWidthInPercent(parent.context, 23)
         params.height = getHeightInPercent(parent.context, 13)
 
+        view.setOnFocusChangeListener { v, b ->
+            if (b) {
+                v.background = gradientDrawable
+            } else {
+                v.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+
         return MyViewHolder(view)
     }
 
@@ -49,21 +61,49 @@ class LocalAttractionGsAdapter(
 
         updateFocus(holder)
 
+
         holder.itemView.setOnFocusChangeListener { view, hasFocus ->
+            /*if (position == 0) {
+                if (hasFocus) {
+                    view.nextFocusUpId = view.id
+                } else {
+                    view.nextFocusUpId = View.NO_ID
+                }
+            } else if (position == itemList.size.minus(1)) {
+                if (hasFocus) {
+                    view.nextFocusDownId = view.id
+                } else {
+                    view.nextFocusDownId = View.NO_ID
+                }
+            }*/
             if (hasFocus) {
                 view.background = gradientDrawable
-                holder.card.setOnClickListener {
-                    onItemClicked(item)
-                    holder.itemView.isSelected = true
-                    selectedPosition = holder.absoluteAdapterPosition
-                    updateFocus(holder)
-                    notifyUI()
+                holder.card.setOnKeyListener { v, code, keyEvent ->
+                    when (code) {
+                        KeyEvent.KEYCODE_DPAD_CENTER -> {
+                            onItemClicked(view, item)
+                            holder.itemView.isSelected = true
+                            selectedPosition = holder.absoluteAdapterPosition
+                            updateFocus(holder)
+                            notifyUI()
+                        }
+                        KeyEvent.KEYCODE_DPAD_LEFT -> {
+                            onLeftKeyClicked(v)
+                            Log.e(TAG, "KEYCODE_DPAD_LEFT ")
+                        }
+                        KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                            onRightKeyClicked(v)
+                            Log.e(TAG, "KEYCODE_DPAD_RIGHT ")
+                        }
+                    }
+                    false
                 }
             } else {
                 updateFocus(holder)
             }
 
         }
+
     }
 
     private fun notifyUI() {

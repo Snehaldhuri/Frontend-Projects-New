@@ -15,7 +15,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 
 class ConciergeAdapter(
-    private var onMenuItemClicked: (ConciergeBtnModel) -> Unit
+    private var onMenuItemClicked: (View, ConciergeBtnModel) -> Unit
 ) : RecyclerView.Adapter<ConciergeAdapter.MyViewHolder>() {
 
     private var startColor = ""
@@ -62,7 +62,7 @@ class ConciergeAdapter(
             }
         }
         holder.card.setOnClickListener {
-            onMenuItemClicked(item)
+            onMenuItemClicked(it, item)
 //            it.setBackgroundColor(Color.parseColor("#EBEBEB"))
         }
     }

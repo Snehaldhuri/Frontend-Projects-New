@@ -651,6 +651,15 @@ class EndlessService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
 
+        /*val options = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ActivityOptions.makeBasic()
+        } else {
+            ActivityOptions.makeTaskLaunchBehind()
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            options.isPendingIntentBackgroundActivityLaunchAllowed = true
+        }*/
+
         val pendingIntent: PendingIntent =
             Intent(this, MainMenuActivity::class.java).let { notificationIntent ->
                 PendingIntent.getActivity(

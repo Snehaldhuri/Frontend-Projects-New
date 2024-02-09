@@ -33,18 +33,33 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintVertical_bias="0.0" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/la_card_carousel"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
-        android:nextFocusLeft="@id/recyclerView"
+        android:scrollbars="none"
+        android:fillViewport="true"
         app:layout_constraintHorizontal_bias="0.0"
-        android:paddingStart="15dp"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_35"
         app:layout_constraintEnd_toEndOf="@id/gl_vertical_98"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        />
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:descendantFocusability="afterDescendants"
+            >
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/la_card_carousel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:nestedScrollingEnabled="false"
+                android:descendantFocusability="afterDescendants"
+                android:layout_marginStart="15dp"
+                />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <RelativeLayout
         android:id="@+id/loader_view"

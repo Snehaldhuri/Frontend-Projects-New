@@ -42,7 +42,7 @@ class HotelInfoTabAdapter(
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                onItemFocused(itemList[position],view)
+                onItemFocused(itemList[position], view)
                 fetchGradientColorsFromApi(holder.card)
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)

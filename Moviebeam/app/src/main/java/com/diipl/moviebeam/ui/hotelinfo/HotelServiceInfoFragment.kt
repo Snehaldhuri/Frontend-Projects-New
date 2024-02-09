@@ -46,7 +46,7 @@ class HotelServiceInfoFragment : Fragment() {
         if (serviceImgUrl != "null") {
             binding.ivServiceImg.loadImagesWithGlideExtHS(serviceImgUrl)
         }else{
-            binding.ivServiceImg.setBackgroundResource(R.drawable.help)
+            binding.ivServiceImg.setBackgroundResource(R.drawable.hs_default)
         }
 
 

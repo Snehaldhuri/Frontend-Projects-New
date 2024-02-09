@@ -1,5 +1,7 @@
 package com.diipl.moviebeam.ui.showtime
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -9,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 
@@ -19,6 +22,7 @@ class ShowtimeMenuAdapter(
 ) : RecyclerView.Adapter<ShowtimeMenuAdapter.MyViewHolder>() {
 
     private var gradient: GradientDrawable? = null
+    private var selectedPosition = -1
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
@@ -53,7 +57,14 @@ class ShowtimeMenuAdapter(
         val item = itemList[position]
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
-        holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+
+        if (selectedPosition == -1) {
+            holder.itemView.isSelected = true
+            selectedPosition = 0
+        }
+        updateFocus(holder)
+
+//        holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
         holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
@@ -62,8 +73,39 @@ class ShowtimeMenuAdapter(
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-        holder.card.setOnClickListener {
-            onMoviesMenuItemClicked(item.btnId)
+        holder.card.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                view.background = gradient
+                holder.card.setOnClickListener {
+                    onMoviesMenuItemClicked(item.btnId)
+                    holder.itemView.isSelected = true
+                    selectedPosition = holder.absoluteAdapterPosition
+                    updateFocus(holder)
+                    notifyUI()
+                }
+            } else {
+//                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                updateFocus(holder)
+            }
+        }
+    }
+
+    private fun notifyUI() {
+        itemList.forEachIndexed { index, laServices ->
+            if (selectedPosition != index)
+                notifyItemChanged(index)
+        }
+    }
+
+    private fun updateFocus(holder: MyViewHolder) {
+        if (selectedPosition == holder.absoluteAdapterPosition && holder.itemView.isSelected) {
+            holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+            holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
+            holder.imageView.imageTintList = ColorStateList.valueOf(Color.BLACK)
+        } else {
+            holder.textView.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+            holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            holder.imageView.imageTintList = ColorStateList.valueOf(Color.WHITE)
         }
     }
 

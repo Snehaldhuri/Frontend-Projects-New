@@ -6,7 +6,7 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
-    const val VERSION = 1.3
+    const val VERSION = 1.5
 
     const val SPLASH_DELAY = 3000
     var timer = ""
@@ -277,7 +277,7 @@ object Constants {
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
     //Casting
-    const val CASTING_URL = "https://democast.movie-beam.com/"
+    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
 
     // Kaping
     const val KAPING = "KAPING"
@@ -309,6 +309,8 @@ object Constants {
     const val TITLE_PARAM = "title"
     const val BG_IMAGE_URL = "bgImageUrl"
     const val LOGO_IMAGE_URL = "logoImageUrl"
+
+    var NEXT_BUTTON_STATE = 0
 
 }
 

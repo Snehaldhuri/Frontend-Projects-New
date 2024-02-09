@@ -8,57 +8,18 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_laundry"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/dp_20"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/dp_20"
-        android:layout_marginRight="@dimen/dp_20"
-        android:layout_weight="1"
-        android:ellipsize="none"
-        android:maxLines="2"
-        android:scrollHorizontally="false"
-        android:text="Please click OK to select/deselect the laundry items.Pres +/- to increase/decrease quantity"
-        android:textAlignment="center"
-        android:textSize="@dimen/sp_12"
-        app:flow_wrapMode="aligned"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/rv_laundry"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_items"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dp_20"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="270dp"
-        android:text="Items"
-        android:textColor="@color/fastlane_background"
-        app:layout_constraintEnd_toStartOf="@+id/tv_charges"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
-
-    <TextView
-        android:id="@+id/tv_charges"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/dp_20"
-        android:layout_marginRight="@dimen/dp_20"
-        android:text="Charges"
-        android:textColor="@color/fastlane_background"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView4" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guideline_35"
+        android:layout_marginEnd="4dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/lv_laundry"
-        android:layout_width="450dp"
-        android:layout_height="200dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginLeft="@dimen/dp_20"
         android:divider="@null"
         android:fadeScrollbars="false"
@@ -67,32 +28,47 @@
         android:scrollbars="vertical"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_items" />
-
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/guideline_70"
+        app:layout_constraintStart_toStartOf="@id/guideline_35"
+        android:layout_marginStart="4dp"/>
 
     <Button
         android:id="@+id/btn_laundry_cancel"
-        android:layout_width="150dp"
-        android:layout_height="@dimen/dp_30"
-        android:layout_marginTop="50dp"
+        android:layout_width="140dp"
+        android:layout_height="@dimen/dp_40"
+        android:layout_marginTop="10dp"
         android:layout_marginRight="@dimen/dp_50"
         android:background="@drawable/btn_bg_gradient_default"
         android:text="@string/Cancel"
         android:textSize="@dimen/sp_10"
         app:layout_constraintEnd_toStartOf="@+id/btn_laundry_send_request"
-        app:layout_constraintTop_toBottomOf="@+id/lv_laundry" />
+        app:layout_constraintTop_toBottomOf="@+id/guideline_70" />
 
     <Button
         android:id="@+id/btn_laundry_send_request"
-        android:layout_width="150dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="@dimen/dp_50"
+        android:layout_width="140dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="@dimen/dp_10"
         android:layout_marginEnd="44dp"
         android:background="@drawable/btn_bg_gradient_default"
         android:text="Send Request"
         android:textSize="@dimen/sp_10"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lv_laundry" />
+        app:layout_constraintTop_toBottomOf="@+id/guideline_70" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_35"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.30" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_70"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.85" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

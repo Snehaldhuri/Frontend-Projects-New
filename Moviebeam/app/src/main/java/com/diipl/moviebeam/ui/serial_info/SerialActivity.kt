@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -88,8 +89,8 @@ class SerialActivity : BaseActivity() {
 
         val input = EditText(this)
         var m_Text: String
-        input.inputType = InputType.TYPE_CLASS_TEXT
-//        input.imeOptions = EditorInfo.IME_ACTION_DONE
+        input.inputType = InputType.TYPE_TEXT_FLAG_CAP_WORDS
+        input.imeOptions = EditorInfo.IME_ACTION_DONE
         builder.setView(input)
 
 //        if (BuildConfig.DEBUG){

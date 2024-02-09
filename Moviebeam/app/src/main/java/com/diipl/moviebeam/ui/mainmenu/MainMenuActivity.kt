@@ -11,6 +11,7 @@ import android.view.KeyEvent
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -93,6 +94,15 @@ class MainMenuActivity : BaseActivity() {
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
+    override fun observeViewModel() {
+        observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
+        observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+
+        observeSnackBarMessages(mainMenuViewModel.showSnackBar)
+        observeToast(mainMenuViewModel.showToast)
+    }
+
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,15 +133,37 @@ class MainMenuActivity : BaseActivity() {
 
     }
 
-    override fun observeViewModel() {
-        observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
-        observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+    fun disablePackage(packageName: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val adbCommand = "adb shell pm disable-user --user 0 $packageName"
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
 
-        observeSnackBarMessages(mainMenuViewModel.showSnackBar)
-        observeToast(mainMenuViewModel.showToast)
+                Runtime.getRuntime().exec(adbCommand)
+
+           /*     val processBuilder = ProcessBuilder("su", "-c", adbCommand)
+                processBuilder.redirectErrorStream(true)
+
+                val process = processBuilder.start()
+                val reader = BufferedReader(InputStreamReader(process.inputStream))
+                val stringBuilder = StringBuilder()
+                var line: String?
+
+                while (reader.readLine().also { line = it } != null) {
+                    stringBuilder.append(line).append("\n")
+                }
+
+                process.waitFor()
+                process.destroy()*/
+
+                Log.e(TAG, "disablePackage: Disabled")
+            } catch (e: Exception) {
+//            e.printStackTrace()
+                Log.e(TAG, "disablePackage: error ${e.message}")
+            }
+
+        }
     }
 
     fun startDownload(fileURL: String) = CoroutineScope(Dispatchers.Default).launch {
@@ -178,6 +210,7 @@ class MainMenuActivity : BaseActivity() {
         player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
         super.onPause()
+        Log.e(TAG, "onPause: ")
     }
 
     override fun onRestart() {
