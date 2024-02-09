@@ -79,9 +79,9 @@ class RefreshingUiActivity : BaseActivity() {
         } else {
             kapingResponse = intent.getParcelableExtra("response")
         }
-        binding.root.post {
+        binding.root.postDelayed( {
             this.handleKaping(kapingResponse)
-        }
+        }, 5000)
     }
 
     private fun handleKaping(kapingResponse: KapingResponse?) {
