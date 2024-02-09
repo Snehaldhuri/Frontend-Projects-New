@@ -53,6 +53,7 @@ import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
@@ -387,17 +388,13 @@ class MainMenuActivity : BaseActivity() {
     }
 
     private fun handleValidateSessionResponse(status: Boolean) {
-//        val response = mainMenuViewModel.isGuestCheckedInLiveData.value ?: false
-
         if (status) {
             mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
         } else {
             binding.tvWelcome.text = ""
-            binding.tvWelcome.toInvisible()
+            binding.tvWelcome.toGone()
         }
         binding.pbLoader.toInvisible()
-
-
     }
 
     private fun handleGuestDetailsResponse(status: Resource<CmdDataDto>) {
