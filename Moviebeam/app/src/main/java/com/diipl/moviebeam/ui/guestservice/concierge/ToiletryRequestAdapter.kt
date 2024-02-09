@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.guestservice.concierge
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -11,20 +12,25 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundryCategory
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundrySubCategory
+import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.ItemToiletryRequestBinding
+import com.diipl.moviebeam.utils.loadImagesWithGlideExtFomAssets
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 
 class ToiletryRequestAdapter(
-    private var onMenuItemClicked: (Boolean, ItemMenu) -> Unit
+    private var onMenuItemClicked: (Boolean, ToiletryResponse.ToiletryData) -> Unit,
+    private var onQuantityChanged: () -> Unit
 ) : RecyclerView.Adapter<ToiletryRequestAdapter.MyViewHolder>() {
 
     private var itemList: List<ItemMenu> = mutableListOf()
     private var startColor = ""
     private var endColor = ""
-    private val selectedItems: MutableList<ItemMenu> = mutableListOf()
-
+    private val selectedItems: MutableList<ToiletryResponse.ToiletryData> = mutableListOf()
+    private var toiletryList: List<ToiletryResponse.ToiletryData> = emptyList()
     inner class MyViewHolder(val binding: ItemToiletryRequestBinding) :
         RecyclerView.ViewHolder(binding.root)
 
@@ -34,75 +40,73 @@ class ToiletryRequestAdapter(
         return MyViewHolder(binding)
     }
 
-    override fun getItemCount(): Int = itemList.size
+    override fun getItemCount(): Int = toiletryList.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-        val item = itemList[position]
-        holder.binding.tvItem.text = item.name
-        holder.binding.tvCharges.text = item.dispPrice
-
-
-        holder.binding.clToiletryItems.setOnFocusChangeListener { view, hasFocus ->
+        val item = toiletryList[position]
+        Log.e("toiletrylist", "getView:${toiletryList.size} ")
+        holder.binding.tvLvTitle.text = item.name
+        holder.binding.ivItem.loadImagesWithGlideExtFomAssets(item.imgSrc)
+        holder.binding.tvCount.text = item.quantity.toString()
+        holder.binding.toiletryData.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                setFocus(holder.binding.clItem)
-
+                setImageFocus(holder.binding.imgAdd)
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
                             KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                                holder.binding.imgAdd.postDelayed(
+                                holder.binding.imgRemove.postDelayed(
                                     {
-                                        holder.binding.imgAdd.requestFocus()
+                                        holder.binding.imgRemove.requestFocus()
                                     }, 50
                                 )
-                                holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
+                                holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
                                     if (hasFocus) {
-                                        setImageFocus(holder.binding.imgAdd)
+                                        setImageFocus(holder.binding.imgRemove)
                                         view.setOnKeyListener { _, keyCode, event ->
                                             if (event.action == KeyEvent.ACTION_DOWN) {
                                                 when (keyCode) {
-                                                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                                                        holder.binding.imgRemove.postDelayed(
+                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
+                                                        holder.binding.imgAdd.postDelayed(
                                                             {
-                                                                holder.binding.imgRemove.requestFocus()
+                                                                holder.binding.imgAdd.requestFocus()
                                                             }, 50
                                                         )
-                                                        holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
+                                                        holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
                                                             if (hasFocus) {
-                                                                setImageFocus(holder.binding.imgRemove)
+                                                                setImageFocus(holder.binding.imgAdd)
                                                             } else {
-                                                                holder.binding.imgRemove.setBackgroundResource(
-                                                                    R.drawable.btn_bg_gradient_default
+                                                                holder.binding.imgAdd.setBackgroundResource(
+                                                                    R.drawable.btn_bg_gradient_default_5dp
                                                                 )
                                                             }
                                                         }
                                                         return@setOnKeyListener true
                                                     }
 
-                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
-                                                        holder.binding.clToiletryItems.postDelayed({
-                                                            holder.binding.clToiletryItems.requestFocus()
-                                                        }, 50)
-                                                        holder.binding.clToiletryItems.setOnFocusChangeListener { view, hasFocus ->
-                                                            if (hasFocus) {
-                                                                setFocus(holder.binding.clItem)
-                                                            } else {
-                                                                holder.binding.clItem.setBackgroundResource(
-                                                                    R.color.transparent
-                                                                )
-                                                            }
-                                                        }
-                                                    }
+//                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
+//                                                        holder.binding.clToiletryItems.postDelayed({
+//                                                            holder.binding.clToiletryItems.requestFocus()
+//                                                        }, 50)
+//                                                        holder.binding.clToiletryItems.setOnFocusChangeListener { view, hasFocus ->
+//                                                            if (hasFocus) {
+//                                                                setFocus(holder.binding.clItem)
+//                                                            } else {
+//                                                                holder.binding.clItem.setBackgroundResource(
+//                                                                    R.color.transparent
+//                                                                )
+//                                                            }
+//                                                        }
+//                                                    }
                                                 }
                                             }
                                             false
                                         }
                                     } else {
-                                        holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                                        holder.binding.imgRemove.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
                                     }
                                 }
-                                setImageFocus(holder.binding.imgAdd)
                                 return@setOnKeyListener true
                             }
                         }
@@ -110,47 +114,43 @@ class ToiletryRequestAdapter(
                     false
                 }
             } else {
-                holder.binding.clItem.setBackgroundResource(R.color.transparent)
-            }
-        }
-        holder.binding.clToiletryItems.setOnClickListener {
-            onMenuItemClicked(holder.binding.ivIconChecked.isVisible, item)
-            if (holder.binding.ivIconChecked.isVisible) {
-                holder.binding.ivIconChecked.toInvisible()
-                holder.binding.clQuantity.toGone()
-            } else {
-                holder.binding.ivIconChecked.toVisible()
-                holder.binding.clQuantity.toVisible()
+                holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
             }
         }
 
-
+        holder.binding.toiletryData.setOnClickListener {
+//            onMenuItemClicked(holder.binding.ivIconChecked.isVisible, item)
+//            if (holder.binding.ivIconChecked.isVisible) {
+//                holder.binding.ivIconChecked.toInvisible()
+//                holder.binding.clQuantity.toGone()
+//            } else {
+//                holder.binding.ivIconChecked.toVisible()
+//                holder.binding.clQuantity.toVisible()
+//            }
+        }
 
         holder.binding.imgAdd.setOnClickListener {
-            item.quantity += 1
-            holder.binding.tvCount.text = item.quantity.toString()
-        }
-        holder.binding.imgRemove.setOnClickListener {
-            if (item.quantity != 1) {
-                item.quantity -= 1
+            val existingItem = selectedItems.find { it.id == item.id }
+            if (existingItem != null) {
+                existingItem.quantity += 1
+                holder.binding.tvCount.text = existingItem.quantity.toString()
+            } else {
+                item.quantity += 1
                 holder.binding.tvCount.text = item.quantity.toString()
+                selectedItems.add(item)
             }
         }
-        if (holder.binding.ivIconChecked.isVisible) {
-            selectedItems.add(item)
-        }
-    }
 
-    private fun setFocus(cardView: ConstraintLayout) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-//        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
+        holder.binding.imgRemove.setOnClickListener {
+            if (item.quantity > 0) {
+                item.quantity -= 1
+                holder.binding.tvCount.text = item.quantity.toString()
+                if (item.quantity == 0) {
+                    // Remove item from selected items if quantity becomes zero
+                    selectedItems.remove(item)
+                }
+            }
+        }
     }
 
     private fun setImageFocus(cardView: ImageView) {
@@ -165,10 +165,15 @@ class ToiletryRequestAdapter(
         cardView.background = gradientDrawable
     }
 
-    fun setButtonList(itemList: List<ItemMenu>) {
-        this.itemList = itemList
+    fun setToiletryList(toiletryList: List<ToiletryResponse.ToiletryData>) {
+        this.toiletryList = toiletryList
+//        selectedItems.clear()
+//        selectedItems.addAll(toiletryList.filter { it.quantity > 0 })
     }
 
+    fun getSelectedItems(): List<ToiletryResponse.ToiletryData> {
+        return selectedItems.toList()
+    }
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor
         this.endColor = endColor

@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
@@ -25,6 +26,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
+import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -54,6 +56,7 @@ import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import javax.inject.Inject
@@ -136,13 +139,30 @@ class GuestServiceActivity : BaseActivity() {
 //    )
 
 
-    private fun readJson(): LaundryDataResponse? {
+    private fun readLaundryJson(): LaundryDataResponse? {
         val gson = Gson()
         val inputStream = this.assets.open("LaundryData.json")
         val br = BufferedReader(InputStreamReader(inputStream))
         return gson.fromJson(br, LaundryDataResponse::class.java)
     }
+    private fun readToiletryJson(): ToiletryResponse {
+        val gson = Gson()
+        val inputStream = this.assets.open("ToiletryData.json")
+        val br = BufferedReader(InputStreamReader(inputStream))
+        val stringBuilder = StringBuilder()
+        for (str in br.readLines()) {
+            stringBuilder.append(str)
+        }
+        val data = JSONObject(stringBuilder.toString())
+        return gson.fromJson(data.toString(), ToiletryResponse::class.java)
+    }
 
+//    private fun readToiletryJson(): ToiletryDataResponse? {
+//        val gson = Gson()
+//        val inputStream = this.assets.open("ToiletryData.json")
+//        val br = BufferedReader(InputStreamReader(inputStream))
+//        return gson.fromJson(br, ToiletryDataResponse::class.java)
+//    }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -180,9 +200,7 @@ class GuestServiceActivity : BaseActivity() {
                     adapterView = view
                     bindAdapterView(view, service.btnId)
                 }, onRightClicked = {
-                    focusView?.let {
-                        findViewById<View>(it.id).requestFocus()
-                    }
+
                 })
                 binding.rvTabContent.toInvisible()
                 if (btnId == ALL_SERVICES) {
@@ -236,6 +254,7 @@ class GuestServiceActivity : BaseActivity() {
                         1 -> {
                             val fragment = MakeMyRoomFragment {
                                 view.requestFocus()
+                                view.performClick()
                             }
 
                             changeFragment(fragment)
@@ -249,7 +268,8 @@ class GuestServiceActivity : BaseActivity() {
 
                         2 -> {
                             val fragment = VelvetParkingFragment {
-
+                                view.requestFocus()
+                                view.performClick()
                             }
                             changeFragment(fragment)
                             fragment.setGradientColor(
@@ -262,12 +282,16 @@ class GuestServiceActivity : BaseActivity() {
                             binding.layoutHeader.tvTitle.text =
                                 getString(R.string.toiletry_requests)
                             val fragment = ToiletryRequestFragment {
-
+                                view.requestFocus()
+                                view.performClick()
                             }
                             val mBundle = Bundle()
                             mBundle.putString("gradientStartColor", gradientStartColor)
                             mBundle.putString("gradientEndColor", gradientEndColor)
                             fragment.arguments = mBundle
+                            val toiletryData = readToiletryJson()
+                            fragment.setToiletryData(toiletryData)
+                            Log.d("snehald","$toiletryData")
                             changeFragment(fragment)
                         }
 
@@ -305,17 +329,17 @@ class GuestServiceActivity : BaseActivity() {
                         3 -> {
                             val fragment = LaundryFragment()
 
-                            changeFragment(fragment)
 
                             fragment.setGradientColor(
                                 gradientStartColor,
                                 gradientEndColor
                             )
-                            val laundryData =
-                                readJson() // Assuming you have this function to read JSON data
+                            val laundryData = readLaundryJson()
                             if (laundryData != null) {
                                 fragment.setLaundryData(laundryData)
                             }
+
+                            changeFragment(fragment)
 
                         }
                     }
