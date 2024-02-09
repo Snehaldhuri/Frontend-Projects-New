@@ -168,6 +168,7 @@
         android:layout_height="@dimen/dp_200"
         android:layout_margin="@dimen/dp_8"
         app:cardCornerRadius="@dimen/dp_18"
+        app:cardElevation="@dimen/dp_0"
         app:layout_constraintBottom_toBottomOf="@+id/gl_horizontal_95"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
@@ -179,5 +180,6 @@
             android:layout_height="match_parent"
             android:padding="@dimen/dp_8" />
     </androidx.cardview.widget.CardView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

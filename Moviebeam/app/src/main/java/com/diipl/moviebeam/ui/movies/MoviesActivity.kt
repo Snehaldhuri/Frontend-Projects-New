@@ -60,7 +60,7 @@ class MoviesActivity : BaseActivity() {
 
     @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
-    private var selectedView : View? = null
+    private var selectedView: View? = null
 
     override fun observeViewModel() {
         observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -115,11 +115,12 @@ class MoviesActivity : BaseActivity() {
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
+
     }
 
     private fun requestFocus() {
-        binding.menuRecyclerView.post {
-            selectedView?.let {
+        selectedView?.let {
+            binding.menuRecyclerView.post {
                 binding.menuRecyclerView.findContainingItemView(it)?.requestFocus()
             }
         }
@@ -166,11 +167,11 @@ class MoviesActivity : BaseActivity() {
                         when (btnId) {
 
                             Constants.MOVIE_RENTALS_ID -> {
-                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick){
-                                    if (it){
+                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick) {
+                                    if (it) {
                                         requestFocus()
                                     }
-                                    Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
+                                    Log.e(TAG, "MOVIE_RENTALS_ID $it ")
                                 }
 
                                 parentAdapter.setMovieList(sortedGenreMap)
@@ -190,11 +191,11 @@ class MoviesActivity : BaseActivity() {
                                         freeGenreMap[it.genre1] = movieList
                                     }
                                 }
-                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick){
-                                    if (it){
+                                val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick) {
+                                    if (it) {
                                         requestFocus()
                                     }
-                                    Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
+                                    Log.e(TAG, "FREE_MOVIES_ID $it ")
                                 }
                                 parentAdapter.setMovieList(freeGenreMap)
                                 binding.parentRecyclerView.adapter = parentAdapter
@@ -262,11 +263,11 @@ class MoviesActivity : BaseActivity() {
                     binding.parentRecyclerView.toInvisible()
                     binding.fcvMovieDetail.toVisible()
                 },
-                onLeftKey = {
-                        if (it){
+                    onLeftKey = {
+                        if (it) {
                             requestFocus()
                         }
-                    Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
+                        Log.e(TAG, "KEYCODE_DPAD_LEFT $it ")
                     })
                 parentAdapter.setMovieList(genreMap)
                 binding.parentRecyclerView.adapter = parentAdapter

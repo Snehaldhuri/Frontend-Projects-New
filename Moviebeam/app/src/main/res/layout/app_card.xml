@@ -2,6 +2,8 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/card_app"
+    app:cardBackgroundColor="@color/transparent"
+    app:cardElevation="@dimen/dp_0"
     android:layout_width="match_parent"
     android:layout_height="@dimen/dp_125"
     android:layout_margin="@dimen/dp_18">

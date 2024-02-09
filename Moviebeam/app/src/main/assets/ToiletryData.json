@@ -1,0 +1,95 @@
+{
+	"ToiletryDataList": [
+		{
+			"name": "Toothpaste",
+			"id": 1,
+			"imgSrc": "Toiletry/Toothpaste.png",
+			"langWiseList": {
+				"en-US": {
+					"name": "Toothpaste"
+				},
+				"es-MX": {
+					"name": "Pasta de Dientes"
+				}
+			}
+		},
+		{
+			"name": "Soap",
+			"id": 2,
+			"imgSrc": "Toiletry/Soap.png",
+			"langWiseList": {
+				"en-US": {
+					"name": "Soap"
+				},
+				"es-MX": {
+					"name": "Jabón"
+				}
+			}
+		},
+		{
+			"name": "Shampoo",
+			"id": 3,
+			"imgSrc": "Toiletry/Shampoo.png",
+			"langWiseList": {
+				"en-US": {
+					"name": "Shampoo"
+				},
+				"es-MX": {
+					"name": "Champú"
+				}
+			}
+		},
+		{
+			"name": "Conditioner",
+			"id": 4,
+			"imgSrc": "Toiletry/Conditioner.png",
+			"langWiseList": {
+				"en-US": {
+					"name": "Conditioner"
+				},
+				"es-MX": {
+					"name": "Acondicionador"
+				}
+			}
+		},
+		{
+			"name": "Shaving Cream",
+			"id": 5,
+			"imgSrc": "Toiletry/Shave.png",
+			"langWiseList": {
+				"en-US": {
+					"name": "Shaving Cream"
+				},
+				"es-MX": {
+					"name": "Crema de Afeitar"
+				}
+			}
+		},
+		{
+			"name": "Towels",
+			"id": 6,
+			"imgSrc": "Toiletry/Towels.png",
+			"langWiseList": {
+				"en-US": {
+					"name": "Towels"
+				},
+				"es-MX": {
+					"name": "Toallas"
+				}
+			}
+		},
+		{
+			"name": "Toothbrush",
+			"id": 7,
+			"imgSrc": "Toiletry/Toothbrush.png",
+			"langWiseList": {
+				"en-US": {
+					"name": "Toothbrush"
+				},
+				"es-MX": {
+					"name": "Cepillo de Dientes"
+				}
+			}
+		}
+	]
+}

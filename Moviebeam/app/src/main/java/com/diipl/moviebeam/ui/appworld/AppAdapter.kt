@@ -26,8 +26,7 @@ class AppAdapter(
         binding.root.setBackgroundResource(R.color.transparent)
 
         binding.cardApp.setOnFocusChangeListener { _, isFocused ->
-            var anim: Animation =
-                AnimationUtils.loadAnimation(parent.context, R.anim.scale_out_animation)
+            var anim: Animation = AnimationUtils.loadAnimation(parent.context, R.anim.scale_out_animation)
             if (isFocused) {
                 anim = AnimationUtils.loadAnimation(parent.context, R.anim.scale_in_animation)
             }
@@ -43,11 +42,11 @@ class AppAdapter(
         val item = appList[position]
         val context = holder.binding.root.context
 
-        holder.binding.cardApp.postDelayed({
-            if (position == 0) {
+        holder.binding.cardApp.post{
+            if (holder.absoluteAdapterPosition == 0) {
                 holder.binding.cardApp.requestFocus()
             }
-        }, 1)
+        }
         holder.binding.tvAppName.text = context.packageManager.getApplicationLabel(item)
         holder.binding.ivAppIcon.setImageDrawable(context.packageManager.getApplicationBanner(item))
         holder.binding.cardApp.setOnClickListener {

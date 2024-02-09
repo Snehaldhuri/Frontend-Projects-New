@@ -17,7 +17,7 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 
 class ShowtimeMenuAdapter(
     private val itemList: List<BtnModel>,
-    private val onMoviesMenuItemClicked: (contentType: String) -> Unit,
+    private val onMoviesMenuItemClicked: (View, contentType: String) -> Unit,
     private val onRightKeyPressed: () -> Unit
 ) : RecyclerView.Adapter<ShowtimeMenuAdapter.MyViewHolder>() {
 
@@ -61,6 +61,7 @@ class ShowtimeMenuAdapter(
         if (selectedPosition == -1) {
             holder.itemView.isSelected = true
             selectedPosition = 0
+            onMoviesMenuItemClicked(holder.card, item.btnId)
         }
         updateFocus(holder)
 
@@ -77,7 +78,7 @@ class ShowtimeMenuAdapter(
             if (hasFocus) {
                 view.background = gradient
                 holder.card.setOnClickListener {
-                    onMoviesMenuItemClicked(item.btnId)
+                    onMoviesMenuItemClicked(view, item.btnId)
                     holder.itemView.isSelected = true
                     selectedPosition = holder.absoluteAdapterPosition
                     updateFocus(holder)
@@ -91,7 +92,7 @@ class ShowtimeMenuAdapter(
     }
 
     private fun notifyUI() {
-        itemList.forEachIndexed { index, laServices ->
+        itemList.forEachIndexed { index, _ ->
             if (selectedPosition != index)
                 notifyItemChanged(index)
         }

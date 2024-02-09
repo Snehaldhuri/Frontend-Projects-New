@@ -8,6 +8,7 @@ import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.GridLayoutManager
@@ -17,13 +18,13 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.toDelayVisible
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,14 +44,24 @@ class AppWorldActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
+        appWorldViewModel.getWeatherResponseData(weatherDataStore)
+
     }
 
     override fun initViewBinding() {
-        fetchDataFromDatastore()
         binding = ActivityAppWorldBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
         fetchDetails()
         binding.rvApps.layoutManager = GridLayoutManager(this, 4)
         getInstalledApps()
+
+        binding.btnBack.toDelayVisible()
+
         binding.btnBack.setOnClickListener { finish() }
         binding.btnBack.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
@@ -59,7 +70,6 @@ class AppWorldActivity : BaseActivity() {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-        setContentView(binding.root)
     }
 
     private fun getInstalledApps() {
@@ -100,11 +110,8 @@ class AppWorldActivity : BaseActivity() {
                 activity.name
             )
             val i = Intent(Intent.ACTION_MAIN)
-            i.setFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-            )
-            i.setComponent(name)
+            i.component = name
+            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
             startActivity(i)
         }
     }
@@ -165,9 +172,6 @@ class AppWorldActivity : BaseActivity() {
         return applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
     }
 
-    private fun fetchDataFromDatastore() {
-        appWorldViewModel.getWeatherResponseData(weatherDataStore)
-    }
 
     private fun fetchDetails() {
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")

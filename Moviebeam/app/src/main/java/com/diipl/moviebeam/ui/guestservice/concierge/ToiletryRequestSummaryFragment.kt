@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
+import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.FragmentToiletryRequestSummaryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 
@@ -24,7 +25,7 @@ class ToiletryRequestSummaryFragment(
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private val adapter = ToiletryRequestSummaryAdapter()
-    private var selectedItems: MutableList<ItemMenu> = mutableListOf()
+    private var selectedItems: List<ToiletryResponse.ToiletryData> = mutableListOf()
     override fun observeViewModel() {}
 
     override fun initViewBinding() {}
@@ -76,7 +77,7 @@ class ToiletryRequestSummaryFragment(
         binding.rvSummary.adapter = adapter
     }
 
-    fun setItemList(selectedItems: MutableList<ItemMenu>) {
+    fun setItemList(selectedItems: List<ToiletryResponse.ToiletryData>) {
         this.selectedItems = selectedItems
     }
 

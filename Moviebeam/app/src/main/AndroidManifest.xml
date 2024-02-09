@@ -85,6 +85,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity
             android:name=".ui.appworld.AppWorldActivity"
@@ -170,8 +171,6 @@
             android:name=".ui.kappingservice.EndlessService"
             android:enabled="true"
             android:exported="false" />
-
-        <service android:name="com.diipl.moviebeam.service.MyForegroundService" />
 
         <receiver
             android:name=".ui.kappingservice.StartReceiver"

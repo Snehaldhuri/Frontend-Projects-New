@@ -4,12 +4,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
+import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.ItemToiletryRequestSummaryBinding
 
 
 class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummaryAdapter.MyViewHolder>() {
 
-    private var itemList: List<ItemMenu> = mutableListOf()
+    private var itemList: List<ToiletryResponse.ToiletryData> = mutableListOf()
     var totalCharge = 0f
     inner class MyViewHolder(val binding: ItemToiletryRequestSummaryBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -29,20 +30,20 @@ class ToiletryRequestSummaryAdapter: RecyclerView.Adapter<ToiletryRequestSummary
             val item = itemList[position]
             holder.binding.tvItems.text = item.name
             holder.binding.tvQty.text = item.quantity.toString()
-            holder.binding.tvCost.text = item.dispPrice
-
-            val numericPart = item.dispPrice.replace("[^\\d.]".toRegex(), "")
-
-            val cost = numericPart.toFloatOrNull() ?: 0f
-
-            val quantity = item.quantity
-            val total = quantity * cost
-
-            holder.binding.tvTotal.text = "$" + total.toString()
+//            holder.binding.tvCost.text = item.dispPrice
+//
+//            val numericPart = item.dispPrice.replace("[^\\d.]".toRegex(), "")
+//
+//            val cost = numericPart.toFloatOrNull() ?: 0f
+//
+//            val quantity = item.quantity
+//            val total = quantity * cost
+//
+//            holder.binding.tvTotal.text = "$" + total.toString()
         }
     }
 
-    fun setItemList(selectedItems: MutableList<ItemMenu>){
+    fun setItemList(selectedItems: List<ToiletryResponse.ToiletryData>){
         this.itemList = selectedItems
     }
 }

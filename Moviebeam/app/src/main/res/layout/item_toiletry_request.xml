@@ -1,121 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/clToiletryItems"
+    android:id="@+id/toiletry_data"
     android:layout_width="match_parent"
-    android:focusableInTouchMode="true"
-    android:focusable="true"
     android:layout_height="wrap_content"
-    android:paddingTop="@dimen/dp_3"
-    android:paddingBottom="3dp"
-    >
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_vertical_40"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.40" />
-
+    android:layout_margin="7dp"
+    app:cardCornerRadius="7dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:backgroundTint="@color/transparent"
+    app:cardElevation="0dp">
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/clItem"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:padding="2dp"
-        android:clickable="true"
-        android:nextFocusRight="@id/img_add"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/gl_vertical_40"
-        app:layout_constraintTop_toTopOf="parent">
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_vertical_90"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.90" />
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_vertical_30"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.30" />
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:focusable="true"
+        android:background="@color/white"
+        android:focusableInTouchMode="true"
+        >
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/iv_icon_checked"
+        <!-- ImageView for image (30% of width) -->
+        <ImageView
+            android:id="@+id/iv_item"
             android:layout_width="0dp"
-            android:layout_height="20dp"
-            android:src="@drawable/checked"
-            android:layout_marginStart="@dimen/dp_10"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/spa_new_gs"
+            android:scaleType="fitXY"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/gl_vertical_30"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/guideline_30" />
+
+        <!-- Guideline to create a 30/70 ratio -->
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_30"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.40" />
+
+        <!-- TextView for title -->
+        <TextView
+            android:id="@+id/tv_lv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="title"
+            android:paddingStart="@dimen/dp_15"
+            android:layout_marginTop="7dp"
+            android:textColor="#00BFBA"
+            android:textSize="@dimen/sp_15"
+            app:layout_constraintStart_toStartOf="@+id/guideline_30"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvItem"
+            android:id="@+id/tv_lv_Quantity_tv"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:textSize="@dimen/sp_14"
-            app:layout_constraintBottom_toBottomOf="@+id/iv_icon_checked"
-            app:layout_constraintEnd_toEndOf="@id/gl_vertical_90"
-            app:layout_constraintStart_toStartOf="@id/gl_vertical_30"
-            app:layout_constraintTop_toTopOf="@+id/iv_icon_checked" />
+            android:layout_height="wrap_content"
+            android:text="Quantity"
+            android:paddingStart="@dimen/dp_15"
+            android:textSize="@dimen/sp_11"
+            android:layout_marginTop="@dimen/dp_8"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline_30"
+            app:layout_constraintTop_toBottomOf="@id/tv_lv_title" />
+        <!-- LinearLayout for cart -->
+        <LinearLayout
+            android:id="@+id/ll_cart"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:paddingStart="@dimen/dp_15"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline_30"
+            app:layout_constraintTop_toBottomOf="@id/tv_lv_Quantity_tv"
+            app:layout_constraintBottom_toBottomOf="parent">
 
+
+            <!-- ImageView for add -->
+            <ImageView
+                android:id="@+id/img_add"
+                android:layout_width="18dp"
+                android:layout_height="17dp"
+                android:layout_marginEnd="@dimen/dp_10"
+                android:background="@drawable/btn_bg_gradient_default_5dp"
+                android:src="@drawable/baseline_add_24" />
+
+            <!-- TextView for count -->
+            <TextView
+                android:id="@+id/tv_count"
+                android:layout_width="30dp"
+                android:layout_height="17dp"
+                android:background="#FFB81A"
+                android:text="0"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="@dimen/sp_10" />
+
+            <!-- ImageView for remove -->
+            <ImageView
+                android:id="@+id/img_remove"
+                android:layout_width="18dp"
+                android:layout_height="17dp"
+                android:layout_marginStart="@dimen/dp_10"
+
+                android:background="@drawable/btn_bg_gradient_default_5dp"
+                android:src="@drawable/baseline_horizontal_rule_24" />
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-    <TextView
-        android:id="@+id/tvCharges"
-        android:layout_width="50dp"
-        android:layout_height="0dp"
-        android:text="10.0"
-        android:textSize="@dimen/sp_13"
-        app:layout_constraintEnd_toStartOf="@+id/clQuantity"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        />
-
-    <LinearLayout
-        android:id="@+id/clQuantity"
-        android:layout_width="120dp"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <ImageView
-            android:id="@+id/img_add"
-            android:layout_width="20dp"
-            android:layout_height="match_parent"
-            android:layout_marginRight="@dimen/dp_10"
-            android:background="@drawable/btn_bg_gradient_default"
-            android:src="@drawable/baseline_add_24" />
-
-        <TextView
-            android:id="@+id/tv_count"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="#8D6100"
-            android:paddingLeft="@dimen/dp_10"
-            android:paddingTop="@dimen/dp_2"
-            android:paddingRight="10dp"
-            android:paddingBottom="@dimen/dp_2"
-            android:text="1"
-            android:textColor="@color/white"
-            android:textSize="@dimen/sp_10" />
-
-        <ImageView
-            android:id="@+id/img_remove"
-            android:layout_width="20dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="@dimen/dp_10"
-            android:background="@drawable/btn_bg_gradient_default"
-            android:src="@drawable/baseline_horizontal_rule_24" />
-
-    </LinearLayout>
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
