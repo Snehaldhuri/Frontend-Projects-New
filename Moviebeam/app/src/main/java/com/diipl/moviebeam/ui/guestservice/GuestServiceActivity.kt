@@ -322,7 +322,7 @@ class GuestServiceActivity : BaseActivity() {
                 focusView = null
 
                 val fragment = FlightStatusFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
 
                 guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
@@ -343,10 +343,10 @@ class GuestServiceActivity : BaseActivity() {
                 conciergeIndex = 0
                 focusView = null
                 val fragment = NewsFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -354,10 +354,10 @@ class GuestServiceActivity : BaseActivity() {
                 conciergeIndex = 0
                 focusView = null
                 val fragment = FeedbackFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -368,8 +368,8 @@ class GuestServiceActivity : BaseActivity() {
                     focusView = v
                     requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 

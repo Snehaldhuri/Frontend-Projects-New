@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.REBOOT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -69,7 +70,7 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustPan|adjustNothing">
-            <!-- TODO Uncomment this for release-->
+            <!-- TODO Uncomment this for release
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -78,7 +79,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
-
+-->
         </activity>
         <activity
             android:name=".ui.appworld.AppWorldActivity"
@@ -124,19 +125,19 @@
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
             android:banner="@drawable/app_icon_your_company"
+            android:enabled="true"
             android:exported="true"
             android:icon="@drawable/app_icon_your_company"
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
-            android:enabled="true"
             android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
 
-<!--                <action android:name="android.intent.action.MAIN" />-->
-<!--                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />-->
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
 
         </activity>
@@ -175,15 +176,27 @@
             </intent-filter>
         </receiver>
 
-        <!--        <provider-->
-        <!--            android:name="androidx.core.content.FileProvider"-->
-        <!--            android:authorities="${applicationId}.fileprovider"-->
-        <!--            android:exported="false"-->
-        <!--            android:grantUriPermissions="true">-->
-        <!--            <meta-data-->
-        <!--                android:name="android.support.FILE_PROVIDER_PATHS"-->
-        <!--                android:resource="@xml/file_paths" />-->
-        <!--        </provider>-->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <receiver
+            android:name="android.app.admin.DeviceAdminReceiver"
+            android:exported="false"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_receiver" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 
