@@ -19,6 +19,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataList
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundrySubCategory
 import com.diipl.moviebeam.data.dto.laundryResponce.SubCategoryList
+import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.CustomLaundryListViewBinding
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtFomAssets
@@ -36,10 +37,16 @@ class CustomAdapterLaundry(
     private var laundryList: List<LaundryDataList> = emptyList()
     var binding: CustomLaundryListViewBinding? = null
     private lateinit var context: Context
-
+    private val selectedItems: MutableList<LaundrySubCategory> = mutableListOf()
     private var startColor = ""
     private var endColor = ""
 
+    private val selectedItemsMap: MutableMap<Int, MutableList<LaundrySubCategory>> = mutableMapOf()
+
+    companion object {
+        var laundryConstSelected: MutableList<LaundrySubCategory> = mutableListOf()
+
+    }
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -76,67 +83,89 @@ class CustomAdapterLaundry(
         holder.tv_lv_price.text = sublList[p0].dispPrice
         holder.item_img.loadImagesWithGlideExtFomAssets(sublList[p0].imgSrc)
 
-        holder.img_add.setOnClickListener(View.OnClickListener {
-            count += 1
-            holder.tv_count.text = count.toString()
-        })
-        holder.img_remove.setOnClickListener(View.OnClickListener {
-            if (count == 0) {
-            } else {
-                count -= 1
-                holder.tv_count.text = count.toString()
-            }
-        })
-//        holder.binding.imgAdd.postDelayed({
-//            if (p0 == 0) {
-//                holder.binding.imgAdd.requestFocus()
-//            }
-//        }, 1)
-//        holder.binding.imgAdd.requestFocus()
         holder.binding.root.setOnFocusChangeListener{ view, isFocused ->
             if (isFocused) {
-                holder.binding.imgAdd.requestFocus()
-                setImageFocus(holder.binding.imgAdd)
-                view.setOnKeyListener { _, keyCode, event ->
-                    if (event.action == KeyEvent.ACTION_DOWN) {
-                        when (keyCode) {
-                            KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                                holder.binding.imgRemove.requestFocus()
-                                holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
-                                    if (hasFocus) {
-                                        setImageFocus(holder.binding.imgRemove)
-                                        view.setOnKeyListener { _, keyCode, event ->
-                                            if (event.action == KeyEvent.ACTION_DOWN) {
-                                                when (keyCode) {
-//                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
-//                                                        holder.binding.imgAdd.requestFocus()
-//
-//                                                        holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
-//                                                            if (hasFocus) {
-//                                                                setImageFocus(holder.binding.imgAdd)
-//                                                            } else {
-//                                                                holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
-//                                                            }
-//                                                        }
-//                                                    }
-                                                }
-                                            }
-                                            false
+                holder.binding.imgAdd.post{
+                    holder.binding.imgAdd.requestFocus()
+                }
+                holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
+                    if (hasFocus) {
+                        setImageFocus(holder.binding.imgAdd)
+                        view.setOnKeyListener { _, keyCode, event ->
+                            if (event.action == KeyEvent.ACTION_DOWN) {
+                                when (keyCode) {
+                                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                                        holder.binding.imgRemove.post {
+                                            holder.binding.imgRemove.requestFocus()
                                         }
-                                    }
-                                    else {
-                                        holder.binding.imgRemove.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
+                                        holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
+                                            if (hasFocus) {
+                                                setImageFocus(holder.binding.imgRemove)
+                                                view.setOnKeyListener { _, keyCode, event ->
+                                                    if (event.action == KeyEvent.ACTION_DOWN) {
+                                                        when (keyCode) {
+                                                            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                                                                holder.binding.imgAdd.post {
+                                                                    holder.binding.imgAdd.requestFocus()
+                                                                }
+                                                                holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
+                                                                    if (hasFocus) {
+                                                                        setImageFocus(holder.binding.imgAdd)
+                                                                    } else {
+                                                                        holder.binding.imgAdd.setBackgroundResource(
+                                                                            R.drawable.btn_bg_gradient_default_5dp
+                                                                        )
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    false
+                                                }
+                                            } else {
+                                                holder.binding.imgRemove.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
+                                            }
+                                        }
+                                        return@setOnKeyListener true
                                     }
                                 }
-                                return@setOnKeyListener true
                             }
+                            false
                         }
                     }
-                    false
+                    else{
+                        holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
+                    }
                 }
+
             }
             else{
                 holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
+            }
+        }
+
+        holder.binding.imgAdd.setOnClickListener {
+            val existingItem = selectedItems.find { it.id == sublList[p0].id }
+            if (existingItem != null) {
+                existingItem.quantity += 1
+                holder.binding.tvCount.text = existingItem.quantity.toString()
+            } else {
+                sublList[p0].quantity += 1
+                holder.binding.tvCount.text = sublList[p0].quantity.toString()
+                selectedItems.add(sublList[p0])
+                laundryConstSelected.add(sublList[p0])
+            }
+        }
+
+        holder.binding.imgRemove.setOnClickListener {
+            if (sublList[p0].quantity > 0) {
+                sublList[p0].quantity -= 1
+                holder.binding.tvCount.text = sublList[p0].quantity.toString()
+                if (sublList[p0].quantity == 0) {
+                    // Remove item from selected items if quantity becomes zero
+                    selectedItems.remove(sublList[p0])
+                    laundryConstSelected.remove(sublList[p0])
+                }
             }
         }
     }
@@ -165,6 +194,7 @@ class CustomAdapterLaundry(
         var img_remove: ImageView = convertView.findViewById<ImageView>(com.diipl.moviebeam.R.id.img_remove)
         var tv_count: TextView = convertView.findViewById<TextView>(com.diipl.moviebeam.R.id.tv_count)
         var ll: LinearLayout = convertView.findViewById(R.id.ll_cart)
+
     }
 
 
@@ -178,5 +208,11 @@ class CustomAdapterLaundry(
     }
     fun setGradient(gradient: GradientDrawable) {
         this.gradient2 = gradient
+    }
+    fun getSelectedItems(): List<LaundrySubCategory> {
+        return laundryConstSelected.toList()
+    }
+    fun getSelectedItemsForList(laundryListId: Int): List<LaundrySubCategory> {
+        return selectedItemsMap[laundryListId] ?: emptyList()
     }
 }

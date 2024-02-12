@@ -310,7 +310,10 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         3 -> {
-                            val fragment = LaundryFragment()
+                            val fragment = LaundryFragment{
+                                view.requestFocus()
+                                view.performClick()
+                            }
 
 
                             fragment.setGradientColor(

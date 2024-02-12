@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.25" />
+        app:layout_constraintGuide_percent="0.28" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_11"
@@ -63,7 +63,7 @@
         app:layout_constraintBottom_toBottomOf="@id/gl_horizontal_86"
         app:layout_constraintEnd_toEndOf="@id/gl_vertical_25"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/gl_horizontal_11">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:layout_width="match_parent"
@@ -78,6 +78,7 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/dp_20"
+        android:layout_marginStart="@dimen/dp_20"
         android:background="@drawable/btn_bg_gradient_default"
         android:drawableEnd="@drawable/back_image"
         android:drawablePadding="@dimen/dp_50"
@@ -98,6 +99,7 @@
         android:background="@drawable/btn_bg_gradient_default"
         android:drawableEnd="@drawable/forward_image"
         android:drawablePadding="@dimen/dp_50"
+        android:layout_marginEnd="@dimen/dp_20"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:text="@string/send_request"
