@@ -34,4 +34,7 @@ object PanelConstants {
     const val SHOWTIME_ACTIVITY_LOCAL_NAME = "ui.showtime.ShowtimeActivity"
     const val MAIN_MENU_ACTIVITY_LOCAL_NAME = "ui.mainmenu.MainMenuActivity"
 
+    const val STB_DETAILS_ACTIVITY_LOCAL_NAME = "ui.stbdetail.STBDetailsActivity"
+    const val SERIAL_ACTIVITY_LOCAL_NAME = "ui.stbdetail.SerialActivity"
+
 }

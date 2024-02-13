@@ -21,8 +21,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.KapingConstants
+import com.diipl.moviebeam.KapingParameters
 import com.diipl.moviebeam.PanelConstants
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
@@ -77,12 +79,11 @@ class EndlessService : Service() {
     private var laVersion = ""
     private var moviesVersion = ""
     private var hotelServicesVersion = ""
+    private var kapingCMD = KapingConstants.KAP_CMD_DO_NOTHING
     private var CMDRES = ""
     private var EVENT = ""
-    private var kapingCMD = ""
     private var epochTime = ""
     private var transactionId = ""
-    private var kapingCmdExecutionResponse = "00"
 
 
     private val _themeLiveData = MutableLiveData<ThemeResponse>()
@@ -99,6 +100,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var movieBeamRepository: MovieBeamRepository
+
+    @Inject
+    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -297,10 +301,11 @@ class EndlessService : Service() {
             log("prefix epoch ->  $epoch")
             epochTime = epoch
         }
-        if (kapingCMD == "00") {
+        if (kapingCMD == KapingConstants.KAP_CMD_DO_NOTHING) {
             CMDRES = ""
         } else {
-            CMDRES = "$kapingCMD$epochTime$transactionId$kapingCmdExecutionResponse"
+            CMDRES =
+                "$kapingCMD$epochTime$transactionId${KapingParameters.kapingCmdExecutionResponse}"
         }
         log("CMDRES -> $CMDRES")
 
@@ -341,6 +346,7 @@ class EndlessService : Service() {
                     }
                     // Handle the data here
                     log(result.toString())
+                    KapingParameters.kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
                     handleKaping(result)
                 } else {
                     // Handle unsuccessful response
@@ -361,7 +367,7 @@ class EndlessService : Service() {
         val epochTime = cmd.substring(2, 11)
         transactionId = cmd.substring(11, minOf(cmd.length, 19))
         var cmdDataDto: CmdDataDto? = null
-        if (kapingCMD == "07" || kapingCMD == "08") {
+        if (kapingCMD == KapingConstants.KAP_CMD_CHECK_IN || kapingCMD == KapingConstants.KAP_CMD_CHECK_OUT) {
             val cmdData = cmd.substring(19, cmd.length)
             val sessionId = cmdData.substring(5, 15)
             var adultContentDisabled: Boolean? = null
@@ -371,22 +377,29 @@ class EndlessService : Service() {
             var guestFirstName: String? = null
             var guestLastName: String? = null
             var adultLocked: Boolean? = null
-            if (kapingCMD == "07") {
+            if (kapingCMD == KapingConstants.KAP_CMD_CHECK_IN) {
                 adultContentDisabled = cmdData[0] != '0'
                 parentSessionId = cmdData.substring(15, 25)
                 val nameAndPass = cmdData.substring(cmdData.indexOf("Welcome"))
                 guestFirstName = nameAndPass.split(" ")[1]
                 val lastNameAndPass = nameAndPass.split(" ")[2]
-//                guestLastName = lastNameAndPass.substring(0, lastNameAndPass.length-4)
-//                passCode = lastNameAndPass.substring(lastNameAndPass.length-5)
-//                if(passCode != "____"){
-//                    passCode = null
-//                    adultLocked = true
-//                }else
-//                    adultLocked = false
+                try {
+                    guestLastName = lastNameAndPass.substring(0, lastNameAndPass.length - 4)
+                    passCode = lastNameAndPass.substring(lastNameAndPass.length - 4)
+                    if (passCode == "____") {
+                        passCode = null
+                        adultLocked = false
+                    } else {
+                        passCode.toInt()
+                        adultLocked = true
+                    }
+                } catch (e: Exception) {
+                    Log.e("TAG Exception", "parseCmd: ${e.message}")
+                    guestLastName = lastNameAndPass
+                    passCode = null
+                    adultLocked = false
+                }
 
-                guestLastName = lastNameAndPass
-                adultLocked = false
             }
 
             cmdDataDto = CmdDataDto(
@@ -411,9 +424,21 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE,
             KapingConstants.KAP_CMD_CHECK_IN,
             KapingConstants.KAP_CMD_CHECK_OUT,
-            KapingConstants.KAP_CMD_THEME_CHANGE,
-            KapingConstants.KAP_CMD_REBOOT -> {
-                handleCmdInRefreshingUi(kapingResponse)
+            KapingConstants.KAP_CMD_THEME_CHANGE -> {
+                if (activityStack.size > 0) {
+                    when (activityStack.last()) {
+                        PanelConstants.SERIAL_ACTIVITY_LOCAL_NAME,
+                        PanelConstants.STB_DETAILS_ACTIVITY_LOCAL_NAME -> {
+                            handleCmdInBackground(kapingResponse)
+                        }
+
+                        else -> {
+                            handleCmdInRefreshingUi(kapingResponse)
+                        }
+                    }
+                } else {
+                    handleCmdInRefreshingUi(kapingResponse)
+                }
             }
 
             KapingConstants.KAP_CMD_HS_CHANGE -> {
@@ -491,14 +516,59 @@ class EndlessService : Service() {
 
     }
 
+    private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
+        val i = Intent(applicationContext, RefreshingUiActivity::class.java)
+        i.putExtra("response", kapingResponse)
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        applicationContext.startActivity(i)
+    }
+
+    private fun handleCmdInBackground(kapingResponse: KapingResponse) {
+        when (kapingResponse.cmdData?.cmd) {
+            KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE -> {
+                fetchAccountSetupDetails(Constants.ACTIVATE, Constants.UA, Constants.MODE)
+            }
+
+            KapingConstants.KAP_CMD_THEME_CHANGE -> {
+                fetchThemeDetails(Constants.UA)
+            }
+
+            KapingConstants.KAP_CMD_CHECK_IN -> {
+                handleCheckInCmd(kapingResponse)
+            }
+
+            KapingConstants.KAP_CMD_CHECK_OUT -> {
+                handleCheckOutCmd(kapingResponse)
+            }
+        }
+    }
+
+    private fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
+            if (response != null) {
+                updateAccountSetupData(accountSetupDataStore, response)
+                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+            }
+        }
+    }
+
+    private fun fetchThemeDetails(ua: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val response = movieBeamRepository.getThemeDetails(ua)
+            if (response != null) {
+                updateThemeData(themeDataStore, response)
+                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+            }
+        }
+    }
 
     private fun fetchHotelServiceInfo(ua: String) {
         GlobalScope.launch(Dispatchers.IO) {
             val response = movieBeamRepository.getHotelServiceInfo(ua)
-            if (response == null) {
-                //Error
-            } else {
+            if (response != null) {
                 updateHotelServices(hotelServicesDataStore, response)
+                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }
@@ -506,10 +576,9 @@ class EndlessService : Service() {
     private fun fetchLocalAttractionInfo(ua: String) {
         GlobalScope.launch(Dispatchers.IO) {
             val response = movieBeamRepository.getLocalAttractionInfo(ua)
-            if (response == null) {
-                //Error
-            } else {
+            if (response != null) {
                 updateLocalAttractions(localAttractionsDataStore, response)
+                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }
@@ -517,10 +586,9 @@ class EndlessService : Service() {
     private fun fetchSyncList(ua: String) {
         GlobalScope.launch(Dispatchers.IO) {
             val response = movieBeamRepository.getMoviesInfo(ua)
-            if (response == null) {
-                //Error
-            } else {
+            if (response != null) {
                 setMoviesResponseData(moviesDataStore, response)
+                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }
@@ -528,10 +596,200 @@ class EndlessService : Service() {
     private fun fetchShowtimeData(ua: String) {
         GlobalScope.launch(Dispatchers.IO) {
             val response = movieBeamRepository.getShowtimeInfo(ua)
-            if (response == null) {
-                //Error
-            } else {
+            if (response != null) {
                 updateShowTimeData(showtimeDataStore, response)
+                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+            }
+        }
+    }
+
+    private fun handleCheckInCmd(kapingResponse: KapingResponse) {
+        updateGuestSession(
+            preferenceDataStoreHelper,
+            guestDetailsDatastore,
+            true,
+            kapingResponse.cmdData?.cmdData
+        )
+    }
+
+    private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
+        updateGuestSession(
+            preferenceDataStoreHelper,
+            guestDetailsDatastore,
+            false,
+            kapingResponse.cmdData?.cmdData
+        )
+    }
+
+    fun updateGuestSession(
+        preferenceDataStoreHelper: PreferenceDataStoreHelper,
+        guestDetailsDatastore: DataStore<CmdDataDto>,
+        isCheckedIn: Boolean,
+        guestDetails: CmdDataDto?
+    ) {
+        GlobalScope.launch(Dispatchers.IO) {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                isCheckedIn
+            )
+            updateGuestDetails(guestDetailsDatastore, guestDetails)
+        }
+    }
+
+    private fun updateGuestDetails(
+        dataStore: DataStore<CmdDataDto>,
+        data: CmdDataDto?
+    ) {
+
+        GlobalScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    sessionId = data?.sessionId,
+                    parentSessionId = data?.parentSessionId,
+                    adultContentDisabled = data?.adultContentDisabled,
+                    message = data?.message,
+                    guestFirstName = data?.guestFirstName,
+                    guestLastName = data?.guestLastName,
+                    adultLocked = data?.adultLocked,
+                    passcode = data?.passcode
+                )
+            }
+        }
+    }
+
+
+    fun updateAccountSetupData(
+        dataStore: DataStore<AccountSetupResponse>,
+        data: AccountSetupResponse
+    ) {
+        GlobalScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    accountId = data.accountId,
+                    address = data.address,
+                    adultContent = data.adultContent,
+                    airportCode = data.airportCode,
+                    amenityPasscodeStatus = data.amenityPasscodeStatus,
+                    analogService = data.analogService,
+                    appsList = data.appsList,
+                    appsVisible = data.appsVisible,
+                    appsWorld = data.appsWorld,
+                    blankChannelBroadcastType = data.blankChannelBroadcastType,
+                    blankChannelLcn = data.blankChannelLcn,
+                    blankChannelMajor = data.blankChannelMajor,
+                    blankChannelMinor = data.blankChannelMinor,
+                    blankTvChannelBroadcastType = data.blankTvChannelBroadcastType,
+                    buttonsList = data.buttonsList,
+                    castingVisible = data.castingVisible,
+                    cityCode = data.cityCode,
+                    clipType = data.clipType,
+                    cloudEnabled = data.cloudEnabled,
+                    companyName = data.companyName,
+                    conciergeList = data.conciergeList,
+                    contactNo = data.contactNo,
+                    contentDetailFlag = data.contentDetailFlag,
+                    customerCareNo = data.customerCareNo,
+                    defaultLanguage = data.defaultLanguage,
+                    email = data.email,
+                    enableInroomDining = data.enableInroomDining,
+                    enableNdvr = data.enableNdvr,
+                    enableShowtime = data.enableShowtime,
+                    enableShowtimeStatus = data.enableShowtimeStatus,
+                    enableStbLogging = data.enableStbLogging,
+                    enableWebRemote = data.enableWebRemote,
+                    epgCdnUrl = data.epgCdnUrl,
+                    epgDuration = data.epgDuration,
+                    feedBackVisible = data.feedBackVisible,
+                    fetchServerIp = data.fetchServerIp,
+                    fetchServerPort = data.fetchServerPort,
+                    flightStatusDisclaimer = data.flightStatusDisclaimer,
+                    gatewayIpAddress = data.gatewayIpAddress,
+                    gsButtonsList = data.gsButtonsList,
+                    guestServicesVisible = data.guestServicesVisible,
+                    hotelChannelList = data.hotelChannelList,
+                    hotelDetailFlag = data.hotelDetailFlag,
+                    hotelDisplayName = data.hotelDisplayName,
+                    hotelInfo = data.hotelInfo,
+                    hotelModel = data.hotelModel,
+                    hotelPlan = data.hotelPlan,
+                    hotelPlanId = data.hotelPlanId,
+                    hotelServicesVisible = data.hotelServicesVisible,
+                    httpStreamingCdnUrl = data.httpStreamingCdnUrl,
+                    httpStreamingHotelvideoUrl = data.httpStreamingHotelvideoUrl,
+                    id = data.id,
+                    itemMenuList = data.itemMenuList,
+                    languageWiseHotelInfoList = data.languageWiseHotelInfoList,
+                    languagesList = data.languagesList,
+                    liveTVVisible = data.liveTVVisible,
+                    mainCastingHdmi = data.mainCastingHdmi,
+                    mbloggerCloudUrl = data.mbloggerCloudUrl,
+                    multiLingual = data.multiLingual,
+                    ndvrIp = data.ndvrIp,
+                    ndvrPort = data.ndvrPort,
+                    pairDeviceVisible = data.pairDeviceVisible,
+                    prgGuideVisible = data.prgGuideVisible,
+                    proxyIp = data.proxyIp,
+                    proxyPort = data.proxyPort,
+                    proxyVodIp = data.proxyVodIp,
+                    proxyVodPort = data.proxyVodPort,
+                    roomNo = data.roomNo,
+                    samsungBroadcastType = data.samsungBroadcastType,
+                    samsungChannelType = data.samsungChannelType,
+                    samsungMainmenuAccessText = data.samsungMainmenuAccessText,
+                    samsungModulationType = data.samsungModulationType,
+                    selectedAppsList = data.selectedAppsList,
+                    showToiletryPriceColumn = data.showToiletryPriceColumn,
+                    showVegNonVegImg = data.showVegNonVegImg,
+                    showtimesVisible = data.showtimesVisible,
+                    softwareDownloadIp = data.softwareDownloadIp,
+                    softwareDownloadPort = data.softwareDownloadPort,
+                    stbCastingImageUrl = data.stbCastingImageUrl,
+                    stbZoneId = data.stbZoneId,
+                    streamingChannelBroadcastType = data.streamingChannelBroadcastType,
+                    streamingIp = data.streamingIp,
+                    streamingPort = data.streamingPort,
+                    streamingType = data.streamingType,
+                    streamingTypeId = data.streamingTypeId,
+                    temperatureUnit = data.temperatureUnit,
+                    timeZoneCode = data.timeZoneCode,
+                    tvBroadcastType = data.tvBroadcastType,
+                    tvSerialControl = data.tvSerialControl,
+                    tvVodTuningType = data.tvVodTuningType,
+                    type = data.type,
+                    vodMgrIp = data.vodMgrIp,
+                    vodMgrPort = data.vodMgrPort,
+                    vodVisible = data.vodVisible,
+                    welcomeScreenVisible = data.welcomeScreenVisible
+                )
+
+            }
+        }
+    }
+
+    fun updateThemeData(
+        dataStore: DataStore<ThemeResponse>,
+        data: ThemeResponse
+    ) {
+
+        GlobalScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    accountId = data.accountId,
+                    fontCss = data.fontCss,
+                    gradientColor = data.gradientColor,
+                    id = data.id,
+                    spotLightColor = data.spotLightColor,
+                    themeBackgroundFileName = data.themeBackgroundFileName,
+                    themeLogoFileNameCloud = data.themeLogoFileNameCloud,
+                    themeBgFileName = data.themeBgFileName,
+                    themeBgFileNameCloud = data.themeBgFileNameCloud,
+                    themeCss = data.themeCss,
+                    type = data.type,
+                    version = data.version,
+                    themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
+                    themeLogoFileName = data.themeLogoFileName
+                )
+
             }
         }
     }
@@ -607,13 +865,6 @@ class EndlessService : Service() {
                 )
             }
         }
-    }
-
-    private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
-        val i = Intent(applicationContext, RefreshingUiActivity::class.java)
-        i.putExtra("response", kapingResponse)
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        applicationContext.startActivity(i)
     }
 
     private fun getVersionNumber(): String {
