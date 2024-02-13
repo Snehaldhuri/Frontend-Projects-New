@@ -347,6 +347,20 @@ class EndlessService : Service() {
                     // Handle the data here
                     log(result.toString())
                     KapingParameters.kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
+
+
+                    log(result.toString())
+                    var as_val: String? = result!!.AS
+
+                    if (as_val.isNullOrEmpty()) {
+                        Log.e("true_as", "endless_service${Constants.AS_FLAG}")
+                        Constants.AS_FLAG = true
+                    } else {
+                        Log.e("false_as", "endless_service${Constants.AS_FLAG}")
+                        Constants.AS_FLAG = false
+                    }
+
+
                     handleKaping(result)
                 } else {
                     // Handle unsuccessful response
