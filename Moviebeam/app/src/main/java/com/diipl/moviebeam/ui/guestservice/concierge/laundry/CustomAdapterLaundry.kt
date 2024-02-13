@@ -41,8 +41,6 @@ class CustomAdapterLaundry(
     private var startColor = ""
     private var endColor = ""
 
-    private val selectedItemsMap: MutableMap<Int, MutableList<LaundrySubCategory>> = mutableMapOf()
-
     companion object {
         var laundryConstSelected: MutableList<LaundrySubCategory> = mutableListOf()
 
@@ -212,7 +210,7 @@ class CustomAdapterLaundry(
     fun getSelectedItems(): List<LaundrySubCategory> {
         return laundryConstSelected.toList()
     }
-    fun getSelectedItemsForList(laundryListId: Int): List<LaundrySubCategory> {
-        return selectedItemsMap[laundryListId] ?: emptyList()
+    fun clearSelectedItems() {
+        laundryConstSelected.clear()
     }
 }

@@ -36,10 +36,10 @@ class LaundryFragment (
     private val laundryViewModel: LaundryViewModel by viewModels()
 
     lateinit var laundry_adapter: LaundryAdapter
-    lateinit var customAdapterLaundry: CustomAdapterLaundry
+    private lateinit var customAdapterLaundry: CustomAdapterLaundry
 //    lateinit var laundry_list: List<LaundryCategory>
-    private var gradientStartColor: String? = null
-    private var gradientEndColor: String? = null
+    private var gradientStartColor = ""
+    private var gradientEndColor = ""
     private lateinit var binding: FragmentLaundryBinding
     private var laundryHeaderPosition: Int = 0
     private var laundrySubCategoryPosition: Int = 0
@@ -91,6 +91,13 @@ class LaundryFragment (
                 binding.btnLaundrySendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
+        customAdapterLaundry = CustomAdapterLaundry(
+            onMenuItemFocused = { },
+            onLeftKeyPressed = {
+                binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+            }
+        )
+        customAdapterLaundry.clearSelectedItems()
         setLaundryDetailData()
 
         binding.btnLaundrySendRequest.setOnClickListener {

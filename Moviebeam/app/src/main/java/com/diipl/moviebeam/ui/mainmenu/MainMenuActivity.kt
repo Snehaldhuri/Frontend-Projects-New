@@ -309,10 +309,11 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 val response = mainMenuViewModel.accountSetupLiveData.value?.data
 
-                HOTEL_VIDEO_URL =
-                    response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
-
-                initializePlayer()
+                if(response?.contentDetailFlag == true){
+                    HOTEL_VIDEO_URL =
+                        response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                    initializePlayer()
+                }
 
                 binding.tvGreeting.text = response?.hotelInfo
                 val btnListFromApi: List<String>? = response?.buttonsList?.map {

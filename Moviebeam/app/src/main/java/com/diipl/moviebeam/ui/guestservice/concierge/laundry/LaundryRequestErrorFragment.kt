@@ -36,7 +36,7 @@ class LaundryRequestErrorFragment : BaseFragment() {
             gradientStartColor = it.getString("gradientStartColor").toString()
             gradientEndColor = it.getString("gradientEndColor").toString()
         }
-        return inflater.inflate(R.layout.fragment_laundry_request_error, container, false)
+        return binding.root
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -72,6 +72,5 @@ class LaundryRequestErrorFragment : BaseFragment() {
         this.gradientStartColor = startColor
         this.gradientEndColor = endColor
     }
-
 
 }
