@@ -14,6 +14,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.kaping.KapingActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
@@ -103,7 +104,7 @@ class SerialActivity : BaseActivity() {
             m_Text = input.text.toString().uppercase()
             Constants.SERIAL_NO = m_Text
             serialViewModel.setDataInDataStore(preferenceDataStoreHelper, true, m_Text)
-            startActivity(Intent(this, STBDetailsActivity::class.java))
+            startActivity(Intent(this, KapingActivity::class.java))
             finish()
         }
         builder.setNegativeButton(
