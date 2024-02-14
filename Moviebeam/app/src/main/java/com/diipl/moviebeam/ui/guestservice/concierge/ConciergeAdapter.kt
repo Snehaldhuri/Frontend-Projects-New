@@ -15,11 +15,13 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 
 class ConciergeAdapter(
-    private var onMenuItemClicked: (View, ConciergeBtnModel) -> Unit
+    private val onMenuItemClicked: (View, Int, ConciergeBtnModel) -> Unit,
 ) : RecyclerView.Adapter<ConciergeAdapter.MyViewHolder>() {
 
     private var startColor = ""
     private var endColor = ""
+
+    private var conPosition = 0
 
     private var itemList: List<ConciergeBtnModel> = mutableListOf()
 
@@ -34,7 +36,8 @@ class ConciergeAdapter(
         parent: ViewGroup,
         viewType: Int
     ): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.concierge_card, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.concierge_card, parent, false)
         view.isFocusable = true
         val params = view.layoutParams
         params.height = getHeightInPercent(parent.context, 26)
@@ -49,7 +52,7 @@ class ConciergeAdapter(
         holder.imageView.setImageResource(item.defaultImage)
         holder.textView.text = item.categoryName
         holder.card.postDelayed({
-            if (position == 0) {
+            if (position == conPosition) {
                 holder.card.requestFocus()
             }
         }, 1)
@@ -62,8 +65,7 @@ class ConciergeAdapter(
             }
         }
         holder.card.setOnClickListener {
-            onMenuItemClicked(it, item)
-//            it.setBackgroundColor(Color.parseColor("#EBEBEB"))
+            onMenuItemClicked(it, position, item)
         }
     }
 
@@ -84,12 +86,16 @@ class ConciergeAdapter(
         return (width * percent) / 100
     }
 
-    fun setButtonList(btnList: List<ConciergeBtnModel>){
+    fun setButtonList(btnList: List<ConciergeBtnModel>) {
         itemList = btnList
     }
 
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor
         this.endColor = endColor
+    }
+
+    fun getFocus(conPosition: Int) {
+        this.conPosition = conPosition
     }
 }

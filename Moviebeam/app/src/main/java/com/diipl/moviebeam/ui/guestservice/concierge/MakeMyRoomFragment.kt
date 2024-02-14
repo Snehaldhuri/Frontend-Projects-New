@@ -153,7 +153,7 @@ class MakeMyRoomFragment(
                                 return@setOnKeyListener true
                             }
 
-                            KeyEvent.KEYCODE_DPAD_CENTER -> {
+                            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
                                 binding.btnOk.requestFocus()
                                 return@setOnKeyListener true
                             }
@@ -204,7 +204,7 @@ class MakeMyRoomFragment(
                                 return@setOnKeyListener true
                             }
 
-                            KeyEvent.KEYCODE_DPAD_CENTER -> {
+                            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
                                 binding.btnOk.requestFocus()
                                 return@setOnKeyListener true
                             }

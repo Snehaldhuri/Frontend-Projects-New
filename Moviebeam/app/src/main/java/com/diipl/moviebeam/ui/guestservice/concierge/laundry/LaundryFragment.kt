@@ -91,6 +91,9 @@ class LaundryFragment (
                 binding.btnLaundrySendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
+        binding.btnLaundryCancel.setOnClickListener {
+            onOkClicked()
+        }
         customAdapterLaundry = CustomAdapterLaundry(
             onMenuItemFocused = { },
             onLeftKeyPressed = {

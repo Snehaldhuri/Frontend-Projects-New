@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
@@ -165,7 +166,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         binding.tvRoomNo.text = "Room No: " + Constants.STB_ROOM_NO
         binding.tvUa.text = "UA: " + Constants.UA
         binding.tvSerialNo.text = "Serial No: " + Constants.SERIAL_NO
-        binding.tvSoftwareVersion.text = "Software Version: " + Constants.VERSION.toString()
+        binding.tvSoftwareVersion.text = "Software Version: " + BuildConfig.VERSION_NAME
         binding.tvContentListVersion.text = "Content List Version: " + Constants.C_LIST_VERSION
     }
 

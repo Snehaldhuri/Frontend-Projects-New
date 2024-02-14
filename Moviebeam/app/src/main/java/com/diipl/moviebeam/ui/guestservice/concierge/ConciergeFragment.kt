@@ -1,13 +1,17 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.databinding.FragmentConciergeBinding
+import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -16,16 +20,30 @@ class ConciergeFragment(private var onClick: (View, ConciergeBtnModel) -> Unit) 
 
     private lateinit var binding: FragmentConciergeBinding
     private var viewAdapt: View? = null
-
+    private var cposition = 0
+    private var onCPositionListener: OnCPositionListener? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentConciergeBinding.inflate(inflater, container, false)
-
         return binding.root
     }
+
+    interface OnCPositionListener {
+        fun onCPositionReceived(cposition: Int)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnCPositionListener) {
+            onCPositionListener = context
+        } else {
+            throw RuntimeException("$context must implement OnCPositionListener")
+        }
+    }
+
 
     fun setAdapter(
         conciergeModelList: List<ConciergeBtnModel>,
@@ -33,9 +51,11 @@ class ConciergeFragment(private var onClick: (View, ConciergeBtnModel) -> Unit) 
         gradientEndColor: String,
         positionView: View?
     ) {
-        val conciergeAdapter = ConciergeAdapter { view, conciergeService ->
-            onClick(view, conciergeService)
-        }
+        val conciergeAdapter = ConciergeAdapter(
+            onMenuItemClicked = { view, position, conciergeService ->
+                onClick(view, conciergeService)
+            }
+        )
 
         conciergeAdapter.setButtonList(conciergeModelList)
         conciergeAdapter.setGradientColor(gradientStartColor, gradientEndColor)
@@ -43,10 +63,17 @@ class ConciergeFragment(private var onClick: (View, ConciergeBtnModel) -> Unit) 
             delay(500)
             binding.rvContent.adapter = conciergeAdapter
         }
+
         binding.rvContent.post {
+            // Scroll to the desired position
             positionView?.let {
-                binding.rvContent.findContainingItemView(it)?.requestFocus()
+                val position = binding.rvContent.getChildAdapterPosition(it)
+                binding.rvContent.findContainingItemView(it)?.requestFocus(position)
+                cposition = position
+                conciergeAdapter.getFocus(cposition)
             }
+
         }
+
     }
 }

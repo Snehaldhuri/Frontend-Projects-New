@@ -60,7 +60,7 @@
         android:focusable="false"
         android:nextFocusForward="@id/rv_toiletry_request"
         app:cardCornerRadius="@dimen/dp_5"
-        app:layout_constraintBottom_toBottomOf="@id/gl_horizontal_86"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/gl_vertical_25"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">

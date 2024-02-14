@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -63,11 +64,12 @@ import java.io.InputStreamReader
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class GuestServiceActivity : BaseActivity() {
+class GuestServiceActivity : BaseActivity(), ConciergeFragment.OnCPositionListener {
 
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
     private var conciergeIndex = 0
+    private var conciergePosition = 0
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -127,6 +129,7 @@ class GuestServiceActivity : BaseActivity() {
         val br = BufferedReader(InputStreamReader(inputStream))
         return gson.fromJson(br, LaundryDataResponse::class.java)
     }
+
     private fun readToiletryJson(): ToiletryResponse {
         val gson = Gson()
         val inputStream = this.assets.open("ToiletryData.json")
@@ -138,13 +141,6 @@ class GuestServiceActivity : BaseActivity() {
         val data = JSONObject(stringBuilder.toString())
         return gson.fromJson(data.toString(), ToiletryResponse::class.java)
     }
-
-//    private fun readToiletryJson(): ToiletryDataResponse? {
-//        val gson = Gson()
-//        val inputStream = this.assets.open("ToiletryData.json")
-//        val br = BufferedReader(InputStreamReader(inputStream))
-//        return gson.fromJson(br, ToiletryDataResponse::class.java)
-//    }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -170,6 +166,7 @@ class GuestServiceActivity : BaseActivity() {
             is Resource.Loading -> {
                 binding.loaderView.toVisible()
             }
+
             is Resource.Success -> {
                 val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
                     .value?.data?.gsButtonsList?.map { it.buttonName }
@@ -179,7 +176,7 @@ class GuestServiceActivity : BaseActivity() {
                 val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
                     gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
                 }
-                val adapter = GuestServiceTabAdapter(onMenuItemClicked =  { view, service ->
+                val adapter = GuestServiceTabAdapter(onMenuItemClicked = { view, service ->
                     binding.tvServiceTitle.text = service.categoryName
                     adapterView = view
                     bindAdapterView(view, service.btnId)
@@ -221,7 +218,6 @@ class GuestServiceActivity : BaseActivity() {
         }
     }
 
-
     private fun bindAdapterView(view: View, btnId: String) {
         requestFocus()
         when (btnId) {
@@ -254,6 +250,8 @@ class GuestServiceActivity : BaseActivity() {
                                 view.requestFocus()
                                 view.performClick()
                             }
+
+
                             changeFragment(fragment)
                             fragment.setGradientColor(
                                 gradientStartColor,
@@ -274,24 +272,17 @@ class GuestServiceActivity : BaseActivity() {
                             fragment.arguments = mBundle
                             val toiletryData = readToiletryJson()
                             fragment.setToiletryData(toiletryData)
-                            Log.d("snehald","$toiletryData")
                             changeFragment(fragment)
                         }
 
                         5 -> {
-                            val fragment = SpaFragment {
-
-                            }
+                            val fragment = SpaFragment()
 
                             changeFragment(fragment)
                         }
 
                         6 -> {
-
-                            val fragment = GolfFragment {
-                                view.requestFocus()
-                                view.performClick()
-                            }
+                            val fragment = GolfFragment()
                             changeFragment(fragment)
                         }
 
@@ -310,7 +301,7 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         3 -> {
-                            val fragment = LaundryFragment{
+                            val fragment = LaundryFragment {
                                 view.requestFocus()
                                 view.performClick()
                             }
@@ -395,7 +386,7 @@ class GuestServiceActivity : BaseActivity() {
             Constants.LA_ID -> {
                 conciergeIndex = 0
 
-                val fragment = LocalAttractionGsFragment{v ->
+                val fragment = LocalAttractionGsFragment { v ->
                     focusView = v
                     requestFocus()
                 }
@@ -412,7 +403,6 @@ class GuestServiceActivity : BaseActivity() {
         }
 
     }
-
 
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
@@ -499,4 +489,10 @@ class GuestServiceActivity : BaseActivity() {
         }
         return false
     }
+
+    override fun onCPositionReceived(cposition: Int) {
+        this.conciergePosition = cposition
+        Log.d("positioningg", "cposition received: $cposition")
+    }
 }
+

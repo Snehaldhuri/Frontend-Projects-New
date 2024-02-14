@@ -18,9 +18,7 @@ import com.diipl.moviebeam.databinding.FragmentSpaBinding
 import java.util.Calendar
 
 
-class SpaFragment(
-    private var onOkClicked: () -> Unit
-) : Fragment() {
+class SpaFragment : Fragment() {
 
     private var _binding: FragmentSpaBinding? = null
     val binding get() = _binding!!
