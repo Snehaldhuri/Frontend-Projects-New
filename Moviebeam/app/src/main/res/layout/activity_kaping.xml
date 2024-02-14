@@ -4,6 +4,161 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.kaping.KapingActivity">
+    tools:context=".ui.kaping.KapingActivity"
+    android:background="@drawable/stb_dark_landing_page">
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/moviebeam_logo_header"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:background="@drawable/black_strip"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView2">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="140dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_stb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="STB Registered"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_ua"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="UA"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_serial_no"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Serial Number"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="140dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_ip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="IP Address"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_net_mask"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Net Mask"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_gateway"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Gateway"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_connectivity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Connectivity"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_lan_mac"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="LAN MAC"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_wifi_mac"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="WiFi Mac"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="140dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_model_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Model Name"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_sw_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="App Software Version"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_platform_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Platform Version"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_ptc_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="PTC Version"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tv_boot_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Boot Version"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

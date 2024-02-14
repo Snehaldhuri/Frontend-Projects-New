@@ -91,6 +91,8 @@ object Constants {
     const val SHO_SERIES_ID = "shoSeries"
     const val SHO_DOCS_ID = "shoDocs"
 
+    var AS_FLAG = false
+
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),
         BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
