@@ -12,6 +12,7 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
+import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 import com.diipl.moviebeam.utils.observe
@@ -32,6 +33,7 @@ class ShowtimeDetailFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        activityStack.add(this::class.java.simpleName)
         arguments?.let {
             position = it.getInt("movieReleaseId")
         }

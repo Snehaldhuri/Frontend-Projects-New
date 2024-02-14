@@ -10,6 +10,7 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
+import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 
 class MovieDetailFragment : Fragment() {
@@ -26,6 +27,7 @@ class MovieDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
+        activityStack.add(this::class.java.simpleName)
         return binding.root
     }
 

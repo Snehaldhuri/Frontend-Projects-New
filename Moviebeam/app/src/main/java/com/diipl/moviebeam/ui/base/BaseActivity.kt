@@ -1,12 +1,11 @@
 package com.diipl.moviebeam.ui.base
 
-import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.diipl.moviebeam.PanelConstants
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
@@ -28,10 +27,10 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        currentActivity = this
-        activityStack.add(currentActivity?.localClassName)
-        if (currentActivity?.localClassName == PanelConstants.MAIN_MENU_ACTIVITY_LOCAL_NAME) {
+        activityStack.add(this::class.java.simpleName)
+        if (this::class.java.simpleName == MainMenuActivity::class.java.simpleName) {
             activityStack.clear()
+            activityStack.add(MainMenuActivity::class.java.simpleName)
         }
     }
 
@@ -100,7 +99,6 @@ abstract class BaseActivity : AppCompatActivity() {
     companion object {
         const val ADD_FRAGMENT = 0
         const val REPLACE_FRAGMENT = 1
-        var currentActivity: Activity? = null
         val activityStack: MutableList<String?> = mutableListOf()
     }
 }

@@ -7,18 +7,16 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import android.widget.Toast
-import androidx.databinding.ktx.BuildConfig
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.KapingConstants
 import com.diipl.moviebeam.KapingParameters
@@ -37,9 +35,24 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
+import com.diipl.moviebeam.ui.casting.CastingActivity
+import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
+import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
+import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.ui.movies.MovieDetailFragment
+import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
+import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
+import com.diipl.moviebeam.ui.serial_info.SerialActivity
+import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
+import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
+import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.log
 import com.google.gson.GsonBuilder
@@ -74,6 +87,7 @@ class EndlessService : Service() {
     private val myApiService = createRetrofitService()
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private var UA = ""
+    private var isGuestCheckedIn = false
     private var versionNumber = ""
     private var themeVersion = ""
     private var laVersion = ""
@@ -225,6 +239,10 @@ class EndlessService : Service() {
                     _localAttractionLiveData.postValue(localAttractionsDataStore.data.first())
                     _moviesLiveData.postValue(moviesDataStore.data.first())
                     _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())
+                    isGuestCheckedIn = preferenceDataStoreHelper.getFirstPreference(
+                        PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                        false
+                    )
 
                     pingFakeServer()
                     callKapingApi()
@@ -308,6 +326,10 @@ class EndlessService : Service() {
                 "$kapingCMD$epochTime$transactionId${KapingParameters.kapingCmdExecutionResponse}"
         }
         log("CMDRES -> $CMDRES")
+
+        EVENT =
+            isScreenOn() + getCurrentPanelNumber() + if (isGuestCheckedIn) KapingConstants.EVENT_CHECK_IN else KapingConstants.EVENT_CHECK_OUT
+        log("EVENT -> $EVENT")
 
         val kapingCall = myApiService.getKapingService(
             Constants.KAPING,
@@ -413,105 +435,78 @@ class EndlessService : Service() {
                 passCode
             )
 
-
         }
         return CmdDto(kapingCMD, epochTime, transactionId, cmdDataDto)
     }
 
     private fun handleKaping(kapingResponse: KapingResponse?) {
         when (kapingResponse?.cmdData?.cmd) {
-
             KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE,
             KapingConstants.KAP_CMD_CHECK_IN,
             KapingConstants.KAP_CMD_CHECK_OUT,
             KapingConstants.KAP_CMD_THEME_CHANGE -> {
-                if (activityStack.size > 0) {
-                    when (activityStack.last()) {
-                        PanelConstants.SERIAL_ACTIVITY_LOCAL_NAME,
-                        PanelConstants.STB_DETAILS_ACTIVITY_LOCAL_NAME -> {
-                            handleCmdInBackground(kapingResponse)
-                        }
-
-                        else -> {
-                            handleCmdInRefreshingUi(kapingResponse)
-                        }
+                when (activityStack.last()) {
+                    SerialActivity::class.java.simpleName,
+                    STBDetailsActivity::class.java.simpleName -> {
+                        handleCmdInBackground(kapingResponse)
                     }
-                } else {
-                    handleCmdInRefreshingUi(kapingResponse)
+
+                    else -> {
+                        handleCmdInRefreshingUi(kapingResponse)
+                    }
                 }
             }
 
             KapingConstants.KAP_CMD_HS_CHANGE -> {
-                if (activityStack.size > 0) {
-                    when (activityStack.last()) {
-                        PanelConstants.HOTEL_SERVICE_ACTIVITY_LOCAL_NAME -> {
-                            handleCmdInRefreshingUi(kapingResponse)
-                        }
-
-                        else -> {
-                            fetchHotelServiceInfo(Constants.UA)
-                        }
+                when (activityStack.last()) {
+                    HotelInfoActivity::class.java.simpleName -> {
+                        handleCmdInRefreshingUi(kapingResponse)
                     }
 
-                } else {
-                    fetchHotelServiceInfo(Constants.UA)
+                    else -> {
+                        fetchHotelServiceInfo(Constants.UA)
+                    }
                 }
             }
 
             KapingConstants.KAP_CMD_LA_CHANGE -> {
-                if (activityStack.size > 0) {
-
-                    when (activityStack.last()) {
-                        PanelConstants.Local_ATTRACTION_ACTIVITY_LOCAL_NAME,
-                        PanelConstants.GUEST_SERVICE_ACTIVITY_LOCAL_NAME -> {
-                            handleCmdInRefreshingUi(kapingResponse)
-                        }
-
-                        else -> {
-                            fetchLocalAttractionInfo(Constants.UA)
-                        }
+                when (activityStack.last()) {
+                    LocalAttractionActivity::class.java.simpleName,
+                    GuestServiceActivity::class.java.simpleName -> {
+                        handleCmdInRefreshingUi(kapingResponse)
                     }
-                } else {
-                    fetchLocalAttractionInfo(Constants.UA)
+
+                    else -> {
+                        fetchLocalAttractionInfo(Constants.UA)
+                    }
                 }
             }
 
             KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> {
-                if (activityStack.size > 0) {
-
-                    when (activityStack.last()) {
-                        PanelConstants.MOVIES_ACTIVITY_LOCAL_NAME,
-                        PanelConstants.EXO_PLAYER_ACTIVITY_LOCAL_NAME -> {
-                            handleCmdInRefreshingUi(kapingResponse)
-                        }
-
-                        else -> {
-                            fetchSyncList(Constants.UA)
-                        }
+                when (activityStack.last()) {
+                    MoviesActivity::class.java.simpleName,
+                    ExoPlayerActivity::class.java.simpleName -> {
+                        handleCmdInRefreshingUi(kapingResponse)
                     }
-                } else {
-                    fetchSyncList(Constants.UA)
+
+                    else -> {
+                        fetchSyncList(Constants.UA)
+                    }
                 }
             }
 
             KapingConstants.KAP_CMD_FETCH_SHOWTIME_DATA -> {
-                if (activityStack.size > 0) {
-
-                    when (activityStack.last()) {
-                        PanelConstants.SHOWTIME_ACTIVITY_LOCAL_NAME,
-                        PanelConstants.EXO_PLAYER_ACTIVITY_LOCAL_NAME -> {
-                            handleCmdInRefreshingUi(kapingResponse)
-                        }
-
-                        else -> {
-                            fetchShowtimeData(Constants.UA)
-                        }
+                when (activityStack.last()) {
+                    ShowtimeActivity::class.java.simpleName,
+                    ExoPlayerActivity::class.java.simpleName -> {
+                        handleCmdInRefreshingUi(kapingResponse)
                     }
-                } else {
-                    fetchShowtimeData(Constants.UA)
+
+                    else -> {
+                        fetchShowtimeData(Constants.UA)
+                    }
                 }
             }
-
         }
 
     }
@@ -868,14 +863,7 @@ class EndlessService : Service() {
     }
 
     private fun getVersionNumber(): String {
-        try {
-            val packageInfo: PackageInfo =
-                packageManager.getPackageInfo(packageName, 0)
-            return packageInfo.versionName
-        } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
-        }
-        return "0.0"
+        return BuildConfig.VERSION_NAME
     }
 
     private fun createNotification(): Notification {
@@ -935,6 +923,40 @@ class EndlessService : Service() {
             .setTicker("Ticker text")
             .setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
             .build()
+    }
+
+    private fun isScreenOn(): String {
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
+        return if (pm.isInteractive) KapingConstants.POWER_MODE_ON else KapingConstants.POWER_MODE_STAND_BY
+    }
+
+    private fun getCurrentPanelNumber(): String {
+        when (activityStack.last()) {
+            //TODO Register Stb Page
+            STBDetailsActivity::class.java.simpleName -> return PanelConstants.LOADER_SCREEN
+            MainMenuActivity::class.java.simpleName -> return PanelConstants.MAIN_MENU
+            MoviesActivity::class.java.simpleName -> return PanelConstants.VOD
+            HotelInfoActivity::class.java.simpleName -> return PanelConstants.HOTEL_SERVICES
+            //TODO Live services
+            MovieDetailFragment::class.java.simpleName -> return PanelConstants.MOVIE_DETAIL_PAGE
+            ProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
+            HelpInfoFragment::class.java.simpleName -> return PanelConstants.HELP_AND_INFO
+            GuestServiceActivity::class.java.simpleName -> return PanelConstants.GUEST_SERVICES
+            AppWorldActivity::class.java.simpleName -> return PanelConstants.APP_WORLD
+            ExoPlayerActivity::class.java.simpleName -> return PanelConstants.MOVIE_SHOWTIME_PLAYER_PAGE
+            PrgGuidePlayerActivity::class.java.simpleName -> return PanelConstants.FULL_SCREEN_TV
+            ShowtimeActivity::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_LISTENING
+            ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
+            CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
+            //TODO Pairing Page
+            //TODO Inroom Dining Page
+            //TOdo Food Delivery
+            //TODO Crackle
+            //TODO NDVR
+            //TODO CALENDER
+
+            else -> return PanelConstants.MAIN_MENU
+        }
     }
 
 }

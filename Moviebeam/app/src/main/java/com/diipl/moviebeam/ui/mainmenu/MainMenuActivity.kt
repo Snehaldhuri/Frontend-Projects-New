@@ -403,7 +403,7 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 val response = mainMenuViewModel.guestDetailsLiveData.value?.data
 
-                binding.tvWelcome.text = response?.message
+                binding.tvWelcome.text = "Welcome ${response?.guestFirstName} ${response?.guestLastName}"
 
                 binding.pbLoader.toInvisible()
             }

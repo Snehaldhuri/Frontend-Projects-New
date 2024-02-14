@@ -379,6 +379,7 @@ class MoviesActivity : BaseActivity() {
         if (binding.fcvMovieDetail.isVisible) {
             binding.fcvMovieDetail.toInvisible()
             binding.parentRecyclerView.toVisible()
+            activityStack.add(this::class.java.simpleName)
         } else {
             finish()
         }
