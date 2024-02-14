@@ -57,15 +57,27 @@ class ConciergeAdapter(
             }
         }, 1)
 
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
+        holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 setFocus(holder.container)
+                if(itemList.size < 8) {
+                    if (position <= 3) {
+                        view.nextFocusUpId = view.id
+                    } else if (position <= 7 && position >= 3) {
+                        view.nextFocusDownId = view.id
+                    }
+                }
             } else {
                 holder.container.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         holder.card.setOnClickListener {
             onMenuItemClicked(it, item)
+        }
+
+        // Request focus if the current position matches the specified focus position
+        if (position == conPosition) {
+            holder.card.requestFocus()
         }
     }
 
