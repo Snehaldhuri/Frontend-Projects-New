@@ -64,7 +64,7 @@ import java.io.InputStreamReader
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class GuestServiceActivity : BaseActivity(), ConciergeFragment.OnCPositionListener {
+class GuestServiceActivity : BaseActivity(){
 
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
@@ -490,9 +490,5 @@ class GuestServiceActivity : BaseActivity(), ConciergeFragment.OnCPositionListen
         return false
     }
 
-    override fun onCPositionReceived(cposition: Int) {
-        this.conciergePosition = cposition
-        Log.d("positioningg", "cposition received: $cposition")
-    }
 }
 

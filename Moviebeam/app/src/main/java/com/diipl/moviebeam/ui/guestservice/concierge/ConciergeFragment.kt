@@ -21,7 +21,6 @@ class ConciergeFragment(private var onClick: (View, ConciergeBtnModel) -> Unit) 
     private lateinit var binding: FragmentConciergeBinding
     private var viewAdapt: View? = null
     private var cposition = 0
-    private var onCPositionListener: OnCPositionListener? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -31,19 +30,6 @@ class ConciergeFragment(private var onClick: (View, ConciergeBtnModel) -> Unit) 
         return binding.root
     }
 
-    interface OnCPositionListener {
-        fun onCPositionReceived(cposition: Int)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is OnCPositionListener) {
-            onCPositionListener = context
-        } else {
-            throw RuntimeException("$context must implement OnCPositionListener")
-        }
-    }
-
 
     fun setAdapter(
         conciergeModelList: List<ConciergeBtnModel>,
@@ -51,11 +37,10 @@ class ConciergeFragment(private var onClick: (View, ConciergeBtnModel) -> Unit) 
         gradientEndColor: String,
         positionView: View?
     ) {
-        val conciergeAdapter = ConciergeAdapter(
-            onMenuItemClicked = { view, position, conciergeService ->
-                onClick(view, conciergeService)
-            }
-        )
+
+        val conciergeAdapter = ConciergeAdapter { view, conciergeService ->
+            onClick(view, conciergeService)
+        }
 
         conciergeAdapter.setButtonList(conciergeModelList)
         conciergeAdapter.setGradientColor(gradientStartColor, gradientEndColor)
