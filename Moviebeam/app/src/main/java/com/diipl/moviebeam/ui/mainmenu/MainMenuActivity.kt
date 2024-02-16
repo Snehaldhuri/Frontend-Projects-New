@@ -53,7 +53,6 @@ import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
-import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
@@ -172,12 +171,8 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
-//        HOTEL_VIDEO_DURATION = player.currentPosition
-        player.pause()
-        player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
         super.onPause()
-        Log.e(TAG, "onPause: ")
     }
 
     override fun onRestart() {
@@ -231,10 +226,10 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                binding.tvTemperature.text =
+                binding.layoutWeatherTime.layoutWeather.txtTemperature.text =
                     mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
                 mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.ivWeather.loadImagesWithGlideExt(it)
+                    binding.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(it)
                 }
                 binding.pbLoader.toInvisible()
             }
@@ -390,9 +385,6 @@ class MainMenuActivity : BaseActivity() {
     private fun handleValidateSessionResponse(status: Boolean) {
         if (status) {
             mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
-        } else {
-            binding.tvWelcome.text = ""
-            binding.tvWelcome.toGone()
         }
         binding.pbLoader.toInvisible()
     }
@@ -403,8 +395,9 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 val response = mainMenuViewModel.guestDetailsLiveData.value?.data
 
-                binding.tvWelcome.text = "Welcome ${response?.guestFirstName} ${response?.guestLastName}"
-
+                binding.tvWelcome.text =
+                    "Welcome ${response?.guestFirstName} ${response?.guestLastName}"
+                binding.tvWelcome.toVisible()
                 binding.pbLoader.toInvisible()
             }
 

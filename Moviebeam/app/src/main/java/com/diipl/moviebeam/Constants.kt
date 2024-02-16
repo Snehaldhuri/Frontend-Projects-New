@@ -26,6 +26,9 @@ object Constants {
     var HOTEL_VIDEO_URL = ""
     var UA = "14508KKMH0K299"
     var SERIAL_NO = ""
+    val MAC_ADDRESS = "test"
+    val STB_TYPE = "LG"
+    val WIFI_MAC_ADDRESS = ""
     var IS_API_CALLED = false
     var ACCOUNT_ID = "13827"
     var STB_ROOM_NO = ""
@@ -90,8 +93,6 @@ object Constants {
     const val SHO_SPORTS_ID = "shoSports"
     const val SHO_SERIES_ID = "shoSeries"
     const val SHO_DOCS_ID = "shoDocs"
-
-    var AS_FLAG = false
 
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),

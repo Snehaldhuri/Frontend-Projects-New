@@ -30,6 +30,7 @@
     <color name="feedback_negative">#FF453A</color>
 
     <color name="semiTransparentBlackColor">#60000000</color>
+    <color name="semiOpaqueBlackColor">#9A000000</color>
     <color name="blue_screen">#0000FF</color>
 
     

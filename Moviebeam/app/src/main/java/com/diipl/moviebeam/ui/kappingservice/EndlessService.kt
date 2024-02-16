@@ -19,7 +19,6 @@ import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.KapingConstants
-import com.diipl.moviebeam.KapingParameters
 import com.diipl.moviebeam.PanelConstants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -42,6 +41,7 @@ import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
@@ -57,6 +57,7 @@ import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.log
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -82,7 +83,6 @@ import javax.inject.Inject
 class EndlessService : Service() {
 
     private var wakeLock: PowerManager.WakeLock? = null
-    private var isServiceStarted = false
     private var counter = 0
     private val myApiService = createRetrofitService()
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
@@ -137,6 +137,10 @@ class EndlessService : Service() {
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
     companion object {
+        var isServiceStarted = false
+        var AS_FLAG = false
+        var kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
+
         val gson = GsonBuilder()
             .setLenient()
             .create()
@@ -243,9 +247,11 @@ class EndlessService : Service() {
                         PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
                         false
                     )
-
-                    pingFakeServer()
-                    callKapingApi()
+                    log("UA -> $UA")
+                    if (UA.isNotBlank()) {
+                        pingFakeServer()
+                        callKapingApi()
+                    }
                 }
                 delay(1 * 60 * 1000)
             }
@@ -323,7 +329,7 @@ class EndlessService : Service() {
             CMDRES = ""
         } else {
             CMDRES =
-                "$kapingCMD$epochTime$transactionId${KapingParameters.kapingCmdExecutionResponse}"
+                "$kapingCMD$epochTime$transactionId${kapingCmdExecutionResponse}"
         }
         log("CMDRES -> $CMDRES")
 
@@ -357,35 +363,38 @@ class EndlessService : Service() {
                 call: Call<String>,
                 response: Response<String>
             ) {
-                if (response.isSuccessful) {
-                    val data = response.body()
-                    val result = KapingResponseParsing().getResponseAsObject(
-                        data,
-                        KapingResponse::class
-                    )
-                    result?.CMD?.let {
-                        result.cmdData = parseCmd(it)
-                    }
-                    // Handle the data here
-                    log(result.toString())
-                    KapingParameters.kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (response.isSuccessful) {
+                        val data = response.body()
+                        val result = KapingResponseParsing().getResponseAsObject(
+                            data,
+                            KapingResponse::class
+                        )
+                        result?.CMD?.let {
+                            result.cmdData = parseCmd(it)
+                        }
+                        // Handle the data here
+                        log(result.toString())
+                        kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
 
 
-                    log(result.toString())
-                    var as_val: String? = result!!.AS
+                        log(result.toString())
 
-                    if (as_val.isNullOrEmpty()) {
-                        Log.e("true_as", "endless_service${Constants.AS_FLAG}")
-                        Constants.AS_FLAG = true
+                        AS_FLAG = if (result?.AS.isNullOrEmpty()) {
+                            Log.e("true_as", "endless_service $AS_FLAG")
+                            true
+                        } else {
+                            Log.e("false_as", "endless_service $AS_FLAG")
+//                        startActivity(Intent(applicationContext, KapingActivity::class.java))
+                            false
+                        }
+
+
+                        handleKaping(result)
                     } else {
-                        Log.e("false_as", "endless_service${Constants.AS_FLAG}")
-                        Constants.AS_FLAG = false
+                        // Handle unsuccessful response
                     }
 
-
-                    handleKaping(result)
-                } else {
-                    // Handle unsuccessful response
                 }
             }
 
@@ -461,7 +470,8 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_THEME_CHANGE -> {
                 when (activityStack.last()) {
                     SerialActivity::class.java.simpleName,
-                    STBDetailsActivity::class.java.simpleName -> {
+                    STBDetailsActivity::class.java.simpleName,
+                    RegisterSTBActivity::class.java.simpleName -> {
                         handleCmdInBackground(kapingResponse)
                     }
 
@@ -557,7 +567,7 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
             if (response != null) {
                 updateAccountSetupData(accountSetupDataStore, response)
-                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }
@@ -567,7 +577,7 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getThemeDetails(ua)
             if (response != null) {
                 updateThemeData(themeDataStore, response)
-                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }
@@ -577,7 +587,7 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getHotelServiceInfo(ua)
             if (response != null) {
                 updateHotelServices(hotelServicesDataStore, response)
-                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }
@@ -587,7 +597,7 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getLocalAttractionInfo(ua)
             if (response != null) {
                 updateLocalAttractions(localAttractionsDataStore, response)
-                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }
@@ -597,7 +607,7 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getMoviesInfo(ua)
             if (response != null) {
                 setMoviesResponseData(moviesDataStore, response)
-                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }
@@ -607,7 +617,7 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getShowtimeInfo(ua)
             if (response != null) {
                 updateShowTimeData(showtimeDataStore, response)
-                KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
     }

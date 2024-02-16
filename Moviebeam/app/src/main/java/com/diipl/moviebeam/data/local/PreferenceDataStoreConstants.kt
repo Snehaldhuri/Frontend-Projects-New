@@ -21,4 +21,6 @@ object PreferenceDataStoreConstants {
     val IS_GUEST_CHECKED_IN = booleanPreferencesKey("IS_GUEST_CHECKED_IN")
     val GUEST_DETAILS = stringPreferencesKey("GUEST_DETAILS")
 
+    val IS_STB_REGISTERED = booleanPreferencesKey("IS_STB_REGISTERED")
+
 }

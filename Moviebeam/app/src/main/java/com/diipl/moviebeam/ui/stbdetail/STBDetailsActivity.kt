@@ -237,8 +237,7 @@ class STBDetailsActivity : BaseActivity() {
         Constants.SERIAL_NO = serialNo
         UA = "21$serialNumber"
         Constants.UA = UA
-        stbDetailViewModel.setUAInDataStore(preferenceDataStoreHelper, UA)
-        stbDetailViewModel.fetchApis(this, preferenceDataStoreHelper)
+        stbDetailViewModel.fetchApis(applicationContext, preferenceDataStoreHelper)
 
     }
 

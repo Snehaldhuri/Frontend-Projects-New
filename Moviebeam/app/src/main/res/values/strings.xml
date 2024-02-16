@@ -93,4 +93,16 @@
     <string name="network_icon">Network Icon</string>
     <string name="sync_icon">Sync Icon</string>
     <string name="offerText">Get 10% off on Your Order, click button below to redeem</string>
+    <string name="moviebeam_logo">Moviebeam Logo</string>
+    <string name="stb_registered">STB Registered:</string>
+    <string name="pending">Pending</string>
+    <string name="ua">UA:</string>
+    <string name="serial_no">Serial No:</string>
+    <string name="qr_code">QR Code</string>
+    <string name="ip_address">IP Address:</string>
+    <string name="net_mask">Net Mask:</string>
+    <string name="gateway">Gateway:</string>
+    <string name="connectivity">Connectivity:</string>
+    <string name="model_name">Model Name:</string>
+    <string name="app_software_version">App Software Version:</string>
 </resources>

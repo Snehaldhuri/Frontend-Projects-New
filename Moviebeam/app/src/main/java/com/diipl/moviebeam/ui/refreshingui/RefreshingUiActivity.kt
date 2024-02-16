@@ -11,7 +11,6 @@ import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.KapingConstants
-import com.diipl.moviebeam.KapingParameters
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
@@ -25,6 +24,7 @@ import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
@@ -134,7 +134,7 @@ class RefreshingUiActivity : BaseActivity() {
             false,
             kapingResponse.cmdData?.cmdData
         )
-        KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+        EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
     }
 
@@ -145,7 +145,7 @@ class RefreshingUiActivity : BaseActivity() {
             true,
             kapingResponse.cmdData?.cmdData
         )
-        KapingParameters.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+        EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
     }
 
@@ -184,7 +184,7 @@ class RefreshingUiActivity : BaseActivity() {
                     refreshingUiViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
-                    KapingParameters.kapingCmdExecutionResponse =
+                    EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
                 }
@@ -203,7 +203,7 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.themeLiveData.value?.data?.let {
                     refreshingUiViewModel.setThemeResponseData(themeDataStore, it)
-                    KapingParameters.kapingCmdExecutionResponse =
+                    EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
                 }
@@ -222,7 +222,7 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.hotelServiceLiveData.value?.data?.let {
                     refreshingUiViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
-                    KapingParameters.kapingCmdExecutionResponse =
+                    EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
                 }
@@ -244,7 +244,7 @@ class RefreshingUiActivity : BaseActivity() {
                         localAttractionDataStore,
                         it
                     )
-                    KapingParameters.kapingCmdExecutionResponse =
+                    EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
                 }
@@ -263,7 +263,7 @@ class RefreshingUiActivity : BaseActivity() {
                 refreshingUiViewModel.moviesLiveData.value?.data?.let {
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
                     Constants.C_LIST_VERSION = it.version
-                    KapingParameters.kapingCmdExecutionResponse =
+                    EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
                 }
@@ -282,7 +282,7 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.showtimeLiveData.value?.data?.let {
                     refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
-                    KapingParameters.kapingCmdExecutionResponse =
+                    EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
                 }

@@ -36,11 +36,11 @@
         app:layout_constraintGuide_percent="0.05" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_vertical_55"
+        android:id="@+id/gl_vertical_57"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.55" />
+        app:layout_constraintGuide_percent="0.57" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_95"
@@ -48,13 +48,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.95" />
-
-    <!--
-        <include
-            android:id="@+id/layout_video"
-            layout="@layout/video_background"
-            android:visibility="gone" />
-    -->
 
     <androidx.media3.ui.PlayerView
         android:id="@+id/video_view"
@@ -77,6 +70,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent=".17" />
 
+    <include
+        android:id="@+id/layout_weather_time"
+        layout="@layout/item_weather_time_date_row"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/gl_horizontal_10"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_57" />
+
     <TextView
         android:id="@+id/tv_welcome"
         android:layout_width="@dimen/dp_0"
@@ -85,9 +87,9 @@
         android:layout_marginTop="@dimen/dp_20"
         android:fontFamily="@font/gloock_regular"
         android:includeFontPadding="false"
-        android:text="Welcome John Appleseed"
         android:textColor="@color/white"
-        android:textSize="@dimen/sp_45"
+        android:textSize="@dimen/sp_44"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo" />
@@ -99,56 +101,10 @@
         android:layout_marginStart="@dimen/dp_12"
         android:fontFamily="@font/manrope_semibold_600"
         android:textColor="@color/home_page_greeting_text_color"
-        android:textSize="@dimen/sp_25"
-        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_55"
+        android:textSize="@dimen/sp_24"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_57"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/tv_welcome" />
-
-    <ImageView
-        android:id="@+id/iv_weather"
-        android:layout_width="@dimen/dp_0"
-        android:layout_height="@dimen/dp_0"
-        android:layout_marginEnd="@dimen/dp_16"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/weather_image"
-        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
-        app:layout_constraintDimensionRatio="1.66:1"
-        app:layout_constraintEnd_toStartOf="@+id/tv_temperature"
-        app:layout_constraintWidth_percent=".03" />
-
-    <TextView
-        android:id="@+id/tv_temperature"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/dp_32"
-        android:fontFamily="@font/manrope_semibold_600"
-        android:textColor="@color/white"
-        android:textSize="@dimen/sp_12"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
-        app:layout_constraintEnd_toStartOf="@+id/tv_time" />
-
-    <TextClock
-        android:id="@+id/tv_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/dp_32"
-        android:fontFamily="@font/manrope_semibold_600"
-        android:textSize="@dimen/sp_12"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
-        app:layout_constraintEnd_toStartOf="@+id/tv_date" />
-
-    <TextClock
-        android:id="@+id/tv_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/manrope_semibold_600"
-        android:format12Hour="EEE, dd MMM yyyy"
-        android:textSize="@dimen/sp_12"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
-        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95" />
 
     <ProgressBar
         android:id="@+id/pb_loader"
