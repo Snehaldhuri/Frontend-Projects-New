@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
@@ -15,7 +14,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -220,10 +218,11 @@ class GuestServiceActivity : BaseActivity(){
 
     private fun bindAdapterView(view: View, btnId: String) {
         requestFocus()
-        when (btnId) {
 
+        when (btnId) {
             Constants.CONCIERGE_ID -> {
                 conciergeIndex = 1
+
                 val concierge = ConciergeFragment { cView, conciergeService ->
                     conciergeIndex = 1
                     focusView = cView
@@ -232,8 +231,8 @@ class GuestServiceActivity : BaseActivity(){
                     when (conciergeService.serviceId) {
                         1 -> {
                             val fragment = MakeMyRoomFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
 
                             changeFragment(fragment)
@@ -247,8 +246,8 @@ class GuestServiceActivity : BaseActivity(){
 
                         2 -> {
                             val fragment = VelvetParkingFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
 
 
@@ -263,8 +262,8 @@ class GuestServiceActivity : BaseActivity(){
                             binding.layoutHeader.tvTitle.text =
                                 getString(R.string.toiletry_requests)
                             val fragment = ToiletryRequestFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
                             val mBundle = Bundle()
                             mBundle.putString("gradientStartColor", gradientStartColor)
@@ -288,8 +287,8 @@ class GuestServiceActivity : BaseActivity(){
 
                         7 -> {
                             val fragment = LaundryTimeFragment {
-//                                view.requestFocus()
-//                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
                             changeFragment(fragment)
 
@@ -302,8 +301,8 @@ class GuestServiceActivity : BaseActivity(){
 
                         3 -> {
                             val fragment = LaundryFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
 
 
@@ -315,8 +314,6 @@ class GuestServiceActivity : BaseActivity(){
                             if (laundryData != null) {
                                 fragment.setLaundryData(laundryData)
                             }
-
-                            changeFragment(fragment)
 
                             changeFragment(fragment)
                         }
@@ -469,7 +466,7 @@ class GuestServiceActivity : BaseActivity(){
     private fun handleBackRemoteClick() {
         if (conciergeIndex == 1) {
             bindAdapterView(binding.root, Constants.CONCIERGE_ID)
-            /*if (binding.fvTabContent.isVisible) {
+           /*if (binding.fvTabContent.isVisible) {
                 binding.fvTabContent.toInvisible()
                 binding.rvTabContent.toVisible()
             } else{
