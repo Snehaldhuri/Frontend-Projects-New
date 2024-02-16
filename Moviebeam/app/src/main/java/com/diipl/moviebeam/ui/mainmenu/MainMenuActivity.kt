@@ -400,9 +400,9 @@ class MainMenuActivity : BaseActivity() {
                 mainMenuViewModel.guestDetailsLiveData.value?.data?.let {
 
                     Constants.SESSION_ID = it.sessionId.toString()
-                binding.tvWelcome.text =
-                    "Welcome ${response?.guestFirstName} ${response?.guestLastName}"
-                binding.tvWelcome.toVisible()
+                    binding.tvWelcome.text =
+                        "Welcome ${it?.guestFirstName} ${it?.guestLastName}"
+                    binding.tvWelcome.toVisible()
                     binding.pbLoader.toInvisible()
                 }
 

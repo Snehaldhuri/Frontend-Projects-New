@@ -10,7 +10,6 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
-import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
@@ -29,8 +28,8 @@ abstract class BaseActivity : AppCompatActivity() {
                 if (it.action == Intent.ACTION_CLOSE_SYSTEM_DIALOGS) {
                     val reason = it.getStringExtra("reason")
                     if (reason == "homekey") {
-                        if (currentActivity?.javaClass?.simpleName != MainMenuActivity::class.java.simpleName) {
-                            startActivity(Intent(context, MainMenuActivity::class.java).also { i->
+                        if (this.javaClass.simpleName != MainMenuActivity::class.java.simpleName) {
+                            startActivity(Intent(context, MainMenuActivity::class.java).also { i ->
                                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             })
                             Log.e(TAG, "onReceive: 0")

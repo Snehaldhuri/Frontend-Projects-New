@@ -134,34 +134,34 @@ class MoviesActivity : BaseActivity() {
             binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toGone()
         }
 
-        moviesViewModel.getAllWatchedMovies().observe(this){ data ->
-            if (data.isNullOrEmpty()){
+        moviesViewModel.getAllWatchedMovies().observe(this) { data ->
+            if (data.isNullOrEmpty()) {
                 binding.menuRecyclerView.post {
                     binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toGone()
                 }
             } else {
                 val movieList = mutableListOf<ContentDto>()
-                data.forEach { model->
-                    model.movieData?.let {  movieList.add(it) }
+                data.forEach { model ->
+                    model.movieData?.let { movieList.add(it) }
                 }
 
-               if (movieList.isNotEmpty()){
-                   val adapter = ChildAdapter(movieList, onItemClicked = {
-                       onMovieClick(it)
-                   }, onLeftKey = {
-                       if (it) {
-                           requestFocus()
-                       }
-                   })
-                   binding.menuRecyclerView.post {
-                       binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toVisible()
-                   }
+                if (movieList.isNotEmpty()) {
+                    val adapter = ChildAdapter(movieList, onItemClicked = {
+                        onMovieClick(it)
+                    }, onLeftKey = {
+                        if (it) {
+                            requestFocus()
+                        }
+                    })
+                    binding.menuRecyclerView.post {
+                        binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toVisible()
+                    }
 
-                   binding.recentRecyclerView.adapter = adapter
-                   binding.recentRecyclerView.post {
-                       adapter.notifyDataSetChanged()
-                   }
-               }
+                    binding.recentRecyclerView.adapter = adapter
+                    binding.recentRecyclerView.post {
+                        adapter.notifyDataSetChanged()
+                    }
+                }
             }
         }
 
@@ -186,7 +186,7 @@ class MoviesActivity : BaseActivity() {
                     }
                     loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                     val genreMap: LinkedHashMap<String, MutableList<ContentDto>> = LinkedHashMap()
-                    withContext(Dispatchers.IO){
+                    withContext(Dispatchers.IO) {
                         response?.premiumContentList?.forEach {
                             if (it.genre1 != "Adult") {
                                 if (genreMap[it.genre1] != null) {
@@ -225,11 +225,12 @@ class MoviesActivity : BaseActivity() {
                                 }
 
                                 Constants.MOVIE_RENTALS_ID -> {
-                                    val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick) {
-                                        if (it) {
-                                            requestFocus()
+                                    val parentAdapter =
+                                        ParentAdapter(onItemClicked = ::onMovieClick) {
+                                            if (it) {
+                                                requestFocus()
+                                            }
                                         }
-                                    }
 
                                     parentAdapter.setMovieList(sortedGenreMap, null, true)
                                     binding.parentRecyclerView.adapter = parentAdapter
@@ -247,11 +248,12 @@ class MoviesActivity : BaseActivity() {
                                             freeGenreMap[it.genre1] = movieList
                                         }
                                     }
-                                    val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick) {
-                                        if (it) {
-                                            requestFocus()
+                                    val parentAdapter =
+                                        ParentAdapter(onItemClicked = ::onMovieClick) {
+                                            if (it) {
+                                                requestFocus()
+                                            }
                                         }
-                                    }
                                     parentAdapter.setMovieList(freeGenreMap, null, true)
                                     binding.parentRecyclerView.adapter = parentAdapter
                                 }
@@ -270,11 +272,12 @@ class MoviesActivity : BaseActivity() {
                                             }
                                         }
                                     }
-                                    val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick) {
-                                        if (it) {
-                                            requestFocus()
+                                    val parentAdapter =
+                                        ParentAdapter(onItemClicked = ::onMovieClick) {
+                                            if (it) {
+                                                requestFocus()
+                                            }
                                         }
-                                    }
                                     parentAdapter.setMovieList(adultGenreMap, null, true)
                                     binding.parentRecyclerView.adapter = parentAdapter
                                 }
@@ -293,11 +296,12 @@ class MoviesActivity : BaseActivity() {
                                             }
                                         }
                                     }
-                                    val parentAdapter = ParentAdapter(onItemClicked = ::onMovieClick) {
-                                        if (it) {
-                                            requestFocus()
+                                    val parentAdapter =
+                                        ParentAdapter(onItemClicked = ::onMovieClick) {
+                                            if (it) {
+                                                requestFocus()
+                                            }
                                         }
-                                    }
                                     parentAdapter.setMovieList(adultGenreMap, null, true)
                                     binding.parentRecyclerView.adapter = parentAdapter
                                 }
@@ -425,7 +429,12 @@ class MoviesActivity : BaseActivity() {
         binding.fcvMovieDetail.toVisible()
     }
 
-    fun gotoExoPlayerActivity(movieDetails: ContentDto, isTrailer: Boolean, isContent: Boolean, seekPosition : Long) {
+    fun gotoExoPlayerActivity(
+        movieDetails: ContentDto,
+        isTrailer: Boolean,
+        isContent: Boolean,
+        seekPosition: Long
+    ) {
 
         val bundle = Bundle()
         bundle.putString(Constants.RELEASE_ID, (movieDetails.releaseId).toString())
@@ -442,12 +451,13 @@ class MoviesActivity : BaseActivity() {
         if (binding.fcvMovieDetail.isVisible) {
             binding.fcvMovieDetail.toGone()
             requestFocus()
-            if (isRecentView){
+            if (isRecentView) {
                 binding.parentRecyclerView.toGone()
                 binding.recentRecyclerView.toVisible()
             } else {
                 binding.recentRecyclerView.toGone()
                 binding.parentRecyclerView.toVisible()
+            }
             activityStack.add(this::class.java.simpleName)
         } else {
             finish()

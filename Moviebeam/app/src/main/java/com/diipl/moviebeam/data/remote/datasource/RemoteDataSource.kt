@@ -129,7 +129,7 @@ class RemoteDataSource @Inject constructor(
 
 
     suspend fun processStbMaster(
-        ua: String, srno: String, macadd: String, type: String, wifimacadd: String
+        ua: String,
         srNo: String,
         macAddress: String,
         wifiMacAddress: String,
