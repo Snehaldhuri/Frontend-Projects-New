@@ -42,10 +42,8 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
         activityStack.add(this::class.java.simpleName)
         arguments?.let {
-
             gradientStartColor = it.getString("gradientStartColor").toString()
             gradientEndColor = it.getString("gradientEndColor").toString()
-
         }
         setHotelInfo()
         binding.btnBack.post {

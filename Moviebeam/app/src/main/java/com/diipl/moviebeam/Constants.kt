@@ -6,10 +6,19 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
+    // Movie Rental
+    const val C_TYPE_MOVIE: String = "MOVIE"
+    const val C_TYPE_TRAILER: String = "TRAILER"
+    var SESSION_ID: String = ""
+    var RENTAL_ID: String = ""
+    var RENTAL_TIME: Long = 1707840000000
+//    var RENTAL_TIME: Long = 1707736984000
+
     const val SPLASH_DELAY = 3000
     var timer = ""
     const val BASE_URL_LG_REST = "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
     const val BASE_URL_ACCOUNT_SETUP = "https://stb.moviebeam.com:1926/"
+    const val BASE_URL_MOVIE_RENTAL = "https://stb.moviebeam.com:1927/"
     const val BASE_URL_ASSET = "https://stb.moviebeam.com:1928/Asset/"
     const val API_TIME_OUT_IN_SEC = 60L
     const val INTERNET_ERROR_MESSAGE = "Internet Connection Not Available"
@@ -40,6 +49,7 @@ object Constants {
     const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
 
     const val ASSET = "ASSET"
+    const val MOVIE_ACCESS = "MOVIE_ACCESS"
 
     //Home Page Menu Button Id
     const val PRG_GUIDE_ID = "prgGuide"
@@ -72,6 +82,7 @@ object Constants {
     //Movies page menu button Id
     const val MOVIE_RENTALS_ID = "movieRentals"
     const val FREE_MOVIES_ID = "freeMovies"
+    const val RECENT_WATCH_MOVIE_ID = "recentWatch"
     const val ADULT_DAY_PASS_ID = "adultDayPass"
     const val ADULT_ID = "adult"
     const val ALL_PAY_MOVIES = "All Pay Movies"
@@ -81,6 +92,7 @@ object Constants {
     const val FREE_VOD = "Free Movies"
     const val ADULT_DAY_PASS = "Adult Day Pass"
     const val ADULT = "Adult"
+    const val RECENT_WATCH = "Recent Watch"
 
     //Showtime page menu button list
     const val ALL_SHOWS = "All Shows"
@@ -127,12 +139,14 @@ object Constants {
     const val RELEASE_ID = "releaseId"
     const val IS_TRAILER = "isTrailer"
     const val IS_CONTENT  = "isContent"
+    const val IS_CONTINUE  = "isContinue"
 
-    val MOVIES_PAGE_MENU_BUTTON_LIST = listOf(
+    val MOVIES_PAGE_MENU_BUTTON_LIST = mutableListOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
         BtnModel(FREE_MOVIES_ID, R.drawable.video_on_demand_icon, FREE_VOD),
 //        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
 //        BtnModel(ADULT_ID, R.drawable.adult, ADULT),
+        BtnModel(RECENT_WATCH_MOVIE_ID, R.drawable.img_recent_view, RECENT_WATCH),
     )
     val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
@@ -141,7 +155,7 @@ object Constants {
         BtnModel(SHO_DOCS_ID, R.drawable.showtime, SHO_DOCS),
     )
 
-    const val FREE_MOVIE_RELEASE_TYPE_ID =1
+    const val FREE_MOVIE_RELEASE_TYPE_ID = 1
 
     //Guest Service Button Id
     const val ALL_SERVICES = "ALL_SERVICES"

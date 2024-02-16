@@ -9,6 +9,8 @@ import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
+import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -18,17 +20,31 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
+import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
+import com.diipl.moviebeam.utils.toQueryMap
 import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
     networkUtils: NetworkUtils,
     private val lgRestApiService: LgRestApiService,
     private val accountSetupApiService: AccountSetupApiService,
-    private val assetApiService: AssetApiService
+    private val assetApiService: AssetApiService,
+    private val moviesAPIService: MoviesAPIService
 ) : NetworkHandler(networkUtils) {
+
+    /*   suspend fun getMoviesAccess(request: RentalMovieRequest): RentalMovieModel?{
+           val result = safeAPiCall { moviesAPIService.getRentalMovieAccess(request.q, request.UA, request.RID, request.PID, request.price, request.timeStamp, request.seek,
+               request.sessionID, request.a, request.ra, request.cType, request.seekType, request.rentalID, request.contentTypeID,
+               request.productType, request.vodMID, request.AID, request.mode) }
+           return ApiResponseParsing().getResponseAsObject(result.data, RentalMovieModel::class)
+       } */
+    suspend fun getMoviesAccess(request: RentalMovieRequest): RentalMovieResponse? {
+        val result = safeAPiCall { moviesAPIService.getRentalMovieAccess(request.toQueryMap()) }
+        return ApiResponseParsing().getResponseAsObject(result.data, RentalMovieResponse::class)
+    }
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {
         val result = safeAPiCall {
@@ -80,9 +96,7 @@ class RemoteDataSource @Inject constructor(
     }
 
     suspend fun getAccountSetupDetails(
-        cmd: String,
-        ua: String,
-        mode: String
+        cmd: String, ua: String, mode: String
     ): AccountSetupResponse? {
         val result = safeAPiCall {
             accountSetupApiService.getAccountSetupDetails(cmd, ua, mode)
@@ -91,11 +105,7 @@ class RemoteDataSource @Inject constructor(
     }
 
     suspend fun getFlightStatus(
-        cmd: String,
-        ua: String,
-        callType: String,
-        apCode: String,
-        mode: String
+        cmd: String, ua: String, callType: String, apCode: String, mode: String
     ): FlightStatusResponse? {
         val result = safeAPiCall {
             assetApiService.getFlightStatus(cmd, ua, callType, apCode, mode)
@@ -119,7 +129,7 @@ class RemoteDataSource @Inject constructor(
 
 
     suspend fun processStbMaster(
-        ua: String,
+        ua: String, srno: String, macadd: String, type: String, wifimacadd: String
         srNo: String,
         macAddress: String,
         wifiMacAddress: String,
@@ -138,9 +148,7 @@ class RemoteDataSource @Inject constructor(
     }
 
     suspend fun sendGuestFeedback(
-        ua: String,
-        feedback: String,
-        stbTime: String
+        ua: String, feedback: String, stbTime: String
     ): FeedbackResponse? {
         val result = safeAPiCall {
             lgRestApiService.sendGuestFeedback(ua, feedback, stbTime)

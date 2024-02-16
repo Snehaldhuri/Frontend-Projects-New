@@ -14,6 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
+import com.diipl.moviebeam.utils.isGone
+import com.diipl.moviebeam.utils.toGone
 
 private const val TAG = "MoviesBtnAdapter"
 class MoviesBtnAdapter(
@@ -38,9 +42,10 @@ class MoviesBtnAdapter(
     ): MoviesBtnAdapter.MyViewHolder {
 
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
-        val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
-        layoutParams.setMargins(0, 0, 0, 3)
-        view.layoutParams = layoutParams
+
+        val params = view.layoutParams
+        params.width = getWidthInPercent(parent.context, 22)
+        params.height = getHeightInPercent(parent.context, 15)
 
         view.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -62,6 +67,8 @@ class MoviesBtnAdapter(
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
 
+        if (holder.itemView.isGone()) holder.itemView.toGone()
+
         if (selectedPosition == -1) {
             holder.itemView.isSelected = true
             selectedPosition = 0
@@ -77,7 +84,7 @@ class MoviesBtnAdapter(
                     holder.itemView.isSelected = true
                     selectedPosition = holder.absoluteAdapterPosition
                     updateFocus(holder)
-                    notifyUI()
+                    notifyUI(holder)
                 }
             } else {
 //                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
@@ -86,7 +93,7 @@ class MoviesBtnAdapter(
         }
     }
 
-    private fun notifyUI() {
+    private fun notifyUI(holder: MyViewHolder) {
         itemList.forEachIndexed { index, _ ->
             if (selectedPosition != index)
                 notifyItemChanged(index)

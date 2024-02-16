@@ -34,6 +34,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.casting.CastingActivity
@@ -99,7 +100,6 @@ class EndlessService : Service() {
     private var epochTime = ""
     private var transactionId = ""
 
-
     private val _themeLiveData = MutableLiveData<ThemeResponse>()
     val themeLiveData: LiveData<ThemeResponse> get() = _themeLiveData
 
@@ -135,6 +135,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
+    @Inject
+    lateinit var roomRepository: RoomRepository
+
 
     companion object {
         var isServiceStarted = false
@@ -251,6 +254,12 @@ class EndlessService : Service() {
                     if (UA.isNotBlank()) {
                         pingFakeServer()
                         callKapingApi()
+
+                    if (Constants.SESSION_ID.isNotEmpty())
+                       roomRepository.removeOverTimeMovies()
+                    if (Constants.SESSION_ID == "null")
+                        roomRepository.deleteRecentMovies()
+
                     }
                 }
                 delay(1 * 60 * 1000)

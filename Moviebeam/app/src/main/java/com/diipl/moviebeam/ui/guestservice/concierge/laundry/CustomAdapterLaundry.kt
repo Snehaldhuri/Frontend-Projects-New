@@ -71,6 +71,8 @@ class CustomAdapterLaundry(
 
     override fun onBindViewHolder(holder: MyViewHolder, p0: Int) {
 
+        val item = sublList[p0]
+
         Log.e("sublist", "getView:${sublList.size} ")
         holder.tv_lv_title.text = sublList[p0].title
         holder.tv_lv_price.text = sublList[p0].dispPrice
@@ -79,6 +81,7 @@ class CustomAdapterLaundry(
         holder.img_add.setOnClickListener(View.OnClickListener {
             count += 1
             holder.tv_count.text = count.toString()
+
         })
         holder.img_remove.setOnClickListener(View.OnClickListener {
             if (count == 0) {

@@ -107,6 +107,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/iv_movie_image"
         app:layout_constraintTop_toBottomOf="@+id/cl_movie_detail_card" />
+    <Button
+        android:id="@+id/btn_continue_watch"
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:text="@string/continue_watch"
+        android:background="@drawable/btn_bg_gradient_default"
+        android:paddingHorizontal="@dimen/dp_15"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/iv_movie_image"
+        app:layout_constraintTop_toBottomOf="@+id/cl_movie_detail_card" />
 
     <Button
         android:id="@+id/btn_watch_trailer"
@@ -118,6 +129,18 @@
         android:text="@string/watch_trailer"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btn_rent_now"
+        app:layout_constraintTop_toBottomOf="@+id/cl_movie_detail_card" />
+    <Button
+        android:id="@+id/btn_watch_from_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginStart="212dp"
+        android:background="@drawable/btn_bg_gradient_default"
+        android:paddingHorizontal="@dimen/dp_15"
+        android:text="@string/watch_from_start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_continue_watch"
         app:layout_constraintTop_toBottomOf="@+id/cl_movie_detail_card" />
 
     <RelativeLayout

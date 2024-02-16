@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
@@ -95,7 +96,7 @@ class SerialActivity : BaseActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Enter Serial Number")
 
-        // Serial No :- 29221HFGN30WLA
+        // Serial No :- 29221HFGN30WLA, 26271HFGN11NHH
 
         val input = EditText(this)
         var serialNo: String
@@ -113,8 +114,8 @@ class SerialActivity : BaseActivity() {
 
         // TODO Uncomment this before release
         /*if (BuildConfig.DEBUG) {
-            input.setText("29221HFGN30WLA")
-            input.hideKeyboard()
+            input.setText("26271HFGN11NHH")
+            input.clearFocus()
         }*/
 
         builder.setPositiveButton("OK") { dialog, which ->

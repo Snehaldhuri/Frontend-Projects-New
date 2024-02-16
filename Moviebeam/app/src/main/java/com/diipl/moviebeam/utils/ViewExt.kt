@@ -30,9 +30,9 @@ fun Int.intToString(): String {
     return "$b1.$b2.$b3.$b4"
 }
 
-fun String.isServiceRunning(context: Context): Boolean{
+fun String.isServiceRunning(context: Context): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    for (service in manager.getRunningServices(Int.MAX_VALUE)){
+    for (service in manager.getRunningServices(Int.MAX_VALUE)) {
         if (this.equals(service.service.className))
             return true
     }
@@ -42,12 +42,12 @@ fun String.isServiceRunning(context: Context): Boolean{
 
 fun View.showKeyboard() {
     (this.context.getSystemService(Service.INPUT_METHOD_SERVICE) as? InputMethodManager)
-            ?.showSoftInput(this, 0)
+        ?.showSoftInput(this, 0)
 }
 
 fun View.hideKeyboard() {
     (this.context.getSystemService(Service.INPUT_METHOD_SERVICE) as? InputMethodManager)
-            ?.hideSoftInputFromWindow(this.windowToken, 0)
+        ?.hideSoftInputFromWindow(this.windowToken, 0)
 }
 
 fun View.toVisible() {
@@ -55,8 +55,20 @@ fun View.toVisible() {
         this.visibility = View.VISIBLE
 }
 
+fun View.isVisible() : Boolean {
+    return this.visibility == View.VISIBLE
+}
+
+fun View.isInvisible() : Boolean {
+    return this.visibility == View.INVISIBLE
+}
+
+fun View.isGone() : Boolean {
+    return this.visibility == View.GONE
+}
+
 fun View.toDelayVisible() {
-    if (this.visibility != View.VISIBLE){
+    if (this.visibility != View.VISIBLE) {
         this.postDelayed({
             this.visibility = View.VISIBLE
         }, 200)
@@ -64,9 +76,10 @@ fun View.toDelayVisible() {
 }
 
 fun View.toAnimVisible() {
-    if (this.visibility != View.VISIBLE){
-        this.post{
-            this.animation = AnimationUtils.loadAnimation(this.context, android.R.anim.slide_in_left)
+    if (this.visibility != View.VISIBLE) {
+        this.post {
+            this.animation =
+                AnimationUtils.loadAnimation(this.context, android.R.anim.slide_in_left)
         }
     }
 }
@@ -96,9 +109,10 @@ fun View.showSnackbar(snackbarText: String, timeLength: Int) {
  * Triggers a snackbar message when the value contained by snackbarTaskMessageLiveEvent is modified.
  */
 fun View.setupSnackbar(
-        lifecycleOwner: LifecycleOwner,
-        snackbarEvent: LiveData<SingleEvent<Any>>,
-        timeLength: Int) {
+    lifecycleOwner: LifecycleOwner,
+    snackbarEvent: LiveData<SingleEvent<Any>>,
+    timeLength: Int
+) {
     snackbarEvent.observe(lifecycleOwner, Observer { event ->
         event.getContentIfNotHandled()?.let {
             when (it) {
@@ -106,10 +120,12 @@ fun View.setupSnackbar(
                     hideKeyboard()
                     showSnackbar(it, timeLength)
                 }
+
                 is Int -> {
                     hideKeyboard()
                     showSnackbar(this.context.getString(it), timeLength)
                 }
+
                 else -> {
                 }
             }
@@ -119,16 +135,18 @@ fun View.setupSnackbar(
 }
 
 fun View.showToast(
-        lifecycleOwner: LifecycleOwner,
-        ToastEvent: LiveData<SingleEvent<Any>>,
-        timeLength: Int
+    lifecycleOwner: LifecycleOwner,
+    ToastEvent: LiveData<SingleEvent<Any>>,
+    timeLength: Int
 ) {
 
     ToastEvent.observe(lifecycleOwner, Observer { event ->
         event.getContentIfNotHandled()?.let {
             when (it) {
                 is String -> Toast.makeText(this.context, it, timeLength).show()
-                is Int -> Toast.makeText(this.context, this.context.getString(it), timeLength).show()
+                is Int -> Toast.makeText(this.context, this.context.getString(it), timeLength)
+                    .show()
+
                 else -> {
                 }
             }
@@ -151,15 +169,16 @@ fun ImageView.loadImagesWithGlideExtFomAssets(path: String) {
 }
 
 fun ImageView.loadImagesWithGlideExt(url: String) {
-    if (url!=null){
+    if (url != null) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(this)
     }
 }
+
 fun ImageView.loadImagesWithGlideExtLogo(url: String) {
-    if (url!=null){
+    if (url != null) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -167,8 +186,9 @@ fun ImageView.loadImagesWithGlideExtLogo(url: String) {
             .into(this)
     }
 }
+
 fun ImageView.loadImagesWithGlideExtPoster(url: String) {
-    if (url!=null){
+    if (url != null) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -176,8 +196,9 @@ fun ImageView.loadImagesWithGlideExtPoster(url: String) {
             .into(this)
     }
 }
+
 fun ImageView.loadImagesWithGlideExtSushi(url: String) {
-    if (url!=null){
+    if (url != null) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -185,8 +206,9 @@ fun ImageView.loadImagesWithGlideExtSushi(url: String) {
             .into(this)
     }
 }
+
 fun ImageView.loadImagesWithGlideExtHsCard(url: String) {
-    if (url!=null){
+    if (url != null) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -194,8 +216,9 @@ fun ImageView.loadImagesWithGlideExtHsCard(url: String) {
             .into(this)
     }
 }
+
 fun ImageView.loadImagesWithGlideExtHS(url: String) {
-    if (url!=null){
+    if (url != null) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -205,7 +228,7 @@ fun ImageView.loadImagesWithGlideExtHS(url: String) {
 }
 
 fun ImageView.loadImagesWithGlideExtLA(url: String) {
-    if (url!=null){
+    if (url != null) {
         Glide.with(this)
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
