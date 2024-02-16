@@ -8,8 +8,9 @@ import android.util.Log
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.log
 
-
 class StartReceiver : BroadcastReceiver() {
+
+    private val TAG = "StartReceiver"
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED && getServiceState(context) == ServiceState.STARTED) {
@@ -31,5 +32,6 @@ class StartReceiver : BroadcastReceiver() {
             context.startActivity(i)
 
         }
+
     }
 }

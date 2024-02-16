@@ -85,7 +85,6 @@
         android:layout_marginTop="@dimen/dp_20"
         android:fontFamily="@font/gloock_regular"
         android:includeFontPadding="false"
-        android:text="Welcome John Appleseed"
         android:textColor="@color/white"
         android:textSize="@dimen/sp_45"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"

@@ -9,6 +9,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
@@ -85,7 +86,7 @@ class SerialActivity : BaseActivity() {
         builder.setTitle("Enter Serial Number")
 
 
-        // Serial No :- 29221HFGN30WLA
+        // Serial No :- 29221HFGN30WLA, 26271HFGN11NHH
 
         val input = EditText(this)
         var m_Text: String
@@ -93,12 +94,12 @@ class SerialActivity : BaseActivity() {
         input.imeOptions = EditorInfo.IME_ACTION_DONE
         builder.setView(input)
 
-/* TODO Uncomment this before release
+/* TODO Uncomment this before release */
         if (BuildConfig.DEBUG){
-            input.setText("29221HFGN30WLA")
-            input.hideKeyboard()
+            input.setText("26271HFGN11NHH")
+            input.clearFocus()
         }
-        */
+
         builder.setPositiveButton("OK") { dialog, which ->
             m_Text = input.text.toString().uppercase()
             Constants.SERIAL_NO = m_Text

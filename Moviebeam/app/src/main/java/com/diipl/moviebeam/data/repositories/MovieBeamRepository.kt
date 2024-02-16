@@ -8,6 +8,8 @@ import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
+import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -18,7 +20,13 @@ import com.diipl.moviebeam.data.kaping.kapingResponce
 import com.diipl.moviebeam.data.remote.datasource.RemoteDataSource
 import javax.inject.Inject
 
-class MovieBeamRepository @Inject constructor(private val remoteDataSource: RemoteDataSource) {
+class MovieBeamRepository @Inject constructor(
+    private val remoteDataSource: RemoteDataSource
+) {
+
+    suspend fun getMovieAccess(request: RentalMovieRequest): RentalMovieResponse? {
+        return remoteDataSource.getMoviesAccess(request)
+    }
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {
         return remoteDataSource.getWeatherData(ua)

@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.movies
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -7,11 +8,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
+import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.data.repositories.RoomRepository
+import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +29,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MoviesViewModel @Inject constructor(
-    private val movieBeamRepository: MovieBeamRepository
+    private val movieBeamRepository: MovieBeamRepository,
+    private val roomRepository: RoomRepository
 ) : ViewModel() {
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
@@ -80,5 +88,73 @@ class MoviesViewModel @Inject constructor(
         showToastPrivate.value = SingleEvent(error)
     }
 
+    private var _isGuestCheckedInLiveData = MutableLiveData<Boolean>()
+    val isGuestCheckedInLiveData: LiveData<Boolean> get() = _isGuestCheckedInLiveData
+
+    fun validateSession(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferenceDataStoreHelper.getPreference(
+                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                false
+            ).collect {
+                _isGuestCheckedInLiveData.postValue(it)
+            }
+        }
+    }
+
+    private var _rentalMovieResponse = MutableLiveData<Resource<RentalMovieResponse>>()
+    val rentalMovieResponse: LiveData<Resource<RentalMovieResponse>> get() = _rentalMovieResponse
+
+    fun getRentalMovieResponse(request: RentalMovieRequest) {
+        viewModelScope.launch {
+            val result = movieBeamRepository.getMovieAccess(request)
+            if (result == null) {
+                _rentalMovieResponse.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Services Api"))
+            } else {
+                _rentalMovieResponse.postValue(Resource.Success(result))
+            }
+        }
+    }
+
+
+    fun getAllWatchedMovies(): LiveData<List<RentalMovieModel>> {
+        return roomRepository.getWatchedMovies()
+    }
+
+    fun insertMovieDetails(data: RentalMovieResponse, movie: ContentDto) {
+        viewModelScope.launch {
+            val model = RentalMovieModel()
+            model.movieData = movie
+            model.rentalID = data.rentalID.toInt()
+            model.sessionID = Constants.SESSION_ID
+
+            roomRepository.insertRentalMovies(model)
+        }
+    }
+
+    private var _movieData = MutableLiveData<RentalMovieModel>()
+    val movieData: LiveData<RentalMovieModel> get() = _movieData
+
+    fun getRentalMovie(releaseId : Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _movieData.postValue(roomRepository.getRentalMovie(releaseId))
+        }
+    }
+
+    fun updateMovieDetails(rentalMovieModel: RentalMovieModel) {
+        viewModelScope.launch {
+            rentalMovieModel.lastTimeStamp = System.currentTimeMillis()
+            roomRepository.updateRentalMovies(rentalMovieModel)
+        }
+    }
+
+
+    fun updateRentalMovieLog(request: RentalMovieRequest) {
+        viewModelScope.launch {
+            Log.e("updateRentalMovieLog: ", "STARTED  -->  ${request.seek}")
+            val res = movieBeamRepository.getMovieAccess(request)
+            Log.e("updateRentalMovieLog: ", "DONE  -->  ${request.seek}  \n $res")
+        }
+    }
 
 }

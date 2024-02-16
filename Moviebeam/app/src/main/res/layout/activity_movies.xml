@@ -90,13 +90,32 @@
         app:layout_constraintStart_toStartOf="@id/gl_vertical_29"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/parentRecyclerView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:focusable="true"
-            android:nestedScrollingEnabled="false" />
+            android:orientation="vertical"
+            android:descendantFocusability="afterDescendants"
+            >
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/parentRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:focusable="true"
+                android:nestedScrollingEnabled="false" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recentRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:paddingHorizontal="@dimen/dp_8"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:background="@android:color/transparent"
+                android:focusable="true"
+                android:nestedScrollingEnabled="false" />
+        </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
@@ -214,14 +233,15 @@
     <RelativeLayout
         android:id="@+id/loader_view"
         android:layout_width="match_parent"
+        android:elevation="@dimen/dp_8"
         android:layout_height="match_parent"
-        android:clickable="true"
-        android:visibility="gone">
+        >
 
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true" />
+            android:layout_centerInParent="true"
+            android:indeterminateTint="@color/white"/>
     </RelativeLayout>
 
 

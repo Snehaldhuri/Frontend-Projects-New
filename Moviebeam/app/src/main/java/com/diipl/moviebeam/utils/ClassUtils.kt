@@ -5,6 +5,38 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import com.diipl.moviebeam.Constants
+import com.google.gson.annotations.SerializedName
+import java.util.Calendar
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.javaField
+
+fun <T : Any> T.toQueryMap(): Map<String, Any> {
+    val map = mutableMapOf<String, Any>()
+
+    this::class.declaredMemberProperties.forEach { prop ->
+        val serializedName = prop.javaField?.getAnnotation(SerializedName::class.java)?.value
+        val key = serializedName ?: prop.name
+        val value = prop.call(this)
+        map[key] = value as Any
+    }
+
+    return map
+}
+
+fun isRentalMovieTimeOver(): Boolean{
+    val timestamp1 = System.currentTimeMillis()
+    val timestamp2 = Constants.RENTAL_TIME // 24 hours ago
+
+    // Convert timestamps to Calendar objects
+    val calendar1 = Calendar.getInstance().apply { timeInMillis = timestamp1 }
+    val calendar2 = Calendar.getInstance().apply { timeInMillis = timestamp2 }
+
+    // Compare timestamps with a 24-hour difference
+    val is24HoursApart = calendar1.after(Calendar.getInstance().apply { timeInMillis = timestamp2 + (24 * 60 * 60 * 1000) })
+
+
+    return is24HoursApart
+}
 
 fun getWidthInPercent(context: Context, percent: Int): Int {
     val width = context.resources.displayMetrics.widthPixels

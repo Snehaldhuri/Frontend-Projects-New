@@ -99,6 +99,9 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
 
+        observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
+        observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
+
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
     }
@@ -128,8 +131,7 @@ class MainMenuActivity : BaseActivity() {
         if (!isServiceStarted) {
             actionOnService(Actions.START)
         }
-        observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
-        observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
+
     }
 
 
@@ -172,12 +174,8 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
-//        HOTEL_VIDEO_DURATION = player.currentPosition
-        player.pause()
-        player.release()
-        HOTEL_VIDEO_LOOP_COUNT = 3
         super.onPause()
-        Log.e(TAG, "onPause: ")
+        HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
     override fun onRestart() {
@@ -304,6 +302,7 @@ class MainMenuActivity : BaseActivity() {
 
                 binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
                 val adapter = MainMenuBtnAdapter { btn ->
+                    releaseVideoPlayer()
                     val bundle = Bundle()
                     bundle.putString("title", btn.title)
                     bundle.putString(
@@ -393,6 +392,7 @@ class MainMenuActivity : BaseActivity() {
         } else {
             binding.tvWelcome.text = ""
             binding.tvWelcome.toGone()
+            Constants.SESSION_ID = "null"
         }
         binding.pbLoader.toInvisible()
     }
@@ -401,11 +401,14 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                val response = mainMenuViewModel.guestDetailsLiveData.value?.data
+                mainMenuViewModel.guestDetailsLiveData.value?.data?.let {
+                    binding.tvWelcome.text = it.message
 
-                binding.tvWelcome.text = response?.message
+                    Constants.SESSION_ID = it.sessionId.toString()
 
-                binding.pbLoader.toInvisible()
+                    binding.pbLoader.toInvisible()
+                }
+
             }
 
             else -> {

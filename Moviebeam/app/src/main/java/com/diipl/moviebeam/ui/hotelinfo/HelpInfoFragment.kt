@@ -38,10 +38,8 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
     ): View {
         _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
         arguments?.let {
-
             gradientStartColor = it.getString("gradientStartColor").toString()
             gradientEndColor = it.getString("gradientEndColor").toString()
-
         }
         setHotelInfo()
         binding.btnBack.post {

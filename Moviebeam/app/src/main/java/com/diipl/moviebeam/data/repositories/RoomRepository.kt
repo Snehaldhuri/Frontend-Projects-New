@@ -1,0 +1,35 @@
+package com.diipl.moviebeam.data.repositories
+
+import androidx.lifecycle.LiveData
+import com.diipl.moviebeam.room.db.MoviesDatabase
+import com.diipl.moviebeam.room.models.RentalMovieModel
+import javax.inject.Inject
+
+class RoomRepository @Inject constructor(private val database: MoviesDatabase) {
+
+    suspend fun insertRentalMovies(rentalMovieModel: RentalMovieModel) {
+        database.movieDao().insertMovie(rentalMovieModel)
+    }
+
+    suspend fun updateRentalMovies(rentalMovieModel: RentalMovieModel) {
+        database.movieDao().updateMovie(rentalMovieModel)
+    }
+
+    fun getWatchedMovies(): LiveData<List<RentalMovieModel>> {
+        return database.movieDao().getMovies()
+    }
+
+    fun getRentalMovie(releaseId : Int): RentalMovieModel {
+        return database.movieDao().getRentalMovie(releaseId)
+    }
+
+    suspend fun removeOverTimeMovies() {
+        database.movieDao().deleteMovieOverTime(System.currentTimeMillis())
+    }
+
+    suspend fun deleteRecentMovies() {
+        database.movieDao().deleteAllMovies()
+    }
+
+
+}

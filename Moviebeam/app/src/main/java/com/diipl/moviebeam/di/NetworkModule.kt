@@ -5,6 +5,7 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
+import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -65,6 +66,15 @@ object NetworkModule {
         .client(okHttpClient)
         .build()
 
+    @Singleton
+    @Provides
+    @Named(Constants.MOVIE_ACCESS)
+    fun provideRetrofitMovie(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .baseUrl(Constants.BASE_URL_MOVIE_RENTAL)
+        .client(okHttpClient)
+        .build()
+
     @Provides
     fun provideLgRestApiService(@Named(Constants.LG_REST) retrofit: Retrofit): LgRestApiService =
         retrofit.create(LgRestApiService::class.java)
@@ -77,5 +87,8 @@ object NetworkModule {
     fun provideAssetApiService(@Named(Constants.ASSET) retrofit: Retrofit): AssetApiService =
         retrofit.create(AssetApiService::class.java)
 
+    @Provides
+    fun provideMovieAPIService(@Named(Constants.MOVIE_ACCESS) retrofit: Retrofit) : MoviesAPIService =
+        retrofit.create(MoviesAPIService::class.java)
 
 }

@@ -40,7 +40,6 @@ class LaundryFragment : BaseFragment() {
     private var selectedItems: MutableList<LaundryResponce> = mutableListOf()
     private lateinit var laundryDetailResponse: LaundryDataResponse
 
-
     override fun observeViewModel() {
 //        observe(laundryViewModel.laundryMasterLiveData, ::handleLaundryMasterResponse)
     }

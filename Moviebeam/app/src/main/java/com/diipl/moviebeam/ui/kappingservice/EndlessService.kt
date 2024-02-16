@@ -15,10 +15,10 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import android.widget.Toast
-import androidx.databinding.ktx.BuildConfig
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.KapingConstants
 import com.diipl.moviebeam.PanelConstants
@@ -35,6 +35,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
@@ -84,7 +85,6 @@ class EndlessService : Service() {
     private var transactionId = ""
     private var kapingCmdExecutionResponse = "00"
 
-
     private val _themeLiveData = MutableLiveData<ThemeResponse>()
     val themeLiveData: LiveData<ThemeResponse> get() = _themeLiveData
 
@@ -117,6 +117,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
+    @Inject
+    lateinit var roomRepository: RoomRepository
+
 
     companion object {
         val gson = GsonBuilder()
@@ -224,6 +227,12 @@ class EndlessService : Service() {
 
                     pingFakeServer()
                     callKapingApi()
+
+                    if (Constants.SESSION_ID.isNotEmpty())
+                       roomRepository.removeOverTimeMovies()
+                    if (Constants.SESSION_ID == "null")
+                        roomRepository.deleteRecentMovies()
+
                 }
                 delay(1 * 60 * 1000)
             }
