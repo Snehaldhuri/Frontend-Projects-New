@@ -5,6 +5,10 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.ui.serial_info.SerialActivity
+import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.google.gson.annotations.SerializedName
 import java.util.Calendar
 import kotlin.reflect.full.declaredMemberProperties
@@ -21,6 +25,17 @@ fun <T : Any> T.toQueryMap(): Map<String, Any> {
     }
 
     return map
+}
+
+fun String.isNotAllowed(): Boolean {
+    var result = true
+    when(this){
+       MainMenuActivity::class.java.simpleName -> result = true
+       SerialActivity::class.java.simpleName -> result = false
+       STBDetailsActivity::class.java.simpleName -> result = true
+       RegisterSTBActivity::class.java.simpleName -> result = false
+    }
+    return result
 }
 
 fun isRentalMovieTimeOver(): Boolean{

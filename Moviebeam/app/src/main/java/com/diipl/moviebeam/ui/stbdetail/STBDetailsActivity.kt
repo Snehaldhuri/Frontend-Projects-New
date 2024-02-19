@@ -261,4 +261,6 @@ class STBDetailsActivity : BaseActivity() {
         return temperature
     }
 
+    override fun onBackPressed() {}
+
 }

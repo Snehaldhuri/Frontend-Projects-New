@@ -186,11 +186,12 @@ class GuestServiceActivity : BaseActivity() {
                 }, onRightClicked = {
 
                 })
-
-                val transaction = supportFragmentManager.beginTransaction()
-                val fragment = WeatherFragment()
-                transaction.replace(R.id.fv_tab_content, fragment)
-                transaction.commit()
+                if(btnId != Constants.LA_ID){
+                    val transaction = supportFragmentManager.beginTransaction()
+                    val fragment = WeatherFragment()
+                    transaction.replace(R.id.fv_tab_content, fragment)
+                    transaction.commit()
+                }
 
                 adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
                 adapter.setGradientColor(gradientStartColor, gradientEndColor)
@@ -407,7 +408,6 @@ class GuestServiceActivity : BaseActivity() {
                 changeFragment(InRoomDiningGsFragment())
             }
         }
-
     }
 
 
@@ -424,7 +424,6 @@ class GuestServiceActivity : BaseActivity() {
                     binding.root.background = resource
 //                    binding.root.setBackgroundColor(Color.argb(0.6f, 0f, 0f, 0f))
                 }
-
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
@@ -456,7 +455,6 @@ class GuestServiceActivity : BaseActivity() {
             view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         }
     }
-
 
     private fun fetchDetails() {
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
@@ -496,4 +494,5 @@ class GuestServiceActivity : BaseActivity() {
         }
         return false
     }
+
 }

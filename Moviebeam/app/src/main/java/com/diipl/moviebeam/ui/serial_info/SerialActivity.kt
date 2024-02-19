@@ -21,8 +21,11 @@ import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.kappingservice.Actions
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.showKeyboard
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 
@@ -34,6 +37,7 @@ class SerialActivity : BaseActivity() {
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     override fun observeViewModel() {
         observe(serialViewModel.stbStatusLiveData, ::handleStbStatusResponse)
+        observe(serialViewModel.stbAllocationStatusLiveData, ::handleStbAllocationStatusResponse)
     }
 
     override fun initViewBinding() {
@@ -85,10 +89,27 @@ class SerialActivity : BaseActivity() {
 
     private fun handleStbStatusResponse(isStbRegistered: Boolean) {
         if (isStbRegistered) {
-            startActivity(Intent(this, STBDetailsActivity::class.java))
+            serialViewModel.getStbAllocationStatusFromDataStore(preferenceDataStoreHelper)
         } else {
-            startActivity(Intent(this, RegisterSTBActivity::class.java))
+            redirectToRegisterStbActivity()
         }
+    }
+
+    private fun handleStbAllocationStatusResponse(isStbAllocated: Boolean) {
+        if(isStbAllocated){
+            redirectToStbDetailsActivity()
+        }else{
+            redirectToRegisterStbActivity()
+        }
+    }
+
+    private fun redirectToStbDetailsActivity(){
+        startActivity(Intent(this, STBDetailsActivity::class.java))
+        finish()
+    }
+
+    private fun redirectToRegisterStbActivity(){
+        startActivity(Intent(this, RegisterSTBActivity::class.java))
         finish()
     }
 
@@ -103,11 +124,10 @@ class SerialActivity : BaseActivity() {
         input.inputType = InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
         input.imeOptions = EditorInfo.IME_ACTION_DONE
         input.setOnFocusChangeListener { view, isFocused ->
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             if (!isFocused) {
-                imm.hideSoftInputFromWindow(view.windowToken, 0)
+                view.hideKeyboard()
             } else {
-                imm.showSoftInput(view, 0)
+                view.showKeyboard()
             }
         }
         builder.setView(input)
@@ -154,5 +174,7 @@ class SerialActivity : BaseActivity() {
             }
         }
     }
+
+    override fun onBackPressed() {}
 
 }

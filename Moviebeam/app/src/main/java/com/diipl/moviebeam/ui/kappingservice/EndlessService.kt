@@ -5,8 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
@@ -16,6 +18,7 @@ import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.KapingConstants
@@ -37,6 +40,7 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
+import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
@@ -55,6 +59,7 @@ import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.KapingResponseParsing
+import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -79,7 +84,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-
+private const val TAG = "EndlessService"
 @AndroidEntryPoint
 class EndlessService : Service() {
 
@@ -207,9 +212,37 @@ class EndlessService : Service() {
         versionNumber = getVersionNumber().replace(".", "").trim()
         log(versionNumber)
 
+        val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+        registerReceiver(homePressReceiver, filter)
+
         val notification = createNotification()
         startForeground(1, notification)
     }
+
+    private val homePressReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+
+            intent.let {
+                if (it.action == Intent.ACTION_CLOSE_SYSTEM_DIALOGS) {
+                    val reason = it.getStringExtra("reason")
+                    if (reason == "homekey") {
+                        if (currentActivity?.javaClass?.simpleName!!.isNotAllowed()) {
+                            startActivity(Intent(context, MainMenuActivity::class.java).also { i ->
+                                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            })
+                            Log.e(TAG, "onReceive: 0")
+                            return
+                        } else {
+                            Log.e(TAG, "onReceive: 1")
+                        }
+                    } else {
+                        Log.e(TAG, "onReceive: 2")
+                    }
+                }
+            }
+        }
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -391,10 +424,14 @@ class EndlessService : Service() {
 
                         AS_FLAG = if (result?.AS.isNullOrEmpty()) {
                             Log.e("true_as", "endless_service $AS_FLAG")
+                            updateStbAllocationStatus(preferenceDataStoreHelper, true)
                             true
                         } else {
                             Log.e("false_as", "endless_service $AS_FLAG")
-//                        startActivity(Intent(applicationContext, KapingActivity::class.java))
+                            updateStbAllocationStatus(preferenceDataStoreHelper, false)
+                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName){
+                                startActivity(Intent(applicationContext, RegisterSTBActivity::class.java))
+                            }
                             false
                         }
 
@@ -892,6 +929,18 @@ class EndlessService : Service() {
                     version = data.version
                 )
             }
+        }
+    }
+
+    fun updateStbAllocationStatus(
+        preferenceDataStoreHelper: PreferenceDataStoreHelper,
+        isStbAllocated: Boolean,
+    ) {
+        GlobalScope.launch(Dispatchers.IO) {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IS_STB_ALLOCATED,
+                isStbAllocated
+            )
         }
     }
 
