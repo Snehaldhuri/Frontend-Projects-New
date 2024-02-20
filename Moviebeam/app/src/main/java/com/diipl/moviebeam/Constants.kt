@@ -269,18 +269,6 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
-    //Apps
-    val SELECTED_APPS = listOf(
-        "Netflix",
-        "Hulu",
-        "Max",
-        "Paramount+",
-        "Peacock TV",
-        "Disney+",
-        "YouTube",
-        "Prime Video"
-    )
-
     //Guest Feedback
     const val UNACCEPTABLE = "Unacceptable"
     const val DISAPPOINTING = "Disappointing"

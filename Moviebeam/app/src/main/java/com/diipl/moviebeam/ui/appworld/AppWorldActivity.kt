@@ -15,16 +15,16 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
-import com.diipl.moviebeam.utils.toDelayVisible
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,10 +42,12 @@ class AppWorldActivity : BaseActivity() {
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
-    override fun observeViewModel() {
-        observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
-        appWorldViewModel.getWeatherResponseData(weatherDataStore)
+    @Inject
+    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
+    override fun observeViewModel() {
+        observe(appWorldViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+        observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
     }
 
     override fun initViewBinding() {
@@ -55,13 +57,10 @@ class AppWorldActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        appWorldViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        appWorldViewModel.getWeatherResponseData(weatherDataStore)
         fetchDetails()
         binding.rvApps.layoutManager = GridLayoutManager(this, 4)
-        getInstalledApps()
-
-        binding.btnBack.toDelayVisible()
-
         binding.btnBack.setOnClickListener { finish() }
         binding.btnBack.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
@@ -72,21 +71,23 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-    private fun getInstalledApps() {
+    private fun getInstalledApps(apiAppList: List<SelectedApps>) {
         // get list of all the apps installed
         val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+        val installedApps = filterSystemApps(allApps)
+        val selectedApps = mutableListOf<ApplicationInfo>()
+        apiAppList.forEach { selectedApp ->
+            installedApps.forEach { installedApp ->
+                if (selectedApp.forAndroid and (selectedApp.value == installedApp.packageName))
+                    selectedApps.add(installedApp)
+            }
+        }
         val adapter = AppAdapter {
             if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
                 launchAppSecured(it.packageName)
             } else {
                 launchApp(it.packageName)
             }
-        }
-        val installedApps = filterSystemApps(allApps)
-        val selectedApps = installedApps.filter {
-            Constants.SELECTED_APPS.contains(packageManager.getApplicationLabel(it))
-        }.sortedBy { app ->
-            Constants.SELECTED_APPS.indexOf(packageManager.getApplicationLabel(app))
         }
         adapter.setAppList(selectedApps)
         binding.rvApps.adapter = adapter
@@ -126,6 +127,23 @@ class AppWorldActivity : BaseActivity() {
                     binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
                         it
                     )
+                }
+                binding.pbLoader.toInvisible()
+            }
+
+            else -> {
+                status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.pbLoader.toVisible()
+            is Resource.Success -> {
+                val response = appWorldViewModel.accountSetupLiveData.value?.data
+                response?.selectedAppsList?.let {
+                    getInstalledApps(it)
                 }
                 binding.pbLoader.toInvisible()
             }
