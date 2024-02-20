@@ -286,7 +286,6 @@ object Constants {
     const val KAPING = "KAPING"
     const val DV = "3.0.1.23"
     const val CLISTVER="201803130001"
-    const val KAPINGEVENT = "10131220"
     const val RBTY = "0100"
     const val LAVER="1510818301"
     const val HSVER= "1513951822"

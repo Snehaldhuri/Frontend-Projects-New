@@ -387,7 +387,7 @@ class EndlessService : Service() {
             moviesVersion,
             Constants.DV,
             "1",
-            Constants.KAPINGEVENT,
+            EVENT,
             "0",
             Constants.RBTY,
             Constants.MODE,
