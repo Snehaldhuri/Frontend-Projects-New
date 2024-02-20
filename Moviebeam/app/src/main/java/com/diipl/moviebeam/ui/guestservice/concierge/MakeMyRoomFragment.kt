@@ -94,40 +94,18 @@ class MakeMyRoomFragment(
                 binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-        binding.btnOk.setOnClickListener(View.OnClickListener {
-            layout_dt.visibility = View.GONE
-            layout_confirmation.visibility = View.VISIBLE
-
-            binding.btnPopOk.postDelayed({
-                binding.btnPopOk.requestFocus()
-            }, 1)
-
-            binding.tvMessage.text =
-                "Thank you.Your request has been received and your room will be serviced on " + day + ". " + month + " " + date + " " + year + " at " + currentHour + ":" + currentminute
-            binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-                    setFocus(binding.btnPopOk)
-                } else {
-                    binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
-            }
-            binding.btnPopOk.setOnClickListener {
-                onOkClicked()
-            }
-
-        })
 
         binding.layoutDateTimeSelector.tvDay.text = day
         binding.layoutDateTimeSelector.tvDate.text = "$date / $month / $year"
 
+        val timeRanges = arrayOf("8 - 10 AM", "10 - 12 PM", "12 - 2 PM", "2 - 4 PM")
+        var currentRangeIndex = 0
+
         binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
-            currentHour.toString()
+            timeRanges[currentRangeIndex]
 
         binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text =
             currentminute.toString()
-
-
-
 
         hourPicker.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
@@ -135,25 +113,25 @@ class MakeMyRoomFragment(
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
-                            KeyEvent.KEYCODE_DPAD_UP -> {
-                                if (currentHour < 24) {
-                                    currentHour++
-                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
-                                        currentHour.toString()
-                                }
-                                return@setOnKeyListener true
-                            }
-
                             KeyEvent.KEYCODE_DPAD_DOWN -> {
-                                if (currentHour > 1) {
-                                    currentHour--
+                                if (currentRangeIndex < timeRanges.size - 1) {
+                                    currentRangeIndex++
                                     binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
-                                        currentHour.toString()
+                                        timeRanges[currentRangeIndex]
                                 }
                                 return@setOnKeyListener true
                             }
 
-                            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+                                if (currentRangeIndex > 0) {
+                                    currentRangeIndex--
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
+                                        timeRanges[currentRangeIndex]
+                                }
+                                return@setOnKeyListener true
+                            }
+
+                            KeyEvent.KEYCODE_DPAD_CENTER -> {
                                 binding.btnOk.requestFocus()
                                 return@setOnKeyListener true
                             }
@@ -204,7 +182,7 @@ class MakeMyRoomFragment(
                                 return@setOnKeyListener true
                             }
 
-                            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                            KeyEvent.KEYCODE_DPAD_CENTER -> {
                                 binding.btnOk.requestFocus()
                                 return@setOnKeyListener true
                             }
@@ -217,6 +195,30 @@ class MakeMyRoomFragment(
                 view.setBackgroundResource(R.color.transparent)
             }
         }
+
+        binding.btnOk.setOnClickListener(View.OnClickListener {
+            layout_dt.visibility = View.GONE
+            layout_confirmation.visibility = View.VISIBLE
+
+            binding.btnPopOk.postDelayed({
+                binding.btnPopOk.requestFocus()
+            }, 1)
+
+            binding.tvMessage.text =
+                "Thank you.Your request has been received and your room will be serviced between " + timeRanges[currentRangeIndex] +" on " + day + ". " + month + " " + date + " " + year
+            binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
+                if (hasFocus) {
+                    setFocus(binding.btnPopOk)
+                } else {
+                    binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                }
+            }
+            binding.btnPopOk.setOnClickListener {
+                onOkClicked()
+            }
+
+        })
+
         return binding.root
     }
 

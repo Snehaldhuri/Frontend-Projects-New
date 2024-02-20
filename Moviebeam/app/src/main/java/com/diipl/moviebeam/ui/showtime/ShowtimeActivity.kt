@@ -266,7 +266,7 @@ class ShowtimeActivity : BaseActivity() {
 
     fun gotoExoPlayerActivity(movieDetails: Detail, isTrailer: Boolean, isContent: Boolean) {
         val bundle = Bundle()
-        bundle.putString(Constants.RELEASE_ID, (movieDetails.releaseId).toString())
+        bundle.putString(Constants.RELEASE_ID, "ShowTime")
         bundle.putBoolean(Constants.IS_TRAILER, isTrailer)
         bundle.putBoolean(Constants.IS_CONTENT, isContent)
 

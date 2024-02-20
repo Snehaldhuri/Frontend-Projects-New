@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import com.diipl.moviebeam.Constants
+import com.google.gson.Gson
 
 fun getWidthInPercent(context: Context, percent: Int): Int {
     val width = context.resources.displayMetrics.widthPixels
@@ -35,7 +36,13 @@ fun isNetworkAvailable(context: Context): Boolean {
         return connectivityManager.activeNetworkInfo?.isConnected ?: false
     }
 }
+inline fun <reified T> T.toJson(): String {
+    return Gson().toJson(this)
+}
 
+inline fun <reified T> String.fromJson(): T {
+    return Gson().fromJson(this, T::class.java)
+}
 fun replaceDegreeSymbol(temp: String?): String {
     var temperature = ""
     temp?.let {

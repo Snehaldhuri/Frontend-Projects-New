@@ -61,6 +61,18 @@
         app:layout_constraintWidth_percent="0.05" />
 
     <TextView
+        android:id="@+id/iv_channel_logo_tv"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:fontFamily="@font/manrope_medium_500"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/tv_label_now_showing"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_25"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
+        app:layout_constraintTop_toTopOf="@id/gl_horizontal_5" />
+
+    <TextView
         android:id="@+id/tv_label_now_showing"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"

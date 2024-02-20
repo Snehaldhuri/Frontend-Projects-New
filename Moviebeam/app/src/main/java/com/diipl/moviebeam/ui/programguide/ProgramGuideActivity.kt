@@ -29,12 +29,14 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.program.ProgramDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -66,8 +68,11 @@ class ProgramGuideActivity : BaseActivity() {
     private var channelContent: List<String> = emptyList()
     private var channelList: List<ProgramDTO> = emptyList()
     private var cNo = 0
+    private var Program_hotel_url = ""
     private var isFScreenExit = false
     private var isSearched = false
+    private lateinit var hotelChannel : HotelChannel
+    private var hotelChannelVideo: String = ""
 
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
@@ -75,6 +80,7 @@ class ProgramGuideActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(programGuideViewModel.weatherLiveData, ::handleWeatherResponse)
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
+
         observeToast(programGuideViewModel.showToast)
     }
 
@@ -160,7 +166,6 @@ class ProgramGuideActivity : BaseActivity() {
 
 
     }
-
     private fun searchInAdapter(name: String) {
         val adapter = binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter as ChannelAdapter
         val list = adapter.getChannelList()
@@ -184,6 +189,12 @@ class ProgramGuideActivity : BaseActivity() {
     private fun fetchDetails() {
         intent.extras?.getString("themeLogoFileName")?.let {
             binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
+        }
+        intent.extras?.getString("hotelChannel")?.let {
+            hotelChannel = it.fromJson()
+        }
+        intent.extras?.getString("hotelChannelVideo")?.let {
+            hotelChannelVideo = it
         }
         intent.extras?.let {
             binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
@@ -323,7 +334,11 @@ class ProgramGuideActivity : BaseActivity() {
              isSearched = false
          }*/
 
+        val hotelVideoProgram = ProgramDTO(CN = hotelChannel.channelName,VP= hotelChannelVideo, CNO= (hotelChannel.channelNo).toInt(),P1_PT = hotelChannel.channelName, P1_CLS = "width:80%;", C= "1")
+
         val currentProgram = data[0]
+
+        currentPrograms.add(0, hotelVideoProgram)
         binding.layoutProgramGuide.tvTime1.text = currentProgram.P1_DST
         binding.layoutProgramGuide.tvTime2.text = currentProgram.P2_DST
         binding.layoutProgramGuide.tvTime3.text = currentProgram.P3_DST

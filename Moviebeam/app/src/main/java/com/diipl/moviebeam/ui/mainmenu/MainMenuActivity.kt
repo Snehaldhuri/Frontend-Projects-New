@@ -59,6 +59,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -331,6 +332,9 @@ class MainMenuActivity : BaseActivity() {
                 val adapter = MainMenuBtnAdapter { btn ->
                     val bundle = Bundle()
                     bundle.putString("title", btn.title)
+                    bundle.putString("hotelChannel", response?.hotelChannelList?.get(0).toJson())
+                    val hotelChannelVideo = response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
+                    bundle.putString("hotelChannelVideo", hotelChannelVideo)
                     bundle.putString(
                         "themeLogoFileName",
                         mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName

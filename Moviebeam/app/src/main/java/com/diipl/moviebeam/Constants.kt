@@ -261,7 +261,11 @@ object Constants {
         "Peacock TV",
         "Disney+",
         "YouTube",
-        "Prime Video"
+        "Prime Video",
+        "Crackle",
+        "Spotify",
+        "Plex",
+        "Vudu Movies & TV"
     )
 
     //Guest Feedback
