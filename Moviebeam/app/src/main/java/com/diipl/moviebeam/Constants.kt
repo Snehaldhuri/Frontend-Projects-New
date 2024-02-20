@@ -265,7 +265,10 @@ object Constants {
         "Crackle",
         "Spotify",
         "Plex",
-        "Vudu Movies & TV"
+        "Vudu Movies & TV",
+        "DAZN",
+        "Pac 12 ",
+        "ESPN"
     )
 
     //Guest Feedback
