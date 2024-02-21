@@ -19,11 +19,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.Constants.ALL_SERVICES
-import com.diipl.moviebeam.Constants.HOTEL_VIDEO_LOOP_COUNT
-import com.diipl.moviebeam.Constants.HOTEL_VIDEO_URL
-import com.diipl.moviebeam.Constants.LA_ID
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -46,6 +41,11 @@ import com.diipl.moviebeam.ui.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
+import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_LOOP_COUNT
+import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_URL
+import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo

@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 
 class HotelInfoTabAdapter(

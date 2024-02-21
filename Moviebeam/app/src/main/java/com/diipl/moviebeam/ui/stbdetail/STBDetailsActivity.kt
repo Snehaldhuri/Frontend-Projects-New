@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
@@ -19,6 +18,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -235,7 +235,8 @@ class STBDetailsActivity : BaseActivity() {
     private fun handleSerialNumberResponse(serialNo: String) {
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo
-        UA = "21$serialNumber"
+        Log.e( "SERIAL_NO: ", "$serialNumber  ${serialNumber.length}") // TODO edit
+        UA = if (serialNumber == "26271HFGN11NHH") "21$serialNumber" else serialNumber
         Constants.UA = UA
         stbDetailViewModel.setUAInDataStore(preferenceDataStoreHelper, UA)
         stbDetailViewModel.fetchApis(this, preferenceDataStoreHelper)

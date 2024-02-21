@@ -1,5 +1,6 @@
-package com.diipl.moviebeam
+package com.diipl.moviebeam.utils
 
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel

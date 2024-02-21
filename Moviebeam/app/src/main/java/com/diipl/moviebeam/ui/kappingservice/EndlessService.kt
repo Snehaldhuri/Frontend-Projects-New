@@ -21,14 +21,12 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.BuildConfig
-import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.KapingConstants
-import com.diipl.moviebeam.PanelConstants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.movies.RentalSyncResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
@@ -38,14 +36,21 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
+import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.KapingResponseParsing
+import com.diipl.moviebeam.utils.PanelConstants
+import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.log
+import com.diipl.moviebeam.utils.toTimestamp
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -534,7 +539,29 @@ class EndlessService : Service() {
 
             KapingConstants.KAP_CMD_SYNC_RECENT_VIEWED -> {
                 // TODO Sync Viewed data of rental movies
+                CoroutineScope(Dispatchers.IO).launch{
+                    kapingResponse.CMD?.let {str->
+                        val data = str.substring(19, str.length)
+                        val syncResponse = data.fromJson<RentalSyncResponse>()
+                        moviesLiveData.value?.let {res->
+                            syncResponse.syncList.forEach {sync->
+                                res.premiumContentList.forEach {
+                                    if (sync.releaseId == it.releaseId && sync.productId == it.productId){
+                                        val model = RentalMovieModel()
+                                        model.movieData = it
+                                        model.rentalID = sync.rentalId
+                                        model.sessionID = Constants.SESSION_ID
+                                        model.currentSeek = sync.seek
+                                        model.startTimeStamp = sync.rentalTime.toTimestamp() ?: System.currentTimeMillis()
+                                        model.lastTimeStamp = System.currentTimeMillis()
+                                        roomRepository.insertRentalMovies(model)
+                                    }
+                                }
+                            }
+                        }
+                    }
 
+                }
             }
 
         }

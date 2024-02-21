@@ -8,9 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
 import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.FragmentToiletryRequestSummaryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment

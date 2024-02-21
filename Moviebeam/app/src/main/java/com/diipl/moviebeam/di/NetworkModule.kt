@@ -1,11 +1,11 @@
 package com.diipl.moviebeam.di
 
 import androidx.databinding.ktx.BuildConfig
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
+import com.diipl.moviebeam.utils.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

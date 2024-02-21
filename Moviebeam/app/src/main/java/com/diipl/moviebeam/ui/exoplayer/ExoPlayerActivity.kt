@@ -11,23 +11,25 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
+import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.databinding.ActivityExoPlayerBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getLastSeek
+import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
 
 
 private const val TAG = "ExoPlayerActivity"
-
 @AndroidEntryPoint
 class ExoPlayerActivity : BaseActivity() {
 
@@ -52,7 +54,25 @@ class ExoPlayerActivity : BaseActivity() {
     private lateinit var seriesData: Detail
 
     override fun observeViewModel() {
+        observe(moviesViewModel.rentalReversal, ::handleRentalReversalResponse)
+    }
 
+    private fun handleRentalReversalResponse(resource: Resource<RentalReversalResponse>) {
+        when(resource){
+            is Resource.Success -> {
+                resource.data?.let {
+                    if (it.errorCode == 0 && it.description == "success"){
+                        moviesViewModel.deleteMovieDetails(rentalMovieModel)
+                    }
+                    if (it.errorCode == 0 && it.description.isEmpty()){
+                        moviesViewModel.deleteMovieDetails(rentalMovieModel)
+                    }
+                    finish()
+                }
+
+            }
+            else -> {}
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,6 +118,7 @@ class ExoPlayerActivity : BaseActivity() {
         if (player == null) {
             initializePlayer()
         }
+
     }
 
     @androidx.annotation.OptIn(UnstableApi::class)
@@ -181,11 +202,11 @@ class ExoPlayerActivity : BaseActivity() {
             super.onPlayerError(error)
             if (::showTimeModel.isInitialized){
                 moviesViewModel.deleteShowDetails(showTimeModel)
+                finish()
             }
-            if (::rentalMovieModel.isInitialized){
-                moviesViewModel.deleteMovieDetails(rentalMovieModel)
+            if (::rentalMovieModel.isInitialized && error.localizedMessage!!.contains("Source error") ){
+                moviesViewModel.setRentalReversal(rentalMovieModel)
             }
-            finish()
         }
 
         override fun onPositionDiscontinuity(

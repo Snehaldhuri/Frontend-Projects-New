@@ -4,10 +4,10 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.Converters
 import com.diipl.moviebeam.data.dto.showtime.Detail
+import com.diipl.moviebeam.utils.Constants
 
 @Entity(tableName = "recentMovies")
 @TypeConverters(Converters::class)

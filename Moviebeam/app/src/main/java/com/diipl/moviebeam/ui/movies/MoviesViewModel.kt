@@ -5,12 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
+import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
+import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -20,7 +21,9 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.getRentalDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
@@ -193,6 +196,24 @@ class MoviesViewModel @Inject constructor(
     fun deleteShowDetails(seriesData: ShowTimeModel) {
         viewModelScope.launch {
             roomRepository.deleteShowDetails(seriesData)
+        }
+    }
+
+    private val _rentalReversal = MutableLiveData<Resource<RentalReversalResponse>>()
+    val rentalReversal : LiveData<Resource<RentalReversalResponse>> get() = _rentalReversal
+    fun setRentalReversal(rentalMovieModel: RentalMovieModel) {
+        viewModelScope.launch {
+            if (rentalMovieModel.rentalID != 0) {
+                val request = RentalReversalRequest()
+                request.reversalDetails = rentalMovieModel.getRentalDetails()
+                val result = movieBeamRepository.setRentalReversal(request)
+                if (result == null) {
+                    _rentalReversal.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Rental Reversal Services Api"))
+                } else {
+                    _rentalReversal.postValue(Resource.Success(result))
+                }
+            } else
+                _rentalReversal.postValue(Resource.Success(RentalReversalResponse()))
         }
     }
 

@@ -1,6 +1,6 @@
 package com.diipl.moviebeam.data.dto.movies
 
-import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.utils.Constants
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
@@ -15,6 +15,26 @@ data class RentalMovieResponse(
     @SerializedName("RENTALID") var rentalID: String = "",
     @SerializedName("UA") var UA: String = ""
 )
+
+data class RentalSyncResponse(
+    @SerializedName("syncList")
+    var syncList: List<Sync> = listOf()
+) {
+    data class Sync(
+        @SerializedName("productId")
+        var productId: Int = 0,
+        @SerializedName("releaseId")
+        var releaseId: Int = 0,
+        @SerializedName("releaseTypeId")
+        var releaseTypeId: Int = 0,
+        @SerializedName("rentalId")
+        var rentalId: Int = 0,
+        @SerializedName("rentalTime")
+        var rentalTime: String = "",
+        @SerializedName("seek")
+        var seek: Long = 0
+    )
+}
 
 @Serializable
 data class RentalMovieRequest(

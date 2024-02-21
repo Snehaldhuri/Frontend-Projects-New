@@ -1,10 +1,10 @@
 package com.diipl.moviebeam.data.repositories
 
 import androidx.lifecycle.LiveData
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.room.db.MoviesDatabase
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
+import com.diipl.moviebeam.utils.Constants
 import javax.inject.Inject
 
 class RoomRepository @Inject constructor(private val database: MoviesDatabase) {

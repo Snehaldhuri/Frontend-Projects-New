@@ -10,6 +10,8 @@ import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
+import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
+import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -149,5 +151,9 @@ class MovieBeamRepository @Inject constructor(
         stbTime: String
     ): FeedbackResponse? {
         return remoteDataSource.sendGuestFeedback(ua, feedback, stbTime)
+    }
+
+    suspend fun setRentalReversal(request: RentalReversalRequest): RentalReversalResponse? {
+        return remoteDataSource.setRentalReversal(request)
     }
 }

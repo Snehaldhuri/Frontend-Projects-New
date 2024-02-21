@@ -10,8 +10,8 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
-import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.KapingConstants
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse

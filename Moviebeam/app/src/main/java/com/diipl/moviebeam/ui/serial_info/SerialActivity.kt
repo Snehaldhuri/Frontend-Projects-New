@@ -10,12 +10,12 @@ import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.utils.Constants
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 
@@ -86,7 +86,7 @@ class SerialActivity : BaseActivity() {
         builder.setTitle("Enter Serial Number")
 
 
-        // Serial No :- 29221HFGN30WLA, 26271HFGN11NHH
+        // Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14507KKWK1C017/ 507KKWK1C017
 
         val input = EditText(this)
         var m_Text: String

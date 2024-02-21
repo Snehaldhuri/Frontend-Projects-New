@@ -1,4 +1,4 @@
-package com.diipl.moviebeam
+package com.diipl.moviebeam.utils
 
 object KapingConstants {
 

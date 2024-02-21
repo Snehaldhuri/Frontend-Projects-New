@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.movies
 
 import android.graphics.Color
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -13,11 +12,11 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.Constants.MOVIE_SELECTED_POSITION
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.databinding.MoviegenreChildlistItemBinding
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.MOVIE_SELECTED_POSITION
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 import com.diipl.moviebeam.utils.toInvisible
 
@@ -134,7 +133,6 @@ class ChildAdapter(
         }
 
         holder.movieview.setOnClickListener {
-            Log.e(TAG, "onBindViewHolder: ${it.id}   ${holder.absoluteAdapterPosition} ")
             MOVIE_SELECTED_POSITION = holder.absoluteAdapterPosition
             onItemClicked(item, holder.itemView)
         }
