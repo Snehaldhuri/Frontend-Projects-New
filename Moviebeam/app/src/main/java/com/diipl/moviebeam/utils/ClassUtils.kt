@@ -4,7 +4,9 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import androidx.media3.exoplayer.ExoPlayer
 import com.diipl.moviebeam.Constants
+import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import java.util.Calendar
 import kotlin.reflect.full.declaredMemberProperties
@@ -21,6 +23,14 @@ fun <T : Any> T.toQueryMap(): Map<String, Any> {
     }
 
     return map
+}
+
+inline fun <reified T> T.toJson(): String {
+    return Gson().toJson(this)
+}
+
+inline fun <reified T> String.fromJson(): T {
+    return Gson().fromJson(this, T::class.java)
 }
 
 fun isRentalMovieTimeOver(): Boolean{
@@ -78,6 +88,16 @@ fun replaceDegreeSymbol(temp: String?): String {
         }
     }
     return temperature
+}
+
+fun ExoPlayer?.getLastSeek() : Long {
+    if (this != null){
+        if (this.contentPosition.toTimeFormat() == this.duration.toTimeFormat()){
+            return 0
+        }
+        return this.contentPosition
+    }
+    return 0
 }
 
 fun Long.toTimeFormat(): String {

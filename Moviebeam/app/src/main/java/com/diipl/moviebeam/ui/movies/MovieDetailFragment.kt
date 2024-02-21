@@ -12,6 +12,7 @@ import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
+import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
@@ -76,18 +77,32 @@ class MovieDetailFragment : BaseFragment() {
         }
 
         binding.btnRentNow.setOnClickListener {
-            val data = Gson().toJson(movie)
-            startActivity(
-                Intent(requireActivity(), ConfirmRentalActivity::class.java).putExtra(
-                    Constants.MOVIE_RENTALS,
-                    data
+            if (binding.btnRentNow.text == getString(R.string.watch_free)){
+                apiCall(0, Constants.C_TYPE_MOVIE)
+                viewModel.insertMovieDetails(RentalMovieResponse(), movie)
+                movie.let { it1 ->
+                    (activity as MoviesActivity?)?.gotoExoPlayerActivity(
+                        it1,
+                        false,
+                        true,
+                        seekPosition
+                    )
+                }
+            } else {
+                val data = Gson().toJson(movie)
+                startActivity(
+                    Intent(requireActivity(), ConfirmRentalActivity::class.java).putExtra(
+                        Constants.MOVIE_RENTALS,
+                        data
+                    )
                 )
-            )
+            }
 
         }
 
         binding.btnContinueWatch.setOnClickListener {
-            apiCall(1, Constants.C_TYPE_MOVIE)
+            val seekType = if (binding.btnContinueWatch.text.toString() == getString(R.string.watch_now)) 0 else 1
+            apiCall(seekType, Constants.C_TYPE_MOVIE)
             movie.let { it1 ->
                 (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                     it1,
@@ -99,7 +114,7 @@ class MovieDetailFragment : BaseFragment() {
         }
 
         binding.btnWatchFromStart.setOnClickListener {
-            apiCall(0, Constants.C_TYPE_MOVIE)
+            apiCall(1, Constants.C_TYPE_MOVIE)
             movie.let { it1 ->
                 (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                     it1,
@@ -149,6 +164,11 @@ class MovieDetailFragment : BaseFragment() {
             if (data != null) {
                 seekPosition = data.currentSeek
                 rentalID = data.rentalID.toString()
+                if (data.currentSeek <= 0) {
+                    binding.btnContinueWatch.text = getString(R.string.watch_now)
+                } else {
+                    binding.btnContinueWatch.text = getString(R.string.continue_watch)
+                }
                 binding.btnRentNow.toGone()
                 binding.btnWatchTrailer.toGone()
                 binding.btnContinueWatch.toVisible()

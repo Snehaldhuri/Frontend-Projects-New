@@ -17,6 +17,7 @@ import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentShowtimeSeasonBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
+import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -31,7 +32,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
     private var gradient: GradientDrawable? = null
 
     private val showtimeViewModel: ShowtimeViewModel by activityViewModels()
-
+    private val viewModel : MoviesViewModel by activityViewModels()
     private var selectedShow: ShowTimeContent? = null
 
     private var seasonList: List<Season> = listOf()
@@ -121,7 +122,13 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
 
         adapter = ShowtimeSeasonChildAdapter(
             onItemClicked = { movieDetail ->
-                (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(movieDetail, false, true)
+                viewModel.getShowData(movieDetail.releaseId)
+                viewModel.seriesData.observe(this){
+                    (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(movieDetail, false, true,
+                        it?.currentSeek ?: 0
+                    )
+                }
+
             },
             onLeftKeyPressed = {
                 binding.btnSeasonList.post {

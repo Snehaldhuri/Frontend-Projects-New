@@ -7,16 +7,22 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
+import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.databinding.ActivityExoPlayerBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
+import com.diipl.moviebeam.utils.fromJson
+import com.diipl.moviebeam.utils.getLastSeek
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -38,10 +44,12 @@ class ExoPlayerActivity : BaseActivity() {
     private var isTrailer = false
     private var isContent = false
     private var seekPosition: Long = 0
-    private var seekTime: Int = 0
 
-    private var releaseId = ""
-    private lateinit var movieModel: RentalMovieModel
+    private var releaseId = 0
+    private lateinit var rentalMovieModel: RentalMovieModel
+    private lateinit var showTimeModel: ShowTimeModel
+    private lateinit var movieData: ContentDto
+    private lateinit var seriesData: Detail
 
     override fun observeViewModel() {
 
@@ -51,16 +59,25 @@ class ExoPlayerActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         if (intent != null) {
-            intent.extras?.getString(Constants.RELEASE_ID)?.let { releaseId = it }
+            intent.extras?.getString(Constants.MOVIE_DETAILS)?.let { movieData = it.fromJson() }
+            intent.extras?.getString(Constants.SHOW_DETAILS)?.let { seriesData = it.fromJson() }
             intent.extras?.getBoolean(Constants.IS_TRAILER)?.let { isTrailer = it }
             intent.extras?.getBoolean(Constants.IS_CONTENT)?.let { isContent = it }
             intent.extras?.getLong(Constants.IS_CONTINUE, 0)?.let { seekPosition = it }
         }
 
-        moviesViewModel.getRentalMovie(releaseId.toInt())
+        releaseId = if (::movieData.isInitialized) movieData.releaseId else seriesData.releaseId
+
+        moviesViewModel.getRentalMovie(releaseId)
         moviesViewModel.movieData.observe(this) {
             if (it != null)
-                movieModel = it
+                rentalMovieModel = it
+        }
+
+        moviesViewModel.getShowData(releaseId)
+        moviesViewModel.seriesData.observe(this) {
+            if (it != null)
+                showTimeModel = it
         }
 
     }
@@ -130,9 +147,13 @@ class ExoPlayerActivity : BaseActivity() {
 
     private fun releasePlayer() {
         player?.let { exoPlayer ->
-            if (::movieModel.isInitialized){
-                movieModel.currentSeek = exoPlayer.currentPosition
-                moviesViewModel.updateMovieDetails(movieModel)
+            if (isContent && ::rentalMovieModel.isInitialized) {
+                rentalMovieModel.currentSeek = exoPlayer.getLastSeek()
+                moviesViewModel.updateMovieDetails(rentalMovieModel)
+            }
+            if (isContent && ::showTimeModel.isInitialized) {
+                showTimeModel.currentSeek = exoPlayer.getLastSeek()
+                moviesViewModel.updateShowDetails(showTimeModel)
             }
             playbackPosition = exoPlayer.currentPosition
             mediaItemIndex = exoPlayer.currentMediaItemIndex
@@ -142,6 +163,12 @@ class ExoPlayerActivity : BaseActivity() {
         player = null
     }
 
+    override fun onPause() {
+        releasePlayer()
+        super.onPause()
+        finish()
+    }
+
     override fun onBackPressed() {
         releasePlayer()
         super.onBackPressed()
@@ -149,6 +176,18 @@ class ExoPlayerActivity : BaseActivity() {
     }
 
     private fun playerListener() = object : Player.Listener {
+
+        override fun onPlayerError(error: PlaybackException) {
+            super.onPlayerError(error)
+            if (::showTimeModel.isInitialized){
+                moviesViewModel.deleteShowDetails(showTimeModel)
+            }
+            if (::rentalMovieModel.isInitialized){
+                moviesViewModel.deleteMovieDetails(rentalMovieModel)
+            }
+            finish()
+        }
+
         override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,
@@ -169,50 +208,57 @@ class ExoPlayerActivity : BaseActivity() {
                 ExoPlayer.STATE_IDLE -> "ExoPlayer.STATE_IDLE      -"
                 ExoPlayer.STATE_BUFFERING -> "ExoPlayer.STATE_BUFFERING -"
                 ExoPlayer.STATE_READY -> "ExoPlayer.STATE_READY     -"
-                ExoPlayer.STATE_ENDED -> {
-                    "ExoPlayer.STATE_ENDED     -"
-                }
-
-                else -> "UNKNOWN_STATE             -"
+                ExoPlayer.STATE_ENDED -> "ExoPlayer.STATE_ENDED     -"
+                else -> "UNKNOWN_STATE   -"
             }
             when (playbackState) {
                 ExoPlayer.STATE_ENDED -> {
-                    movieModel.currentSeek = 0
-                    moviesViewModel.updateMovieDetails(movieModel)
-                    apiCall(1, 2)
+                    releasePlayer()
+                    apiCall(0, 2)
                     finish()
                 }
 
-                Player.STATE_BUFFERING -> {
-                }
+                Player.STATE_BUFFERING -> {}
 
-                Player.STATE_IDLE -> {
-                }
+                Player.STATE_IDLE -> {}
 
-                Player.STATE_READY -> {
-
-                }
+                Player.STATE_READY -> {}
             }
             Log.e("ExoPlayer state", "changed state to $stateString")
         }
 
         private fun apiCall(seekType: Int, a: Int) {
             val request = RentalMovieRequest()
-            if (::movieModel.isInitialized){
-                movieModel.movieData?.let {
+            if (::movieData.isInitialized) {
+                movieData.let {
                     request.productId = it.productId
                     request.releaseID = it.releaseId
                     request.price = it.price
                     request.contentTypeID = it.contentTypeId
-                    request.rentalID = movieModel.rentalID.toString()
+                    request.rentalID = if (::rentalMovieModel.isInitialized) rentalMovieModel.rentalID.toString() else "+"
                     request.productType = it.releaseTypeId
                     request.a = a
                     request.ra = 0
                     request.seekType = seekType
-                    request.seek = player?.currentPosition!!
-                    moviesViewModel.updateRentalMovieLog(request)
+                    request.seek = player.getLastSeek()
                 }
+                moviesViewModel.updateRentalMovieLog(request)
             }
+            if (::seriesData.isInitialized) {
+                seriesData.let {
+                    request.productId = it.productId
+                    request.releaseID = it.releaseId
+                    request.contentTypeID = it.contentTypeId
+                    request.rentalID = if (::showTimeModel.isInitialized) showTimeModel.rentalID.toString() else ""
+                    request.productType = Constants.SHOWTIME_RELEASE_TYPE_ID
+                    request.a = a
+                    request.ra = 0
+                    request.seekType = seekType
+                    request.seek = player.getLastSeek()
+                }
+                moviesViewModel.updateRentalMovieLog(request)
+            }
+
         }
 
 
@@ -228,3 +274,4 @@ class ExoPlayerActivity : BaseActivity() {
         }
     }
 }
+

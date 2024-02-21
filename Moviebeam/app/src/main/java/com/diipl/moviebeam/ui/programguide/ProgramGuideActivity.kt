@@ -29,12 +29,14 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.program.ProgramDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -68,6 +70,7 @@ class ProgramGuideActivity : BaseActivity() {
     private var cNo = 0
     private var isFScreenExit = false
     private var isSearched = false
+    private lateinit var hotelChannel: HotelChannel
 
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
@@ -182,6 +185,10 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     private fun fetchDetails() {
+        intent.extras?.getString("hotelChannel")?.let {
+            hotelChannel = it.fromJson()
+        }
+
         intent.extras?.getString("themeLogoFileName")?.let {
             binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
         }

@@ -1,54 +1,22 @@
 package com.diipl.moviebeam.ui.base
 
 import android.app.Activity
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.PanelConstants
-import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
+private const val TAG = "BaseActivity"
 abstract class BaseActivity : AppCompatActivity() {
 
-    private val TAG = "BaseActivity"
     abstract fun observeViewModel()
     protected abstract fun initViewBinding()
-
-    private val homePressReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-
-            intent.let {
-                if (it.action == Intent.ACTION_CLOSE_SYSTEM_DIALOGS) {
-                    val reason = it.getStringExtra("reason")
-                    if (reason == "homekey") {
-                        if (currentActivity?.javaClass?.simpleName != MainMenuActivity::class.java.simpleName) {
-                            startActivity(Intent(context, MainMenuActivity::class.java).also { i->
-                                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            })
-                            Log.e(TAG, "onReceive: 0")
-                            return
-                        } else {
-                            Log.e(TAG, "onReceive: 1")
-                            return
-                        }
-                    } else {
-                        Log.e(TAG, "onReceive: 2")
-                        return
-                    }
-                }
-            }
-        }
-    }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,8 +24,8 @@ abstract class BaseActivity : AppCompatActivity() {
         observeViewModel()
 //        CustomThreadExecutor()
 
-        val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
-        registerReceiver(homePressReceiver, filter)
+        Log.e(TAG, "onCreate: ${currentActivity?.javaClass?.simpleName}")
+
 
     }
 

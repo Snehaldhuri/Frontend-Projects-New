@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.movies
 
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,6 +11,7 @@ import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
+import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
@@ -19,6 +19,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -124,20 +125,41 @@ class MoviesViewModel @Inject constructor(
     fun insertMovieDetails(data: RentalMovieResponse, movie: ContentDto) {
         viewModelScope.launch {
             val model = RentalMovieModel()
-            model.movieData = movie
-            model.rentalID = data.rentalID.toInt()
+            model.rentalID = if (data.rentalID.isEmpty()) 0 else data.rentalID.toInt()
+            model.finishTimeStamp =
+                if (data.rentalID.isEmpty()) 0 else (model.startTimeStamp + (24 * 60 * 60 * 1000))
             model.sessionID = Constants.SESSION_ID
+            model.movieData = movie
 
             roomRepository.insertRentalMovies(model)
         }
     }
 
+    fun insertShowDetails(show: Detail) {
+        viewModelScope.launch {
+            val model = ShowTimeModel()
+            model.sessionID = Constants.SESSION_ID
+            model.seriesData = show
+
+            roomRepository.insertShowDetails(model)
+        }
+    }
+
+
     private var _movieData = MutableLiveData<RentalMovieModel>()
     val movieData: LiveData<RentalMovieModel> get() = _movieData
+    private var _seriesData = MutableLiveData<ShowTimeModel>()
+    val seriesData: LiveData<ShowTimeModel> get() = _seriesData
 
-    fun getRentalMovie(releaseId : Int) {
+    fun getRentalMovie(releaseId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             _movieData.postValue(roomRepository.getRentalMovie(releaseId))
+        }
+    }
+
+    fun getShowData(releaseId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _seriesData.postValue(roomRepository.getShowData(releaseId))
         }
     }
 
@@ -151,10 +173,28 @@ class MoviesViewModel @Inject constructor(
 
     fun updateRentalMovieLog(request: RentalMovieRequest) {
         viewModelScope.launch {
-            Log.e("updateRentalMovieLog: ", "STARTED  -->  ${request.seek}")
-            val res = movieBeamRepository.getMovieAccess(request)
-            Log.e("updateRentalMovieLog: ", "DONE  -->  ${request.seek}  \n $res")
+            movieBeamRepository.getMovieAccess(request)
         }
     }
+
+    fun updateShowDetails(showTimeModel: ShowTimeModel) {
+        viewModelScope.launch {
+            showTimeModel.lastTimeStamp = System.currentTimeMillis()
+            roomRepository.updateShowDetails(showTimeModel)
+        }
+    }
+
+    fun deleteMovieDetails(movieData: RentalMovieModel) {
+        viewModelScope.launch {
+            roomRepository.deleteMovieDetails(movieData)
+        }
+    }
+
+    fun deleteShowDetails(seriesData: ShowTimeModel) {
+        viewModelScope.launch {
+            roomRepository.deleteShowDetails(seriesData)
+        }
+    }
+
 
 }

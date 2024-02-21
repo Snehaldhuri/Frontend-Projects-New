@@ -55,6 +55,7 @@ import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -304,6 +305,7 @@ class MainMenuActivity : BaseActivity() {
                 val adapter = MainMenuBtnAdapter { btn ->
                     releaseVideoPlayer()
                     val bundle = Bundle()
+                    bundle.putString("hotelChannel", response?.hotelChannelList?.get(0).toJson())
                     bundle.putString("title", btn.title)
                     bundle.putString(
                         "themeLogoFileName",

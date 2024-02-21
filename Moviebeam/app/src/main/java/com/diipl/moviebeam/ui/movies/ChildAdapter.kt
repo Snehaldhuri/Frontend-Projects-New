@@ -1,8 +1,10 @@
 package com.diipl.moviebeam.ui.movies
 
 import android.graphics.Color
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
@@ -12,6 +14,7 @@ import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.Constants.MOVIE_SELECTED_POSITION
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.databinding.MoviegenreChildlistItemBinding
@@ -22,15 +25,16 @@ private const val TAG = "ChildAdapter"
 
 class ChildAdapter(
     private val childList: List<ContentDto>,
-    private var onItemClicked: (ContentDto) -> Unit,
+    private var onItemClicked: (ContentDto, View) -> Unit,
     private val onLeftKey: (Boolean) -> Unit
 ) :
     RecyclerView.Adapter<ChildAdapter.ChildViewHolder>() {
-
     private var pos = "-1"
+    private var viewHolder : ChildViewHolder? = null
 
     inner class ChildViewHolder(val binding: MoviegenreChildlistItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
         val logo: ImageView = itemView.findViewById(R.id.childLogoIv)
         val title: TextView = itemView.findViewById(R.id.childTitleTv)
         val movieview: CardView = itemView.findViewById(R.id.cv_movie_card)
@@ -42,6 +46,8 @@ class ChildAdapter(
             parent,
             false
         )
+
+
         binding.root.isFocusable = true
         binding.root.isClickable = true
 
@@ -62,17 +68,7 @@ class ChildAdapter(
             binding.root.startAnimation(anim)
             anim.fillAfter = true
 
-          /*  if (hasFocus) {
-                it.scaleX = 1.12f
-                it.scaleY = 1.12f
-
-            } else {
-                it.scaleX = 1.0f
-                it.scaleY = 1.0f
-
-            }*/
         }
-
 
         return ChildViewHolder(binding)
     }
@@ -80,6 +76,7 @@ class ChildAdapter(
     override fun getItemCount(): Int = childList.size
 
     override fun onBindViewHolder(holder: ChildViewHolder, position: Int) {
+        viewHolder = holder
         val item = childList[position]
 
         val httpStreamingHotelvideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
@@ -113,8 +110,11 @@ class ChildAdapter(
                         }
                     }
                     KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                        pos = holder.absoluteAdapterPosition.toString()
-                    }
+                        pos = if (holder.absoluteAdapterPosition == 0 && pos != "0"){
+                            "-1"
+                        } else {
+                            holder.absoluteAdapterPosition.toString()
+                        }                    }
                     KeyEvent.KEYCODE_DPAD_UP -> {
                         pos = if (holder.absoluteAdapterPosition == 0 && pos != "0"){
                             "-1"
@@ -134,8 +134,11 @@ class ChildAdapter(
         }
 
         holder.movieview.setOnClickListener {
-            onItemClicked(item)
+            Log.e(TAG, "onBindViewHolder: ${it.id}   ${holder.absoluteAdapterPosition} ")
+            MOVIE_SELECTED_POSITION = holder.absoluteAdapterPosition
+            onItemClicked(item, holder.itemView)
         }
     }
+
 
 }

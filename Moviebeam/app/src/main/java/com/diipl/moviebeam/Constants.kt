@@ -6,19 +6,23 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
+    const val SHOWTIME_RELEASE_TYPE_ID = 1
+
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
     const val C_TYPE_TRAILER: String = "TRAILER"
     var SESSION_ID: String = ""
     var RENTAL_ID: String = ""
     var RENTAL_TIME: Long = 1707840000000
-//    var RENTAL_TIME: Long = 1707736984000
+    var MOVIE_SELECTED_POSITION: Int = -1
+    var MOVIE_PARENT_POSITION: Int = -1
 
     const val VERSION = 1.5
 
     const val SPLASH_DELAY = 3000
     var timer = ""
-    const val BASE_URL_LG_REST = "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
+    const val BASE_URL_LG_REST =
+        "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
     const val BASE_URL_ACCOUNT_SETUP = "https://stb.moviebeam.com:1926/"
     const val BASE_URL_MOVIE_RENTAL = "https://stb.moviebeam.com:1927/"
     const val BASE_URL_ASSET = "https://stb.moviebeam.com:1928/Asset/"
@@ -91,7 +95,7 @@ object Constants {
     const val FREE_VOD = "Free Movies"
     const val ADULT_DAY_PASS = "Adult Day Pass"
     const val ADULT = "Adult"
-    const val RECENT_WATCH = "Recent Watch"
+    const val RECENTLY_VIEWED = "Recently Viewed"
 
     //Showtime page menu button list
     const val ALL_SHOWS = "All Shows"
@@ -122,30 +126,38 @@ object Constants {
     // Static Movies URl
 
     const val MOVIE_URL = "http://d3rh9vbn3pp0qe.cloudfront.net/41177_T.m2t"
-    const val BASE_PLAYBACK_URL ="https://d14ez9fl8x9e1s.cloudfront.net/"
+    const val BASE_PLAYBACK_URL = "https://d14ez9fl8x9e1s.cloudfront.net/"
     const val TRAILER_EXTENSION = "_T.m2t"
     const val CONTENT_EXTENSION = ".m2t"
     const val CONTENT_EXTENSION_MP = ".mp4"
-   /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
-    const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
-    const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
-    const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"*/
-   const val MOVIE_URL1 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974.mp4"
-    const val MOVIE_URL2 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974_B.mp4"
-    const val MOVIE_URL3 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/7107/hotelData/7107.mp4"
+
+    /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
+     const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
+     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
+     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"*/
+    const val MOVIE_URL1 =
+        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974.mp4"
+    const val MOVIE_URL2 =
+        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974_B.mp4"
+    const val MOVIE_URL3 =
+        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/7107/hotelData/7107.mp4"
     const val TRAILER_URL = "trailer_url"
 
     const val RELEASE_ID = "releaseId"
+    const val MOVIE_DETAILS = "movieDetails"
+    const val SHOW_DETAILS = "showDetails"
     const val IS_TRAILER = "isTrailer"
-    const val IS_CONTENT  = "isContent"
-    const val IS_CONTINUE  = "isContinue"
+    const val IS_CONTENT = "isContent"
+    const val IS_CONTINUE = "isContinue"
+
+    val RECENT_BUTTON = BtnModel(RECENT_WATCH_MOVIE_ID, R.drawable.img_recent_view, RECENTLY_VIEWED)
 
     val MOVIES_PAGE_MENU_BUTTON_LIST = mutableListOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
         BtnModel(FREE_MOVIES_ID, R.drawable.video_on_demand_icon, FREE_VOD),
 //        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
 //        BtnModel(ADULT_ID, R.drawable.adult, ADULT),
-        BtnModel(RECENT_WATCH_MOVIE_ID, R.drawable.img_recent_view, RECENT_WATCH),
+        BtnModel(RECENT_WATCH_MOVIE_ID, R.drawable.img_recent_view, RECENTLY_VIEWED)
     )
     val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),
@@ -296,15 +308,15 @@ object Constants {
     // Kaping
     const val KAPING = "KAPING"
     const val DV = "3.0.1.23"
-    const val CLISTVER="201803130001"
+    const val CLISTVER = "201803130001"
     const val KAPINGEVENT = "10131220"
     const val RBTY = "0100"
-    const val LAVER="1510818301"
-    const val HSVER= "1513951822"
-    const val THMVER= "1509529572"
+    const val LAVER = "1510818301"
+    const val HSVER = "1513951822"
+    const val THMVER = "1509529572"
     const val CMDRES = "4105aa725d84402348900"
     const val INRMVER = "1520924235"
-    const val LAUVER="1520937775"
+    const val LAUVER = "1520937775"
 
     //Program Guide
     const val CONTENT_LIST_PARAM = "contentList"

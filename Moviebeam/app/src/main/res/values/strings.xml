@@ -97,7 +97,9 @@
     <string name="please_contact_the_front_desk_for_assistance">Please contact the Front Desk for assistance.</string>
     <string name="call_front_desk_to_activate_moviebeam_services">Call Front Desk to activate Moviebeam Services.</string>
     <string name="watch_from_start">Watch From Start</string>
-    <string name="continue_watch">Continue Watch</string>
+    <string name="continue_watch">Continue Watching</string>
+    <string name="watch_now">Watch Now</string>
     <string name="confirm_rental">CONFIRM RENTAL</string>
     <string name="rental_price_confirm">$%2$s (+Tax) will be charged to your Account</string>
+    <string name="call_front_desk">Call Front Desk to activate Moviebeam Services</string>
 </resources>

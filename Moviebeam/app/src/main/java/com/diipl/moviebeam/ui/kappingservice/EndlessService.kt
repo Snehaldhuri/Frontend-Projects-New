@@ -5,8 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -36,6 +38,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
@@ -63,6 +66,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+private const val TAG = "EndlessService"
 
 @AndroidEntryPoint
 class EndlessService : Service() {
@@ -117,6 +121,7 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
+
     @Inject
     lateinit var roomRepository: RoomRepository
 
@@ -185,9 +190,39 @@ class EndlessService : Service() {
         versionNumber = getVersionNumber().replace(".", "").trim()
         log(versionNumber)
 
+        val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+        registerReceiver(homePressReceiver, filter)
+
         val notification = createNotification()
         startForeground(1, notification)
     }
+
+    private val homePressReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+
+            intent.let {
+                if (it.action == Intent.ACTION_CLOSE_SYSTEM_DIALOGS) {
+                    val reason = it.getStringExtra("reason")
+                    if (reason == "homekey") {
+                        if (BaseActivity.currentActivity?.javaClass?.simpleName != MainMenuActivity::class.java.simpleName) {
+                            startActivity(Intent(context, MainMenuActivity::class.java).also { i ->
+                                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            })
+                            Log.e(TAG, "onReceive: 0")
+                            return
+                        } else {
+                            Log.e(TAG, "onReceive: 1")
+                            return
+                        }
+                    } else {
+                        Log.e(TAG, "onReceive: 2")
+                        return
+                    }
+                }
+            }
+        }
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -229,10 +264,11 @@ class EndlessService : Service() {
                     callKapingApi()
 
                     if (Constants.SESSION_ID.isNotEmpty())
-                       roomRepository.removeOverTimeMovies()
-                    if (Constants.SESSION_ID == "null")
+                        roomRepository.removeOverTimeMovies()
+                    if (Constants.SESSION_ID == "null") {
                         roomRepository.deleteRecentMovies()
-
+                        roomRepository.deleteRecentShows()
+                    }
                 }
                 delay(1 * 60 * 1000)
             }
@@ -306,10 +342,10 @@ class EndlessService : Service() {
             log("prefix epoch ->  $epoch")
             epochTime = epoch
         }
-        if (kapingCMD == "00") {
-            CMDRES = ""
+        CMDRES = if (kapingCMD == "00") {
+            ""
         } else {
-            CMDRES = "$kapingCMD$epochTime$transactionId$kapingCmdExecutionResponse"
+            "$kapingCMD$epochTime$transactionId$kapingCmdExecutionResponse"
         }
         log("CMDRES -> $CMDRES")
 
@@ -494,6 +530,11 @@ class EndlessService : Service() {
                 } else {
                     fetchShowtimeData(Constants.UA)
                 }
+            }
+
+            KapingConstants.KAP_CMD_SYNC_RECENT_VIEWED -> {
+                // TODO Sync Viewed data of rental movies
+
             }
 
         }

@@ -24,6 +24,9 @@ interface RentalMovieDao {
     @Query("SELECT * FROM recentMovies GROUP BY releaseId ORDER BY lastTimeStamp DESC")
     fun getMovies(): LiveData<List<RentalMovieModel>>
 
+    @Query("SELECT COUNT(*) FROM recentMovies WHERE releaseId = :releaseId")
+    suspend fun getMovieCount(releaseId: Int): Int
+
     @Query("DELETE FROM recentMovies WHERE finishTimeStamp <= :timeStamp")
     suspend fun deleteMovieOverTime(timeStamp: Long)
 

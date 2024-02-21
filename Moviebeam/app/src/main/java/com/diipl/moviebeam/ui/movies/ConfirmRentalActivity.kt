@@ -22,6 +22,7 @@ import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toJson
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
@@ -81,7 +82,7 @@ class ConfirmRentalActivity : BaseActivity() {
             if (isCheckedIn) {
                 viewModel.getRentalMovieResponse(request)
             } else {
-                viewModel.showToastMessage("Not allowed")
+                viewModel.showToastMessage(getString(R.string.call_front_desk))
             }
         }
 
@@ -111,8 +112,7 @@ class ConfirmRentalActivity : BaseActivity() {
                     state.data?.let { data ->
                         when (data.errorCode) {
                             0 -> {
-                                viewModel.insertMovieDetails(data, movie)
-                                startActivity()
+                                startActivity(data)
                             }
 
                             1 -> viewModel.showToastMessage(getString(R.string.product_is_currently_unavailable))
@@ -177,9 +177,12 @@ class ConfirmRentalActivity : BaseActivity() {
         return gradientDrawable
     }
 
-    private fun startActivity() {
+    private fun startActivity(data: RentalMovieResponse) {
+
+        viewModel.insertMovieDetails(data, movie)
+
         val bundle = Bundle()
-        bundle.putString(Constants.RELEASE_ID, (movie.releaseId).toString())
+        bundle.putString(Constants.MOVIE_DETAILS, movie.toJson())
         bundle.putBoolean(Constants.IS_TRAILER, false)
         bundle.putBoolean(Constants.IS_CONTENT, true)
         bundle.putLong(Constants.IS_CONTINUE, 0)

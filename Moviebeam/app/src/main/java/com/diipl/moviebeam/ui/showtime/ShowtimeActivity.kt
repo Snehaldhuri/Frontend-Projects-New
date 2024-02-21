@@ -28,10 +28,12 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -52,6 +54,7 @@ class ShowtimeActivity : BaseActivity() {
     private val list: List<BtnModel> = Constants.SHOWTIME_PAGE_MENU_BUTTON_LIST
 
     private val showtimeViewModel: ShowtimeViewModel by viewModels()
+    private val moviesViewModel: MoviesViewModel by viewModels()
     private var selectedView: View? = null
 
     override fun observeViewModel() {
@@ -120,7 +123,7 @@ class ShowtimeActivity : BaseActivity() {
                         when (btnId) {
                             Constants.ALL_SHOWS_ID -> {
                                 val showtimeParentAdapter =
-                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick){
+                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
                                         if (it) {
                                             requestFocus()
                                         }
@@ -141,7 +144,7 @@ class ShowtimeActivity : BaseActivity() {
                                     } ?: emptyMap()
 
                                 val showtimeParentAdapter =
-                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick){
+                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
                                         if (it) {
                                             requestFocus()
                                         }
@@ -168,7 +171,7 @@ class ShowtimeActivity : BaseActivity() {
                 binding.fcvMovieDetail.toInvisible()
 
                 val showtimeParentAdapter =
-                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick){
+                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
                         if (it) {
                             requestFocus()
                         }
@@ -264,11 +267,16 @@ class ShowtimeActivity : BaseActivity() {
         }
     }
 
-    fun gotoExoPlayerActivity(movieDetails: Detail, isTrailer: Boolean, isContent: Boolean) {
+    fun gotoExoPlayerActivity(
+        movieDetails: Detail, isTrailer: Boolean, isContent: Boolean,
+        seekPosition: Long
+    ) {
         val bundle = Bundle()
-        bundle.putString(Constants.RELEASE_ID, (movieDetails.releaseId).toString())
+
+        bundle.putString(Constants.SHOW_DETAILS, movieDetails.toJson())
         bundle.putBoolean(Constants.IS_TRAILER, isTrailer)
         bundle.putBoolean(Constants.IS_CONTENT, isContent)
+        bundle.putLong(Constants.IS_CONTINUE, seekPosition)
 
         val intent = Intent(this, ExoPlayerActivity::class.java)
         intent.putExtras(bundle)
