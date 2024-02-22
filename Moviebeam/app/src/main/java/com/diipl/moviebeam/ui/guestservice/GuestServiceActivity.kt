@@ -44,6 +44,7 @@ import com.diipl.moviebeam.ui.guestservice.inroomdininggs.InRoomDiningGsFragment
 import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -118,6 +119,8 @@ class GuestServiceActivity : BaseActivity() {
         binding.btnBack.toDelayVisible()
         binding.btnBack.setOnFocusChangeListener(::handleBackClick)
         binding.btnBack.setOnClickListener { finish() }
+        LoggingService.sendMessageToWebSocket("In GuestServicesMain activity")
+
     }
 
 

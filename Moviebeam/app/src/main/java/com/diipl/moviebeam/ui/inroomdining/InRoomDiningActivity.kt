@@ -17,6 +17,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityInRoomDiningBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
@@ -41,7 +42,6 @@ class InRoomDiningActivity : BaseActivity() {
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
-
     override fun observeViewModel() {
         observe(inRoomDiningViewModel.weatherLiveData, ::handleWeatherResponse)
     }
@@ -60,6 +60,8 @@ class InRoomDiningActivity : BaseActivity() {
 
         inRoomDiningViewModel.getThemeResponseData(themeDataStore)
         inRoomDiningViewModel.getWeatherResponseData(weatherDataStore)
+        LoggingService.sendMessageToWebSocket("In InRoomDiningMM activity")
+
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
                 view.background = gradient

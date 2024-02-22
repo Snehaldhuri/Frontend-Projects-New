@@ -44,6 +44,7 @@ import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
@@ -577,6 +578,10 @@ class EndlessService : Service() {
             if (response != null) {
                 updateAccountSetupData(accountSetupDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess")
+            }
+            else{
+                LoggingService.sendMessageToWebSocket("In Account Setup callback fail ")
             }
         }
     }
@@ -587,6 +592,10 @@ class EndlessService : Service() {
             if (response != null) {
                 updateThemeData(themeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket("In theme callback success ")
+            }
+            else{
+                LoggingService.sendMessageToWebSocket("In theme callback fail ")
             }
         }
     }
@@ -597,6 +606,10 @@ class EndlessService : Service() {
             if (response != null) {
                 updateHotelServices(hotelServicesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback success ")
+            }
+            else{
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail ")
             }
         }
     }
@@ -607,6 +620,12 @@ class EndlessService : Service() {
             if (response != null) {
                 updateLocalAttractions(localAttractionsDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback success ")
+
+            }
+            else{
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ")
+
             }
         }
     }
@@ -617,6 +636,12 @@ class EndlessService : Service() {
             if (response != null) {
                 setMoviesResponseData(moviesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket("In Releases callback success ")
+
+            }
+            else{
+                LoggingService.sendMessageToWebSocket("In Releases callback fail ")
+
             }
         }
     }
@@ -627,6 +652,12 @@ class EndlessService : Service() {
             if (response != null) {
                 updateShowTimeData(showtimeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback success ")
+
+            }
+            else{
+                LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback fail ")
+
             }
         }
     }
@@ -637,6 +668,7 @@ class EndlessService : Service() {
             guestDetailsDatastore,
             true,
             kapingResponse.cmdData?.cmdData
+
         )
     }
 

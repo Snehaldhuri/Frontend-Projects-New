@@ -29,6 +29,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -120,6 +121,7 @@ class MoviesActivity : BaseActivity() {
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
+        LoggingService.sendMessageToWebSocket("In MoviesMain activity")
 
     }
 

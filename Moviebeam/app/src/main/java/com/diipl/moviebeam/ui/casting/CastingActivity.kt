@@ -6,6 +6,7 @@ import android.webkit.WebView
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.databinding.ActivityCastingBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 
 
 class CastingActivity : BaseActivity() {
@@ -23,6 +24,8 @@ class CastingActivity : BaseActivity() {
         webView.settings.javaScriptEnabled = true
         webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
         webView.loadUrl(Constants.CASTING_URL)
+        LoggingService.sendMessageToWebSocket("In CastingPage activity")
+
     }
 
 }
