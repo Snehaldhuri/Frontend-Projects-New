@@ -23,19 +23,18 @@ abstract class BaseActivity : AppCompatActivity() {
         initViewBinding()
         observeViewModel()
 //        CustomThreadExecutor()
-
-        Log.e(TAG, "onCreate: ${currentActivity?.javaClass?.simpleName}")
-
-
     }
 
 
     override fun onResume() {
         super.onResume()
+
         currentActivity = this
-        activityStack.add(currentActivity?.localClassName)
-        if (currentActivity?.localClassName == PanelConstants.MAIN_MENU_ACTIVITY_LOCAL_NAME) {
+
+        activityStack.add(this::class.java.simpleName)
+        if (this::class.java.simpleName == MainMenuActivity::class.java.simpleName) {
             activityStack.clear()
+            activityStack.add(MainMenuActivity::class.java.simpleName)
         }
     }
 
@@ -104,7 +103,7 @@ abstract class BaseActivity : AppCompatActivity() {
     companion object {
         const val ADD_FRAGMENT = 0
         const val REPLACE_FRAGMENT = 1
-        var currentActivity: Activity? = null
+        var currentActivity : Activity? = null
         val activityStack: MutableList<String?> = mutableListOf()
     }
 }

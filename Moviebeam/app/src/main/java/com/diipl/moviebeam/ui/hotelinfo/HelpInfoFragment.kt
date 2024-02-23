@@ -17,12 +17,15 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.utils.intToString
 
 private const val TAG = "HelpInfoFragment"
+
 class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     private var _binding: FragmentHelpInfoBinding? = null
@@ -37,6 +40,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
+        activityStack.add(this::class.java.simpleName)
         arguments?.let {
             gradientStartColor = it.getString("gradientStartColor").toString()
             gradientEndColor = it.getString("gradientEndColor").toString()
@@ -46,18 +50,19 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
             binding.btnBack.requestFocus()
         }
 
-        val wifiManager = requireActivity().applicationContext.getSystemService(AppCompatActivity.WIFI_SERVICE) as WifiManager
+        val wifiManager =
+            requireActivity().applicationContext.getSystemService(AppCompatActivity.WIFI_SERVICE) as WifiManager
         val dhcpInfo = wifiManager.dhcpInfo
-        val ipAddress = "IP Address: "+dhcpInfo.ipAddress.intToString()
-        val netmask = "Net Mask: "+dhcpInfo.netmask.intToString()
-        val gateway = "Gateway: "+dhcpInfo.gateway.intToString()
+        val ipAddress = "IP Address: " + dhcpInfo.ipAddress.intToString()
+        val netmask = "Net Mask: " + dhcpInfo.netmask.intToString()
+        val gateway = "Gateway: " + dhcpInfo.gateway.intToString()
 
         binding.tvIpAddress.text = ipAddress
         binding.tvNetMask.text = netmask
         binding.tvGateway.text = gateway
 
 
-        val tvInputManager = requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
+        val tvInputManager =
         val tvInputInfos = tvInputManager.tvInputList
         if (tvInputInfos.isNotEmpty()) {
             Log.e(TAG, "Device is connected to an STB $tvInputInfos")
@@ -65,7 +70,8 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
             Log.e(TAG, "Device is not connected to an STB")
         }
 
-        val connectivityManager = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             connectivityManager.activeNetwork
         } else {
@@ -163,7 +169,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         binding.tvRoomNo.text = "Room No: " + Constants.STB_ROOM_NO
         binding.tvUa.text = "UA: " + Constants.UA
         binding.tvSerialNo.text = "Serial No: " + Constants.SERIAL_NO
-        binding.tvSoftwareVersion.text = "Software Version: " + Constants.VERSION.toString()
+        binding.tvSoftwareVersion.text = "Software Version: " + BuildConfig.VERSION_NAME
         binding.tvContentListVersion.text = "Content List Version: " + Constants.C_LIST_VERSION
     }
 

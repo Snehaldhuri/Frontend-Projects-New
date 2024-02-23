@@ -26,12 +26,4 @@ object PanelConstants {
     const val NDVR = "19"
     const val CALENDAR = "20"
 
-    const val HOTEL_SERVICE_ACTIVITY_LOCAL_NAME = "ui.hotelinfo.HotelInfoActivity"
-    const val Local_ATTRACTION_ACTIVITY_LOCAL_NAME = "ui.localattraction.LocalAttractionActivity"
-    const val GUEST_SERVICE_ACTIVITY_LOCAL_NAME = "ui.guestservice.GuestServiceActivity"
-    const val MOVIES_ACTIVITY_LOCAL_NAME = "ui.movies.MoviesActivity"
-    const val EXO_PLAYER_ACTIVITY_LOCAL_NAME = "ui.exoplayer.ExoPlayerActivity"
-    const val SHOWTIME_ACTIVITY_LOCAL_NAME = "ui.showtime.ShowtimeActivity"
-    const val MAIN_MENU_ACTIVITY_LOCAL_NAME = "ui.mainmenu.MainMenuActivity"
-
 }

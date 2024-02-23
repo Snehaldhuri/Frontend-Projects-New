@@ -53,7 +53,6 @@ import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
-import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
@@ -230,10 +229,10 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                binding.tvTemperature.text =
+                binding.layoutWeatherTime.layoutWeather.txtTemperature.text =
                     mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
                 mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.ivWeather.loadImagesWithGlideExt(it)
+                    binding.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(it)
                 }
                 binding.pbLoader.toInvisible()
             }
@@ -391,9 +390,6 @@ class MainMenuActivity : BaseActivity() {
     private fun handleValidateSessionResponse(status: Boolean) {
         if (status) {
             mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
-        } else {
-            binding.tvWelcome.text = ""
-            binding.tvWelcome.toGone()
             Constants.SESSION_ID = "null"
         }
         binding.pbLoader.toInvisible()
@@ -404,10 +400,11 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 mainMenuViewModel.guestDetailsLiveData.value?.data?.let {
-                    binding.tvWelcome.text = it.message
 
                     Constants.SESSION_ID = it.sessionId.toString()
-
+                    binding.tvWelcome.text =
+                        "Welcome ${it?.guestFirstName} ${it?.guestLastName}"
+                    binding.tvWelcome.toVisible()
                     binding.pbLoader.toInvisible()
                 }
 

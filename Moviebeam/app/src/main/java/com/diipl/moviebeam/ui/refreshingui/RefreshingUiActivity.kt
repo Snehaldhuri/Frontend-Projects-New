@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.PowerManager
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -23,6 +22,7 @@ import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
@@ -66,7 +66,9 @@ class RefreshingUiActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(refreshingUiViewModel.themeLiveData, ::handleThemeResponse)
         observe(refreshingUiViewModel.hotelServiceLiveData, ::handleHotelServicesResponse)
-        observe(refreshingUiViewModel.localAttractionLiveData, ::handleLAServiceResponse)
+        observe(refreshingUiViewModel.localAttractionLiveData, ::handleLocalAttractionResponse)
+        observe(refreshingUiViewModel.moviesLiveData, ::handleMoviesResponse)
+        observe(refreshingUiViewModel.showtimeLiveData, ::handleShowtimeResponse)
     }
 
     override fun initViewBinding() {
@@ -78,7 +80,7 @@ class RefreshingUiActivity : BaseActivity() {
         } else {
             kapingResponse = intent.getParcelableExtra("response")
         }
-        binding.root.postDelayed( {
+        binding.root.postDelayed({
             this.handleKaping(kapingResponse)
         }, 5000)
     }
@@ -121,9 +123,7 @@ class RefreshingUiActivity : BaseActivity() {
                 handleFetchShowtimeCmd()
             }
         }
-        val i = Intent(this, MainMenuActivity::class.java)
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        startActivity(i)
+
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
@@ -133,6 +133,8 @@ class RefreshingUiActivity : BaseActivity() {
             false,
             kapingResponse.cmdData?.cmdData
         )
+        EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+        redirectToMainMenuScreen()
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
@@ -142,6 +144,8 @@ class RefreshingUiActivity : BaseActivity() {
             true,
             kapingResponse.cmdData?.cmdData
         )
+        EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+        redirectToMainMenuScreen()
     }
 
     private fun handleAccountActivateCmd() {
@@ -179,7 +183,9 @@ class RefreshingUiActivity : BaseActivity() {
                     refreshingUiViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
-                    Log.d("DataStoreResponse", "handleAccountSetupResponse: $it")
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -193,12 +199,12 @@ class RefreshingUiActivity : BaseActivity() {
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
         when (status) {
-            is Resource.Loading -> {}
             is Resource.Success -> {
-
                 refreshingUiViewModel.themeLiveData.value?.data?.let {
                     refreshingUiViewModel.setThemeResponseData(themeDataStore, it)
-                    Log.d("DataStoreResponse", "handleThemeResponse: $it")
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -215,7 +221,9 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.hotelServiceLiveData.value?.data?.let {
                     refreshingUiViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
-                    Log.d("DataStoreResponse", "handleHotelServicesResponse: $it")
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -227,7 +235,7 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
-    private fun handleLAServiceResponse(status: Resource<LocalAttractionResponse>) {
+    private fun handleLocalAttractionResponse(status: Resource<LocalAttractionResponse>) {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.localAttractionLiveData.value?.data?.let {
@@ -235,7 +243,9 @@ class RefreshingUiActivity : BaseActivity() {
                         localAttractionDataStore,
                         it
                     )
-                    Log.d("DataStoreResponse", "handleLAServiceResponse: $it")
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -248,12 +258,13 @@ class RefreshingUiActivity : BaseActivity() {
 
     private fun handleMoviesResponse(status: Resource<MoviesResponse>) {
         when (status) {
-            is Resource.Loading -> {}
             is Resource.Success -> {
                 refreshingUiViewModel.moviesLiveData.value?.data?.let {
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
                     Constants.C_LIST_VERSION = it.version
-                    Log.d("DataStoreResponse", "handleMoviesResponse: $it")
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -265,12 +276,14 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
-    private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
+    private fun handleShowtimeResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
-            is Resource.Loading -> {}
             is Resource.Success -> {
                 refreshingUiViewModel.showtimeLiveData.value?.data?.let {
                     refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -314,6 +327,12 @@ class RefreshingUiActivity : BaseActivity() {
 
             else -> {}
         }
+    }
+
+    private fun redirectToMainMenuScreen() {
+        val i = Intent(this, MainMenuActivity::class.java)
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(i)
     }
 
 }

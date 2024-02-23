@@ -51,8 +51,10 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".ui.kaping.KapingActivity"
-            android:exported="false" />
+            android:name=".ui.kaping.RegisterSTBActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.casting.CastingActivity"
             android:exported="false"
@@ -80,6 +82,7 @@
             android:banner="@drawable/app_icon_your_company"
             android:exported="true"
             android:icon="@drawable/app_icon_your_company"
+            android:launchMode="singleInstance"
             android:logo="@drawable/app_icon_your_company"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"
@@ -91,7 +94,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"

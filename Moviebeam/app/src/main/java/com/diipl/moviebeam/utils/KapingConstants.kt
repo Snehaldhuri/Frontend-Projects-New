@@ -35,4 +35,15 @@ object KapingConstants {
     const val KAP_CMD_GET_FOOD_DELIVERY_DATA = "42"
     const val KAP_CMD_GET_TICKER_MESSAGES = "43"
 
+    //Kaping Commands Execution Response
+    const val EXECUTED_SUCCESSFULLY = "00"
+    const val PENDING_EXECUTION = "01"
+    const val FEATURE_NOT_SUPPORTED = "04"
+
+    const val POWER_MODE_ON = "1"
+    const val POWER_MODE_STAND_BY = "2"
+
+    const val EVENT_CHECK_IN = "31221"
+    const val EVENT_CHECK_OUT = "31220"
+
 }

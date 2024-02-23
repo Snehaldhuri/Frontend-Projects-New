@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.data.remote.services
 
-import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.GET
@@ -54,17 +53,14 @@ interface LgRestApiService {
         @Query("newsId") newsId: Int
     ): Response<String>
 
-
-    //for device versions
     @GET("process/stbMaster")
-    suspend fun getstbMaster(
-        @Query("UA") UA: String,
-        @Query("SRNO") SRNO: String,
-        @Query("MACADDR") MACADDR: String,
-        @Query("WIFI_MACADDR") WIFI_MACADDR: String,
-        @Query("TYPE") TYPE: String
+    suspend fun processStbMaster(
+        @Query("UA") ua: String,
+        @Query("SRNO") srNo: String,
+        @Query("MACADDR") macAddress: String,
+        @Query("WIFI_MACADDR") wifiMacAddress: String,
+        @Query("TYPE") stbType: String
     ): Response<String>
-
 
     @GET("StbServlet")
     suspend fun kaping(
@@ -93,17 +89,8 @@ interface LgRestApiService {
     suspend fun getLaundry(
         @Query("UA") UA: String,
         @Query("serviceId") serviceId: String
-    ) : Response<String>
+    ): Response<String>
 
-
-    @GET("process/stbMaster")
-     fun getstbMasterService(
-        @Query("UA") UA: String,
-        @Query("SRNO") SRNO: String,
-        @Query("MACADDR") MACADDR: String,
-        @Query("WIFI_MACADDR") WIFI_MACADDR: String,
-        @Query("TYPE") TYPE: String
-    ): Call<String>
     @GET("process/guestFeedback")
     suspend fun sendGuestFeedback(
         @Query("UA") ua: String,

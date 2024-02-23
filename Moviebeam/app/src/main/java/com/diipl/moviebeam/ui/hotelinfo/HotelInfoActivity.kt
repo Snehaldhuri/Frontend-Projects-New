@@ -398,6 +398,7 @@ class HotelInfoActivity : BaseActivity() {
             binding.tvHeaderTitle.toVisible()
             binding.btnBack.toVisible()
             binding.layoutHeader.tvTitle.text = Constants.HOTEL_INFORMATION
+            activityStack.add(this::class.java.simpleName)
         } else {
             finish()
         }

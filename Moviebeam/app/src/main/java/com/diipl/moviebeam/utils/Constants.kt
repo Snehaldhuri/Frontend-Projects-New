@@ -20,8 +20,6 @@ object Constants {
     var MOVIE_SELECTED_POSITION: Int = -1
     var MOVIE_PARENT_POSITION: Int = -1
 
-    const val VERSION = 1.5
-
     const val SPLASH_DELAY = 3000
     var timer = ""
     const val BASE_URL_LG_REST =
@@ -44,6 +42,9 @@ object Constants {
     var HOTEL_VIDEO_URL = ""
     var UA = "14508KKMH0K299"
     var SERIAL_NO = ""
+    val MAC_ADDRESS = "test"
+    val STB_TYPE = "LG"
+    val WIFI_MAC_ADDRESS = ""
     var IS_API_CALLED = false
     var ACCOUNT_ID = "13827"
     var STB_ROOM_NO = ""
@@ -286,18 +287,6 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
-    //Apps
-    val SELECTED_APPS = listOf(
-        "Netflix",
-        "Hulu",
-        "Max",
-        "Paramount+",
-        "Peacock TV",
-        "Disney+",
-        "YouTube",
-        "Prime Video"
-    )
-
     //Guest Feedback
     const val UNACCEPTABLE = "Unacceptable"
     const val DISAPPOINTING = "Disappointing"
@@ -315,7 +304,6 @@ object Constants {
     const val KAPING = "KAPING"
     const val DV = "3.0.1.23"
     const val CLISTVER = "201803130001"
-    const val KAPINGEVENT = "10131220"
     const val RBTY = "0100"
     const val LAVER = "1510818301"
     const val HSVER = "1513951822"

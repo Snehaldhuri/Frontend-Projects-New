@@ -112,4 +112,16 @@
     <string name="adult_pass_price">Watch our entire Adult movie library for 24hrs or \nuntil the time you checkout for one low price of \n$%2$s.</string>
     <string name="buy_now">Buy Now</string>
     <string name="insufficient_balance">" Insufficient Balance"</string>
+    <string name="moviebeam_logo">Moviebeam Logo</string>
+    <string name="stb_registered">STB Registered:</string>
+    <string name="pending">Pending</string>
+    <string name="ua">UA:</string>
+    <string name="serial_no">Serial No:</string>
+    <string name="qr_code">QR Code</string>
+    <string name="ip_address">IP Address:</string>
+    <string name="net_mask">Net Mask:</string>
+    <string name="gateway">Gateway:</string>
+    <string name="connectivity">Connectivity:</string>
+    <string name="model_name">Model Name:</string>
+    <string name="app_software_version">App Software Version:</string>
 </resources>

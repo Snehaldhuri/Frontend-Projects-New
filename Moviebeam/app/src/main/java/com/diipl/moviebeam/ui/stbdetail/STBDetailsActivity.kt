@@ -238,8 +238,7 @@ class STBDetailsActivity : BaseActivity() {
         Log.e( "SERIAL_NO: ", "$serialNumber  ${serialNumber.length}") // TODO edit
         UA = if (serialNumber == "26271HFGN11NHH") "21$serialNumber" else serialNumber
         Constants.UA = UA
-        stbDetailViewModel.setUAInDataStore(preferenceDataStoreHelper, UA)
-        stbDetailViewModel.fetchApis(this, preferenceDataStoreHelper)
+        stbDetailViewModel.fetchApis(applicationContext, preferenceDataStoreHelper)
 
     }
 
@@ -262,5 +261,7 @@ class STBDetailsActivity : BaseActivity() {
         }
         return temperature
     }
+
+    override fun onBackPressed() {}
 
 }

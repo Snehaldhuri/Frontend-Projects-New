@@ -21,7 +21,6 @@ import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.kaping.kapingResponce
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
@@ -33,7 +32,7 @@ import com.diipl.moviebeam.utils.toQueryMap
 import javax.inject.Inject
 
 class RemoteDataSource @Inject constructor(
-    private val networkUtils: NetworkUtils,
+    networkUtils: NetworkUtils,
     private val lgRestApiService: LgRestApiService,
     private val accountSetupApiService: AccountSetupApiService,
     private val assetApiService: AssetApiService,
@@ -127,61 +126,23 @@ class RemoteDataSource @Inject constructor(
     }
 
 
-    suspend fun getStbMasterDetails(
-        ua: String, srno: String, macadd: String, type: String, wifimacadd: String
+    suspend fun processStbMaster(
+        ua: String,
+        srNo: String,
+        macAddress: String,
+        wifiMacAddress: String,
+        stbType: String
     ): StbMasterResponse? {
         val result = safeAPiCall {
-            lgRestApiService.getstbMaster(
-                ua, srno, macadd, type, wifimacadd
+            lgRestApiService.processStbMaster(
+                ua,
+                srNo,
+                macAddress,
+                wifiMacAddress,
+                stbType
             )
         }
         return ApiResponseParsing().getResponseAsObject(result.data, StbMasterResponse::class)
-    }
-
-
-    suspend fun kapingResponce(
-        Q: String,
-        UA: String,
-        DRID: String,
-        SW: String,
-        CLISTVER: String,
-        DV: String,
-        TNS: String,
-        EVENT: String,
-        SID: String,
-        RBTY: String,
-        MODE: String,
-        LAVER: String,
-        HSVER: String,
-        THMVER: String,
-        CMDRES: String,
-        CALLBACKFLG: String,
-        INRMVER: String,
-        LAUVER: String
-    ): kapingResponce? {
-        val result = safeAPiCall {
-            lgRestApiService.kaping(
-                Q,
-                UA,
-                DRID,
-                SW,
-                CLISTVER,
-                DV,
-                TNS,
-                EVENT,
-                SID,
-                RBTY,
-                MODE,
-                LAVER,
-                HSVER,
-                THMVER,
-                CMDRES,
-                CALLBACKFLG,
-                INRMVER,
-                LAUVER
-            )
-        }
-        return ApiResponseParsing().getResponseAsObject(result.data, kapingResponce::class)
     }
 
     suspend fun sendGuestFeedback(
@@ -198,9 +159,6 @@ class RemoteDataSource @Inject constructor(
         return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
     }
 
-    suspend fun laundryResponce2(UA: String, serviceId: String): LaundryResponce? {
-        val result = safeAPiCall { lgRestApiService.getLaundry(UA, serviceId) }
-        return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
     }
 
     suspend fun setRentalReversal(request: RentalReversalRequest) : RentalReversalResponse? {
@@ -212,5 +170,4 @@ class RemoteDataSource @Inject constructor(
     suspend fun buyPassRequest(request: AdultDayPassRequest) : DayPassResponse? {
         val result = safeAPiCall { moviesAPIService.buyPassRequest(request.toQueryMap()) }
         return ApiResponseParsing().getResponseAsObject(result.data, DayPassResponse::class)
-    }
 }

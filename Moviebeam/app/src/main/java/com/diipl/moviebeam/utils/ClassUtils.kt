@@ -8,6 +8,10 @@ import android.util.Log
 import androidx.media3.exoplayer.ExoPlayer
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.google.gson.Gson
+import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.ui.serial_info.SerialActivity
+import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -27,6 +31,17 @@ fun <T : Any> T.toQueryMap(): Map<String, Any> {
     }
 
     return map
+}
+
+fun String.isNotAllowed(): Boolean {
+    var result = true
+    when(this){
+       MainMenuActivity::class.java.simpleName -> result = true
+       SerialActivity::class.java.simpleName -> result = false
+       STBDetailsActivity::class.java.simpleName -> result = true
+       RegisterSTBActivity::class.java.simpleName -> result = false
+    }
+    return result
 }
 
 inline fun <reified T> T.toJson(): String {

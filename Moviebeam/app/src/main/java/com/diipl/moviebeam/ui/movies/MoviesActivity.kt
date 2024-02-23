@@ -316,9 +316,9 @@ class MoviesActivity : BaseActivity() {
                                     val parentAdapter = ParentAdapter(onItemClicked = { it, v ->
                                         onMovieClick(it, v)
                                     }, onLeftKey = {
-                                        if (it) {
-                                            requestFocus()
-                                        }
+                                            if (it) {
+                                                requestFocus()
+                                            }
                                     })
                                     parentAdapter.setMovieList(adultGenreMap, null, true)
                                     binding.parentRecyclerView.adapter = parentAdapter
@@ -479,6 +479,9 @@ class MoviesActivity : BaseActivity() {
     fun gotoExoPlayerActivity(
         movieDetails: ContentDto, isTrailer: Boolean, isContent: Boolean, seekPosition: Long
     ) {
+        isContent: Boolean,
+        seekPosition: Long
+    ) {
 
         val bundle = Bundle()
 
@@ -503,6 +506,7 @@ class MoviesActivity : BaseActivity() {
                 binding.recentRecyclerView.toGone()
                 binding.parentRecyclerView.toVisible()
             }
+            activityStack.add(this::class.java.simpleName)
         } else {
             finish()
         }

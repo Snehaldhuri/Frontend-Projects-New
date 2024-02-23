@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SelectedApps(
     val appText: String = "",
+    val forAndroid: Boolean = false,
     val forDisconnectedMode: Boolean = false,
     val forLg: Boolean = false,
     val forPhilips: Boolean = false,
