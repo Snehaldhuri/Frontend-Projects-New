@@ -85,15 +85,13 @@ class SerialActivity : BaseActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Enter Serial Number")
 
-
-        // Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14507KKWK1C017/ 507KKWK1C017
-
         val input = EditText(this)
         var m_Text: String
         input.inputType = InputType.TYPE_TEXT_FLAG_CAP_WORDS
         input.imeOptions = EditorInfo.IME_ACTION_DONE
         builder.setView(input)
 
+        // Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14507KKWK1C017/ 507KKWK1C017
 /* TODO Uncomment this before release */
         if (BuildConfig.DEBUG){
             input.setText("26271HFGN11NHH")

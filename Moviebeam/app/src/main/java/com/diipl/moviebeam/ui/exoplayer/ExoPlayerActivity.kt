@@ -142,6 +142,11 @@ class ExoPlayerActivity : BaseActivity() {
                     playbackUrl =
                         Constants.BASE_PLAYBACK_URL + releaseId + Constants.TRAILER_EXTENSION
                 }
+
+                // TODO remove below code in release
+                /*if (releaseId == 41232)
+                    releaseId = 41391*/
+
                 if (isContent) {
                     playbackUrl =
                         Constants.BASE_PLAYBACK_URL + releaseId + Constants.CONTENT_EXTENSION

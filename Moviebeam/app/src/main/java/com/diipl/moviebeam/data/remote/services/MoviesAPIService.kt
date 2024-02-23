@@ -16,6 +16,10 @@ interface MoviesAPIService {
     @JvmSuppressWildcards
     suspend fun setRentalReversal(@QueryMap request: Map<String, Any>): Response<String>
 
+    @GET("StbServlet")
+    @JvmSuppressWildcards
+    suspend fun buyPassRequest(@QueryMap queryMap: Map<String, Any>): Response<String>
+
     /*
         @GET("StbServlet")
         suspend fun getRentalMovieAccess(

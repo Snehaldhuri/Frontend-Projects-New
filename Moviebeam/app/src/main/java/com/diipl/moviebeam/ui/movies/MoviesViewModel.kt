@@ -6,7 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
 import com.diipl.moviebeam.data.dto.movies.ContentDto
+import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
@@ -16,6 +18,8 @@ import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_CONTENT_STATUS
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
@@ -111,6 +115,7 @@ class MoviesViewModel @Inject constructor(
 
     fun getRentalMovieResponse(request: RentalMovieRequest) {
         viewModelScope.launch {
+            _rentalMovieResponse.postValue(Resource.Loading())
             val result = movieBeamRepository.getMovieAccess(request)
             if (result == null) {
                 _rentalMovieResponse.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Services Api"))
@@ -200,7 +205,7 @@ class MoviesViewModel @Inject constructor(
     }
 
     private val _rentalReversal = MutableLiveData<Resource<RentalReversalResponse>>()
-    val rentalReversal : LiveData<Resource<RentalReversalResponse>> get() = _rentalReversal
+    val rentalReversal: LiveData<Resource<RentalReversalResponse>> get() = _rentalReversal
     fun setRentalReversal(rentalMovieModel: RentalMovieModel) {
         viewModelScope.launch {
             if (rentalMovieModel.rentalID != 0) {
@@ -217,5 +222,35 @@ class MoviesViewModel @Inject constructor(
         }
     }
 
+    private val _adultStatus = MutableLiveData<Boolean>()
+    val adultStatus: LiveData<Boolean> get() = _adultStatus
+    private val _adultDayPassStatus = MutableLiveData<Boolean>()
+    val adultDayPassStatus: LiveData<Boolean> get() = _adultDayPassStatus
+    fun getAdultStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch {
+            preferenceDataStoreHelper.getPreference(ADULT_CONTENT_STATUS, false).collect {
+                _adultStatus.postValue(it)
+            }
+        }
+        viewModelScope.launch {
+            preferenceDataStoreHelper.getPreference(ADULT_DAY_PASS_STATUS, false).collect {
+                _adultDayPassStatus.postValue(it)
+            }
+        }
+    }
+
+    private val _purchaseResponse = MutableLiveData<Resource<DayPassResponse>>()
+    val purchaseResponse: LiveData<Resource<DayPassResponse>> get() = _purchaseResponse
+    fun buyPassRequest(request: AdultDayPassRequest) {
+        viewModelScope.launch {
+            _purchaseResponse.postValue(Resource.Loading())
+            val result = movieBeamRepository.buyPassRequest(request)
+            if (result == null){
+                _purchaseResponse.postValue(Resource.DataError(Constants.SERVER_ERROR))
+            } else {
+                _purchaseResponse.postValue(Resource.Success(result))
+            }
+        }
+    }
 
 }

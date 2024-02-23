@@ -8,6 +8,8 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 object Constants {
 
     const val SHOWTIME_RELEASE_TYPE_ID = 1
+    const val ENABLE = "ENABLE"
+    const val DISABLE = "DISABLE"
 
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
@@ -152,12 +154,14 @@ object Constants {
     const val IS_CONTINUE = "isContinue"
 
     val RECENT_BUTTON = BtnModel(RECENT_WATCH_MOVIE_ID, R.drawable.img_recent_view, RECENTLY_VIEWED)
+    val ADULT_DAY_PASS_BUTTON = BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS)
+    val ADULT_BUTTON = BtnModel(ADULT_ID, R.drawable.adult, ADULT)
 
     val MOVIES_PAGE_MENU_BUTTON_LIST = mutableListOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
         BtnModel(FREE_MOVIES_ID, R.drawable.video_on_demand_icon, FREE_VOD),
-//        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS),
-//        BtnModel(ADULT_ID, R.drawable.adult, ADULT),
+//        ADULT_DAY_PASS_BUTTON,
+//        ADULT_BUTTON,
         BtnModel(RECENT_WATCH_MOVIE_ID, R.drawable.img_recent_view, RECENTLY_VIEWED)
     )
     val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
@@ -168,6 +172,7 @@ object Constants {
     )
 
     const val FREE_MOVIE_RELEASE_TYPE_ID = 1
+    const val PAID_MOVIE_RELEASE_TYPE_ID = 2
 
     //Guest Service Button Id
     const val ALL_SERVICES = "ALL_SERVICES"

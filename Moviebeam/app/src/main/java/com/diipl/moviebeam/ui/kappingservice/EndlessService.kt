@@ -22,9 +22,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.movies.AdultDayPassSync
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalSyncResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -32,6 +34,9 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.kaping.CmdDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_CONTENT_STATUS
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_FINISH_TIME
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
@@ -126,6 +131,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
+
+    @Inject
+    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
     lateinit var roomRepository: RoomRepository
@@ -268,11 +276,13 @@ class EndlessService : Service() {
                     pingFakeServer()
                     callKapingApi()
 
-                    if (Constants.SESSION_ID.isNotEmpty())
+                    if (Constants.SESSION_ID.isNotEmpty()) {
                         roomRepository.removeOverTimeMovies()
+                    }
                     if (Constants.SESSION_ID == "null") {
                         roomRepository.deleteRecentMovies()
                         roomRepository.deleteRecentShows()
+                        removeAdultData()
                     }
                 }
                 delay(1 * 60 * 1000)
@@ -280,6 +290,7 @@ class EndlessService : Service() {
             log("End of the loop for the service")
         }
     }
+
 
     private fun stopService() {
         log("Stopping the foreground service")
@@ -302,6 +313,15 @@ class EndlessService : Service() {
     private fun pingFakeServer() {
         counter++
         log(counter.toString())
+
+        CoroutineScope(Dispatchers.IO).launch {
+            preferenceDataStoreHelper.getFirstPreference(ADULT_DAY_PASS_FINISH_TIME, 0).let {
+                if (it <= System.currentTimeMillis()) {
+                    preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, false)
+                }
+            }
+        }
+
     }
 
     private fun callKapingApi() {
@@ -398,7 +418,6 @@ class EndlessService : Service() {
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
-
                 log(t.toString())
             }
 
@@ -422,7 +441,7 @@ class EndlessService : Service() {
             var guestLastName: String? = null
             var adultLocked: Boolean? = null
             if (kapingCMD == "07") {
-                adultContentDisabled = cmdData[0] != '0'
+                adultContentDisabled = cmdData[0] == '0'
                 parentSessionId = cmdData.substring(15, 25)
                 val nameAndPass = cmdData.substring(cmdData.indexOf("Welcome"))
                 guestFirstName = nameAndPass.split(" ")[1]
@@ -456,6 +475,7 @@ class EndlessService : Service() {
     }
 
     private fun handleKaping(kapingResponse: KapingResponse?) {
+
         when (kapingResponse?.cmdData?.cmd) {
 
             KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE,
@@ -538,21 +558,20 @@ class EndlessService : Service() {
             }
 
             KapingConstants.KAP_CMD_SYNC_RECENT_VIEWED -> {
-                // TODO Sync Viewed data of rental movies
-                CoroutineScope(Dispatchers.IO).launch{
-                    kapingResponse.CMD?.let {str->
+                CoroutineScope(Dispatchers.IO).launch {
+                    kapingResponse.CMD?.let { str ->
                         val data = str.substring(19, str.length)
                         val syncResponse = data.fromJson<RentalSyncResponse>()
-                        moviesLiveData.value?.let {res->
-                            syncResponse.syncList.forEach {sync->
+                        moviesLiveData.value?.let { res ->
+                            syncResponse.syncList.forEach { sync ->
                                 res.premiumContentList.forEach {
-                                    if (sync.releaseId == it.releaseId && sync.productId == it.productId){
+                                    if (sync.releaseId == it.releaseId && sync.productId == it.productId) {
                                         val model = RentalMovieModel()
                                         model.movieData = it
                                         model.rentalID = sync.rentalId
                                         model.sessionID = Constants.SESSION_ID
                                         model.currentSeek = sync.seek
-                                        model.startTimeStamp = sync.rentalTime.toTimestamp() ?: System.currentTimeMillis()
+                                        model.startTimeStamp = sync.rentalTime.toTimestamp()
                                         model.lastTimeStamp = System.currentTimeMillis()
                                         roomRepository.insertRentalMovies(model)
                                     }
@@ -564,13 +583,55 @@ class EndlessService : Service() {
                 }
             }
 
+            KapingConstants.KAP_CMD_SYNC_ADULT_DAYPASS -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    kapingResponse.CMD?.let { str ->
+                        val data = str.substring(19, str.length)
+                        val syncResponse = data.fromJson<AdultDayPassSync>()
+                        Log.e(TAG, "handleKaping: $syncResponse")
+                        syncResponse.dayPassList.forEach {
+                            it.let {
+                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, true)
+                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_FINISH_TIME,
+                                    it.dayPassRentalTime.toTimestamp().also { time ->
+                                        time.plus(24 * 60 * 60 * 1000)
+                                    })
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            KapingConstants.KAP_CMD_ENABLE_DISABLE_ADULT_CONTENT -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    kapingResponse.CMD?.let { str ->
+                        val isEnabled = str[19] == '1'
+                        updateAdultContent(isEnabled)
+                    }
+                }
+            }
+
+
         }
 
     }
 
+    private fun updateAdultContent(enabled: Boolean) {
+        CoroutineScope(Dispatchers.IO).launch {
+            preferenceDataStoreHelper.putPreference(ADULT_CONTENT_STATUS, enabled)
+        }
+    }
+
+    private fun removeAdultData() {
+        CoroutineScope(Dispatchers.IO).launch {
+            updateAdultContent(false)
+            preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, false)
+        }
+    }
 
     private fun fetchHotelServiceInfo(ua: String) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getHotelServiceInfo(ua)
             if (response == null) {
                 //Error
@@ -581,7 +642,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchLocalAttractionInfo(ua: String) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getLocalAttractionInfo(ua)
             if (response == null) {
                 //Error
@@ -592,7 +653,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchSyncList(ua: String) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getMoviesInfo(ua)
             if (response == null) {
                 //Error
@@ -603,7 +664,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchShowtimeData(ua: String) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getShowtimeInfo(ua)
             if (response == null) {
                 //Error
@@ -617,7 +678,7 @@ class EndlessService : Service() {
         dataStore: DataStore<HotelServiceResponse>,
         data: HotelServiceResponse
     ) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     id = data.id,
@@ -633,7 +694,7 @@ class EndlessService : Service() {
         dataStore: DataStore<LocalAttractionResponse>,
         data: LocalAttractionResponse
     ) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     id = data.id,
@@ -650,7 +711,7 @@ class EndlessService : Service() {
         data: MoviesResponse
     ) {
 
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
@@ -672,7 +733,7 @@ class EndlessService : Service() {
         dataStore: DataStore<ShowTimeResponse>,
         data: ShowTimeResponse
     ) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
@@ -687,6 +748,18 @@ class EndlessService : Service() {
     }
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
+        kapingResponse.CMD?.let {
+            when (kapingResponse.cmdData?.cmd) {
+                KapingConstants.KAP_CMD_CHECK_OUT -> removeAdultData()
+                else -> {
+                    if (it.length > 19) {
+                        val isEnabled = it[19] == '1'
+                        updateAdultContent(isEnabled)
+                    }
+                }
+            }
+        }
+
         val i = Intent(applicationContext, RefreshingUiActivity::class.java)
         i.putExtra("response", kapingResponse)
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

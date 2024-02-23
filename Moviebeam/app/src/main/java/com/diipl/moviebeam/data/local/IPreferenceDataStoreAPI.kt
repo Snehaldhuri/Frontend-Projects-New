@@ -9,4 +9,5 @@ interface IPreferenceDataStoreAPI {
     suspend fun <T> putPreference(key: Preferences.Key<T>,value:T)
     suspend fun <T> removePreference(key: Preferences.Key<T>)
     suspend fun <T> clearAllPreference()
+    suspend fun <T> getLastPreference(key: Preferences.Key<T>, defaultValue: T): T
 }

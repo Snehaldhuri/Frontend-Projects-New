@@ -4,12 +4,14 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.util.Log
 import androidx.media3.exoplayer.ExoPlayer
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaField
@@ -57,15 +59,14 @@ fun isRentalMovieTimeOver(): Boolean{
     return is24HoursApart
 }
 
-fun String.toTimestamp(): Long? {
+fun String.toTimestamp(): Long {
     val dateFormat = SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.ENGLISH)
-
+    Log.e("toTimestamp: ", this)
     return try {
         val date = dateFormat.parse(this)
-        date?.time
+        date.time
     } catch (e: Exception) {
-        e.printStackTrace()
-        null
+        System.currentTimeMillis()
     }
 }
 
@@ -119,6 +120,12 @@ fun ExoPlayer?.getLastSeek() : Long {
         return this.contentPosition
     }
     return 0
+}
+
+fun Long.toDateFormat(): String {
+    val dateFormat = SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.ENGLISH)
+    val date = Date(this)
+    return dateFormat.format(date)
 }
 
 fun Long.toTimeFormat(): String {

@@ -10,8 +10,6 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
-import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
@@ -26,6 +24,8 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -64,7 +64,6 @@ class RefreshingUiActivity : BaseActivity() {
     lateinit var showTimeDataStore: DataStore<ShowTimeResponse>
 
     override fun observeViewModel() {
-        observe(refreshingUiViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(refreshingUiViewModel.themeLiveData, ::handleThemeResponse)
         observe(refreshingUiViewModel.hotelServiceLiveData, ::handleHotelServicesResponse)
         observe(refreshingUiViewModel.localAttractionLiveData, ::handleLAServiceResponse)
@@ -283,7 +282,7 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
-    val REQUEST_PERMISSION_PHONE_STATE = 1
+    private val REQUEST_PERMISSION_PHONE_STATE = 1
 
     private fun reboot() {
         val permissionCheck =
@@ -297,7 +296,7 @@ class RefreshingUiActivity : BaseActivity() {
             )
         } else {
             val pm = getSystemService(POWER_SERVICE) as PowerManager
-            pm.reboot(null)
+            pm.reboot("System update")
         }
     }
 
@@ -310,7 +309,7 @@ class RefreshingUiActivity : BaseActivity() {
         when (requestCode) {
             REQUEST_PERMISSION_PHONE_STATE -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 val pm = getSystemService(POWER_SERVICE) as PowerManager
-                pm.reboot(null)
+                pm.reboot("System update")
             }
 
             else -> {}

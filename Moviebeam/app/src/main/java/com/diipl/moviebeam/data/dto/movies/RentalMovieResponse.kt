@@ -36,6 +36,47 @@ data class RentalSyncResponse(
     )
 }
 
+data class AdultDayPassRequest(
+    @SerializedName("Q")
+    var Q: String = "PURCHASE_PASS",
+    @SerializedName("UA")
+    var UA: String = Constants.UA,
+    @SerializedName("TYPE")
+    var type: String = "D1001",
+    @SerializedName("PRICE_LIST")
+    var priceList: String = "1",
+    @SerializedName("PRICE")
+    var price: Int = 0,
+    @SerializedName("TIMESTAMP")
+    var timeStamp: Long = System.currentTimeMillis()/1000,
+    @SerializedName("SID")
+    var sessionID: String = Constants.SESSION_ID,
+    @SerializedName("MODE")
+    var mode: String = "JSON"
+)
+
+data class DayPassResponse(
+    @SerializedName("UA")
+    var UA: String = "",
+    @SerializedName("type")
+    var type: String = "",
+    @SerializedName("ERROR_CODE")
+    var errorCode: Int = 0
+)
+
+
+data class AdultDayPassSync(
+    @SerializedName("dayPassList")
+    var dayPassList: List<DayPass> = listOf()
+) {
+    data class DayPass(
+        @SerializedName("dayPassRentalTime")
+        var dayPassRentalTime: String = "",
+        @SerializedName("daypassId")
+        var daypassId: Int = 0
+    )
+}
+
 @Serializable
 data class RentalMovieRequest(
     @SerializedName("Q") var q: String = "RENTAL",

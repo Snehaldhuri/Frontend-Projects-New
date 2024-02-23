@@ -8,6 +8,8 @@ import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
+import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
@@ -205,5 +207,10 @@ class RemoteDataSource @Inject constructor(
         val result = safeAPiCall { moviesAPIService.setRentalReversal(request.toQueryMap()) }
         Log.e("setRentalReversal: ", result.data.toString())
         return ApiResponseParsing().getResponseAsObject(result.data, RentalReversalResponse::class)
+    }
+
+    suspend fun buyPassRequest(request: AdultDayPassRequest) : DayPassResponse? {
+        val result = safeAPiCall { moviesAPIService.buyPassRequest(request.toQueryMap()) }
+        return ApiResponseParsing().getResponseAsObject(result.data, DayPassResponse::class)
     }
 }

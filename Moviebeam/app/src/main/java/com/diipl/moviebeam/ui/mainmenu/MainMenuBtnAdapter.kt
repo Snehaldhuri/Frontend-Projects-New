@@ -9,9 +9,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.utils.Constants
 
 class MainMenuBtnAdapter(
     private var onMenuItemClicked: (BtnModel) -> Unit
@@ -42,7 +42,7 @@ class MainMenuBtnAdapter(
         holder.textView.text = item.title
 
         holder.card.post{
-            if (holder.absoluteAdapterPosition == 0) {
+            if (position == 0) {
                 holder.card.requestFocus()
             }
         }

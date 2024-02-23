@@ -102,4 +102,14 @@
     <string name="confirm_rental">CONFIRM RENTAL</string>
     <string name="rental_price_confirm">$%2$s (+Tax) will be charged to your Account</string>
     <string name="call_front_desk">Call Front Desk to activate Moviebeam Services</string>
+    <string name="adult">Adult</string>
+    <string name="new_releases">New Releases</string>
+    <string name="adult_daypass_disclaimer">
+    *Limited time offer. All applicable texes extra.
+  \n**Movies available for a period of 24 hrs from purchase or \nupto checkout, whichever is earlier.
+    </string>
+    <string name="purchase_adult_day_pass">PURCHASE ADULT DAY PASS</string>
+    <string name="adult_pass_price">Watch our entire Adult movie library for 24hrs or \nuntil the time you checkout for one low price of \n$%2$s.</string>
+    <string name="buy_now">Buy Now</string>
+    <string name="insufficient_balance">" Insufficient Balance"</string>
 </resources>

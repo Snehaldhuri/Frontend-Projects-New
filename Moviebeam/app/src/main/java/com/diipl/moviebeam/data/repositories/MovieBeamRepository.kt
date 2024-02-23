@@ -7,6 +7,8 @@ import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
+import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
@@ -155,5 +157,9 @@ class MovieBeamRepository @Inject constructor(
 
     suspend fun setRentalReversal(request: RentalReversalRequest): RentalReversalResponse? {
         return remoteDataSource.setRentalReversal(request)
+    }
+
+    suspend fun buyPassRequest(request: AdultDayPassRequest): DayPassResponse? {
+        return remoteDataSource.buyPassRequest(request)
     }
 }
