@@ -22,6 +22,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.intToString
 
 private const val TAG = "HelpInfoFragment"
@@ -64,6 +65,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
         val tvInputManager = requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
         val tvInputInfos = tvInputManager.tvInputList
+        val tvInputInfos = tvInputManager.tvInputList
         if (tvInputInfos.isNotEmpty()) {
             Log.e(TAG, "Device is connected to an STB $tvInputInfos")
         } else {
@@ -84,7 +86,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
             Log.e(TAG, "Device is connected to an WiFi")
         }
 
-
+        LoggingService.sendMessageToWebSocket("In HelpInfoMain activity")
         return binding.root
     }
 

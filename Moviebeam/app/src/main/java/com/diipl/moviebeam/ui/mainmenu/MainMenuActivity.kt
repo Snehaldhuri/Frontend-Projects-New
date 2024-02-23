@@ -38,6 +38,7 @@ import com.diipl.moviebeam.ui.kappingservice.Actions
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.kappingservice.ServiceState
 import com.diipl.moviebeam.ui.kappingservice.getServiceState
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
@@ -131,6 +132,8 @@ class MainMenuActivity : BaseActivity() {
         if (!isServiceStarted) {
             actionOnService(Actions.START)
         }
+        LoggingService.sendMessageToWebSocket("In MainMenu activity")
+
 
     }
 
@@ -378,6 +381,7 @@ class MainMenuActivity : BaseActivity() {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvMenuButton.adapter = adapter
+
                 binding.pbLoader.toInvisible()
             }
 

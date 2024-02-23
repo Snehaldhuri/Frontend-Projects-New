@@ -31,6 +31,7 @@ import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants.ADULT_BUTTON
 import com.diipl.moviebeam.utils.Constants.ADULT_DAY_PASS_BUTTON
 import com.diipl.moviebeam.utils.getHeightInPercent
@@ -153,6 +154,7 @@ class MoviesActivity : BaseActivity() {
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
+        LoggingService.sendMessageToWebSocket("In MoviesMain activity")
 
         val params = binding.recentRecyclerView.layoutParams
 //        params.width = getWidthInPercent(applicationContext, 22)

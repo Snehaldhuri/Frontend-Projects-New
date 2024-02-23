@@ -1,9 +1,13 @@
 package com.diipl.moviebeam.ui.serial_info
 
 import android.app.AlertDialog
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
@@ -11,7 +15,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
@@ -19,6 +22,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.kappingservice.Actions
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.hideKeyboard
@@ -29,12 +33,31 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 
-
 class SerialActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySerialBinding
     private val serialViewModel: SerialViewModel by viewModels()
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private lateinit var loggingService: LoggingService
+
+    private var isServiceBound = false
+
+
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as LoggingService.LoggingServiceBinder
+            loggingService = binder.getService()
+            isServiceBound = true
+            loggingService.startWebSocket()
+        }
+
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            isServiceBound = false
+        }
+    }
+
+
     override fun observeViewModel() {
         observe(serialViewModel.stbStatusLiveData, ::handleStbStatusResponse)
         observe(serialViewModel.stbAllocationStatusLiveData, ::handleStbAllocationStatusResponse)
@@ -111,6 +134,7 @@ class SerialActivity : BaseActivity() {
     private fun redirectToRegisterStbActivity(){
         startActivity(Intent(this, RegisterSTBActivity::class.java))
         finish()
+        LoggingService.sendMessageToWebSocket("In App Loader create ")
     }
 
     private fun showSerialNumberDialog() {
@@ -155,6 +179,28 @@ class SerialActivity : BaseActivity() {
         }
 
         builder.show()
+    }
+    private fun bindLoggingService() {
+        val serviceIntent = Intent(this, LoggingService::class.java)
+        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun unbindService() {
+        if (isServiceBound) {
+            unbindService(serviceConnection)
+            isServiceBound = false
+        }
+    }
+    override fun onStart() {
+        super.onStart()
+        bindLoggingService()
+        // Start LoggingService if not already running
+        startService(Intent(this, LoggingService::class.java))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unbindService()
     }
 
     private fun actionOnService(action: Actions) {

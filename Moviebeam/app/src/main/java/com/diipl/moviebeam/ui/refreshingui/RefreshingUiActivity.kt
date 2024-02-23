@@ -23,6 +23,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
@@ -127,6 +128,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
+        LoggingService.sendMessageToWebSocket("Signal for check out command" )
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -135,9 +137,11 @@ class RefreshingUiActivity : BaseActivity() {
         )
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
+
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
+        LoggingService.sendMessageToWebSocket("Signal for check in command" )
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -146,14 +150,17 @@ class RefreshingUiActivity : BaseActivity() {
         )
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
+
     }
 
     private fun handleAccountActivateCmd() {
+        LoggingService.sendMessageToWebSocket("Signalling to get account set up" )
         refreshingUiViewModel.fetchAccountSetupDetails(
             Constants.ACTIVATE,
             Constants.UA,
             Constants.MODE
         )
+
     }
 
     private fun handleThemeChangeCmd() {
@@ -186,13 +193,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
+                    LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-
+                LoggingService.sendMessageToWebSocket("In AccountSetup callback fail" )
             }
         }
     }
@@ -205,12 +213,16 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
+                    LoggingService.sendMessageToWebSocket("In Theme callbackSuccess")
+
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
+                LoggingService.sendMessageToWebSocket("In Theme Callback fail" )
+
 
             }
         }
@@ -224,13 +236,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
+                    LoggingService.sendMessageToWebSocket("In Hotel Services callbackSuccess")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail" )
             }
         }
     }
@@ -246,12 +259,16 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
+                    LoggingService.sendMessageToWebSocket("In Local Attractions callbackSuccess ")
+
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail " )
+
             }
         }
     }
@@ -265,13 +282,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
+                    LoggingService.sendMessageToWebSocket("In MoviesReleasesCollection callbackSuccess ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-
+                LoggingService.sendMessageToWebSocket("In Movies callback fail " )
             }
         }
     }
@@ -284,13 +302,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
+                    LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callbackSuccess ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-
+                LoggingService.sendMessageToWebSocket("In Showtime callback fail " )
             }
         }
     }

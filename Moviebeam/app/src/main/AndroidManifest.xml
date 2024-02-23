@@ -180,6 +180,11 @@
             android:enabled="true"
             android:exported="false" />
 
+        <service
+            android:name=".ui.loggerService.LoggingService"
+            android:foregroundServiceType="dataSync|location"
+            android:exported="false"/>
+
         <receiver
             android:name=".ui.kappingservice.StartReceiver"
             android:enabled="true"

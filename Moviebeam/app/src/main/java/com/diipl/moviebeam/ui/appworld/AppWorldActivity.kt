@@ -23,6 +23,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
@@ -70,6 +71,8 @@ class AppWorldActivity : BaseActivity() {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
+        LoggingService.sendMessageToWebSocket("In AppWorldMain activity")
+
     }
 
     private fun getInstalledApps(apiAppList: List<SelectedApps>) {

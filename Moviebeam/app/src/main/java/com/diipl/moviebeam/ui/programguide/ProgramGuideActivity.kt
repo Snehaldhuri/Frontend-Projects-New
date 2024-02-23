@@ -35,6 +35,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.hideKeyboard
@@ -93,6 +94,8 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
             binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
         }
+        LoggingService.sendMessageToWebSocket("In ProgramGuidePage activity")
+
     }
 
     /*
