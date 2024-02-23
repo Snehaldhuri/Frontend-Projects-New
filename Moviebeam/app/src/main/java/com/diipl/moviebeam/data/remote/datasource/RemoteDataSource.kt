@@ -159,15 +159,14 @@ class RemoteDataSource @Inject constructor(
         return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
     }
 
-    }
-
-    suspend fun setRentalReversal(request: RentalReversalRequest) : RentalReversalResponse? {
+    suspend fun setRentalReversal(request: RentalReversalRequest): RentalReversalResponse? {
         val result = safeAPiCall { moviesAPIService.setRentalReversal(request.toQueryMap()) }
         Log.e("setRentalReversal: ", result.data.toString())
         return ApiResponseParsing().getResponseAsObject(result.data, RentalReversalResponse::class)
     }
 
-    suspend fun buyPassRequest(request: AdultDayPassRequest) : DayPassResponse? {
+    suspend fun buyPassRequest(request: AdultDayPassRequest): DayPassResponse? {
         val result = safeAPiCall { moviesAPIService.buyPassRequest(request.toQueryMap()) }
         return ApiResponseParsing().getResponseAsObject(result.data, DayPassResponse::class)
+    }
 }

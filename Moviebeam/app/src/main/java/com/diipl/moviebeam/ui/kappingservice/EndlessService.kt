@@ -18,7 +18,6 @@ import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -42,7 +41,6 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
-import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
@@ -58,16 +56,16 @@ import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
-import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.PanelConstants
-import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.fromJson
+import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.toTimestamp
 import com.google.gson.GsonBuilder
@@ -94,6 +92,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TAG = "EndlessService"
+
 @AndroidEntryPoint
 class EndlessService : Service() {
 
@@ -149,9 +148,6 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
-
-    @Inject
-    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
     lateinit var roomRepository: RoomRepository
@@ -303,14 +299,14 @@ class EndlessService : Service() {
                         pingFakeServer()
                         callKapingApi()
 
-                    if (Constants.SESSION_ID.isNotEmpty()) {
-                        roomRepository.removeOverTimeMovies()
-                    }
-                    if (Constants.SESSION_ID == "null") {
-                        roomRepository.deleteRecentMovies()
-                        roomRepository.deleteRecentShows()
-                        removeAdultData()
-                    }
+                        if (Constants.SESSION_ID.isNotEmpty()) {
+                            roomRepository.removeOverTimeMovies()
+                        }
+                        if (Constants.SESSION_ID == "null") {
+                            roomRepository.deleteRecentMovies()
+                            roomRepository.deleteRecentShows()
+                            removeAdultData()
+                        }
                     }
                 }
                 delay(1 * 60 * 1000)
@@ -399,7 +395,7 @@ class EndlessService : Service() {
             ""
         } else {
             "$kapingCMD$epochTime$transactionId$kapingCmdExecutionResponse"
-                "$kapingCMD$epochTime$transactionId${kapingCmdExecutionResponse}"
+            "$kapingCMD$epochTime$transactionId${kapingCmdExecutionResponse}"
         }
         log("CMDRES -> $CMDRES")
 
@@ -457,8 +453,13 @@ class EndlessService : Service() {
                         } else {
                             Log.e("false_as", "endless_service $AS_FLAG")
                             updateStbAllocationStatus(preferenceDataStoreHelper, false)
-                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName){
-                                startActivity(Intent(applicationContext, RegisterSTBActivity::class.java))
+                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                                startActivity(
+                                    Intent(
+                                        applicationContext,
+                                        RegisterSTBActivity::class.java
+                                    )
+                                )
                             }
                             false
                         }
@@ -605,7 +606,6 @@ class EndlessService : Service() {
                     }
                 }
             }
-        }
 
             KapingConstants.KAP_CMD_SYNC_RECENT_VIEWED -> {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -629,8 +629,53 @@ class EndlessService : Service() {
                             }
                         }
                     }
+                }
+            }
+
+            KapingConstants.KAP_CMD_SYNC_ADULT_DAYPASS -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    kapingResponse.CMD?.let { str ->
+                        val data = str.substring(19, str.length)
+                        val syncResponse = data.fromJson<AdultDayPassSync>()
+                        Log.e(TAG, "handleKaping: $syncResponse")
+                        syncResponse.dayPassList.forEach {
+                            it.let {
+                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, true)
+                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_FINISH_TIME,
+                                    it.dayPassRentalTime.toTimestamp().also { time ->
+                                        time.plus(24 * 60 * 60 * 1000)
+                                    })
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            KapingConstants.KAP_CMD_ENABLE_DISABLE_ADULT_CONTENT -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    kapingResponse.CMD?.let { str ->
+                        val isEnabled = str[19] == '1'
+                        updateAdultContent(isEnabled)
+                    }
+                }
+            }
+        }
+    }
+
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
+        kapingResponse.CMD?.let {
+            when (kapingResponse.cmdData?.cmd) {
+                KapingConstants.KAP_CMD_CHECK_OUT -> removeAdultData()
+                else -> {
+                    if (it.length > 19) {
+                        val isEnabled = it[19] == '1'
+                        updateAdultContent(isEnabled)
+                    }
+                }
+            }
+        }
         val i = Intent(applicationContext, RefreshingUiActivity::class.java)
         i.putExtra("response", kapingResponse)
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -665,8 +710,8 @@ class EndlessService : Service() {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
-                }
-            }
+    }
+
 
     private fun fetchThemeDetails(ua: String) {
         GlobalScope.launch(Dispatchers.IO) {
@@ -677,39 +722,7 @@ class EndlessService : Service() {
             }
         }
     }
-            KapingConstants.KAP_CMD_SYNC_ADULT_DAYPASS -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    kapingResponse.CMD?.let { str ->
-                        val data = str.substring(19, str.length)
-                        val syncResponse = data.fromJson<AdultDayPassSync>()
-                        Log.e(TAG, "handleKaping: $syncResponse")
-                        syncResponse.dayPassList.forEach {
-                            it.let {
-                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, true)
-                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_FINISH_TIME,
-                                    it.dayPassRentalTime.toTimestamp().also { time ->
-                                        time.plus(24 * 60 * 60 * 1000)
-                                    })
-                            }
-                        }
-                    }
 
-                }
-            }
-
-            KapingConstants.KAP_CMD_ENABLE_DISABLE_ADULT_CONTENT -> {
-                CoroutineScope(Dispatchers.IO).launch {
-                    kapingResponse.CMD?.let { str ->
-                        val isEnabled = str[19] == '1'
-                        updateAdultContent(isEnabled)
-                    }
-                }
-            }
-
-
-        }
-
-    }
 
     private fun updateAdultContent(enabled: Boolean) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -1037,17 +1050,6 @@ class EndlessService : Service() {
                 PreferenceDataStoreConstants.IS_STB_ALLOCATED,
                 isStbAllocated
             )
-        }
-        kapingResponse.CMD?.let {
-            when (kapingResponse.cmdData?.cmd) {
-                KapingConstants.KAP_CMD_CHECK_OUT -> removeAdultData()
-                else -> {
-                    if (it.length > 19) {
-                        val isEnabled = it[19] == '1'
-                        updateAdultContent(isEnabled)
-                    }
-                }
-            }
         }
 
     }

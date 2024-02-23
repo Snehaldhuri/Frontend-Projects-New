@@ -316,9 +316,9 @@ class MoviesActivity : BaseActivity() {
                                     val parentAdapter = ParentAdapter(onItemClicked = { it, v ->
                                         onMovieClick(it, v)
                                     }, onLeftKey = {
-                                            if (it) {
-                                                requestFocus()
-                                            }
+                                        if (it) {
+                                            requestFocus()
+                                        }
                                     })
                                     parentAdapter.setMovieList(adultGenreMap, null, true)
                                     binding.parentRecyclerView.adapter = parentAdapter
@@ -442,15 +442,15 @@ class MoviesActivity : BaseActivity() {
 
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl).into(object : CustomTarget<Drawable?>() {
-                override fun onResourceReady(
-                    resource: Drawable, transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
+            override fun onResourceReady(
+                resource: Drawable, transition: Transition<in Drawable?>?
+            ) {
+                resource.alpha = 120
+                binding.root.background = resource
+            }
 
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
+            override fun onLoadCleared(placeholder: Drawable?) {}
+        })
     }
 
     private fun getGradient(startColor: String, endColor: String): GradientDrawable {
@@ -478,9 +478,6 @@ class MoviesActivity : BaseActivity() {
 
     fun gotoExoPlayerActivity(
         movieDetails: ContentDto, isTrailer: Boolean, isContent: Boolean, seekPosition: Long
-    ) {
-        isContent: Boolean,
-        seekPosition: Long
     ) {
 
         val bundle = Bundle()

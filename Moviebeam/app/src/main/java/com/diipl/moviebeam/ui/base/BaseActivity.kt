@@ -6,13 +6,14 @@ import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.diipl.moviebeam.utils.PanelConstants
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 private const val TAG = "BaseActivity"
+
 abstract class BaseActivity : AppCompatActivity() {
 
     abstract fun observeViewModel()
@@ -103,7 +104,7 @@ abstract class BaseActivity : AppCompatActivity() {
     companion object {
         const val ADD_FRAGMENT = 0
         const val REPLACE_FRAGMENT = 1
-        var currentActivity : Activity? = null
+        var currentActivity: Activity? = null
         val activityStack: MutableList<String?> = mutableListOf()
     }
 }
