@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.dto.program.ProgramDTO
 import com.diipl.moviebeam.databinding.ProgramCardBinding
 import kotlin.math.roundToInt

@@ -8,6 +8,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
@@ -39,6 +40,9 @@ class PreferenceDataStoreHelper(context: Context):IPreferenceDataStoreAPI {
         it wont effect the values produced by this function */
     override suspend fun <T> getFirstPreference(key: Preferences.Key<T>, defaultValue: T) :
             T = dataSource.data.first()[key] ?: defaultValue
+
+    override suspend fun <T> getLastPreference(key: Preferences.Key<T>, defaultValue: T) :
+            T = dataSource.data.last()[key] ?: defaultValue
 
     // This Sets the value based on the value passed in value parameter.
     override suspend fun <T> putPreference(key: Preferences.Key<T>, value: T) {

@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -16,7 +18,12 @@ android {
         minSdk 21
         targetSdk 33
         versionCode 1
-        versionName "1.5.0"
+        versionName "2.1.0"
+
+        def formattedDate = new Date().format('yyyyMMdd')
+        def apkName = "Moviebeam_Prod_V(${versionName})_$formattedDate"
+
+        setProperty("archivesBaseName", apkName)
 
     }
 
@@ -32,7 +39,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
 
 
     compileOptions {
@@ -82,17 +88,17 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 
     //okhttp
-    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
-    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
 
     // hilt
-    implementation ("com.google.dagger:hilt-android:$hiltVersion")
-    kapt ("com.google.dagger:hilt-android-compiler:$hiltVersion")
+    implementation("com.google.dagger:hilt-android:$hiltVersion")
+    kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
     implementation "androidx.fragment:fragment-ktx:1.6.2"
 
     // Coroutines
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     kapt 'com.android.databinding:compiler:3.1.4'
 

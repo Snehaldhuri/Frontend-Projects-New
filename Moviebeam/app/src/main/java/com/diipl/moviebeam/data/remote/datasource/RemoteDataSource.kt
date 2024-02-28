@@ -8,9 +8,13 @@ import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
+import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
+import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
+import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -35,12 +39,6 @@ class RemoteDataSource @Inject constructor(
     private val moviesAPIService: MoviesAPIService
 ) : NetworkHandler(networkUtils) {
 
-    /*   suspend fun getMoviesAccess(request: RentalMovieRequest): RentalMovieModel?{
-           val result = safeAPiCall { moviesAPIService.getRentalMovieAccess(request.q, request.UA, request.RID, request.PID, request.price, request.timeStamp, request.seek,
-               request.sessionID, request.a, request.ra, request.cType, request.seekType, request.rentalID, request.contentTypeID,
-               request.productType, request.vodMID, request.AID, request.mode) }
-           return ApiResponseParsing().getResponseAsObject(result.data, RentalMovieModel::class)
-       } */
     suspend fun getMoviesAccess(request: RentalMovieRequest): RentalMovieResponse? {
         val result = safeAPiCall { moviesAPIService.getRentalMovieAccess(request.toQueryMap()) }
         return ApiResponseParsing().getResponseAsObject(result.data, RentalMovieResponse::class)
@@ -158,8 +156,17 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun laundryResponce(UA: String, serviceId: String): LaundryResponce? {
         val result = safeAPiCall { lgRestApiService.getLaundry(UA, serviceId) }
-        Log.e("result_laundry_rds", "laundryResponce:${result}")
         return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
     }
 
+    suspend fun setRentalReversal(request: RentalReversalRequest): RentalReversalResponse? {
+        val result = safeAPiCall { moviesAPIService.setRentalReversal(request.toQueryMap()) }
+        Log.e("setRentalReversal: ", result.data.toString())
+        return ApiResponseParsing().getResponseAsObject(result.data, RentalReversalResponse::class)
+    }
+
+    suspend fun buyPassRequest(request: AdultDayPassRequest): DayPassResponse? {
+        val result = safeAPiCall { moviesAPIService.buyPassRequest(request.toQueryMap()) }
+        return ApiResponseParsing().getResponseAsObject(result.data, DayPassResponse::class)
+    }
 }

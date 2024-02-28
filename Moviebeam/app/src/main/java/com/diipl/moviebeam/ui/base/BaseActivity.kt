@@ -1,9 +1,6 @@
 package com.diipl.moviebeam.ui.base
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -15,53 +12,26 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
+private const val TAG = "BaseActivity"
+
 abstract class BaseActivity : AppCompatActivity() {
 
-    private val TAG = "BaseActivity"
     abstract fun observeViewModel()
     protected abstract fun initViewBinding()
-
-    private val homePressReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-
-            intent.let {
-                if (it.action == Intent.ACTION_CLOSE_SYSTEM_DIALOGS) {
-                    val reason = it.getStringExtra("reason")
-                    if (reason == "homekey") {
-                        if (this.javaClass.simpleName != MainMenuActivity::class.java.simpleName) {
-                            startActivity(Intent(context, MainMenuActivity::class.java).also { i ->
-                                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            })
-                            Log.e(TAG, "onReceive: 0")
-                            return
-                        } else {
-                            Log.e(TAG, "onReceive: 1")
-                            return
-                        }
-                    } else {
-                        Log.e(TAG, "onReceive: 2")
-                        return
-                    }
-                }
-            }
-        }
-    }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initViewBinding()
         observeViewModel()
 //        CustomThreadExecutor()
-
-        val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
-        registerReceiver(homePressReceiver, filter)
-
     }
 
 
     override fun onResume() {
         super.onResume()
+
+        currentActivity = this
+
         activityStack.add(this::class.java.simpleName)
         if (this::class.java.simpleName == MainMenuActivity::class.java.simpleName) {
             activityStack.clear()
@@ -134,6 +104,7 @@ abstract class BaseActivity : AppCompatActivity() {
     companion object {
         const val ADD_FRAGMENT = 0
         const val REPLACE_FRAGMENT = 1
+        var currentActivity: Activity? = null
         val activityStack: MutableList<String?> = mutableListOf()
     }
 }

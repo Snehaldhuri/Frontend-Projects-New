@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.Constants.ALL_SERVICES
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -428,7 +428,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 changeFragment(InRoomDiningGsFragment())
             }
         }
-
     }
 
 
@@ -445,7 +444,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                     binding.root.background = resource
 //                    binding.root.setBackgroundColor(Color.argb(0.6f, 0f, 0f, 0f))
                 }
-
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
@@ -477,7 +475,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
             view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         }
     }
-
 
     private fun fetchDetails() {
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
@@ -532,4 +529,5 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
             binding.gsDown.visibility = View.VISIBLE
         }
     }
+
 }

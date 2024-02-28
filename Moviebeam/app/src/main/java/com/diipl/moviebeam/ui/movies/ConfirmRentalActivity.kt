@@ -8,29 +8,39 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
-import com.diipl.moviebeam.Constants
+import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
 import com.diipl.moviebeam.data.dto.movies.ContentDto
+import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_FINISH_TIME
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityConfirmRentalBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toJson
+import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ConfirmRentalActivity : BaseActivity() {
 
-    private lateinit var binding : ActivityConfirmRentalBinding
+    private lateinit var binding: ActivityConfirmRentalBinding
     private lateinit var movie: ContentDto
     private val viewModel: MoviesViewModel by viewModels()
     private var gradient: GradientDrawable? = null
@@ -38,6 +48,7 @@ class ConfirmRentalActivity : BaseActivity() {
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private lateinit var passPrice: String
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -46,9 +57,50 @@ class ConfirmRentalActivity : BaseActivity() {
         observe(viewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(viewModel.rentalMovieResponse, ::handleMovieResponse)
         observe(viewModel.themeLiveData, ::handleThemeResponse)
+        observe(viewModel.purchaseResponse, ::handlePurchaseResponse)
         observeToast(viewModel.showToast)
 
         viewModel.getThemeResponseData(themeDataStore)
+    }
+
+    private fun handlePurchaseResponse(resource: Resource<DayPassResponse>) {
+        when (resource) {
+            is Resource.Loading -> {
+                binding.layoutPass.toGone()
+                binding.progressBar.toVisible()
+            }
+
+            is Resource.Success -> {
+                resource.data?.let {
+                    when (it.errorCode) {
+                        0 -> {
+                            lifecycleScope.launch {
+                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, true)
+                                preferenceDataStoreHelper.putPreference(
+                                    ADULT_DAY_PASS_FINISH_TIME,
+                                    System.currentTimeMillis().plus(24 * 60 * 60 * 1000)
+                                )
+                                finish()
+                            }
+                        }
+
+                        2 -> {
+                            viewModel.showToastMessage(getString(R.string.insufficient_balance))
+                        }
+
+                        else -> {
+                            viewModel.showToastMessage(getString(R.string.call_front_desk))
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                binding.progressBar.toGone()
+                binding.layoutPass.toVisible()
+                viewModel.showToastMessage(getString(R.string.call_front_desk))
+            }
+        }
     }
 
     override fun initViewBinding() {
@@ -60,16 +112,24 @@ class ConfirmRentalActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+
         viewModel.validateSession(preferenceDataStoreHelper)
 
-        val data = intent.getStringExtra(Constants.MOVIE_RENTALS)
-        movie =  Gson().fromJson(data, ContentDto::class.java)
-
-        binding.tvMovieName.text = movie.movieName
-        binding.tvPriceConfirm.text = getString(R.string.rental_price_confirm, "", movie.price.toString())
+        intent.getStringExtra(Constants.MOVIE_RENTALS)?.let {
+            movie = it.fromJson()
+            binding.tvMovieName.text = movie.movieName
+            binding.tvPriceConfirm.text =
+                getString(R.string.rental_price_confirm, "", movie.price.toString())
+        }
+        intent.getStringExtra("price")?.let {
+            binding.tvAdultPrice.text = getString(R.string.adult_pass_price, "", it)
+            passPrice = it
+        }
 
         binding.btnConfirm.setOnFocusChangeListener(::handleBackClick)
         binding.btnCancel.setOnFocusChangeListener(::handleBackClick)
+        binding.btnBuyNow.setOnFocusChangeListener(::handleBackClick)
+        binding.btnPassCancel.setOnFocusChangeListener(::handleBackClick)
 
         binding.btnConfirm.setOnClickListener {
             val request = RentalMovieRequest()
@@ -81,15 +141,30 @@ class ConfirmRentalActivity : BaseActivity() {
             if (isCheckedIn) {
                 viewModel.getRentalMovieResponse(request)
             } else {
-                viewModel.showToastMessage("Not allowed")
+                viewModel.showToastMessage(getString(R.string.call_front_desk))
+            }
+        }
+        binding.btnBuyNow.setOnClickListener {
+            val request = AdultDayPassRequest()
+            lifecycleScope.launch {
+                request.UA = preferenceDataStoreHelper.getFirstPreference(
+                    PreferenceDataStoreConstants.UA, ""
+                )
+            }
+            request.price = (passPrice.toInt() * 100)
+            if (isCheckedIn) {
+                viewModel.buyPassRequest(request)
+            } else {
+                viewModel.showToastMessage(getString(R.string.call_front_desk))
             }
         }
 
         binding.btnCancel.setOnClickListener {
             finish()
         }
-
-        binding.btnCancel.requestFocus()
+        binding.btnPassCancel.setOnClickListener {
+            finish()
+        }
 
     }
 
@@ -104,29 +179,45 @@ class ConfirmRentalActivity : BaseActivity() {
     private fun handleMovieResponse(state: Resource<RentalMovieResponse>) {
         when (state) {
             is Resource.Loading -> {
-
+                binding.layoutRental.toGone()
+                binding.progressBar.toVisible()
             }
 
             is Resource.Success -> {
-                    state.data?.let { data ->
-                        when (data.errorCode) {
-                            0 -> {
-                                viewModel.insertMovieDetails(data, movie)
-                                startActivity()
-                            }
-
-                            1 -> viewModel.showToastMessage(getString(R.string.product_is_currently_unavailable))
-                            2 -> viewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
-                            3 -> viewModel.showToastMessage(getString(R.string.call_front_desk_to_activate_moviebeam_services))
-                            else -> {
-
-                            }
+                state.data?.let { data ->
+                    when (data.errorCode) {
+                        0 -> {
+                            startActivity(data)
                         }
+
+                        1 -> {
+                            binding.progressBar.toGone()
+                            binding.layoutRental.toVisible()
+                            viewModel.showToastMessage(getString(R.string.product_is_currently_unavailable))
+                        }
+                        2 -> {
+                            binding.progressBar.toGone()
+                            binding.layoutRental.toVisible()
+                            viewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
+                        }
+                        3 -> {
+                            binding.progressBar.toGone()
+                            binding.layoutRental.toVisible()
+                            viewModel.showToastMessage(getString(R.string.call_front_desk_to_activate_moviebeam_services))
+                        }
+                        else -> {
+                            binding.progressBar.toGone()
+                            binding.layoutRental.toVisible()
+                        }
+
                     }
+                }
 
             }
 
             else -> {
+                binding.progressBar.toGone()
+                binding.layoutRental.toVisible()
                 viewModel.showToastMessage(state.errorMsg.toString())
             }
         }
@@ -145,6 +236,13 @@ class ConfirmRentalActivity : BaseActivity() {
 
                 gradient = getGradient(gradientStartColor, gradientEndColor)
 
+                if (::movie.isInitialized) {
+                    binding.layoutRental.toVisible()
+                    binding.btnConfirm.requestFocus()
+                } else {
+                    binding.layoutPass.toVisible()
+                    binding.btnBuyNow.requestFocus()
+                }
             }
 
             else -> {
@@ -177,9 +275,12 @@ class ConfirmRentalActivity : BaseActivity() {
         return gradientDrawable
     }
 
-    private fun startActivity() {
+    private fun startActivity(data: RentalMovieResponse) {
+
+        viewModel.insertMovieDetails(data, movie)
+
         val bundle = Bundle()
-        bundle.putString(Constants.RELEASE_ID, (movie.releaseId).toString())
+        bundle.putString(Constants.MOVIE_DETAILS, movie.toJson())
         bundle.putBoolean(Constants.IS_TRAILER, false)
         bundle.putBoolean(Constants.IS_CONTENT, true)
         bundle.putLong(Constants.IS_CONTINUE, 0)
@@ -187,6 +288,7 @@ class ConfirmRentalActivity : BaseActivity() {
         val intent = Intent(this, ExoPlayerActivity::class.java)
         intent.putExtras(bundle)
         startActivity(intent)
+        finish()
     }
 
 

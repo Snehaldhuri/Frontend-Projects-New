@@ -1,6 +1,6 @@
 package com.diipl.moviebeam.data.dto.movies
 
-import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.utils.Constants
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
@@ -15,6 +15,67 @@ data class RentalMovieResponse(
     @SerializedName("RENTALID") var rentalID: String = "",
     @SerializedName("UA") var UA: String = ""
 )
+
+data class RentalSyncResponse(
+    @SerializedName("syncList")
+    var syncList: List<Sync> = listOf()
+) {
+    data class Sync(
+        @SerializedName("productId")
+        var productId: Int = 0,
+        @SerializedName("releaseId")
+        var releaseId: Int = 0,
+        @SerializedName("releaseTypeId")
+        var releaseTypeId: Int = 0,
+        @SerializedName("rentalId")
+        var rentalId: Int = 0,
+        @SerializedName("rentalTime")
+        var rentalTime: String = "",
+        @SerializedName("seek")
+        var seek: Long = 0
+    )
+}
+
+data class AdultDayPassRequest(
+    @SerializedName("Q")
+    var Q: String = "PURCHASE_PASS",
+    @SerializedName("UA")
+    var UA: String = Constants.UA,
+    @SerializedName("TYPE")
+    var type: String = "D1001",
+    @SerializedName("PRICE_LIST")
+    var priceList: String = "1",
+    @SerializedName("PRICE")
+    var price: Int = 0,
+    @SerializedName("TIMESTAMP")
+    var timeStamp: Long = System.currentTimeMillis()/1000,
+    @SerializedName("SID")
+    var sessionID: String = Constants.SESSION_ID,
+    @SerializedName("MODE")
+    var mode: String = "JSON"
+)
+
+data class DayPassResponse(
+    @SerializedName("UA")
+    var UA: String = "",
+    @SerializedName("type")
+    var type: String = "",
+    @SerializedName("ERROR_CODE")
+    var errorCode: Int = 0
+)
+
+
+data class AdultDayPassSync(
+    @SerializedName("dayPassList")
+    var dayPassList: List<DayPass> = listOf()
+) {
+    data class DayPass(
+        @SerializedName("dayPassRentalTime")
+        var dayPassRentalTime: String = "",
+        @SerializedName("daypassId")
+        var daypassId: Int = 0
+    )
+}
 
 @Serializable
 data class RentalMovieRequest(

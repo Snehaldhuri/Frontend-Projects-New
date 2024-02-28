@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- <uses-permission android:name="android.permission.REBOOT" /> -->
+    <uses-permission android:name="android.permission.REBOOT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -24,7 +25,7 @@
     <uses-configuration android:reqFiveWayNav="true" />
 
     <application
-        android:name=".App"
+        android:name=".di.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -87,17 +88,32 @@
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustPan|adjustNothing">
 
-            <!-- TODO Uncomment this for release-->
+            <!-- TODO Uncomment this for release -->
             <intent-filter>
+                <category android:name="android.intent.category.HOME" />
                 <action android:name="android.intent.action.MAIN" />
-
-                <!--                <category android:name="android.intent.category.HOME" />-->
-                <!--                <category android:name="android.intent.category.DEFAULT" />-->
-                <!--                <category android:name="android.intent.category.LAUNCHER" />-->
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
 
         </activity>
+        <activity
+            android:name=".ui.mainmenu.MainMenuActivity"
+            android:banner="@drawable/app_icon_your_company"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@drawable/app_icon_your_company"
+            android:logo="@drawable/app_icon_your_company"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+<!--
+            <intent-filter>
+                <category android:name="android.intent.category.HOME" />
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+-->
+        </activity>
+
         <activity
             android:name=".ui.appworld.AppWorldActivity"
             android:exported="false"
@@ -139,24 +155,6 @@
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity
-            android:name=".ui.mainmenu.MainMenuActivity"
-            android:banner="@drawable/app_icon_your_company"
-            android:enabled="true"
-            android:exported="true"
-            android:icon="@drawable/app_icon_your_company"
-            android:logo="@drawable/app_icon_your_company"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-
-            <intent-filter>
-                <category android:name="android.intent.category.HOME" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <!--                <category android:name="android.intent.category.LAUNCHER" />-->
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="false"

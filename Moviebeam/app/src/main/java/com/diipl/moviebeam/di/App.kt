@@ -1,4 +1,4 @@
-package com.diipl.moviebeam
+package com.diipl.moviebeam.di
 
 import android.app.Application
 import androidx.lifecycle.Lifecycle
@@ -6,8 +6,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import dagger.hilt.android.HiltAndroidApp
-
-private const val TAG = "App"
 
 @HiltAndroidApp
 open class App : Application(), LifecycleEventObserver {

@@ -11,11 +11,9 @@ import android.os.IBinder
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
@@ -25,8 +23,11 @@ import com.diipl.moviebeam.ui.kappingservice.Actions
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.showKeyboard
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 
@@ -38,7 +39,6 @@ class SerialActivity : BaseActivity() {
     private lateinit var loggingService: LoggingService
 
     private var isServiceBound = false
-
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -57,6 +57,7 @@ class SerialActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(serialViewModel.stbStatusLiveData, ::handleStbStatusResponse)
+        observe(serialViewModel.stbAllocationStatusLiveData, ::handleStbAllocationStatusResponse)
     }
 
     override fun initViewBinding() {
@@ -69,6 +70,7 @@ class SerialActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
+
     }
 
     override fun onResume() {
@@ -108,13 +110,29 @@ class SerialActivity : BaseActivity() {
 
     private fun handleStbStatusResponse(isStbRegistered: Boolean) {
         if (isStbRegistered) {
-            startActivity(Intent(this, STBDetailsActivity::class.java))
+            serialViewModel.getStbAllocationStatusFromDataStore(preferenceDataStoreHelper)
             LoggingService.sendMessageToWebSocket("In App Loader create ","98")
         } else {
-            startActivity(Intent(this, RegisterSTBActivity::class.java))
+            redirectToRegisterStbActivity()
             LoggingService.sendMessageToWebSocket("Showing Landing Page","99")
-
         }
+    }
+
+    private fun handleStbAllocationStatusResponse(isStbAllocated: Boolean) {
+        if(isStbAllocated){
+            redirectToStbDetailsActivity()
+        }else{
+            redirectToRegisterStbActivity()
+        }
+    }
+
+    private fun redirectToStbDetailsActivity(){
+        startActivity(Intent(this, STBDetailsActivity::class.java))
+        finish()
+    }
+
+    private fun redirectToRegisterStbActivity(){
+        startActivity(Intent(this, RegisterSTBActivity::class.java))
         finish()
     }
 
@@ -122,24 +140,21 @@ class SerialActivity : BaseActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Enter Serial Number")
 
-        // Serial No :- 29221HFGN30WLA, 26271HFGN11NHH
-
         val input = EditText(this)
         var serialNo: String
         input.inputType = InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
         input.imeOptions = EditorInfo.IME_ACTION_DONE
         input.setOnFocusChangeListener { view, isFocused ->
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             if (!isFocused) {
-                imm.hideSoftInputFromWindow(view.windowToken, 0)
+                view.hideKeyboard()
             } else {
-                imm.showSoftInput(view, 0)
+                view.showKeyboard()
             }
         }
         builder.setView(input)
-
-        // TODO Uncomment this before release
-        /*if (BuildConfig.DEBUG) {
+//          29221HFGN30WG1	Suite	LABGEN4	No	Living Room	Inactive
+//         Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14/507KKWK1C017  -- 29221HFGN30WG1
+     /*   if (BuildConfig.DEBUG) {
             input.setText("26271HFGN11NHH")
             input.clearFocus()
         }*/
@@ -203,6 +218,6 @@ class SerialActivity : BaseActivity() {
         }
     }
 
-
+    override fun onBackPressed() {}
 
 }

@@ -11,7 +11,7 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.fragment.app.activityViewModels
-import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse

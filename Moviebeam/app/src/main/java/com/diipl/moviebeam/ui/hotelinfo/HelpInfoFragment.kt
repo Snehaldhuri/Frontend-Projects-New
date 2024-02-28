@@ -18,11 +18,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.BuildConfig
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.intToString
 
 private const val TAG = "HelpInfoFragment"
@@ -64,8 +64,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
             binding.tvGateway.text = gateway
 
 
-            val tvInputManager =
-                requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
+        val tvInputManager = requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
             val tvInputInfos = tvInputManager.tvInputList
             if (tvInputInfos.isNotEmpty()) {
                 Log.e(TAG, "Device is connected to an STB $tvInputInfos")

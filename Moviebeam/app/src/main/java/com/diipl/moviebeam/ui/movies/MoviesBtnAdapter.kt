@@ -10,25 +10,38 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
-import com.diipl.moviebeam.utils.isGone
-import com.diipl.moviebeam.utils.toGone
 
 private const val TAG = "MoviesBtnAdapter"
 class MoviesBtnAdapter(
-    private val itemList: List<BtnModel>,
     private val onMoviesMenuItemClicked: (View, contentType: String) -> Unit,
     private val onRightKeyPressed: () -> Unit
-) :
-    RecyclerView.Adapter<MoviesBtnAdapter.MyViewHolder>() {
+) : ListAdapter<BtnModel, MoviesBtnAdapter.MyViewHolder>(diffCallback) {
+
     var startColor = ""
     var endColor = ""
     private var selectedPosition = -1
+
+    companion object {
+        val diffCallback = object : DiffUtil.ItemCallback<BtnModel>(){
+            override fun areItemsTheSame(oldItem: BtnModel, newItem: BtnModel): Boolean {
+                return oldItem == newItem
+            }
+
+            override fun areContentsTheSame(oldItem: BtnModel, newItem: BtnModel): Boolean {
+                return oldItem.title == newItem.title
+            }
+
+        }
+    }
+
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
@@ -63,11 +76,9 @@ class MoviesBtnAdapter(
     }
 
     override fun onBindViewHolder(holder: MoviesBtnAdapter.MyViewHolder, position: Int) {
-        val item = itemList[position]
+        val item = getItem(position)
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
-
-        if (holder.itemView.isGone()) holder.itemView.toGone()
 
         if (selectedPosition == -1) {
             holder.itemView.isSelected = true
@@ -94,7 +105,7 @@ class MoviesBtnAdapter(
     }
 
     private fun notifyUI(holder: MyViewHolder) {
-        itemList.forEachIndexed { index, _ ->
+        currentList.forEachIndexed { index, _ ->
             if (selectedPosition != index)
                 notifyItemChanged(index)
         }
@@ -111,8 +122,6 @@ class MoviesBtnAdapter(
             holder.imageView.imageTintList = ColorStateList.valueOf(Color.WHITE)
         }
     }
-
-    override fun getItemCount(): Int = itemList.size
 
     private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
 

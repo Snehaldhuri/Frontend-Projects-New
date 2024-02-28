@@ -13,7 +13,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse

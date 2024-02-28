@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import com.diipl.moviebeam.Constants
+import com.diipl.moviebeam.utils.Constants
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -43,7 +43,7 @@ class LoggingService : Service() {
 
         //TODO change url for release
         val request = Request.Builder()
-            .url("wss://mblog.moviebeam.com:20000")
+            .url("ws://mblog.moviebeam.com:20000")
             .build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {

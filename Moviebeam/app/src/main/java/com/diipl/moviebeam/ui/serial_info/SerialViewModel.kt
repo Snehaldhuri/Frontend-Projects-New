@@ -20,6 +20,9 @@ class SerialViewModel @Inject constructor() : ViewModel() {
     private var _stbStatusLiveData = MutableLiveData<Boolean>()
     val stbStatusLiveData: LiveData<Boolean> get() = _stbStatusLiveData
 
+    private var _stbAllocationStatusLiveData = MutableLiveData<Boolean>()
+    val stbAllocationStatusLiveData: LiveData<Boolean> get() = _stbAllocationStatusLiveData
+
     fun setDataInDataStore(
         preferenceDataStoreHelper: PreferenceDataStoreHelper,
         isSerialNoTaken: Boolean,
@@ -53,6 +56,15 @@ class SerialViewModel @Inject constructor() : ViewModel() {
                 .collect {
                     _stbStatusLiveData.postValue(it)
                 }
+        }
+    }
+
+    fun getStbAllocationStatusFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch {
+            _stbAllocationStatusLiveData.postValue(preferenceDataStoreHelper.getFirstPreference(
+                PreferenceDataStoreConstants.IS_STB_ALLOCATED,
+                false
+            ))
         }
     }
 

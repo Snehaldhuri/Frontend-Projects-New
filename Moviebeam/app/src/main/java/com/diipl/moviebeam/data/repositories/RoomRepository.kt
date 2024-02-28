@@ -3,16 +3,43 @@ package com.diipl.moviebeam.data.repositories
 import androidx.lifecycle.LiveData
 import com.diipl.moviebeam.room.db.MoviesDatabase
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.room.models.ShowTimeModel
+import com.diipl.moviebeam.utils.Constants
 import javax.inject.Inject
 
 class RoomRepository @Inject constructor(private val database: MoviesDatabase) {
 
     suspend fun insertRentalMovies(rentalMovieModel: RentalMovieModel) {
-        database.movieDao().insertMovie(rentalMovieModel)
+        rentalMovieModel.movieData?.let {
+            if (database.movieDao().getMovieCount(it.releaseId) == 0  && Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null"){
+                database.movieDao().insertMovie(rentalMovieModel)
+            }
+        }
     }
 
     suspend fun updateRentalMovies(rentalMovieModel: RentalMovieModel) {
-        database.movieDao().updateMovie(rentalMovieModel)
+        rentalMovieModel.movieData?.let {
+            if (database.movieDao().getMovieCount(it.releaseId) != 0  && Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null"){
+                database.movieDao().updateMovie(rentalMovieModel)
+            }
+        }
+    }
+
+    suspend fun updateShowDetails(showTimeModel: ShowTimeModel) {
+        showTimeModel.seriesData?.let {
+            if (database.showDao().getShowCount(it.releaseId) != 0 && Constants.SESSION_ID.isNotEmpty()){
+                database.showDao().updateShow(showTimeModel)
+            }
+        }
+
+    }
+
+    suspend fun insertShowDetails(showTimeModel: ShowTimeModel) {
+        showTimeModel.seriesData?.let {
+            if (database.showDao().getShowCount(it.releaseId) == 0 && Constants.SESSION_ID.isNotEmpty()){
+                database.showDao().insertShow(showTimeModel)
+            }
+        }
     }
 
     fun getWatchedMovies(): LiveData<List<RentalMovieModel>> {
@@ -29,6 +56,22 @@ class RoomRepository @Inject constructor(private val database: MoviesDatabase) {
 
     suspend fun deleteRecentMovies() {
         database.movieDao().deleteAllMovies()
+    }
+
+    fun getShowData(releaseId: Int): ShowTimeModel {
+        return database.showDao().getShowData(releaseId)
+    }
+
+    suspend fun deleteRecentShows() {
+        database.showDao().deleteAllShow()
+    }
+
+    suspend fun deleteShowDetails(seriesData: ShowTimeModel) {
+        database.showDao().deleteShow(seriesData)
+    }
+
+    suspend fun deleteMovieDetails(movieData: RentalMovieModel) {
+        database.movieDao().deleteMovie(movieData)
     }
 
 
