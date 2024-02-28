@@ -108,7 +108,7 @@ class VelvetParkingFragment(
                 }
             }
             binding.tvMessage.text =
-                "Thank you.Your request has been sent.\nPlease proceed with valet desk to retrive your vehicle."
+                "Thank you.your request has been sent.\nPlease proceed with valet desk to retrive your vehicle."
 
             binding.btnPopOk.setOnClickListener {
                 onOkClicked()
@@ -120,7 +120,7 @@ class VelvetParkingFragment(
 
     private fun showSerialNumberDialog() {
         val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
-        builder.setTitle("Enter Valet ticket Number")
+        builder.setTitle("Enter valet ticket Number")
 
         // Serial No :- 29221HFGN30WLA
 

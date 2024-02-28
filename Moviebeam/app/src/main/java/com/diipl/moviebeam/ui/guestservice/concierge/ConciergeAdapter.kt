@@ -21,6 +21,8 @@ class ConciergeAdapter(
     private var startColor = ""
     private var endColor = ""
 
+    private var conPosition = 0
+
     private var itemList: List<ConciergeBtnModel> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -34,7 +36,8 @@ class ConciergeAdapter(
         parent: ViewGroup,
         viewType: Int
     ): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.concierge_card, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.concierge_card, parent, false)
         view.isFocusable = true
         val params = view.layoutParams
         params.height = getHeightInPercent(parent.context, 26)
@@ -49,21 +52,32 @@ class ConciergeAdapter(
         holder.imageView.setImageResource(item.defaultImage)
         holder.textView.text = item.categoryName
         holder.card.postDelayed({
-            if (position == 0) {
+            if (position == conPosition) {
                 holder.card.requestFocus()
             }
         }, 1)
 
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
+        holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 setFocus(holder.container)
+                if(itemList.size < 8) {
+                    if (position <= 3) {
+                        view.nextFocusUpId = view.id
+                    } else if (position <= 7 && position >= 3) {
+                        view.nextFocusDownId = view.id
+                    }
+                }
             } else {
                 holder.container.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
         holder.card.setOnClickListener {
             onMenuItemClicked(it, item)
-//            it.setBackgroundColor(Color.parseColor("#EBEBEB"))
+        }
+
+        // Request focus if the current position matches the specified focus position
+        if (position == conPosition) {
+            holder.card.requestFocus()
         }
     }
 
@@ -84,12 +98,16 @@ class ConciergeAdapter(
         return (width * percent) / 100
     }
 
-    fun setButtonList(btnList: List<ConciergeBtnModel>){
+    fun setButtonList(btnList: List<ConciergeBtnModel>) {
         itemList = btnList
     }
 
     fun setGradientColor(startColor: String, endColor: String) {
         this.startColor = startColor
         this.endColor = endColor
+    }
+
+    fun getFocus(conPosition: Int) {
+        this.conPosition = conPosition
     }
 }

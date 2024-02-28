@@ -17,27 +17,33 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryCategory
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
+import com.diipl.moviebeam.data.dto.laundryResponce.LaundrySubCategory
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestAdapter
+import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestErrorFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestSummaryFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
-class LaundryFragment : BaseFragment() {
+class LaundryFragment (
+    private var onOkClicked: () -> Unit
+) : BaseFragment() {
 
     private val laundryViewModel: LaundryViewModel by viewModels()
 
     lateinit var laundry_adapter: LaundryAdapter
-    lateinit var customAdapterLaundry: CustomAdapterLaundry
-    lateinit var laundry_list: List<LaundryCategory>
-    private var gradientStartColor: String? = null
-    private var gradientEndColor: String? = null
+    private lateinit var customAdapterLaundry: CustomAdapterLaundry
+//    lateinit var laundry_list: List<LaundryCategory>
+    private var gradientStartColor = ""
+    private var gradientEndColor = ""
     private lateinit var binding: FragmentLaundryBinding
     private var laundryHeaderPosition: Int = 0
     private var laundrySubCategoryPosition: Int = 0
-    private var selectedItems: MutableList<LaundryResponce> = mutableListOf()
+    private var selectedItems: List<LaundrySubCategory> = mutableListOf()
     private lateinit var laundryDetailResponse: LaundryDataResponse
 
 
@@ -85,28 +91,20 @@ class LaundryFragment : BaseFragment() {
                 binding.btnLaundrySendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
+        binding.btnLaundryCancel.setOnClickListener {
+            onOkClicked()
+        }
+        customAdapterLaundry = CustomAdapterLaundry(
+            onMenuItemFocused = { },
+            onLeftKeyPressed = {
+                binding.lvLaundry.smoothScrollToPosition(laundryHeaderPosition)
+            }
+        )
+        customAdapterLaundry.clearSelectedItems()
         setLaundryDetailData()
 
         binding.btnLaundrySendRequest.setOnClickListener {
-
-            val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
-            val summaryFragment = LaundryRequestSummaryFragment {
-//                        view?.requestFocus()
-//                        view?.performClick()
-            }
-            val mBundle = Bundle()
-            mBundle.putString("gradientStartColor", gradientStartColor)
-            mBundle.putString("gradientEndColor", gradientEndColor)
-            summaryFragment.arguments = mBundle
-            summaryFragment.setItemList(selectedItems)
-
-            fragmentTransaction.replace(
-                R.id.fv_tab_content,
-                summaryFragment
-            )
-            fragmentTransaction.addToBackStack(null)
-            fragmentTransaction.commit()
-            Log.d("TAG1212", "handleAccountSetupResponse: $selectedItems")
+            updateSelectedItems()
         }
         return binding.root
     }
@@ -144,8 +142,8 @@ class LaundryFragment : BaseFragment() {
     fun setLaundryData(laundryData: LaundryDataResponse) {
         this.laundryDetailResponse = laundryData
     }
-    fun setLaundryDetailData() {
-        laundry_list = laundryDetailResponse.laundryDataList
+    private fun setLaundryDetailData() {
+//        laundry_list = laundryDetailResponse.laundryDataList
 
         // Check if _binding is initialized
         lifecycleScope.launch {
@@ -178,13 +176,53 @@ class LaundryFragment : BaseFragment() {
                     binding.lvLaundry.getChildAdapterPosition(binding.lvLaundry.getFocusedChild())
                 }
             )
-            laundry_list.let {
+            laundryDetailResponse.laundryDataList.let {
                 laundry_adapter.setLaundryList(it)
             }
             laundry_adapter.setGradient(getGradient())
             binding.rvLaundry.adapter = laundry_adapter
+
+
         }
     }
+    private fun updateSelectedItems() {
+        val selectedItems = (binding.lvLaundry.adapter as? CustomAdapterLaundry)?.getSelectedItems()
+        Log.d("selecteditemslaundry2","$selectedItems")
+        if (!selectedItems.isNullOrEmpty()) {
+            val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+            val summaryFragment = LaundryRequestSummaryFragment {
+                onOkClicked()
+            }
+            val mBundle = Bundle()
+            mBundle.putString("gradientStartColor", gradientStartColor)
+            mBundle.putString("gradientEndColor", gradientEndColor)
+            summaryFragment.arguments = mBundle
+            summaryFragment.setItemList(selectedItems)
 
+            fragmentTransaction.replace(
+                R.id.fv_tab_content,
+                summaryFragment
+            )
+
+            fragmentTransaction.addToBackStack(null)
+            fragmentTransaction.commit()
+        }
+        else{
+            val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
+            val summaryFragment = LaundryRequestErrorFragment()
+            val mBundle = Bundle()
+            mBundle.putString("gradientStartColor", gradientStartColor)
+            mBundle.putString("gradientEndColor", gradientEndColor)
+            summaryFragment.arguments = mBundle
+
+            fragmentTransaction.replace(
+                R.id.fv_tab_content,
+                summaryFragment
+            )
+
+            fragmentTransaction.addToBackStack(null)
+            fragmentTransaction.commit()
+        }
+    }
 }
 

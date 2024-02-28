@@ -6,8 +6,6 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
-    const val VERSION = 1.5
-
     const val SPLASH_DELAY = 3000
     var timer = ""
     const val BASE_URL_LG_REST = "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
@@ -263,7 +261,14 @@ object Constants {
         "Peacock TV",
         "Disney+",
         "YouTube",
-        "Prime Video"
+        "Prime Video",
+        "Crackle",
+        "Spotify",
+        "Plex",
+        "Vudu Movies & TV",
+        "DAZN",
+        "Pac-12 Now",
+        "ESPN"
     )
 
     //Guest Feedback

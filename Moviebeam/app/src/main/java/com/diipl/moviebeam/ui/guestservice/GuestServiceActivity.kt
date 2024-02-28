@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
@@ -63,11 +62,12 @@ import java.io.InputStreamReader
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class GuestServiceActivity : BaseActivity() {
+class GuestServiceActivity : BaseActivity(){
 
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
     private var conciergeIndex = 0
+    private var conciergePosition = 0
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -127,6 +127,7 @@ class GuestServiceActivity : BaseActivity() {
         val br = BufferedReader(InputStreamReader(inputStream))
         return gson.fromJson(br, LaundryDataResponse::class.java)
     }
+
     private fun readToiletryJson(): ToiletryResponse {
         val gson = Gson()
         val inputStream = this.assets.open("ToiletryData.json")
@@ -138,13 +139,6 @@ class GuestServiceActivity : BaseActivity() {
         val data = JSONObject(stringBuilder.toString())
         return gson.fromJson(data.toString(), ToiletryResponse::class.java)
     }
-
-//    private fun readToiletryJson(): ToiletryDataResponse? {
-//        val gson = Gson()
-//        val inputStream = this.assets.open("ToiletryData.json")
-//        val br = BufferedReader(InputStreamReader(inputStream))
-//        return gson.fromJson(br, ToiletryDataResponse::class.java)
-//    }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -170,6 +164,7 @@ class GuestServiceActivity : BaseActivity() {
             is Resource.Loading -> {
                 binding.loaderView.toVisible()
             }
+
             is Resource.Success -> {
                 val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
                     .value?.data?.gsButtonsList?.map { it.buttonName }
@@ -179,7 +174,7 @@ class GuestServiceActivity : BaseActivity() {
                 val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
                     gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
                 }
-                val adapter = GuestServiceTabAdapter(onMenuItemClicked =  { view, service ->
+                val adapter = GuestServiceTabAdapter(onMenuItemClicked = { view, service ->
                     binding.tvServiceTitle.text = service.categoryName
                     adapterView = view
                     bindAdapterView(view, service.btnId)
@@ -221,13 +216,13 @@ class GuestServiceActivity : BaseActivity() {
         }
     }
 
-
     private fun bindAdapterView(view: View, btnId: String) {
         requestFocus()
-        when (btnId) {
 
+        when (btnId) {
             Constants.CONCIERGE_ID -> {
                 conciergeIndex = 1
+
                 val concierge = ConciergeFragment { cView, conciergeService ->
                     conciergeIndex = 1
                     focusView = cView
@@ -236,8 +231,8 @@ class GuestServiceActivity : BaseActivity() {
                     when (conciergeService.serviceId) {
                         1 -> {
                             val fragment = MakeMyRoomFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
 
                             changeFragment(fragment)
@@ -251,9 +246,11 @@ class GuestServiceActivity : BaseActivity() {
 
                         2 -> {
                             val fragment = VelvetParkingFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
+
+
                             changeFragment(fragment)
                             fragment.setGradientColor(
                                 gradientStartColor,
@@ -265,8 +262,8 @@ class GuestServiceActivity : BaseActivity() {
                             binding.layoutHeader.tvTitle.text =
                                 getString(R.string.toiletry_requests)
                             val fragment = ToiletryRequestFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
                             val mBundle = Bundle()
                             mBundle.putString("gradientStartColor", gradientStartColor)
@@ -274,31 +271,24 @@ class GuestServiceActivity : BaseActivity() {
                             fragment.arguments = mBundle
                             val toiletryData = readToiletryJson()
                             fragment.setToiletryData(toiletryData)
-                            Log.d("snehald","$toiletryData")
                             changeFragment(fragment)
                         }
 
                         5 -> {
-                            val fragment = SpaFragment {
-
-                            }
+                            val fragment = SpaFragment()
 
                             changeFragment(fragment)
                         }
 
                         6 -> {
-
-                            val fragment = GolfFragment {
-                                view.requestFocus()
-                                view.performClick()
-                            }
+                            val fragment = GolfFragment()
                             changeFragment(fragment)
                         }
 
                         7 -> {
                             val fragment = LaundryTimeFragment {
-//                                view.requestFocus()
-//                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
                             changeFragment(fragment)
 
@@ -310,7 +300,10 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         3 -> {
-                            val fragment = LaundryFragment()
+                            val fragment = LaundryFragment {
+                                requestFocus()
+                                handleBackRemoteClick()
+                            }
 
 
                             fragment.setGradientColor(
@@ -321,8 +314,6 @@ class GuestServiceActivity : BaseActivity() {
                             if (laundryData != null) {
                                 fragment.setLaundryData(laundryData)
                             }
-
-                            changeFragment(fragment)
 
                             changeFragment(fragment)
                         }
@@ -350,7 +341,7 @@ class GuestServiceActivity : BaseActivity() {
                 focusView = null
 
                 val fragment = FlightStatusFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
 
                 guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
@@ -371,10 +362,10 @@ class GuestServiceActivity : BaseActivity() {
                 conciergeIndex = 0
                 focusView = null
                 val fragment = NewsFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -382,22 +373,22 @@ class GuestServiceActivity : BaseActivity() {
                 conciergeIndex = 0
                 focusView = null
                 val fragment = FeedbackFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
             Constants.LA_ID -> {
                 conciergeIndex = 0
 
-                val fragment = LocalAttractionGsFragment{v ->
+                val fragment = LocalAttractionGsFragment { v ->
                     focusView = v
                     requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -409,7 +400,6 @@ class GuestServiceActivity : BaseActivity() {
         }
 
     }
-
 
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
@@ -476,7 +466,7 @@ class GuestServiceActivity : BaseActivity() {
     private fun handleBackRemoteClick() {
         if (conciergeIndex == 1) {
             bindAdapterView(binding.root, Constants.CONCIERGE_ID)
-            /*if (binding.fvTabContent.isVisible) {
+           /*if (binding.fvTabContent.isVisible) {
                 binding.fvTabContent.toInvisible()
                 binding.rvTabContent.toVisible()
             } else{
@@ -496,4 +486,6 @@ class GuestServiceActivity : BaseActivity() {
         }
         return false
     }
+
 }
+

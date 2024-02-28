@@ -125,25 +125,6 @@
 							"subTitle": "Ropa Interior (Lavado y Doblado)"
 						}
 					}
-				},
-				{
-					"title": "Skirt",
-					"dispPrice": "$6.99",
-					"price": 6.99,
-					"id": 107,
-					"categoryName": "Wash & Fold",
-					"subTitle": "Skirt (Wash & Fold)",
-					"imgSrc": "Laundry/skirt.png",
-					"langWiseList": {
-						"en-US": {
-							"title": "Skirt",
-							"subTitle": "Skirt (Wash & Fold)"
-						},
-						"es-MX": {
-							"title": "Falda",
-							"subTitle": "Falda (Lavado y Planchado)"
-						}
-					}
 				}
 			]
 		},

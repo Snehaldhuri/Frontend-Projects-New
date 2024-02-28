@@ -18,9 +18,7 @@ import com.diipl.moviebeam.databinding.FragmentGolfBinding
 import java.util.Calendar
 
 
-class GolfFragment(
-    private var onOkClicked: () -> Unit
-) : Fragment() {
+class GolfFragment : Fragment() {
 
     private var _binding: FragmentGolfBinding? = null
     val binding get() = _binding!!

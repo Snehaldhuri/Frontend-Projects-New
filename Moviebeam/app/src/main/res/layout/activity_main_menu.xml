@@ -90,7 +90,8 @@
         android:textSize="@dimen/sp_45"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
-        app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo" />
+        app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo"
+        />
 
     <TextView
         android:id="@+id/tv_greeting"
