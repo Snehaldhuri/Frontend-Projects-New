@@ -23,7 +23,7 @@ class ShowtimeChildAdapter(
 ) :
     RecyclerView.Adapter<ShowtimeChildAdapter.ChildViewHolder>() {
 
-    private var pos = "-1"
+    private var pos = -1
 
     inner class ChildViewHolder(val binding: MoviegenreChildlistItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -90,33 +90,37 @@ class ShowtimeChildAdapter(
             onItemClicked(item, item.releaseId)
         }
 
-        holder.itemView.setOnKeyListener { v, keycode, _ ->
+        holder.itemView.setOnKeyListener { _, keycode, _ ->
             when (keycode) {
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    if (holder.absoluteAdapterPosition == 0 && pos == "-1"){
+                    if (holder.absoluteAdapterPosition == 0 && pos == -1){
                         onLeftKey(true)
                     }
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != "0"){
-                        "-1"
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                        -1
                     } else {
-                        holder.absoluteAdapterPosition.toString()
+                        holder.absoluteAdapterPosition
                     }
                 }
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    pos = holder.absoluteAdapterPosition.toString()
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                        -1
+                    } else {
+                        holder.absoluteAdapterPosition
+                    }
                 }
                 KeyEvent.KEYCODE_DPAD_UP -> {
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != "0"){
-                        "-1"
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                        -1
                     } else {
-                        holder.absoluteAdapterPosition.toString()
+                        holder.absoluteAdapterPosition
                     }
                 }
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != "0"){
-                        "-1"
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                        -1
                     } else {
-                        holder.absoluteAdapterPosition.toString()
+                        holder.absoluteAdapterPosition
                     }
                 }
             }

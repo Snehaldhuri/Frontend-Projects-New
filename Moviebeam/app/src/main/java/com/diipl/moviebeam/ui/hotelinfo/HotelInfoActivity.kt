@@ -188,7 +188,7 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
                                 }
                             }
 
-                            if (!helpInfoAdded) {
+                            if (!helpInfoAdded && service.contentTypeId == 15) {
                                 tabs.add(Constants.HELP_INFO)
                                 tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
                             }

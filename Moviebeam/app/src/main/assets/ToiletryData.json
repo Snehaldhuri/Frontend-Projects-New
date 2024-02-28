@@ -77,19 +77,6 @@
 					"name": "Toallas"
 				}
 			}
-		},
-		{
-			"name": "Toothbrush",
-			"id": 7,
-			"imgSrc": "Toiletry/Toothbrush.png",
-			"langWiseList": {
-				"en-US": {
-					"name": "Toothbrush"
-				},
-				"es-MX": {
-					"name": "Cepillo de Dientes"
-				}
-			}
 		}
 	]
 }

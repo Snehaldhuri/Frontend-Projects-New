@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
@@ -61,11 +62,26 @@ class LaundryAdapter(
             if (hasFocus) {
                 onMenuItemFocused(item)
                 view.background = gradient
+                if (position == 0) {
+                    if (hasFocus) {
+                        view.nextFocusUpId = view.id
+                    } else {
+                        view.nextFocusUpId = View.NO_ID
+                    }
+                } else if (position == laundryList.size.minus(1)) {
+                    if (hasFocus) {
+                        view.nextFocusDownId = view.id
+                    } else {
+                        view.nextFocusDownId = View.NO_ID
+                    }
+                }
 
             } else {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
+
+
     }
 
     fun setLaundryList(laundryDataList: List<LaundryCategory>) {

@@ -9,6 +9,8 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.dto.program.ProgramDTO
 import com.diipl.moviebeam.databinding.ChannelCardBinding
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toVisible
 
 class ChannelAdapter(
     private val onChannelFocused: (program: ProgramDTO) -> Unit,
@@ -35,7 +37,7 @@ class ChannelAdapter(
         val item = channelList[position]
         holder.binding.tvChannelNo.text = item.CNO.toString()
 
-        if (focusIndex == holder.absoluteAdapterPosition){
+        if (focusIndex == holder.absoluteAdapterPosition) {
             holder.binding.root.requestFocus()
         } else holder.binding.root.clearFocus()
 
@@ -44,9 +46,11 @@ class ChannelAdapter(
                 onChannelFocused(item)
                 view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
                 holder.binding.tvChannelNo.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                holder.binding.tvChannelLogo.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
             } else {
                 view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
                 holder.binding.tvChannelNo.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                holder.binding.tvChannelLogo.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
             }
         }
         holder.binding.root.setOnClickListener {
@@ -55,13 +59,22 @@ class ChannelAdapter(
         item.CL?.let {
             holder.binding.ivChannelLogo.loadImagesWithGlideExt(it)
         }
+        if (item.CL != null) {
+            holder.binding.ivChannelLogo.loadImagesWithGlideExt(item.CL)
+            holder.binding.tvChannelLogo.toGone()
+            holder.binding.ivChannelLogo.toVisible()
+        } else {
+            holder.binding.tvChannelLogo.text = item.CN
+            holder.binding.ivChannelLogo.toGone()
+            holder.binding.tvChannelLogo.toVisible()
+        }
     }
 
     fun setChannelList(list: List<ProgramDTO>) {
         this.channelList = list
     }
 
-    fun getChannelList(): List<ProgramDTO>{
+    fun getChannelList(): List<ProgramDTO> {
         return channelList
     }
 

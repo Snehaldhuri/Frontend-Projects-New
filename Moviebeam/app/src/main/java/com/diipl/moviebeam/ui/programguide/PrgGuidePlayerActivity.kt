@@ -1,7 +1,9 @@
 package com.diipl.moviebeam.ui.programguide
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.KeyEvent
+import androidx.core.view.isVisible
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.DefaultRenderersFactory
@@ -13,6 +15,7 @@ import com.diipl.moviebeam.databinding.ActivityPrgGuidePlayerBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.gson.Gson
@@ -107,9 +110,16 @@ class PrgGuidePlayerActivity : BaseActivity(), KeyEvent.Callback {
     }
 
     private fun setChannelInfo(program: ProgramDTO) {
-        program.CL?.let {
-            binding.layoutChannelInfo.ivChannelLogo.loadImagesWithGlideExt(it)
+        if (program.CL != null) {
+            binding.layoutChannelInfo.ivChannelLogo.loadImagesWithGlideExt(program.CL)
+            binding.layoutChannelInfo.ivChannelLogoTv.toGone()
+            binding.layoutChannelInfo.ivChannelLogo.toVisible()
+        } else {
+            binding.layoutChannelInfo.ivChannelLogoTv.text = program.CN
+            binding.layoutChannelInfo.ivChannelLogo.toGone()
+            binding.layoutChannelInfo.ivChannelLogoTv.toVisible()
         }
+
         binding.layoutChannelInfo.tvChannelNo.text =
             getString(R.string.channel_no, program.CNO.toString())
         binding.layoutChannelInfo.tvChannelName.text = program.CN

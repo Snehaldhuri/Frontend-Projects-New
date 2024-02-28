@@ -41,12 +41,14 @@ class MainMenuBtnAdapter(
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
 
-        holder.card.post{
-            if (position == 0) {
-                holder.card.requestFocus()
-            }
-        }
+        holder.card.postDelayed(
+            {
+                if (holder.absoluteAdapterPosition == 0) {
+                    holder.card.requestFocus()
+                }
+            },200
 
+        )
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
         holder.card.setOnFocusChangeListener { _, hasFocus ->

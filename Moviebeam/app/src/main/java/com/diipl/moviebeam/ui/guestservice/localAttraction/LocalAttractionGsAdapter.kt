@@ -83,7 +83,7 @@ class LocalAttractionGsAdapter(
                 view.background = gradientDrawable
                 view.setOnKeyListener { _, code, _ ->
                     when (code) {
-                        KeyEvent.KEYCODE_DPAD_CENTER -> {
+                        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
                             onItemClicked(view, item)
                             holder.itemView.isSelected = true
                             selectedPosition = holder.absoluteAdapterPosition

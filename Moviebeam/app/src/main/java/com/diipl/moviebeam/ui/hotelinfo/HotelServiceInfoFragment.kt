@@ -45,7 +45,14 @@ class HotelServiceInfoFragment : Fragment() {
         }
         if (serviceImgUrl != "null") {
             binding.ivServiceImg.loadImagesWithGlideExtHS(serviceImgUrl)
-        }else{
+
+        }
+        if(title == "Help & Info") {
+            if (serviceImgUrl == "null") {
+                binding.ivServiceImg.setBackgroundResource(R.drawable.help)
+            }
+        }
+        else{
             binding.ivServiceImg.setBackgroundResource(R.drawable.hs_default)
         }
 

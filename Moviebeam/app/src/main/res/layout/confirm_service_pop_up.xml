@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Thank you.Your request has been received and your room will be serviced"
+        android:text="Thank you.your request has been received and your room will be serviced"
         android:textAlignment="center"
         android:textSize="@dimen/sp_16"
         app:layout_constraintEnd_toEndOf="parent"

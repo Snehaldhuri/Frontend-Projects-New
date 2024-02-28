@@ -31,7 +31,6 @@ object Constants {
     var RENTAL_TIME: Long = 1707840000000
     var MOVIE_SELECTED_POSITION: Int = -1
     var MOVIE_PARENT_POSITION: Int = -1
-
     const val SPLASH_DELAY = 3000
     var timer = ""
     const val BASE_URL_LG_REST =
@@ -299,6 +298,14 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
+        "Prime Video",
+        "Crackle",
+        "Spotify",
+        "Plex",
+        "Vudu Movies & TV",
+        "DAZN",
+        "Pac-12 Now",
+        "ESPN"
     //Guest Feedback
     const val UNACCEPTABLE = "Unacceptable"
     const val DISAPPOINTING = "Disappointing"

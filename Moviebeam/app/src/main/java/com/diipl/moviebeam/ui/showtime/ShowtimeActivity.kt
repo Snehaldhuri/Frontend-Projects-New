@@ -283,7 +283,7 @@ class ShowtimeActivity : BaseActivity() {
         seekPosition: Long
     ) {
         val bundle = Bundle()
-
+        bundle.putString(Constants.RELEASE_ID, "ShowTime")
         bundle.putString(Constants.SHOW_DETAILS, movieDetails.toJson())
         bundle.putBoolean(Constants.IS_TRAILER, isTrailer)
         bundle.putBoolean(Constants.IS_CONTENT, isContent)

@@ -1,11 +1,17 @@
 package com.diipl.moviebeam.ui.mainmenu
 
 import android.annotation.SuppressLint
+import android.app.admin.DeviceAdminReceiver
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
@@ -95,6 +101,9 @@ class MainMenuActivity : BaseActivity() {
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
+    private lateinit var devicePolicyManager: DevicePolicyManager
+    private lateinit var componentName: ComponentName
+
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -106,6 +115,31 @@ class MainMenuActivity : BaseActivity() {
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
+    }
+
+    private fun isAdminActive(): Boolean {
+        devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        componentName = ComponentName(this, DeviceAdminReceiver::class.java)
+        return devicePolicyManager.isAdminActive(componentName)
+    }
+
+    private fun requestDeviceAdmin() {
+        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Device admin is required to restart the device.")
+        startActivityForResult(intent, 1)
+    }
+
+    private fun restartDevice() {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            powerManager.reboot("Restarting for update")
+        } else {
+            // For older Android versions, open the device restart settings
+            val intent = Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)
+            startActivity(intent)
+        }
     }
 
     @SuppressLint("UnsafeOptInUsageError")
@@ -125,6 +159,7 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
+
 
         val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
 //        startDownload(url)
@@ -177,6 +212,7 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
+//        player.pause()
         super.onPause()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
@@ -293,10 +329,11 @@ class MainMenuActivity : BaseActivity() {
                 try {
                     val response = mainMenuViewModel.accountSetupLiveData.value?.data
 
+                if(response?.contentDetailFlag == true){
                     HOTEL_VIDEO_URL =
-                        response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
-
+                        response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
                     initializePlayer()
+                }
 
                     binding.tvGreeting.text = response?.hotelInfo
                     val btnListFromApi: List<String>? = response?.buttonsList?.map {
@@ -316,6 +353,9 @@ class MainMenuActivity : BaseActivity() {
                         val bundle = Bundle()
                     bundle.putString("hotelChannel", response?.hotelChannelList?.get(0).toJson())
                         bundle.putString("title", btn.title)
+                    bundle.putString("hotelChannel", response?.hotelChannelList?.get(0).toJson())
+                    val hotelChannelVideo = response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
+                    bundle.putString("hotelChannelVideo", hotelChannelVideo)
                         bundle.putString(
                             "themeLogoFileName",
                             mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName

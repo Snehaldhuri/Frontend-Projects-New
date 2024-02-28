@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.guestservice.news
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +31,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
     private val selectedMenuItemPosition = 0
 
     private var newsHeaderPosition: Int = 0
+    private var headerView: View? = null
 
     override fun observeViewModel() {
         observe(newsViewModel.newsHeaderLiveData, ::handleNewsHeaderResponse)
@@ -49,20 +51,26 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                 binding.rvNewsHeader.layoutManager = LinearLayoutManager(context)
                 val adapter = NewsHeaderTabAdapter(
                     onMenuItemClicked = { it, view, pos ->
+                        headerView = view
                         for ((index, item) in newsViewModel.newsHeaderLiveData.value?.data?.newsHeaderList?.withIndex()!!) {
                             if (item.id == it.id) {
-                                selectedHeaderItemPosition = index;
-                                break;
+                                selectedHeaderItemPosition = index
+                                break
                             }
                         }
                         newsViewModel.fetchNewsDetails(it.id)
                         newsHeaderPosition = pos
                     },
                     onRightKeyPressed = {
-                        binding.rvNews.smoothScrollToPosition(selectedMenuItemPosition);
-                        binding.rvNews.findViewHolderForAdapterPosition(selectedMenuItemPosition)?.itemView?.requestFocus();
+                        binding.rvNews.smoothScrollToPosition(selectedMenuItemPosition)
+                        binding.rvNews.findViewHolderForAdapterPosition(selectedMenuItemPosition)?.itemView?.requestFocus()
                     }, onLeftKeyPressed = {
-                        onLeftKeyPressed()
+                        it.setOnKeyListener { _, i, _ ->
+                            when (i) {
+                                KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
+                            }
+                            false
+                        }
                     }
                 )
                 newsHeaderDetails?.newsHeaderList?.let {
@@ -72,6 +80,9 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                 binding.rvNewsHeader.adapter = adapter
                 newsHeaderDetails?.newsHeaderList?.get(0)?.id?.let {
                     newsViewModel.fetchNewsDetails(it)
+                }
+                binding.rvNewsHeader.post {
+                    binding.rvNewsHeader.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
                 }
                 binding.pbLoader.toInvisible()
             }
@@ -93,7 +104,12 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                     binding.tvDescription.text = it.description
                     binding.tvPublishDate.text = it.publishDate
                 }, onLeftKeyPressed = {
-                    binding.rvNews.findViewHolderForAdapterPosition(selectedHeaderItemPosition)?.itemView?.requestFocus();
+//                    binding.rvNews.findViewHolderForAdapterPosition(selectedHeaderItemPosition)?.itemView?.requestFocus()
+                    headerView?.let {
+                        binding.rvNewsHeader.post {
+                            binding.rvNewsHeader.findContainingItemView(it)?.requestFocus()
+                        }
+                    }
                 })
                 newsDetails?.newsList?.let {
                     adapter.setNewsList(it)
@@ -127,8 +143,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
         gradientEndColor = endColor
     }
 
-    private fun getGradient(
-    ): GradientDrawable {
+    private fun getGradient(): GradientDrawable {
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))

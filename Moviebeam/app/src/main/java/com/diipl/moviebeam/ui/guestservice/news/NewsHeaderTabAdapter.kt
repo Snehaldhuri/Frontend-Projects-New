@@ -11,9 +11,9 @@ import com.diipl.moviebeam.data.dto.news.NewsHeader
 import com.diipl.moviebeam.databinding.CardNewsBinding
 
 class NewsHeaderTabAdapter(
-    private var onMenuItemClicked: (NewsHeader,View,Int) -> Unit,
+    private var onMenuItemClicked: (NewsHeader, View, Int) -> Unit,
     private var onRightKeyPressed: () -> Unit,
-    private val onLeftKeyPressed: () -> Unit
+    private val onLeftKeyPressed: (View) -> Unit
 ) : RecyclerView.Adapter<NewsHeaderTabAdapter.MyViewHolder>() {
 
     private var newsHeaderList: List<NewsHeader> = emptyList()
@@ -24,9 +24,9 @@ class NewsHeaderTabAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding = CardNewsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
-
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
+/*
         binding.root.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                 when (keycode) {
@@ -36,6 +36,7 @@ class NewsHeaderTabAdapter(
             }
             false
         }
+*/
         return MyViewHolder(binding)
     }
 
@@ -45,13 +46,39 @@ class NewsHeaderTabAdapter(
 
         val item = newsHeaderList[position]
         holder.binding.tvNews.text = item.headerName
+
+        holder.itemView.post {
+            if (position == 0){
+                holder.itemView.requestFocus()
+                onMenuItemClicked(item, holder.itemView, position)
+            }
+        }
+
         holder.binding.root.setOnClickListener {
-            onMenuItemClicked(item,it,position)
+            onMenuItemClicked(item, it, position)
         }
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
-            if(isFocused){
+            if (isFocused) {
+                if (position == 0) {
+                    view.nextFocusUpId = view.id
+                }
+                if (position == newsHeaderList.size.minus(1)) {
+                    view.nextFocusDownId = view.id
+                }
                 holder.binding.clCard.background = gradient
-            }else{
+                view.setOnKeyListener { _, i, _ ->
+                    when(i){
+                        KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed(view)
+                    }
+                    false
+                }
+            } else {
+                if (position == 0) {
+                    view.nextFocusUpId = View.NO_ID
+                }
+                if (position == newsHeaderList.size.minus(1)) {
+                    view.nextFocusDownId = View.NO_ID
+                }
                 holder.binding.clCard.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
             }
         }
@@ -61,7 +88,7 @@ class NewsHeaderTabAdapter(
         this.newsHeaderList = newsHeaderList
     }
 
-    fun setGradient(gradient: GradientDrawable){
+    fun setGradient(gradient: GradientDrawable) {
         this.gradient = gradient
     }
 

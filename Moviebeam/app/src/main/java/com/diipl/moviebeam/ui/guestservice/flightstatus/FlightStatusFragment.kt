@@ -114,7 +114,7 @@ class FlightStatusFragment(
                                     view.nextFocusUpId = View.NO_ID
                                 return@setOnKeyListener true
                             }
-
+                            KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
                         }
                     }
                     false
@@ -129,6 +129,7 @@ class FlightStatusFragment(
 
         }
         dropdown.requestFocus()
+/*
         dropdown.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                 when (keycode) {
@@ -137,6 +138,7 @@ class FlightStatusFragment(
             }
             false
         }
+*/
     }
 
     private fun handleFlightStatusResponse(status: Resource<FlightStatusResponse>) {

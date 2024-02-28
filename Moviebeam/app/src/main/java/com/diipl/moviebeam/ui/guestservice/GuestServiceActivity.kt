@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
@@ -73,6 +72,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
     private var conciergeIndex = 0
+    private var conciergePosition = 0
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -142,6 +142,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
             null
         }
     }
+
     private fun readToiletryJson(): ToiletryResponse {
         return try {
             val gson = Gson()
@@ -184,6 +185,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
             is Resource.Loading -> {
                 binding.loaderView.toVisible()
             }
+
             is Resource.Success -> {
                 try {
                     val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
@@ -242,13 +244,13 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
         }
     }
 
-
     private fun bindAdapterView(view: View, btnId: String) {
         requestFocus()
-        when (btnId) {
 
+        when (btnId) {
             Constants.CONCIERGE_ID -> {
                 conciergeIndex = 1
+
                 val concierge = ConciergeFragment { cView, conciergeService ->
                     conciergeIndex = 1
                     focusView = cView
@@ -257,8 +259,8 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                     when (conciergeService.serviceId) {
                         1 -> {
                             val fragment = MakeMyRoomFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
 
                             changeFragment(fragment)
@@ -272,9 +274,11 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
 
                         2 -> {
                             val fragment = VelvetParkingFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
+
+
                             changeFragment(fragment)
                             fragment.setGradientColor(
                                 gradientStartColor,
@@ -286,8 +290,8 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                             binding.layoutHeader.tvTitle.text =
                                 getString(R.string.toiletry_requests)
                             val fragment = ToiletryRequestFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
                             val mBundle = Bundle()
                             mBundle.putString("gradientStartColor", gradientStartColor)
@@ -295,31 +299,24 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                             fragment.arguments = mBundle
                             val toiletryData = readToiletryJson()
                             fragment.setToiletryData(toiletryData)
-                            Log.d("snehald","$toiletryData")
                             changeFragment(fragment)
                         }
 
                         5 -> {
-                            val fragment = SpaFragment {
-
-                            }
+                            val fragment = SpaFragment()
 
                             changeFragment(fragment)
                         }
 
                         6 -> {
-
-                            val fragment = GolfFragment {
-                                view.requestFocus()
-                                view.performClick()
-                            }
+                            val fragment = GolfFragment()
                             changeFragment(fragment)
                         }
 
                         7 -> {
                             val fragment = LaundryTimeFragment {
-//                                view.requestFocus()
-//                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
                             changeFragment(fragment)
 
@@ -331,7 +328,10 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                         }
 
                         3 -> {
-                            val fragment = LaundryFragment()
+                            val fragment = LaundryFragment {
+                                requestFocus()
+                                handleBackRemoteClick()
+                            }
 
 
                             fragment.setGradientColor(
@@ -342,8 +342,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                             if (laundryData != null) {
                                 fragment.setLaundryData(laundryData)
                             }
-
-                            changeFragment(fragment)
 
                             changeFragment(fragment)
                         }
@@ -371,7 +369,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 focusView = null
 
                 val fragment = FlightStatusFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
 
                 guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
@@ -392,10 +390,10 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 conciergeIndex = 0
                 focusView = null
                 val fragment = NewsFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -403,22 +401,22 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 conciergeIndex = 0
                 focusView = null
                 val fragment = FeedbackFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
             Constants.LA_ID -> {
                 conciergeIndex = 0
 
-                val fragment = LocalAttractionGsFragment{v ->
+                val fragment = LocalAttractionGsFragment { v ->
                     focusView = v
                     requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -429,7 +427,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
             }
         }
     }
-
 
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
@@ -494,7 +491,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
     private fun handleBackRemoteClick() {
         if (conciergeIndex == 1) {
             bindAdapterView(binding.root, Constants.CONCIERGE_ID)
-            /*if (binding.fvTabContent.isVisible) {
+           /*if (binding.fvTabContent.isVisible) {
                 binding.fvTabContent.toInvisible()
                 binding.rvTabContent.toVisible()
             } else{
@@ -531,3 +528,4 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
     }
 
 }
+

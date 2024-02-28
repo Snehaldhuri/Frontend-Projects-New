@@ -8,6 +8,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import androidx.media3.exoplayer.ExoPlayer
+import com.google.gson.Gson
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
@@ -116,7 +117,13 @@ fun isNetworkAvailable(context: Context): Boolean {
         return connectivityManager.activeNetworkInfo?.isConnected ?: false
     }
 }
+inline fun <reified T> T.toJson(): String {
+    return Gson().toJson(this)
+}
 
+inline fun <reified T> String.fromJson(): T {
+    return Gson().fromJson(this, T::class.java)
+}
 fun replaceDegreeSymbol(temp: String?): String {
     var temperature = ""
     temp?.let {
