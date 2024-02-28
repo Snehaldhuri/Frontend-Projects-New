@@ -95,6 +95,7 @@ class MainMenuActivity : BaseActivity() {
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
+
     override fun observeViewModel() {
         observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
@@ -136,7 +137,6 @@ class MainMenuActivity : BaseActivity() {
 
 
     }
-
 
     fun startDownload(fileURL: String) = CoroutineScope(Dispatchers.Default).launch {
         try {

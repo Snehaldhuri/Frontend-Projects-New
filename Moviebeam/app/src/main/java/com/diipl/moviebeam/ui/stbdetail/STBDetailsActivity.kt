@@ -140,7 +140,6 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
                     stbDetailViewModel.fetchHotelService()
-                    Log.d("DataStoreResponse", "handleAccountSetupResponse: $it")
                 }
             }
 
@@ -235,8 +234,8 @@ class STBDetailsActivity : BaseActivity() {
     private fun handleSerialNumberResponse(serialNo: String) {
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo
-        Log.e( "SERIAL_NO: ", "$serialNumber  ${serialNumber.length}") // TODO edit
-        UA = if (serialNumber == "26271HFGN11NHH") "21$serialNumber" else serialNumber
+        // TODO edit
+        UA = "21$serialNumber"
         Constants.UA = UA
         stbDetailViewModel.fetchApis(applicationContext, preferenceDataStoreHelper)
 

@@ -11,7 +11,6 @@ import android.os.IBinder
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -29,7 +28,6 @@ import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showKeyboard
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.launch
 
@@ -41,7 +39,6 @@ class SerialActivity : BaseActivity() {
     private lateinit var loggingService: LoggingService
 
     private var isServiceBound = false
-
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -73,6 +70,7 @@ class SerialActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
+
     }
 
     override fun onResume() {
@@ -153,9 +151,9 @@ class SerialActivity : BaseActivity() {
             }
         }
         builder.setView(input)
-
-        // Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14507KKWK1C017/ 507KKWK1C017
-        /*if (BuildConfig.DEBUG) {
+//          29221HFGN30WG1	Suite	LABGEN4	No	Living Room	Inactive
+//         Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14/507KKWK1C017  -- 29221HFGN30WG1
+     /*   if (BuildConfig.DEBUG) {
             input.setText("26271HFGN11NHH")
             input.clearFocus()
         }*/

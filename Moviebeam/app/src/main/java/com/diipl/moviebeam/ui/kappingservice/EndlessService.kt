@@ -65,6 +65,7 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.PanelConstants
+import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
@@ -153,6 +154,8 @@ class EndlessService : Service() {
     @Inject
     lateinit var roomRepository: RoomRepository
 
+    @Inject
+    lateinit var sharedPreference: SharedPreference
 
     companion object {
         var isServiceStarted = false
@@ -235,6 +238,7 @@ class EndlessService : Service() {
             intent.let {
                 if (it.action == Intent.ACTION_CLOSE_SYSTEM_DIALOGS) {
                     val reason = it.getStringExtra("reason")
+                    Log.e(TAG, "homePressReceiver: --->>> $reason")
                     if (reason == "homekey") {
                         if (currentActivity?.javaClass?.simpleName!!.isNotAllowed()) {
                             startActivity(Intent(context, MainMenuActivity::class.java).also { i ->
@@ -459,7 +463,7 @@ class EndlessService : Service() {
                                     Intent(
                                         applicationContext,
                                         RegisterSTBActivity::class.java
-                                    )
+                                    ).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 )
                             }
                             false
@@ -533,8 +537,17 @@ class EndlessService : Service() {
                 passCode
             )
 
+            updateAdultContent(adultLocked!!)
+            updateParentalPassCode(passCode!!)
+
         }
         return CmdDto(kapingCMD, epochTime, transactionId, cmdDataDto)
+    }
+
+    private fun updateParentalPassCode(passCode: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            sharedPreference.adultPassCode = passCode
+        }
     }
 
     private fun handleKaping(kapingResponse: KapingResponse?) {
@@ -638,7 +651,6 @@ class EndlessService : Service() {
                     kapingResponse.CMD?.let { str ->
                         val data = str.substring(19, str.length)
                         val syncResponse = data.fromJson<AdultDayPassSync>()
-                        Log.e(TAG, "handleKaping: $syncResponse")
                         syncResponse.dayPassList.forEach {
                             it.let {
                                 preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, true)
@@ -704,7 +716,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
             if (response != null) {
                 updateAccountSetupData(accountSetupDataStore, response)
@@ -719,7 +731,7 @@ class EndlessService : Service() {
 
 
     private fun fetchThemeDetails(ua: String) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getThemeDetails(ua)
             if (response != null) {
                 updateThemeData(themeDataStore, response)
@@ -735,6 +747,7 @@ class EndlessService : Service() {
 
     private fun updateAdultContent(enabled: Boolean) {
         CoroutineScope(Dispatchers.IO).launch {
+            sharedPreference.isAdultContentEnabled = enabled
             preferenceDataStoreHelper.putPreference(ADULT_CONTENT_STATUS, enabled)
         }
     }
@@ -833,7 +846,7 @@ class EndlessService : Service() {
         isCheckedIn: Boolean,
         guestDetails: CmdDataDto?
     ) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             preferenceDataStoreHelper.putPreference(
                 PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
                 isCheckedIn
@@ -847,7 +860,7 @@ class EndlessService : Service() {
         data: CmdDataDto?
     ) {
 
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     sessionId = data?.sessionId,
@@ -868,7 +881,7 @@ class EndlessService : Service() {
         dataStore: DataStore<AccountSetupResponse>,
         data: AccountSetupResponse
     ) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
@@ -977,7 +990,7 @@ class EndlessService : Service() {
         data: ThemeResponse
     ) {
 
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
@@ -1077,7 +1090,7 @@ class EndlessService : Service() {
         preferenceDataStoreHelper: PreferenceDataStoreHelper,
         isStbAllocated: Boolean,
     ) {
-        GlobalScope.launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             preferenceDataStoreHelper.putPreference(
                 PreferenceDataStoreConstants.IS_STB_ALLOCATED,
                 isStbAllocated

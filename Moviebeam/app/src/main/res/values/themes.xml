@@ -1,4 +1,18 @@
 <resources>
 
     <style name="Theme.Moviebeam" parent="@style/Theme.MaterialComponents" />
+    <style name="FullscreenDialogTheme" parent="@style/ThemeOverlay.MaterialComponents.Light">
+
+        <item name="android:gravity">center</item>
+    </style>
+    <style name="FullscreenAlertDialogStyle" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="colorAccent">@color/white</item>
+    </style>
+    <style name="AppTheme.FullScreenDialog" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@color/text_color_secondary</item>
+    </style>
 </resources>

@@ -11,6 +11,18 @@ object Constants {
     const val ENABLE = "ENABLE"
     const val DISABLE = "DISABLE"
 
+    // Adult Pop-up viewType
+    const val ADULT_MCW_MAIN = 1
+    const val ADULT_MCW_BTN = 2
+    const val ADULT_MCD_BTN = 3
+    const val ADULT_CONTENT_DISABLED = 4
+    const val ADULT_LOCKED = 5
+    const val PARENTAL_CONTROL = 6
+
+    // Gradient Colors
+    var GRADIENT_COLOR_START = ""
+    var GRADIENT_COLOR_END = ""
+
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
     const val C_TYPE_TRAILER: String = "TRAILER"
@@ -161,9 +173,9 @@ object Constants {
     val MOVIES_PAGE_MENU_BUTTON_LIST = mutableListOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
         BtnModel(FREE_MOVIES_ID, R.drawable.video_on_demand_icon, FREE_VOD),
-//        ADULT_DAY_PASS_BUTTON,
-//        ADULT_BUTTON,
-        BtnModel(RECENT_WATCH_MOVIE_ID, R.drawable.img_recent_view, RECENTLY_VIEWED)
+        ADULT_DAY_PASS_BUTTON,
+        ADULT_BUTTON,
+        RECENT_BUTTON
     )
     val SHOWTIME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(ALL_SHOWS_ID, R.drawable.showtime, ALL_SHOWS),

@@ -1,17 +1,19 @@
 package com.diipl.moviebeam.utils
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import androidx.media3.exoplayer.ExoPlayer
 import com.diipl.moviebeam.room.models.RentalMovieModel
-import com.google.gson.Gson
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -135,6 +137,21 @@ fun ExoPlayer?.getLastSeek() : Long {
         return this.contentPosition
     }
     return 0
+}
+
+fun getGradientColor(): GradientDrawable {
+    val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+    val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+    val gradientDrawable = GradientDrawable(
+        GradientDrawable.Orientation.TOP_BOTTOM,
+        intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+    )
+    gradientDrawable.cornerRadius = 20f
+    gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+    gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
+
+    gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+    return gradientDrawable
 }
 
 fun Long.toDateFormat(): String {

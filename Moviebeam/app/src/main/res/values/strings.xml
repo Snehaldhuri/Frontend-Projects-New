@@ -124,4 +124,20 @@
     <string name="connectivity">Connectivity:</string>
     <string name="model_name">Model Name:</string>
     <string name="app_software_version">App Software Version:</string>
+    <string name="adult_disabled">Adult Disabled</string>
+    <string name="adult_content_is_disabled">Adult content is disabled.</string>
+    <string name="call_the_front_desk_to_enable_adult_content">Call the front desk to enable adult content</string>
+    <string name="mature_content_warning">MATURE CONTENT WARNING</string>
+    <string name="mature_content_disabled">Mature Content Disabled</string>
+    <string name="mature_content_warning_note">The content in this section is for ADULTS ONLY and NOT suitable for minors and people offended by sexually explicit material.
+        \nClick \'CANCEL\' to go back. Click \'CONTINUE\' if you agree to view the content.</string>
+    <string name="tv_continue">Continue</string>
+    <string name="skip">Skip</string>
+    <string name="parental_control">Parental Control</string>
+    <string name="mature_content_warning_parental_note">Some of the Movies and Shows available to you may be inappropriate for younger audiences. To restrict access to such content please enable Parental Control below.
+        \n\nNo Charge will be posted on your folio for any of the free movies.</string>
+    <string name="adult_locked">Adult Locked</string>
+    <string name="adult_content_is_locked">Adult content is locked.</string>
+    <string name="to_enable_adult_content_enter_parental_code">To enable adult content enter parental code.</string>
+    <string name="enter_parental_code">Enter Parental Code</string>
 </resources>

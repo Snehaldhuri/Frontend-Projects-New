@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
@@ -29,11 +28,17 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.ui.loggerService.LoggingService
-import com.diipl.moviebeam.utils.Constants.ADULT_BUTTON
-import com.diipl.moviebeam.utils.Constants.ADULT_DAY_PASS_BUTTON
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.ADULT_CONTENT_DISABLED
+import com.diipl.moviebeam.utils.Constants.ADULT_LOCKED
+import com.diipl.moviebeam.utils.Constants.ADULT_MCD_BTN
+import com.diipl.moviebeam.utils.Constants.ADULT_MCW_BTN
+import com.diipl.moviebeam.utils.Constants.ADULT_MCW_MAIN
+import com.diipl.moviebeam.utils.Constants.SESSION_ID
+import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -73,46 +78,31 @@ class MoviesActivity : BaseActivity() {
 
     @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
+
+    @Inject
+    lateinit var preference: SharedPreference
+
     private var selectedView: View? = null
     private var itemView: View? = null
     private var isRecentView = false
     private var isAdultDayPassPurchased = false
+    private lateinit var adultResponse : MoviesResponse
 
     override fun observeViewModel() {
-//        observe(moviesViewModel.recentWatchMovies, ::handleWatchedMovies)
         observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(moviesViewModel.themeLiveData, ::handleThemeResponse)
         observe(moviesViewModel.moviesLiveData, ::handleMoviesServiceResponse)
-        observe(moviesViewModel.adultStatus, ::handleAdultResponse)
+//        observe(moviesViewModel.adultStatus, ::handleAdultResponse)
         observe(moviesViewModel.adultDayPassStatus, ::handleAdultDayPassResponse)
 
-//        moviesViewModel.getWatchedMovies()
         moviesViewModel.getThemeResponseData(themeDataStore)
         moviesViewModel.getWeatherResponseData(weatherDataStore)
         moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
 
     }
 
-    private fun handleAdultResponse(enabled: Boolean) {
-        Log.e(TAG, "handleAdultResponse: $enabled")
-        if (enabled) {
-            if (!Constants.MOVIES_PAGE_MENU_BUTTON_LIST.contains(ADULT_DAY_PASS_BUTTON)) Constants.MOVIES_PAGE_MENU_BUTTON_LIST.add(
-                2,
-                ADULT_DAY_PASS_BUTTON
-            )
-            if (!Constants.MOVIES_PAGE_MENU_BUTTON_LIST.contains(ADULT_BUTTON)) Constants.MOVIES_PAGE_MENU_BUTTON_LIST.add(
-                3,
-                ADULT_BUTTON
-            )
-        } else {
-            Constants.MOVIES_PAGE_MENU_BUTTON_LIST.remove(ADULT_DAY_PASS_BUTTON)
-            Constants.MOVIES_PAGE_MENU_BUTTON_LIST.remove(ADULT_BUTTON)
-        }
-    }
-
     private fun handleAdultDayPassResponse(purchased: Boolean) {
         isAdultDayPassPurchased = purchased
-        Log.e(TAG, "handleAdultDayPassResponse: $purchased   $isAdultDayPassPurchased")
     }
 
     override fun initViewBinding() {
@@ -122,6 +112,15 @@ class MoviesActivity : BaseActivity() {
         setContentView(view)
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        if (!preference.isMainAdultMCW && preference.isAdultPassCodeEmpty) {
+            openACDDialog(ADULT_MCW_MAIN)
+        }
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -129,13 +128,7 @@ class MoviesActivity : BaseActivity() {
 
         moviesViewModel.getAdultStatus(preferenceDataStoreHelper)
 
-        binding.btnBack.setOnFocusChangeListener { v, b ->
-            if (b) {
-                binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
-            } else {
-                binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
+        binding.btnBack.setOnFocusChangeListener(::handleFocusChange)
         binding.btnBack.setOnClickListener {
             handleBackClick()
         }
@@ -220,6 +213,7 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 lifecycleScope.launch {
                     val response = moviesViewModel.moviesLiveData.value?.data
+                    adultResponse = response!!
                     moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
                         binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                     }
@@ -300,65 +294,54 @@ class MoviesActivity : BaseActivity() {
                             }
 
                             Constants.ADULT_DAY_PASS_ID -> {
-                                if (isAdultDayPassPurchased) {
-                                    val adultGenreMap: HashMap<String, MutableList<ContentDto>> =
-                                        HashMap()
-                                    response?.premiumContentList?.forEach {
-                                        if (it.genre1 == "Adult") {
-                                            if (adultGenreMap[it.genre1] != null) {
-                                                adultGenreMap[it.genre1]?.add(it)
-                                            } else {
-                                                val movieList = mutableListOf<ContentDto>()
-                                                movieList.add(it)
-                                                adultGenreMap[it.genre1] = movieList
-                                            }
-                                        }
-                                    }
-
-                                    val parentAdapter = ParentAdapter(onItemClicked = { it, v ->
-                                        onMovieClick(it, v)
-                                    }, onLeftKey = {
-                                        if (it) {
-                                            requestFocus()
-                                        }
-                                    })
-                                    parentAdapter.setMovieList(adultGenreMap, null, true)
-                                    binding.parentRecyclerView.adapter = parentAdapter
+                                if (!preference.isAdultContentEnabled) {
+                                    openACDDialog(ADULT_CONTENT_DISABLED)
                                 } else {
-                                    startActivity(
-                                        Intent(
-                                            this@MoviesActivity,
-                                            ConfirmRentalActivity::class.java
-                                        ).putExtra("price", response?.adultDayPassPrice.toString())
-                                    )
+                                    if (!preference.isAdultPassCodeEmpty) {
+                                        if (!preference.isAdultMCD)
+                                            openACDDialog(ADULT_MCD_BTN)
+                                        else if (preference.isAdultLocked)
+                                            openACDDialog(ADULT_LOCKED)
+                                    } else {
+                                        if (!preference.isBtnAdultMCW)
+                                            openACDDialog(ADULT_MCW_BTN)
+                                    }
+                                    if (preference.isBtnAdultMCW && !isAdultDayPassPurchased){
+                                        startActivity(
+                                            Intent(
+                                                this@MoviesActivity,
+                                                ConfirmRentalActivity::class.java
+                                            ).putExtra(
+                                                "price",
+                                                response.adultDayPassPrice.toString()
+                                            )
+                                        )
+
+                                    }
+                                    if (isAdultDayPassPurchased && !preference.isAdultLocked) {
+                                        setAdultData(response)
+                                    }
                                 }
                             }
 
                             Constants.ADULT_ID -> {
-                                val adultGenreMap: HashMap<String, MutableList<ContentDto>> =
-                                    HashMap()
-                                response?.premiumContentList?.forEach {
-                                    if (it.genre1 == "Adult") {
-                                        if (adultGenreMap[it.genre1] != null) {
-                                            adultGenreMap[it.genre1]?.add(it)
-                                        } else {
-                                            val movieList = mutableListOf<ContentDto>()
-                                            movieList.add(it)
-                                            adultGenreMap[it.genre1] = movieList
-                                        }
+                                if (!preference.isAdultContentEnabled)
+                                    openACDDialog(ADULT_CONTENT_DISABLED)
+                                else {
+                                    if (!preference.isAdultPassCodeEmpty) {
+                                        if (!preference.isAdultMCD)
+                                            openACDDialog(ADULT_MCD_BTN)
+                                        else if (preference.isAdultLocked)
+                                            openACDDialog(ADULT_LOCKED)
+                                    } else {
+                                        if (!preference.isBtnAdultMCW)
+                                            openACDDialog(ADULT_MCW_BTN)
                                     }
-                                }
-                                val parentAdapter = ParentAdapter(onItemClicked = { it, v ->
-                                    onMovieClick(it, v)
-                                }, onLeftKey = {
-                                    if (it) {
-                                        requestFocus()
-                                    }
-                                })
-                                parentAdapter.setMovieList(adultGenreMap, null, true)
-                                binding.parentRecyclerView.adapter = parentAdapter
-                            }
 
+                                    if (!preference.isAdultLocked && (SESSION_ID.isNotEmpty() || SESSION_ID!="null"))
+                                        setAdultData(response)
+                                }
+                            }
                         }
                     }, onRightKeyPressed = {
                         if (binding.fcvMovieDetail.isVisible) {
@@ -399,6 +382,51 @@ class MoviesActivity : BaseActivity() {
         }
     }
 
+    private fun setAdultData(response: MoviesResponse?) {
+        val adultGenreMap: HashMap<String, MutableList<ContentDto>> =
+            HashMap()
+        response?.premiumContentList?.forEach {
+            if (it.genre1 == "Adult") {
+                if (adultGenreMap[it.genre1] != null) {
+                    adultGenreMap[it.genre1]?.add(it)
+                } else {
+                    val movieList = mutableListOf<ContentDto>()
+                    movieList.add(it)
+                    adultGenreMap[it.genre1] = movieList
+                }
+            }
+        }
+
+        val parentAdapter = ParentAdapter(onItemClicked = { i, v ->
+            onMovieClick(i, v)
+        }, onLeftKey = {
+            if (it) {
+                requestFocus()
+            }
+        })
+        parentAdapter.setMovieList(adultGenreMap, null, true)
+        binding.parentRecyclerView.adapter = parentAdapter
+    }
+
+    override fun onBackPressed() {
+
+    }
+
+    private fun openACDDialog(viewType: Int) {
+        binding.dialogContainer.toVisible()
+        val dialog = AdultContentDialog(viewType) { i ->
+            binding.dialogContainer.toGone()
+            when (i) {
+                1 -> {
+                    if (viewType == ADULT_LOCKED){
+                        setAdultData(adultResponse)
+                    }
+                }
+            }
+        }
+        dialog.show(supportFragmentManager, "Dialog")
+    }
+
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -425,9 +453,11 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 moviesViewModel.themeLiveData.value?.data?.gradientColor?.let {
                     gradientStartColor = it
+                    Constants.GRADIENT_COLOR_START = it
                 }
                 moviesViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
+                    Constants.GRADIENT_COLOR_END = it
                 }
                 movieDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
                 moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
@@ -508,6 +538,14 @@ class MoviesActivity : BaseActivity() {
             activityStack.add(this::class.java.simpleName)
         } else {
             finish()
+        }
+    }
+
+    private fun handleFocusChange(view: View, focus: Boolean) {
+        if (focus) {
+            view.background = getGradient(gradientStartColor, gradientEndColor)
+        } else {
+            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         }
     }
 
