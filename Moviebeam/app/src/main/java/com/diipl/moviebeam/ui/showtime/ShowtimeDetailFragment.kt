@@ -57,6 +57,7 @@ class ShowtimeDetailFragment : BaseFragment() {
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
         LoggingService.sendMessageToWebSocket("In ShowtimeDetailPage create ","13")
+        binding.layoutMovie.toVisible()
         return binding.root
     }
 
