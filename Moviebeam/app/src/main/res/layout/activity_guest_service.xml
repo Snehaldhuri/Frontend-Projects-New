@@ -94,11 +94,22 @@
         app:layout_constraintBaseline_toBaselineOf="@+id/btn_back"
         app:layout_constraintStart_toEndOf="@+id/gl_vertical_29" />
 
+    <ImageView
+        android:id="@+id/gs_la_up"
+        android:layout_width="18dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:src="@drawable/up_arrow"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_29"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
+        app:layout_constraintBottom_toTopOf="@+id/rv_tab_layout"
+        />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_tab_layout"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
@@ -106,6 +117,26 @@
         app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
+    <ImageView
+        android:id="@+id/gs_la_down"
+        android:layout_width="18dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:src="@drawable/down_arrow"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_29"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
+        app:layout_constraintTop_toBottomOf="@+id/rv_tab_layout"
+        />
+    <ImageView
+        android:id="@+id/gs_up"
+        android:layout_width="18dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:src="@drawable/up_arrow"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_29"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
+        app:layout_constraintBottom_toTopOf="@+id/fv_tab_content"
+        />
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fv_tab_content"
         android:layout_width="@dimen/dp_0"
@@ -116,6 +147,16 @@
         app:layout_constraintStart_toEndOf="@+id/rv_tab_layout"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
+    <ImageView
+        android:id="@+id/gs_down"
+        android:layout_width="18dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:src="@drawable/down_arrow"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_29"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
+        app:layout_constraintTop_toBottomOf="@+id/fv_tab_content"
+        />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_tab_content"
         android:layout_width="@dimen/dp_0"

@@ -60,7 +60,7 @@ class InRoomDiningActivity : BaseActivity() {
 
         inRoomDiningViewModel.getThemeResponseData(themeDataStore)
         inRoomDiningViewModel.getWeatherResponseData(weatherDataStore)
-        LoggingService.sendMessageToWebSocket("In InRoomDiningMM activity")
+        LoggingService.sendMessageToWebSocket("In InRoomDiningMM activity","16")
 
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
@@ -102,6 +102,7 @@ class InRoomDiningActivity : BaseActivity() {
     }
 
     private fun loadBg(imgUrl: String?) {
+        try{
         Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
                 override fun onResourceReady(
@@ -114,6 +115,9 @@ class InRoomDiningActivity : BaseActivity() {
 
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In InRoomDiningMM activity loadBg: ${e.message}","16")
+        }
     }
 
     private fun getGradient(): GradientDrawable {

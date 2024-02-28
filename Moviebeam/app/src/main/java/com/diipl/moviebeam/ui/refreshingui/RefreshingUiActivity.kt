@@ -129,7 +129,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket("Signal for check out command" )
+        LoggingService.sendMessageToWebSocket("Signal for check out command" ,"")
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -142,7 +142,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket("Signal for check in command" )
+        LoggingService.sendMessageToWebSocket("Signal for check in command","" )
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -155,7 +155,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleAccountActivateCmd() {
-        LoggingService.sendMessageToWebSocket("Signalling to get account set up" )
+        LoggingService.sendMessageToWebSocket("Signalling to get account set up" ,"")
         refreshingUiViewModel.fetchAccountSetupDetails(
             Constants.ACTIVATE,
             Constants.UA,
@@ -194,14 +194,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess ")
+                    LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess ","")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In AccountSetup callback fail" )
+                LoggingService.sendMessageToWebSocket("In AccountSetup callback fail","" )
             }
         }
     }
@@ -214,7 +214,7 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("In Theme callbackSuccess")
+                    LoggingService.sendMessageToWebSocket("In Theme callbackSuccess","")
 
                 }
             }
@@ -222,7 +222,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Theme Callback fail" )
+                LoggingService.sendMessageToWebSocket("In Theme Callback fail","" )
 
 
             }
@@ -237,14 +237,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("In Hotel Services callbackSuccess")
+                    LoggingService.sendMessageToWebSocket("In Hotel Services callbackSuccess","")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail" )
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail","" )
             }
         }
     }
@@ -260,7 +260,7 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("In Local Attractions callbackSuccess ")
+                    LoggingService.sendMessageToWebSocket("In Local Attractions callbackSuccess ","")
 
                 }
             }
@@ -268,7 +268,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail " )
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ","" )
 
             }
         }
@@ -283,14 +283,15 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("In MoviesReleasesCollection callbackSuccess ")
+                    LoggingService.sendMessageToWebSocket("In MoviesReleasesCollection callbackSuccess ","")
+
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Movies callback fail " )
+                LoggingService.sendMessageToWebSocket("In Movies callback fail ","" )
             }
         }
     }
@@ -303,14 +304,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callbackSuccess ")
+                    LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callbackSuccess ","")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Showtime callback fail " )
+                LoggingService.sendMessageToWebSocket("In Showtime callback fail ","" )
             }
         }
     }

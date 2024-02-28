@@ -91,7 +91,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
             binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
         }
-        LoggingService.sendMessageToWebSocket("In ProgramGuidePage activity")
+        LoggingService.sendMessageToWebSocket("In ProgramGuidePage activity","06")
 
     }
 

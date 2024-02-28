@@ -7,6 +7,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
@@ -41,7 +42,7 @@ import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class HotelInfoActivity : BaseActivity() {
+class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListener {
 
     private val hotelInfoViewModel: HotelInfoViewModel by viewModels()
 
@@ -86,31 +87,33 @@ class HotelInfoActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            // fetch data from dataStore
+            hotelInfoViewModel.getThemeResponseData(themeDataStore)
+            hotelInfoViewModel.getWeatherResponseData(weatherDataStore)
+            hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
+            hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
 
-        // fetch data from dataStore
-        hotelInfoViewModel.getThemeResponseData(themeDataStore)
-        hotelInfoViewModel.getWeatherResponseData(weatherDataStore)
-        hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
-        hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
-
-        // check hotel logo image available from local storage
-        //   checkHotelLogoImageAvailableLocally()
+            // check hotel logo image available from local storage
+            //   checkHotelLogoImageAvailableLocally()
 
 
-        binding.btnBack.setOnFocusChangeListener { view, b ->
-            if (b) {
-                binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
-            } else {
-                binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            binding.btnBack.setOnFocusChangeListener { view, b ->
+                if (b) {
+                    binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
+                } else {
+                    binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                }
             }
+            binding.btnBack.setOnClickListener {
+                finish()
+            }
+            binding.rvHotelInfoHeader.layoutManager =
+                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+            LoggingService.sendMessageToWebSocket("In HotelServicesMain activity", "03")
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In HotelServicesMain activity onCreate: ${e.message}","03")
         }
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
-        binding.rvHotelInfoHeader.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        LoggingService.sendMessageToWebSocket("In HotelServicesMain activity")
-
     }
 
     private fun checkHotelLogoImageAvailableLocally() {
@@ -270,6 +273,8 @@ class HotelInfoActivity : BaseActivity() {
                         val mBundle = Bundle()
                         mBundle.putString("gradientStartColor", gradientStartColor)
                         mBundle.putString("gradientEndColor", gradientEndColor)
+                        binding.gsDown.visibility = View.GONE
+                        binding.gsUp.visibility = View.GONE
                         binding.fragmentContainerHelpInfo.toVisible()
                         fragment.arguments = mBundle
                         supportFragmentManager.beginTransaction()
@@ -282,7 +287,9 @@ class HotelInfoActivity : BaseActivity() {
                         binding.btnBack.toInvisible()
                         binding.layoutHeader.tvTitle.text = Constants.HELP_INFO
                         binding.tvHeaderTitle.text = ""
-                    })
+                    },
+                    onFocusChangeListener = this
+                )
                 if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
@@ -328,7 +335,8 @@ class HotelInfoActivity : BaseActivity() {
     }
 
     private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
+        try {
+            Glide.with(this).load(imgUrl)
             .into(object : CustomTarget<Drawable?>() {
                 override fun onResourceReady(
                     resource: Drawable,
@@ -340,11 +348,15 @@ class HotelInfoActivity : BaseActivity() {
 
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In HotelServicesMain activity loadBg: ${e.message}","03")
+        }
 
     }
 
     private fun loadBgImageFromLocalStorage(filename: File) {
-        Glide.with(this)
+        try {
+            Glide.with(this)
             .load(filename)
             .into(object : CustomTarget<Drawable>() {
 
@@ -360,6 +372,9 @@ class HotelInfoActivity : BaseActivity() {
 
                 }
             })
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In HotelServicesMain activity loadBgImageFromLocalStorage: ${e.message}","03")
+        }
     }
 
     private fun getGradient(startColor: String, endColor: String): GradientDrawable {
@@ -406,5 +421,18 @@ class HotelInfoActivity : BaseActivity() {
             finish()
         }
     }
-
+    override fun onItemFocused(position:Int, itemList: List<String>) {
+        if (position == 0) {
+            binding.gsUp.visibility = View.GONE
+        }
+        else{
+            binding.gsUp.visibility = View.VISIBLE
+        }
+        if(position == itemList.size - 1){
+            binding.gsDown.visibility = View.GONE
+        }
+        else {
+            binding.gsDown.visibility = View.VISIBLE
+        }
+    }
 }

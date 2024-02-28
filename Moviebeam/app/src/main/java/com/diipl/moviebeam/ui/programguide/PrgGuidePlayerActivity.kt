@@ -11,6 +11,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.program.ProgramDTO
 import com.diipl.moviebeam.databinding.ActivityPrgGuidePlayerBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -48,7 +49,7 @@ class PrgGuidePlayerActivity : BaseActivity(), KeyEvent.Callback {
             it.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             it.prepare()
         }
-
+//        LoggingService.sendMessageToWebSocket("In Program guide live services ","04")
     }
 
     private fun fetchDetails() {

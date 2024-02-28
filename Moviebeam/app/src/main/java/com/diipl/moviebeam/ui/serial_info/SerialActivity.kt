@@ -109,11 +109,13 @@ class SerialActivity : BaseActivity() {
     private fun handleStbStatusResponse(isStbRegistered: Boolean) {
         if (isStbRegistered) {
             startActivity(Intent(this, STBDetailsActivity::class.java))
+            LoggingService.sendMessageToWebSocket("In App Loader create ","98")
         } else {
             startActivity(Intent(this, RegisterSTBActivity::class.java))
+            LoggingService.sendMessageToWebSocket("Showing Landing Page","99")
+
         }
         finish()
-        LoggingService.sendMessageToWebSocket("In App Loader create ")
     }
 
     private fun showSerialNumberDialog() {

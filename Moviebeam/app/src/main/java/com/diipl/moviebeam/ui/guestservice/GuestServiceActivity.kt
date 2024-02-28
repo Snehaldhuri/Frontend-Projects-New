@@ -26,6 +26,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
+import com.diipl.moviebeam.data.dto.localattraction.LAService
 import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
@@ -41,6 +42,7 @@ import com.diipl.moviebeam.ui.guestservice.concierge.laundry.LaundryFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
 import com.diipl.moviebeam.ui.guestservice.inroomdininggs.InRoomDiningGsFragment
+import com.diipl.moviebeam.ui.guestservice.localAttraction.LaCardAdapterGs
 import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
@@ -58,13 +60,15 @@ import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class GuestServiceActivity : BaseActivity() {
+class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChangeListener{
 
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
@@ -101,53 +105,60 @@ class GuestServiceActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            fetchDetails()
 
-        fetchDetails()
+            btnId = intent.getStringExtra("btnId").toString()
+            if (btnId == ALL_SERVICES) {
+                binding.rvTabLayout.layoutManager =
+                    LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+                binding.rvTabLayout.toVisible()
+                binding.tvServiceTitle.toVisible()
+            } else {
+                binding.rvTabLayout.toGone()
+                binding.tvServiceTitle.toGone()
+                bindAdapterView(binding.root, btnId)
+            }
 
-        btnId = intent.getStringExtra("btnId").toString()
-        if (btnId == ALL_SERVICES) {
-            binding.rvTabLayout.layoutManager =
-                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-            binding.rvTabLayout.toVisible()
-            binding.tvServiceTitle.toVisible()
-        } else {
-            binding.rvTabLayout.toGone()
-            binding.tvServiceTitle.toGone()
-            bindAdapterView(binding.root, btnId)
+            binding.btnBack.toDelayVisible()
+            binding.btnBack.setOnFocusChangeListener(::handleBackClick)
+            binding.btnBack.setOnClickListener { finish() }
+            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity","08")
+
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity onCreate:${e.message}","08")
         }
-
-        binding.btnBack.toDelayVisible()
-        binding.btnBack.setOnFocusChangeListener(::handleBackClick)
-        binding.btnBack.setOnClickListener { finish() }
-        LoggingService.sendMessageToWebSocket("In GuestServicesMain activity")
-
     }
 
 
     private fun readLaundryJson(): LaundryDataResponse? {
+        return try {
         val gson = Gson()
         val inputStream = this.assets.open("LaundryData.json")
         val br = BufferedReader(InputStreamReader(inputStream))
-        return gson.fromJson(br, LaundryDataResponse::class.java)
+        gson.fromJson(br, LaundryDataResponse::class.java)
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity readLaundryJson:${e.message}","08")
+            null
+        }
     }
     private fun readToiletryJson(): ToiletryResponse {
-        val gson = Gson()
-        val inputStream = this.assets.open("ToiletryData.json")
-        val br = BufferedReader(InputStreamReader(inputStream))
-        val stringBuilder = StringBuilder()
-        for (str in br.readLines()) {
-            stringBuilder.append(str)
+        return try {
+            val gson = Gson()
+            val inputStream = this.assets.open("ToiletryData.json")
+            val br = BufferedReader(InputStreamReader(inputStream))
+            val stringBuilder = StringBuilder()
+            for (str in br.readLines()) {
+                stringBuilder.append(str)
+            }
+            val data = JSONObject(stringBuilder.toString())
+            gson.fromJson(data.toString(), ToiletryResponse::class.java)
         }
-        val data = JSONObject(stringBuilder.toString())
-        return gson.fromJson(data.toString(), ToiletryResponse::class.java)
+        catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity readToiletryJson:${e.message}","08")
+            ToiletryResponse()
+        }
     }
-
-//    private fun readToiletryJson(): ToiletryDataResponse? {
-//        val gson = Gson()
-//        val inputStream = this.assets.open("ToiletryData.json")
-//        val br = BufferedReader(InputStreamReader(inputStream))
-//        return gson.fromJson(br, ToiletryDataResponse::class.java)
-//    }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -174,33 +185,40 @@ class GuestServiceActivity : BaseActivity() {
                 binding.loaderView.toVisible()
             }
             is Resource.Success -> {
-                val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
-                    .value?.data?.gsButtonsList?.map { it.buttonName }
-                val gsBtnModelList: List<GsBtnModel> = Constants.GUEST_SERVICE_BUTTON_LIST.filter {
-                    gsBtnListFromApi?.contains(it.btnId) == true
+                try {
+                    val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
+                        .value?.data?.gsButtonsList?.map { it.buttonName }
+                    val gsBtnModelList: List<GsBtnModel> =
+                        Constants.GUEST_SERVICE_BUTTON_LIST.filter {
+                            gsBtnListFromApi?.contains(it.btnId) == true
+                        }
+                    val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
+                        gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
+                    }
+                    val adapter = GuestServiceTabAdapter(onMenuItemClicked = { view, service ->
+                        binding.tvServiceTitle.text = service.categoryName
+                        adapterView = view
+                        bindAdapterView(view, service.btnId)
+                    }, onRightClicked = {
+
+                    },
+                        onFocusChangeListener = this // Provide the onFocusChangeListener here
+                    )
+                    if(btnId != Constants.LA_ID) {
+                        val transaction = supportFragmentManager.beginTransaction()
+                        val fragment = WeatherFragment()
+                        transaction.replace(R.id.fv_tab_content, fragment)
+                        transaction.commit()
+                    }
+                    adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
+                    adapter.setGradientColor(gradientStartColor, gradientEndColor)
+
+                    binding.rvTabLayout.adapter = adapter
+
+                    binding.loaderView.toInvisible()
+                } catch (e: Exception) {
+                    LoggingService.sendMessageToWebSocket("handleAccountSetupResponse Exception in GuestServicesMain activity: ${e.message}","08")
                 }
-                val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
-                    gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
-                }
-                val adapter = GuestServiceTabAdapter(onMenuItemClicked =  { view, service ->
-                    binding.tvServiceTitle.text = service.categoryName
-                    adapterView = view
-                    bindAdapterView(view, service.btnId)
-                }, onRightClicked = {
-
-                })
-
-                val transaction = supportFragmentManager.beginTransaction()
-                val fragment = WeatherFragment()
-                transaction.replace(R.id.fv_tab_content, fragment)
-                transaction.commit()
-
-                adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
-                adapter.setGradientColor(gradientStartColor, gradientEndColor)
-
-                binding.rvTabLayout.adapter = adapter
-
-                binding.loaderView.toInvisible()
             }
 
             else -> {
@@ -498,5 +516,20 @@ class GuestServiceActivity : BaseActivity() {
             }
         }
         return false
+    }
+
+    override fun onItemFocused(position:Int, itemList: List<GsBtnModel>) {
+        if (position == 0) {
+            binding.gsUp.visibility = View.GONE
+        }
+        else{
+            binding.gsUp.visibility = View.VISIBLE
+        }
+        if(position == itemList.size - 1){
+            binding.gsDown.visibility = View.GONE
+        }
+        else {
+            binding.gsDown.visibility = View.VISIBLE
+        }
     }
 }

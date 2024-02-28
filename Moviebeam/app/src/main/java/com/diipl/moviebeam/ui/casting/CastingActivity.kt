@@ -17,14 +17,18 @@ class CastingActivity : BaseActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun initViewBinding() {
-        binding = ActivityCastingBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        val webView: WebView = binding.wvCasting
-        webView.clearCache(true)
-        webView.settings.javaScriptEnabled = true
-        webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
-        webView.loadUrl(Constants.CASTING_URL)
-        LoggingService.sendMessageToWebSocket("In CastingPage activity")
+        try {
+            binding = ActivityCastingBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+            val webView: WebView = binding.wvCasting
+            webView.clearCache(true)
+            webView.settings.javaScriptEnabled = true
+            webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
+            webView.loadUrl(Constants.CASTING_URL)
+            LoggingService.sendMessageToWebSocket("In CastingPage activity","14")
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("${e.message}","14")
+        }
 
     }
 

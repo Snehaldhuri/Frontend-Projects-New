@@ -56,66 +56,80 @@ class AppWorldActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            fetchDetails()
+            binding.rvApps.layoutManager = GridLayoutManager(this, 4)
+            getInstalledApps()
 
-        fetchDetails()
-        binding.rvApps.layoutManager = GridLayoutManager(this, 4)
-        getInstalledApps()
+            binding.btnBack.toDelayVisible()
 
-        binding.btnBack.toDelayVisible()
-
-        binding.btnBack.setOnClickListener { finish() }
-        binding.btnBack.setOnFocusChangeListener { view, isFocused ->
-            if (isFocused) {
-                view.background = gradient
-            } else {
-                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            binding.btnBack.setOnClickListener { finish() }
+            binding.btnBack.setOnFocusChangeListener { view, isFocused ->
+                if (isFocused) {
+                    view.background = gradient
+                } else {
+                    view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                }
             }
+            LoggingService.sendMessageToWebSocket("In AppWorldMain activity","09")
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("handleGuestDetailsResponse Exception in AppWorldMain activity ${e.message}","09")
         }
-        LoggingService.sendMessageToWebSocket("In AppWorldMain activity")
-
     }
 
     private fun getInstalledApps() {
         // get list of all the apps installed
-        val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-        val adapter = AppAdapter {
-            if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
-                launchAppSecured(it.packageName)
-            } else {
-                launchApp(it.packageName)
+        try {
+            val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+            val adapter = AppAdapter {
+                if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
+                    launchAppSecured(it.packageName)
+                } else {
+                    launchApp(it.packageName)
+                }
             }
+            val installedApps = filterSystemApps(allApps)
+            val selectedApps = installedApps.filter {
+                Constants.SELECTED_APPS.contains(packageManager.getApplicationLabel(it))
+            }.sortedBy { app ->
+                Constants.SELECTED_APPS.indexOf(packageManager.getApplicationLabel(app))
+            }
+            adapter.setAppList(selectedApps)
+            binding.rvApps.adapter = adapter
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("getInstalledApps Exception in AppWorldMain activity ${e.message}","09")
         }
-        val installedApps = filterSystemApps(allApps)
-        val selectedApps = installedApps.filter {
-            Constants.SELECTED_APPS.contains(packageManager.getApplicationLabel(it))
-        }.sortedBy { app ->
-            Constants.SELECTED_APPS.indexOf(packageManager.getApplicationLabel(app))
-        }
-        adapter.setAppList(selectedApps)
-        binding.rvApps.adapter = adapter
     }
 
     private fun launchApp(packageName: String) {
-        startActivity(packageManager.getLaunchIntentForPackage(packageName))
+        try {
+            startActivity(packageManager.getLaunchIntentForPackage(packageName))
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("launchApp Exception in AppWorldMain activity ${e.message}","09")
+        }
     }
 
     private fun launchAppSecured(packageName: String?) {
-        val intent = Intent()
-        intent.setPackage(packageName)
-        val pm = packageManager
-        val resolveInfos = pm.queryIntentActivities(intent, PackageManager.GET_META_DATA)
-        Collections.sort(resolveInfos, ResolveInfo.DisplayNameComparator(pm))
-        if (resolveInfos.size > 0) {
-            val launchable = resolveInfos[0]
-            val activity = launchable.activityInfo
-            val name = ComponentName(
-                activity.applicationInfo.packageName,
-                activity.name
-            )
-            val i = Intent(Intent.ACTION_MAIN)
-            i.component = name
-            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-            startActivity(i)
+        try {
+            val intent = Intent()
+            intent.setPackage(packageName)
+            val pm = packageManager
+            val resolveInfos = pm.queryIntentActivities(intent, PackageManager.GET_META_DATA)
+            Collections.sort(resolveInfos, ResolveInfo.DisplayNameComparator(pm))
+            if (resolveInfos.size > 0) {
+                val launchable = resolveInfos[0]
+                val activity = launchable.activityInfo
+                val name = ComponentName(
+                    activity.applicationInfo.packageName,
+                    activity.name
+                )
+                val i = Intent(Intent.ACTION_MAIN)
+                i.component = name
+                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                startActivity(i)
+            }
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("launchAppSecured Exception in AppWorldMain activity ${e.message}","09")
         }
     }
 

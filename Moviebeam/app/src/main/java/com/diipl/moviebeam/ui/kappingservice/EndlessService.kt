@@ -578,10 +578,10 @@ class EndlessService : Service() {
             if (response != null) {
                 updateAccountSetupData(accountSetupDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess")
+                LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess","")
             }
             else{
-                LoggingService.sendMessageToWebSocket("In Account Setup callback fail ")
+                LoggingService.sendMessageToWebSocket("In Account Setup callback fail ","")
             }
         }
     }
@@ -592,10 +592,10 @@ class EndlessService : Service() {
             if (response != null) {
                 updateThemeData(themeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In theme callback success ")
+                LoggingService.sendMessageToWebSocket("In theme callback success ","")
             }
             else{
-                LoggingService.sendMessageToWebSocket("In theme callback fail ")
+                LoggingService.sendMessageToWebSocket("In theme callback fail ","")
             }
         }
     }
@@ -606,10 +606,10 @@ class EndlessService : Service() {
             if (response != null) {
                 updateHotelServices(hotelServicesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback success ")
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback success ","")
             }
             else{
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail ")
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail ","")
             }
         }
     }
@@ -620,11 +620,11 @@ class EndlessService : Service() {
             if (response != null) {
                 updateLocalAttractions(localAttractionsDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback success ")
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback success ","")
 
             }
             else{
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ")
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ","")
 
             }
         }
@@ -636,11 +636,11 @@ class EndlessService : Service() {
             if (response != null) {
                 setMoviesResponseData(moviesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Releases callback success ")
+                LoggingService.sendMessageToWebSocket("In Releases callback success ","")
 
             }
             else{
-                LoggingService.sendMessageToWebSocket("In Releases callback fail ")
+                LoggingService.sendMessageToWebSocket("In Releases callback fail ","")
 
             }
         }
@@ -652,11 +652,11 @@ class EndlessService : Service() {
             if (response != null) {
                 updateShowTimeData(showtimeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback success ")
+                LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback success ","")
 
             }
             else{
-                LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback fail ")
+                LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback fail ","")
 
             }
         }

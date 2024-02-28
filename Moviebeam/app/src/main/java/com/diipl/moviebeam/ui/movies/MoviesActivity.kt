@@ -121,50 +121,53 @@ class MoviesActivity : BaseActivity() {
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
-        LoggingService.sendMessageToWebSocket("In MoviesMain activity")
+        LoggingService.sendMessageToWebSocket("In MoviesMain activity","02")
 
     }
 
     override fun onResume() {
         super.onResume()
-
-        val params = binding.recentRecyclerView.layoutParams
+        try{
+            val params = binding.recentRecyclerView.layoutParams
 //        params.width = getWidthInPercent(applicationContext, 22)
-        params.height = getHeightInPercent(applicationContext, 28)
+            params.height = getHeightInPercent(applicationContext, 28)
 
-        binding.menuRecyclerView.post {
-            binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toGone()
-        }
+            binding.menuRecyclerView.post {
+                binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toGone()
+            }
 
-        moviesViewModel.getAllWatchedMovies().observe(this) { data ->
-            if (data.isNullOrEmpty()) {
-                binding.menuRecyclerView.post {
-                    binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toGone()
-                }
-            } else {
-                val movieList = mutableListOf<ContentDto>()
-                data.forEach { model ->
-                    model.movieData?.let { movieList.add(it) }
-                }
-
-                if (movieList.isNotEmpty()) {
-                    val adapter = ChildAdapter(movieList, onItemClicked = {
-                        onMovieClick(it)
-                    }, onLeftKey = {
-                        if (it) {
-                            requestFocus()
-                        }
-                    })
+            moviesViewModel.getAllWatchedMovies().observe(this) { data ->
+                if (data.isNullOrEmpty()) {
                     binding.menuRecyclerView.post {
-                        binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toVisible()
+                        binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toGone()
+                    }
+                } else {
+                    val movieList = mutableListOf<ContentDto>()
+                    data.forEach { model ->
+                        model.movieData?.let { movieList.add(it) }
                     }
 
-                    binding.recentRecyclerView.adapter = adapter
-                    binding.recentRecyclerView.post {
-                        adapter.notifyDataSetChanged()
+                    if (movieList.isNotEmpty()) {
+                        val adapter = ChildAdapter(movieList, onItemClicked = {
+                            onMovieClick(it)
+                        }, onLeftKey = {
+                            if (it) {
+                                requestFocus()
+                            }
+                        })
+                        binding.menuRecyclerView.post {
+                            binding.menuRecyclerView.findViewHolderForAdapterPosition(list.lastIndex)?.itemView?.toVisible()
+                        }
+
+                        binding.recentRecyclerView.adapter = adapter
+                        binding.recentRecyclerView.post {
+                            adapter.notifyDataSetChanged()
+                        }
                     }
                 }
             }
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In MoviesMain activity onResume: ${e.message}","02")
         }
 
     }

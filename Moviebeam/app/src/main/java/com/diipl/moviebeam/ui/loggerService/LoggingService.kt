@@ -41,8 +41,9 @@ class LoggingService : Service() {
         client = OkHttpClient.Builder()
             .build()
 
+        //TODO change url for release
         val request = Request.Builder()
-            .url("ws://10.1.7.207:20000")
+            .url("wss://mblog.moviebeam.com:20000")
             .build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
@@ -76,19 +77,15 @@ class LoggingService : Service() {
     private fun stopWebSocket() {
         webSocket?.cancel()
     }
-
-
-
-
     companion object {
         private const val TAG = "LoggingService"
         private var webSocket: WebSocket? = null
         private val sdf = SimpleDateFormat("EEE. MMM d, yyyy hh:mm:ss a", Locale.ENGLISH)
         private val formattedDate = sdf.format(Date())
 
-        fun sendMessageToWebSocket(message: String) {
+        fun sendMessageToWebSocket(message: String, panel:String) {
             if (webSocket != null){
-                webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"${formattedDate}\",\"Msg\":\"$message\"}")
+                webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"${formattedDate}\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
             }
             else {
                 Log.e(TAG, "Websocket3 Failed to send message: WebSocket is not initialized or sending failed")

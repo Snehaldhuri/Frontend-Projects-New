@@ -40,54 +40,61 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
-        activityStack.add(this::class.java.simpleName)
-        arguments?.let {
-            gradientStartColor = it.getString("gradientStartColor").toString()
-            gradientEndColor = it.getString("gradientEndColor").toString()
+        return try {
+            _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
+            activityStack.add(this::class.java.simpleName)
+            arguments?.let {
+                gradientStartColor = it.getString("gradientStartColor").toString()
+                gradientEndColor = it.getString("gradientEndColor").toString()
+            }
+            setHotelInfo()
+            binding.btnBack.post {
+                binding.btnBack.requestFocus()
+            }
+
+            val wifiManager =
+                requireActivity().applicationContext.getSystemService(AppCompatActivity.WIFI_SERVICE) as WifiManager
+            val dhcpInfo = wifiManager.dhcpInfo
+            val ipAddress = "IP Address: " + dhcpInfo.ipAddress.intToString()
+            val netmask = "Net Mask: " + dhcpInfo.netmask.intToString()
+            val gateway = "Gateway: " + dhcpInfo.gateway.intToString()
+
+            binding.tvIpAddress.text = ipAddress
+            binding.tvNetMask.text = netmask
+            binding.tvGateway.text = gateway
+
+
+            val tvInputManager =
+                requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
+            val tvInputInfos = tvInputManager.tvInputList
+            if (tvInputInfos.isNotEmpty()) {
+                Log.e(TAG, "Device is connected to an STB $tvInputInfos")
+            } else {
+                Log.e(TAG, "Device is not connected to an STB")
+            }
+
+            val connectivityManager =
+                requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val activeNetwork = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                connectivityManager.activeNetwork
+            } else {
+                TODO("VERSION.SDK_INT < M")
+            }
+            val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+            if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                Log.e(TAG, "Device is connected to an WiFi")
+            } else {
+                Log.e(TAG, "Device is connected to an WiFi")
+            }
+
+            LoggingService.sendMessageToWebSocket("In HelpInfoMain activity", "07")
+            binding.root
         }
-        setHotelInfo()
-        binding.btnBack.post {
-            binding.btnBack.requestFocus()
+        catch (e: Exception){
+            LoggingService.sendMessageToWebSocket("${e.message}", "07")
+            throw IllegalStateException("Failed to create view for HelpInfoFragment", e)
+
         }
-
-        val wifiManager =
-            requireActivity().applicationContext.getSystemService(AppCompatActivity.WIFI_SERVICE) as WifiManager
-        val dhcpInfo = wifiManager.dhcpInfo
-        val ipAddress = "IP Address: " + dhcpInfo.ipAddress.intToString()
-        val netmask = "Net Mask: " + dhcpInfo.netmask.intToString()
-        val gateway = "Gateway: " + dhcpInfo.gateway.intToString()
-
-        binding.tvIpAddress.text = ipAddress
-        binding.tvNetMask.text = netmask
-        binding.tvGateway.text = gateway
-
-
-        val tvInputManager =
-            requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
-        val tvInputInfos = tvInputManager.tvInputList
-        if (tvInputInfos.isNotEmpty()) {
-            Log.e(TAG, "Device is connected to an STB $tvInputInfos")
-        } else {
-            Log.e(TAG, "Device is not connected to an STB")
-        }
-
-        val connectivityManager =
-            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            connectivityManager.activeNetwork
-        } else {
-            TODO("VERSION.SDK_INT < M")
-        }
-        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-            Log.e(TAG, "Device is connected to an WiFi")
-        } else {
-            Log.e(TAG, "Device is connected to an WiFi")
-        }
-
-        LoggingService.sendMessageToWebSocket("In HelpInfoMain activity")
-        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

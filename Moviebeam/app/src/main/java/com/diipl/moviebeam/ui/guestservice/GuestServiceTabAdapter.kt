@@ -18,7 +18,9 @@ import com.diipl.moviebeam.utils.getWidthInPercent
 
 class GuestServiceTabAdapter(
     private var onMenuItemClicked: (View, GsBtnModel) -> Unit,
-    private var onRightClicked: (View) -> Unit
+    private var onRightClicked: (View) -> Unit,
+    private val onFocusChangeListener: OnFocusChangeListener
+
 ) : RecyclerView.Adapter<GuestServiceTabAdapter.MyViewHolder>() {
 
     private var startColor = ""
@@ -46,7 +48,9 @@ class GuestServiceTabAdapter(
     }
 
     override fun getItemCount(): Int = itemList.size
-
+    interface OnFocusChangeListener {
+        fun onItemFocused(position: Int, itemList: List<GsBtnModel>)
+    }
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 
@@ -63,6 +67,8 @@ class GuestServiceTabAdapter(
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 setFocus(holder.card)
+                onFocusChangeListener.onItemFocused(position, itemList)
+
                 holder.card.setOnClickListener {
 //                    Log.d("TAG CLICK", "onBindViewHolder: ${Constants.GUEST_SERVICE_BUTTON_LIST[2].categoryName}-${Constants.GUEST_SERVICE_BUTTON_LIST[2].isClicked}")
                     itemList.forEach { btn ->

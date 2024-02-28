@@ -131,7 +131,7 @@ class MainMenuActivity : BaseActivity() {
         if (!isServiceStarted) {
             actionOnService(Actions.START)
         }
-        LoggingService.sendMessageToWebSocket("In MainMenu activity")
+        LoggingService.sendMessageToWebSocket("In MainMenu activity", "01")
 
 
     }
@@ -251,25 +251,31 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
+                try {
+                    val response = mainMenuViewModel.themeLiveData.value?.data
 
-                val response = mainMenuViewModel.themeLiveData.value?.data
-
-                binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
-                response?.themeLogoFileName?.let {
+                    binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
+                    response?.themeLogoFileName?.let {
 //                    getImageBitmap(it, Constants.HOTEL_LOGO)
-                    binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-                }
-                response?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                response?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
-                response?.themeBackgroundFileName?.let {
+                        binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
+                    }
+                    response?.gradientColor?.let {
+                        gradientStartColor = it
+                    }
+                    response?.spotLightColor?.let {
+                        gradientEndColor = it
+                    }
+                    response?.themeBackgroundFileName?.let {
 //                    getImageBitmap(it, Constants.BACKGROUND_IMAGE)
-                    loadBg(it)
+                        loadBg(it)
+                    }
+                    binding.pbLoader.toInvisible()
+                } catch (e: Exception) {
+                    LoggingService.sendMessageToWebSocket(
+                        "handleThemeResponse Exception in MainMenu activity ${e.message}",
+                        "01"
+                    )
                 }
-                binding.pbLoader.toInvisible()
             }
 
             else -> {
@@ -283,104 +289,111 @@ class MainMenuActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                val response = mainMenuViewModel.accountSetupLiveData.value?.data
+                try {
+                    val response = mainMenuViewModel.accountSetupLiveData.value?.data
 
-                HOTEL_VIDEO_URL =
-                    response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
+                    HOTEL_VIDEO_URL =
+                        response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
 
-                initializePlayer()
+                    initializePlayer()
 
-                binding.tvGreeting.text = response?.hotelInfo
-                val btnListFromApi: List<String>? = response?.buttonsList?.map {
-                    it.buttonName
-                }
-                val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
-                    btnListFromApi?.contains(it.btnId) == true
-                }
+                    binding.tvGreeting.text = response?.hotelInfo
+                    val btnListFromApi: List<String>? = response?.buttonsList?.map {
+                        it.buttonName
+                    }
+                    val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
+                        btnListFromApi?.contains(it.btnId) == true
+                    }
 
-                val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
-                    btnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
-                }
+                    val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
+                        btnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
+                    }
 
-                binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
-                val adapter = MainMenuBtnAdapter { btn ->
-                    releaseVideoPlayer()
-                    val bundle = Bundle()
-                    bundle.putString("title", btn.title)
-                    bundle.putString(
-                        "themeLogoFileName",
-                        mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
-                    )
-                    bundle.putString(
-                        "themeBackgroundFileName",
-                        mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
-                    )
-                    bundle.putString(
-                        "gradientStartColor",
-                        mainMenuViewModel.themeLiveData.value?.data?.gradientColor
-                    )
-                    bundle.putString(
-                        "gradientEndColor",
-                        mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
-                    )
-                    var intent: Intent? = null
-                    when (btn.btnId) {
-                        Constants.HOTEL_SERVICES_ID -> {
-                            intent = Intent(this, HotelInfoActivity::class.java)
-                        }
+                    binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
+                    val adapter = MainMenuBtnAdapter { btn ->
+                        releaseVideoPlayer()
+                        val bundle = Bundle()
+                        bundle.putString("title", btn.title)
+                        bundle.putString(
+                            "themeLogoFileName",
+                            mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
+                        )
+                        bundle.putString(
+                            "themeBackgroundFileName",
+                            mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
+                        )
+                        bundle.putString(
+                            "gradientStartColor",
+                            mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                        )
+                        bundle.putString(
+                            "gradientEndColor",
+                            mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                        )
+                        var intent: Intent? = null
+                        when (btn.btnId) {
+                            Constants.HOTEL_SERVICES_ID -> {
+                                intent = Intent(this, HotelInfoActivity::class.java)
+                            }
 
-                        Constants.LOCAL_ATTRACTION_ID -> {
-                            intent = Intent(this, GuestServiceActivity::class.java)
-                            intent.putExtra("btnId", LA_ID)
-                        }
+                            Constants.LOCAL_ATTRACTION_ID -> {
+                                intent = Intent(this, GuestServiceActivity::class.java)
+                                intent.putExtra("btnId", LA_ID)
+                            }
 
-                        Constants.VOD_ID -> {
-                            intent = Intent(this, MoviesActivity::class.java)
-                        }
+                            Constants.VOD_ID -> {
+                                intent = Intent(this, MoviesActivity::class.java)
+                            }
 
-                        Constants.GUEST_SERVICES_ID -> {
-                            intent = Intent(this, GuestServiceActivity::class.java)
-                            intent.putExtra("btnId", ALL_SERVICES)
-                        }
+                            Constants.GUEST_SERVICES_ID -> {
+                                intent = Intent(this, GuestServiceActivity::class.java)
+                                intent.putExtra("btnId", ALL_SERVICES)
+                            }
 
-                        Constants.APPS_ID -> {
-                            intent = Intent(this, AppWorldActivity::class.java)
-                        }
+                            Constants.APPS_ID -> {
+                                intent = Intent(this, AppWorldActivity::class.java)
+                            }
 
-                        Constants.SHOWTIMES_ID -> {
-                            intent = Intent(this, ShowtimeActivity::class.java)
-                        }
+                            Constants.SHOWTIMES_ID -> {
+                                intent = Intent(this, ShowtimeActivity::class.java)
+                            }
 
-                        Constants.CASTING_ID -> {
-                            intent = Intent(this, CastingActivity::class.java)
-                        }
+                            Constants.CASTING_ID -> {
+                                intent = Intent(this, CastingActivity::class.java)
+                            }
 
-                        Constants.PRG_GUIDE_ID -> {
-                            intent = Intent(this, ProgramGuideActivity::class.java)
-                        }
+                            Constants.PRG_GUIDE_ID -> {
+                                intent = Intent(this, ProgramGuideActivity::class.java)
+                            }
 
-                        Constants.IN_ROOM_DINING_ID -> {
-                            intent = Intent(this, InRoomDiningActivity::class.java)
+                            Constants.IN_ROOM_DINING_ID -> {
+                                intent = Intent(this, InRoomDiningActivity::class.java)
 //                            intent = Intent(this, GuestServiceActivity::class.java)
 //                            intent.putExtra("btnId", IN_ROOM_ID)
+                            }
+
+                            else -> {
+
+                            }
                         }
-
-                        else -> {
-
+                        intent?.let {
+                            it.putExtras(bundle)
+                            startActivity(it)
                         }
                     }
-                    intent?.let {
-                        it.putExtras(bundle)
-                        startActivity(it)
+                    adapter.itemList = sortedBtnModelList
+                    if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
+                        adapter.setGradientColor(gradientStartColor, gradientEndColor)
                     }
-                }
-                adapter.itemList = sortedBtnModelList
-                if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
-                    adapter.setGradientColor(gradientStartColor, gradientEndColor)
-                }
-                binding.rvMenuButton.adapter = adapter
+                    binding.rvMenuButton.adapter = adapter
 
-                binding.pbLoader.toInvisible()
+                    binding.pbLoader.toInvisible()
+                } catch (e: Exception) {
+                    LoggingService.sendMessageToWebSocket(
+                        "handleAccountSetupResponse Exception in MainMenu activity ${e.message}",
+                        "01"
+                    )
+                }
             }
 
             else -> {
@@ -390,28 +403,33 @@ class MainMenuActivity : BaseActivity() {
     }
 
     private fun handleValidateSessionResponse(status: Boolean) {
-        if (status) {
-            mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
-            Constants.SESSION_ID = "null"
+        try {
+            if (status) {
+                mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
+                Constants.SESSION_ID = "null"
+            }
+            binding.pbLoader.toInvisible()
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("handleValidateSessionResponse Exception in MainMenu activity ${e.message}","01")
         }
-        binding.pbLoader.toInvisible()
     }
 
     private fun handleGuestDetailsResponse(status: Resource<CmdDataDto>) {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                mainMenuViewModel.guestDetailsLiveData.value?.data?.let {
-
-                    Constants.SESSION_ID = it.sessionId.toString()
-                    binding.tvWelcome.text =
-                        "Welcome ${it?.guestFirstName} ${it?.guestLastName}"
-                    binding.tvWelcome.toVisible()
-                    binding.pbLoader.toInvisible()
+                try {
+                    mainMenuViewModel.guestDetailsLiveData.value?.data?.let {
+                        Constants.SESSION_ID = it.sessionId.toString()
+                        binding.tvWelcome.text =
+                            "Welcome ${it?.guestFirstName} ${it?.guestLastName}"
+                        binding.tvWelcome.toVisible()
+                        binding.pbLoader.toInvisible()
+                    }
+                } catch (e: Exception) {
+                    LoggingService.sendMessageToWebSocket("handleGuestDetailsResponse Exception in MainMenu activity ${e.message}","01")
                 }
-
             }
-
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
