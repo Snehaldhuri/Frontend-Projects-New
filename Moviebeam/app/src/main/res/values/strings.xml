@@ -140,4 +140,7 @@
     <string name="adult_content_is_locked">Adult content is locked.</string>
     <string name="to_enable_adult_content_enter_parental_code">To enable adult content enter parental code.</string>
     <string name="enter_parental_code">Enter Parental Code</string>
+    <string name="mature_content_disabled_note">Some of the Movies and Shows available to you may be inappropriate for younger audiences. To prevent inappropriate access, the hotel has enabled Parental Controls for your Convenience. Please disable Parental Controls to access the Content.
+        \n\nNo Charge will be posted on your folio for any of the free movies.</string>
+    <string name="enter_pass_code">Enter Passcode</string>
 </resources>

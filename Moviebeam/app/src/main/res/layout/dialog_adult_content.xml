@@ -42,9 +42,9 @@
             android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp_24"
+            android:background="@drawable/btn_bg_gradient_default"
             android:text="@string/OK"
             android:textAllCaps="false"
-            android:background="@drawable/btn_bg_gradient_default"
             android:textColor="@color/white" />
     </LinearLayout>
 
@@ -68,8 +68,8 @@
             android:layout_width="500dp"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp_24"
-            android:lineSpacingExtra="4dp"
             android:justificationMode="inter_word"
+            android:lineSpacingExtra="4dp"
             android:text="@string/mature_content_warning_note"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_20" />
@@ -78,17 +78,17 @@
             android:id="@+id/btn_cancel"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
-            android:text="@string/Cancel"
             android:background="@drawable/btn_bg_gradient_default"
+            android:text="@string/Cancel"
             android:textColor="@color/white" />
 
         <Button
             android:id="@+id/btn_continue"
             android:layout_width="160dp"
             android:layout_height="wrap_content"
-            android:text="@string/tv_continue"
-            android:background="@drawable/btn_bg_gradient_default"
             android:layout_marginTop="@dimen/dp_16"
+            android:background="@drawable/btn_bg_gradient_default"
+            android:text="@string/tv_continue"
             android:textColor="@color/white" />
 
     </LinearLayout>
@@ -113,9 +113,9 @@
             android:layout_width="620dp"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp_24"
-            android:lineSpacingExtra="6dp"
-            android:gravity="center"
             android:drawablePadding="@dimen/dp_16"
+            android:gravity="center"
+            android:lineSpacingExtra="6dp"
             android:text="@string/mature_content_warning_parental_note"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_18"
@@ -125,8 +125,8 @@
             android:id="@+id/btn_parental_control"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="@string/parental_control"
             android:background="@drawable/btn_bg_gradient_default"
+            android:text="@string/parental_control"
             android:textColor="@color/white" />
 
         <Button
@@ -134,8 +134,8 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp_16"
-            android:text="@string/skip"
             android:background="@drawable/btn_bg_gradient_default"
+            android:text="@string/skip"
             android:textColor="@color/white" />
 
     </LinearLayout>
@@ -152,19 +152,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/mature_content_disabled"
+            android:textAllCaps="true"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_28"
-            android:textAllCaps="true"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="620dp"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp_24"
-            android:lineSpacingExtra="6dp"
-            android:gravity="center"
             android:drawablePadding="@dimen/dp_16"
-            android:text="@string/mature_content_warning_parental_note"
+            android:gravity="center"
+            android:lineSpacingExtra="6dp"
+            android:text="@string/mature_content_disabled_note"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_24"
             app:drawableStartCompat="@drawable/adult" />
@@ -173,19 +173,19 @@
             android:id="@+id/btn_mcd_parental_control"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
+            android:background="@drawable/btn_bg_gradient_default"
             android:text="@string/parental_control"
             android:textAllCaps="false"
-            android:textSize="@dimen/sp_16"
-            android:background="@drawable/btn_bg_gradient_default"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            android:textSize="@dimen/sp_16" />
 
         <Button
             android:id="@+id/btn_mcd_ok"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp_16"
-            android:text="@string/OK"
             android:background="@drawable/btn_bg_gradient_default"
+            android:text="@string/OK"
             android:textColor="@color/white" />
 
     </LinearLayout>
@@ -202,59 +202,286 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/adult_locked"
+            android:textAllCaps="true"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_28"
-            android:textAllCaps="true"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/dp_24"
-            android:lineSpacingExtra="6dp"
             android:gravity="center"
+            android:lineSpacingExtra="6dp"
             android:text="@string/adult_content_is_locked"
             android:textColor="@color/white"
-            android:textSize="@dimen/sp_22"
-            />
+            android:textSize="@dimen/sp_22" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:lineSpacingExtra="6dp"
             android:gravity="center"
+            android:lineSpacingExtra="6dp"
             android:text="@string/to_enable_adult_content_enter_parental_code"
             android:textColor="@color/white"
-            android:textSize="@dimen/sp_16"
-            />
+            android:textSize="@dimen/sp_16" />
 
         <ImageView
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:src="@drawable/baseline_lock_24"
             android:layout_margin="@dimen/dp_10"
-            />
+            android:src="@drawable/baseline_lock_24" />
 
         <Button
             android:id="@+id/btn_enter_parental_code"
             android:layout_width="240dp"
             android:layout_height="wrap_content"
-            android:text="@string/enter_parental_code"
-            android:textAllCaps="false"
-            android:textSize="@dimen/sp_16"
             android:layout_marginTop="@dimen/dp_16"
             android:background="@drawable/btn_bg_gradient_default"
-            android:textColor="@color/white" />
+            android:text="@string/enter_parental_code"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="@dimen/sp_16" />
 
         <Button
             android:id="@+id/btn_code_cancel"
             android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp_16"
-            android:textAllCaps="false"
-            android:text="@string/Cancel"
             android:background="@drawable/btn_bg_gradient_default"
+            android:text="@string/Cancel"
+            android:textAllCaps="false"
             android:textColor="@color/white" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.05"
+            android:gravity="center"
+            android:text="@string/enter_pass_code"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textSize="@dimen/sp_28"
+            android:textStyle="bold" />
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
+            android:layout_weight="0.54"
+            android:columnCount="3"
+            android:rowCount="4">
+
+            <Button
+                android:id="@+id/btn_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="1"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="2"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="3"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="4"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="5"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="6"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="7"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="8"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="9"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_code_ok"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="@string/OK"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="0"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+            <Button
+                android:id="@+id/btn_delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_6"
+                android:background="@drawable/btn_bg_gradient_default"
+                android:text="Del"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16" />
+
+        </GridLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.03"
+            android:gravity="center">
+
+            <EditText
+                android:id="@+id/et_pass1"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="@dimen/dp_8"
+                android:background="@drawable/view_rect_round_white_stroke_24"
+                android:gravity="center"
+                android:maxLength="1"
+                android:focusable="false"
+                android:clickable="false"
+                android:inputType="numberPassword"
+                android:padding="@dimen/dp_0"
+                android:textColor="@color/white"
+                android:textSize="36sp" />
+
+            <EditText
+                android:id="@+id/et_pass2"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="@dimen/dp_8"
+                android:background="@drawable/view_rect_round_white_stroke_24"
+                android:gravity="center"
+                android:inputType="numberPassword"
+                android:padding="@dimen/dp_0"
+                android:maxLength="1"
+                android:focusable="false"
+                android:clickable="false"
+                android:textColor="@color/white"
+                android:textSize="36sp" />
+
+            <EditText
+                android:id="@+id/et_pass3"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="@dimen/dp_8"
+                android:background="@drawable/view_rect_round_white_stroke_24"
+                android:gravity="center"
+                android:inputType="numberPassword"
+                android:padding="@dimen/dp_0"
+                android:maxLength="1"
+                android:focusable="false"
+                android:clickable="false"
+                android:textColor="@color/white"
+                android:textSize="36sp" />
+
+            <EditText
+                android:id="@+id/et_pass4"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="@dimen/dp_8"
+                android:background="@drawable/view_rect_round_white_stroke_24"
+                android:gravity="center"
+                android:inputType="numberPassword"
+                android:padding="@dimen/dp_0"
+                android:maxLength="1"
+                android:focusable="false"
+                android:clickable="false"
+                android:textColor="@color/white"
+                android:textSize="36sp" />
+        </LinearLayout>
+
 
     </LinearLayout>
 

@@ -47,7 +47,6 @@ class MainMenuBtnAdapter(
                     holder.card.requestFocus()
                 }
             },200
-
         )
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 

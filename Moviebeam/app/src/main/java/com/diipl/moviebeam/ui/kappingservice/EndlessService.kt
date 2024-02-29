@@ -44,6 +44,7 @@ import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
+import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
@@ -434,48 +435,46 @@ class EndlessService : Service() {
                 call: Call<String>,
                 response: Response<String>
             ) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    if (response.isSuccessful) {
-                        val data = response.body()
-                        val result = KapingResponseParsing().getResponseAsObject(
-                            data,
-                            KapingResponse::class
-                        )
-                        result?.CMD?.let {
-                            result.cmdData = parseCmd(it)
-                        }
-                        // Handle the data here
-                        log(result.toString())
-                        kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    val result = KapingResponseParsing().getResponseAsObject(
+                        data,
+                        KapingResponse::class
+                    )
+                    result?.CMD?.let {
+                        result.cmdData = parseCmd(it)
+                    }
+                    // Handle the data here
+                    log(result.toString())
+                    kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
 
 
-                        log(result.toString())
+                    log(result.toString())
 
-                        AS_FLAG = if (result?.AS.isNullOrEmpty()) {
-                            Log.e("true_as", "endless_service $AS_FLAG")
-                            updateStbAllocationStatus(preferenceDataStoreHelper, true)
-                            true
-                        } else {
-                            Log.e("false_as", "endless_service $AS_FLAG")
-                            updateStbAllocationStatus(preferenceDataStoreHelper, false)
-                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
-                                startActivity(
-                                    Intent(
-                                        applicationContext,
-                                        RegisterSTBActivity::class.java
-                                    ).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                )
-                            }
-                            false
-                        }
-
-
-                        handleKaping(result)
+                    AS_FLAG = if (result?.AS.isNullOrEmpty()) {
+                        Log.e("true_as", "endless_service $AS_FLAG")
+                        updateStbAllocationStatus(preferenceDataStoreHelper, true)
+                        true
                     } else {
-                        // Handle unsuccessful response
+                        Log.e("false_as", "endless_service $AS_FLAG")
+                        updateStbAllocationStatus(preferenceDataStoreHelper, false)
+                        if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                            startActivity(
+                                Intent(
+                                    applicationContext,
+                                    RegisterSTBActivity::class.java
+                                ).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            )
+                        }
+                        false
                     }
 
+
+                    handleKaping(result)
+                } else {
+                    // Handle unsuccessful response
                 }
+
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
@@ -537,8 +536,15 @@ class EndlessService : Service() {
                 passCode
             )
 
-            updateAdultContent(adultLocked!!)
-            updateParentalPassCode(passCode!!)
+
+            if (adultLocked != null) {
+                updateAdultContent(adultLocked)
+            } else updateAdultContent(false)
+            if (passCode != null) {
+                updateParentalPassCode(passCode)
+            } else {
+                updateParentalPassCode("____")
+            }
 
         }
         return CmdDto(kapingCMD, epochTime, transactionId, cmdDataDto)
@@ -553,10 +559,12 @@ class EndlessService : Service() {
     private fun handleKaping(kapingResponse: KapingResponse?) {
 
         when (kapingResponse?.cmdData?.cmd) {
+
             KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE,
             KapingConstants.KAP_CMD_CHECK_IN,
             KapingConstants.KAP_CMD_CHECK_OUT,
             KapingConstants.KAP_CMD_THEME_CHANGE -> {
+                removeAdultData()
                 when (activityStack.last()) {
                     SerialActivity::class.java.simpleName,
                     STBDetailsActivity::class.java.simpleName,
@@ -598,6 +606,8 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> {
                 when (activityStack.last()) {
                     MoviesActivity::class.java.simpleName,
+                    MovieDetailFragment::class.java.simpleName,
+                    AdultContentDialog::class.java.simpleName,
                     ExoPlayerActivity::class.java.simpleName -> {
                         handleCmdInRefreshingUi(kapingResponse)
                     }
@@ -678,21 +688,10 @@ class EndlessService : Service() {
 
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
-        kapingResponse.CMD?.let {
-            when (kapingResponse.cmdData?.cmd) {
-                KapingConstants.KAP_CMD_CHECK_OUT -> removeAdultData()
-                else -> {
-                    if (it.length > 19) {
-                        val isEnabled = it[19] == '1'
-                        updateAdultContent(isEnabled)
-                    }
-                }
-            }
-        }
         val i = Intent(applicationContext, RefreshingUiActivity::class.java)
         i.putExtra("response", kapingResponse)
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        applicationContext.startActivity(i)
+        startActivity(i)
     }
 
     private fun handleCmdInBackground(kapingResponse: KapingResponse) {
@@ -722,8 +721,7 @@ class EndlessService : Service() {
                 updateAccountSetupData(accountSetupDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess","")
-            }
-            else{
+            } else {
                 LoggingService.sendMessageToWebSocket("In Account Setup callback fail ","")
             }
         }
@@ -737,8 +735,7 @@ class EndlessService : Service() {
                 updateThemeData(themeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket("In theme callback success ","")
-            }
-            else{
+            } else {
                 LoggingService.sendMessageToWebSocket("In theme callback fail ","")
             }
         }
@@ -766,8 +763,7 @@ class EndlessService : Service() {
                 updateHotelServices(hotelServicesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket("In Hotel Services callback success ","")
-            }
-            else{
+            } else {
                 LoggingService.sendMessageToWebSocket("In Hotel Services callback fail ","")
             }
         }
@@ -781,8 +777,7 @@ class EndlessService : Service() {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket("In Local Attractions callback success ","")
 
-            }
-            else{
+            } else {
                 LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ","")
 
             }
@@ -797,8 +792,7 @@ class EndlessService : Service() {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket("In Releases callback success ","")
 
-            }
-            else{
+            } else {
                 LoggingService.sendMessageToWebSocket("In Releases callback fail ","")
 
             }
@@ -813,8 +807,7 @@ class EndlessService : Service() {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback success ","")
 
-            }
-            else{
+            } else {
                 LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback fail ","")
 
             }

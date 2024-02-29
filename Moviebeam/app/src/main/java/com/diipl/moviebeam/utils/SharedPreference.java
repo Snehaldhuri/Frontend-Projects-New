@@ -670,7 +670,7 @@ public class SharedPreference {
     }
 
     public boolean isAdultLocked() {
-        return getBoolean("AdultLocked");
+        return preferences.getBoolean("AdultLocked", true);
     }
 
 }
