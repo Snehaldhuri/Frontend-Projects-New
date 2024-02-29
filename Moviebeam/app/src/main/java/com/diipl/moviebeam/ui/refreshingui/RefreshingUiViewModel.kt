@@ -5,22 +5,26 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,6 +50,12 @@ class RefreshingUiViewModel @Inject constructor(
 
     private val _showtimeLiveData = MutableLiveData<Resource<ShowTimeResponse>>()
     val showtimeLiveData: LiveData<Resource<ShowTimeResponse>> get() = _showtimeLiveData
+
+    private val _channelListLiveData = MutableLiveData<Resource<ChannelListResponse>>()
+    val channelListLiveData: LiveData<Resource<ChannelListResponse>> get() = _channelListLiveData
+
+    private val _epgLiveData = MutableLiveData<Resource<EPGResponse>>()
+    val epgLiveData: LiveData<Resource<EPGResponse>> get() = _epgLiveData
 
     fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -107,18 +117,6 @@ class RefreshingUiViewModel @Inject constructor(
         }
     }
 
-//    fun fetchChannelList(ua: String) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            _localAttractionLiveData.postValue(Resource.Loading())
-//            val response = movieBeamRepository.getLocalAttractionInfo(ua)
-//            if (response == null) {
-//                _localAttractionLiveData.postValue(Resource.DataError(code = R.string.server_error))
-//            } else {
-//                _localAttractionLiveData.postValue(Resource.Success(response))
-//            }
-//        }
-//    }
-
     fun fetchShowtimeData(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _showtimeLiveData.postValue(Resource.Loading())
@@ -127,6 +125,30 @@ class RefreshingUiViewModel @Inject constructor(
                 _showtimeLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
                 _showtimeLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
+    fun handleFetchChannelListCmd(ua: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _channelListLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getChannelList(ua)
+            if (response == null) {
+                _channelListLiveData.postValue(Resource.DataError(code = R.string.server_error))
+            } else {
+                _channelListLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
+    fun fetchEPGData(url: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _epgLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getEPGFromCloud(url)
+            if (response == null) {
+                _epgLiveData.postValue(Resource.DataError(code = R.string.server_error))
+            } else {
+                _epgLiveData.postValue(Resource.Success(response))
             }
         }
     }
@@ -376,6 +398,32 @@ class RefreshingUiViewModel @Inject constructor(
                     type = data.type,
                     version = data.version
                 )
+            }
+        }
+    }
+
+    fun updateChannelList(
+        dataStore: DataStore<ChannelListResponse>,
+        data: ChannelListResponse
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    channelLcnList = data.channelLcnList,
+                    type = data.type
+                )
+            }
+        }
+    }
+
+    fun getChannelList(dataStore: DataStore<ChannelListResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _channelListLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _channelListLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _channelListLiveData.postValue(Resource.Success(it))
             }
         }
     }

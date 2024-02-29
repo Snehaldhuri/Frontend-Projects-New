@@ -158,6 +158,7 @@ class STBDetailsActivity : BaseActivity() {
                     stbDetailViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
+                    Constants.EPG_CDN_URL = it.epgCdnUrl
                     stbDetailViewModel.fetchHotelService()
                 }
             }

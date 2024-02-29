@@ -66,6 +66,7 @@ object Constants {
     const val THEME_DIRECTORY = "ThemeImages"
     const val HOTEL_LOGO = "HotelLogo.jpg"
     const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
+    var EPG_CDN_URL = ""
     const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
 
     const val ASSET = "ASSET"

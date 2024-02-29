@@ -21,12 +21,15 @@ import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassSync
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalSyncResponse
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
@@ -89,6 +92,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.lang.Integer.parseInt
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -110,11 +115,13 @@ class EndlessService : Service() {
     private var laVersion = ""
     private var moviesVersion = ""
     private var hotelServicesVersion = ""
-    private var kapingCMD = KapingConstants.KAP_CMD_DO_NOTHING
     private var CMDRES = ""
     private var EVENT = ""
     private var epochTime = ""
     private var transactionId = ""
+
+    private val _accountSetupLiveData = MutableLiveData<AccountSetupResponse>()
+    val accountSetupLiveData: LiveData<AccountSetupResponse> get() = _accountSetupLiveData
 
     private val _themeLiveData = MutableLiveData<ThemeResponse>()
     val themeLiveData: LiveData<ThemeResponse> get() = _themeLiveData
@@ -127,6 +134,9 @@ class EndlessService : Service() {
 
     private val _hotelServicesLiveData = MutableLiveData<HotelServiceResponse>()
     val hotelServicesLiveData: LiveData<HotelServiceResponse> get() = _hotelServicesLiveData
+
+    private val _channelListLiveData = MutableLiveData<ChannelListResponse>()
+    val channelListLiveData: LiveData<ChannelListResponse> get() = _channelListLiveData
 
     @Inject
     lateinit var movieBeamRepository: MovieBeamRepository
@@ -153,6 +163,9 @@ class EndlessService : Service() {
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
     @Inject
+    lateinit var channelListDatastore: DataStore<ChannelListResponse>
+
+    @Inject
     lateinit var roomRepository: RoomRepository
 
     @Inject
@@ -161,6 +174,7 @@ class EndlessService : Service() {
     companion object {
         var isServiceStarted = false
         var AS_FLAG = false
+        var kapingCMD = KapingConstants.KAP_CMD_DO_NOTHING
         var kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
 
         val gson = GsonBuilder()
@@ -291,11 +305,12 @@ class EndlessService : Service() {
                         PreferenceDataStoreConstants.UA,
                         ""
                     )
-
+                    _accountSetupLiveData.postValue(accountSetupDataStore.data.first())
                     _themeLiveData.postValue(themeDataStore.data.first())
                     _localAttractionLiveData.postValue(localAttractionsDataStore.data.first())
                     _moviesLiveData.postValue(moviesDataStore.data.first())
                     _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())
+                    _channelListLiveData.postValue(channelListDatastore.data.first())
                     isGuestCheckedIn = preferenceDataStoreHelper.getFirstPreference(
                         PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
                         false
@@ -307,7 +322,7 @@ class EndlessService : Service() {
 
                         if (Constants.SESSION_ID.isNotEmpty())
                             roomRepository.removeOverTimeMovies()
-                        
+
                         if (Constants.SESSION_ID == "null") {
                             roomRepository.deleteRecentMovies()
                             roomRepository.deleteRecentShows()
@@ -401,7 +416,6 @@ class EndlessService : Service() {
             ""
         } else {
             "$kapingCMD$epochTime$transactionId$kapingCmdExecutionResponse"
-            "$kapingCMD$epochTime$transactionId${kapingCmdExecutionResponse}"
         }
         log("CMDRES -> $CMDRES")
 
@@ -453,7 +467,7 @@ class EndlessService : Service() {
                         true
                     } else {
                         updateStbAllocationStatus(preferenceDataStoreHelper, false)
-                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                        if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                             startActivity(
                                 Intent(
                                     applicationContext,
@@ -580,7 +594,7 @@ class EndlessService : Service() {
                     }
 
                     else -> {
-                        fetchHotelServiceInfo(Constants.UA)
+                        fetchHotelServiceInfo(UA)
                     }
                 }
             }
@@ -593,7 +607,7 @@ class EndlessService : Service() {
                     }
 
                     else -> {
-                        fetchLocalAttractionInfo(Constants.UA)
+                        fetchLocalAttractionInfo(UA)
                     }
                 }
             }
@@ -608,7 +622,7 @@ class EndlessService : Service() {
                     }
 
                     else -> {
-                        fetchSyncList(Constants.UA)
+                        fetchSyncList(UA)
                     }
                 }
             }
@@ -621,7 +635,33 @@ class EndlessService : Service() {
                     }
 
                     else -> {
-                        fetchShowtimeData(Constants.UA)
+                        fetchShowtimeData(UA)
+                    }
+                }
+            }
+
+            KapingConstants.KAP_CMD_GET_CHANNEL_LIST -> {
+                when (activityStack.last()) {
+                    ProgramGuideActivity::class.java.simpleName,
+                    PrgGuidePlayerActivity::class.java.simpleName -> {
+                        handleCmdInRefreshingUi(kapingResponse)
+                    }
+
+                    else -> {
+                        fetchChannelList(UA)
+                    }
+                }
+            }
+
+            KapingConstants.KAP_CMD_GET_EPG_DATA -> {
+                when (activityStack.last()) {
+                    ProgramGuideActivity::class.java.simpleName,
+                    PrgGuidePlayerActivity::class.java.simpleName -> {
+                        handleCmdInRefreshingUi(kapingResponse)
+                    }
+
+                    else -> {
+                        fetchEPGData()
                     }
                 }
             }
@@ -692,11 +732,11 @@ class EndlessService : Service() {
     private fun handleCmdInBackground(kapingResponse: KapingResponse) {
         when (kapingResponse.cmdData?.cmd) {
             KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE -> {
-                fetchAccountSetupDetails(Constants.ACTIVATE, Constants.UA, Constants.MODE)
+                fetchAccountSetupDetails(Constants.ACTIVATE, UA, Constants.MODE)
             }
 
             KapingConstants.KAP_CMD_THEME_CHANGE -> {
-                fetchThemeDetails(Constants.UA)
+                fetchThemeDetails(UA)
             }
 
             KapingConstants.KAP_CMD_CHECK_IN -> {
@@ -714,10 +754,13 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
             if (response != null) {
                 updateAccountSetupData(accountSetupDataStore, response)
+                Constants.ACCOUNT_ID = response.accountId
+                Constants.STB_ROOM_NO = response.roomNo
+                Constants.EPG_CDN_URL = response.epgCdnUrl
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess","")
+                LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess", "")
             } else {
-                LoggingService.sendMessageToWebSocket("In Account Setup callback fail ","")
+                LoggingService.sendMessageToWebSocket("In Account Setup callback fail ", "")
             }
         }
     }
@@ -729,9 +772,9 @@ class EndlessService : Service() {
             if (response != null) {
                 updateThemeData(themeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In theme callback success ","")
+                LoggingService.sendMessageToWebSocket("In theme callback success ", "")
             } else {
-                LoggingService.sendMessageToWebSocket("In theme callback fail ","")
+                LoggingService.sendMessageToWebSocket("In theme callback fail ", "")
             }
         }
     }
@@ -757,9 +800,9 @@ class EndlessService : Service() {
             if (response != null) {
                 updateHotelServices(hotelServicesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback success ","")
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback success ", "")
             } else {
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail ","")
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail ", "")
             }
         }
     }
@@ -770,10 +813,10 @@ class EndlessService : Service() {
             if (response != null) {
                 updateLocalAttractions(localAttractionsDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback success ","")
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback success ", "")
 
             } else {
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ","")
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ", "")
 
             }
         }
@@ -785,10 +828,10 @@ class EndlessService : Service() {
             if (response != null) {
                 setMoviesResponseData(moviesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Releases callback success ","")
+                LoggingService.sendMessageToWebSocket("In Releases callback success ", "")
 
             } else {
-                LoggingService.sendMessageToWebSocket("In Releases callback fail ","")
+                LoggingService.sendMessageToWebSocket("In Releases callback fail ", "")
 
             }
         }
@@ -800,11 +843,56 @@ class EndlessService : Service() {
             if (response != null) {
                 updateShowTimeData(showtimeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback success ","")
+                LoggingService.sendMessageToWebSocket(
+                    "In ShowtimeReleasesCollection callback success ",
+                    ""
+                )
 
             } else {
-                LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callback fail ","")
+                LoggingService.sendMessageToWebSocket(
+                    "In ShowtimeReleasesCollection callback fail ",
+                    ""
+                )
 
+            }
+        }
+    }
+
+    private fun fetchChannelList(ua: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = movieBeamRepository.getChannelList(ua)
+            if (response != null) {
+                updateChannelList(channelListDatastore, response)
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket(
+                    "In Channel List callback success ",
+                    ""
+                )
+            } else {
+                LoggingService.sendMessageToWebSocket(
+                    "In Channel List callback fail ",
+                    ""
+                )
+            }
+        }
+    }
+
+    private fun fetchEPGData() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response =
+                movieBeamRepository.getEPGFromCloud(accountSetupLiveData.value?.epgCdnUrl + accountSetupLiveData.value?.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
+            if (response != null) {
+                processEPGData(response)
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket(
+                    "In Get EPG Data callback success ",
+                    ""
+                )
+            } else {
+                LoggingService.sendMessageToWebSocket(
+                    "In Get EPG Data callback fail ",
+                    ""
+                )
             }
         }
     }
@@ -865,7 +953,7 @@ class EndlessService : Service() {
     }
 
 
-    fun updateAccountSetupData(
+    private fun updateAccountSetupData(
         dataStore: DataStore<AccountSetupResponse>,
         data: AccountSetupResponse
     ) {
@@ -1056,7 +1144,7 @@ class EndlessService : Service() {
         }
     }
 
-    fun updateShowTimeData(
+    private fun updateShowTimeData(
         dataStore: DataStore<ShowTimeResponse>,
         data: ShowTimeResponse
     ) {
@@ -1071,6 +1159,254 @@ class EndlessService : Service() {
                     version = data.version
                 )
             }
+        }
+    }
+
+    private fun updateChannelList(
+        dataStore: DataStore<ChannelListResponse>,
+        data: ChannelListResponse
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    channelLcnList = data.channelLcnList,
+                    type = data.type
+                )
+            }
+        }
+    }
+
+    private fun processEPGData(epgResponse: EPGResponse) {
+
+        //Removing all Epg Channels From RoomDB.
+        GlobalScope.launch(Dispatchers.IO) {
+            roomRepository.removeAllChannels()
+        }
+
+        val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
+        epgResponse.let {
+            val startDate = simpleDateFormatter.parse(it.ST)
+            val endDate = simpleDateFormatter.parse(it.ET)
+            if (isEpgDataValid(startDate, endDate)) {
+                val channelList =
+                    channelListLiveData.value?.channelLcnList
+                val currentKey = fetchCurrentProgramKey()
+                this.removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
+                for (entries in it.epgListMap?.entries!!) {
+                    val iterator = entries.value.iterator()
+                    val key = entries.key
+                    val ciMap = HashMap<Int, Boolean>()
+                    while (iterator.hasNext()) {
+                        val channel = iterator.next()
+                        channel.key = key
+                        if (channel.CI != null) {
+                            var isFound = false
+                            for (channelApi in channelList!!) {
+                                if (channelApi.CI == channel.CI) {
+                                    isFound = true
+                                    //Mapping EpgMap with Channel List Api
+                                    channel.AR = channelApi.AR
+                                    channel.CN = channelApi.CN
+                                    channel.CNO = channelApi.CNO
+                                    channel.CBT = channelApi.CBT
+                                    channel.CL = channelApi.CL
+                                    channel.CLCloud = channelApi.CLCloud
+                                    if (channelApi.httpStreaming == true)
+                                        channel.VP = channelApi.httpStreamingUrl
+                                    else
+                                        channel.VP = channelApi.VP
+                                    channel.param1 = channelApi.param1
+                                    channel.param2 = channelApi.param2
+                                    channel.httpStreamingUrl = channelApi.httpStreamingUrl
+                                    channel.httpStreaming = channelApi.httpStreaming
+                                    channel.recordable = channelApi.recordable
+
+                                    channel.channelNameNo =
+                                        "${channelApi.CNO}   ${channelApi.CN}"
+                                    channel.lastProg = channel.C
+                                    channel.prog1Time =
+                                        "${channel.P1_ST} - ${channel.P1_ET}"
+
+                                    //Mapping EpgMap with Program Map Api
+                                    if (channel.P1_ID != null) {
+                                        val program1 =
+                                            it.programsListMap?.get(channel.P1_ID)
+                                        if (program1 != null) {
+                                            channel.P1_PT = program1.PT
+                                            channel.P1_SY = program1.SY
+                                            channel.progInfo = program1.PT
+                                            channel.progSynopsis = program1.SY
+                                            channel.liveProg1 = program1.PT
+                                            channel.progInfo1 =
+                                                "${channel.CNO} - ${program1.PT}"
+                                        } else {
+                                            channel.P1_PT =
+                                                Constants.NO_INFORMATION_AVAILABLE
+                                            channel.P1_SY =
+                                                Constants.NO_INFORMATION_AVAILABLE
+                                            channel.progInfo =
+                                                Constants.NO_INFORMATION_AVAILABLE
+                                            channel.progSynopsis =
+                                                Constants.NO_INFORMATION_AVAILABLE
+                                            channel.liveProg1 =
+                                                Constants.NO_INFORMATION_AVAILABLE
+                                        }
+                                    }
+                                    // for live tv and full screen (Next)
+                                    if (channel.C?.toInt()!! > 1) {
+                                        if (channel.P2_ID != null) {
+                                            val program2 =
+                                                it.programsListMap?.get(channel.P2_ID)
+                                            channel.P2_PT = program2?.PT
+                                            channel.P2_SY = program2?.SY
+                                            channel.liveProg2 = program2?.PT
+                                            channel.progInfo2 =
+                                                "${channel.CNO} - ${program2?.PT}"
+                                            channel.prog2Time =
+                                                "${channel.P2_ST} - ${channel.P2_ET}"
+                                        }
+                                        if (channel.P3_ID != null) {
+                                            val program3 =
+                                                it.programsListMap?.get(channel.P3_ID)
+                                            channel.P3_PT = program3?.PT
+                                            channel.P3_SY = program3?.SY
+                                        }
+                                        if (channel.P4_ID != null) {
+                                            val program4 =
+                                                it.programsListMap?.get(channel.P4_ID)
+                                            channel.P4_PT = program4?.PT
+                                            channel.P4_SY = program4?.SY
+                                        }
+                                        if (channel.P5_ID != null) {
+                                            val program5 =
+                                                it.programsListMap?.get(channel.P5_ID)
+                                            channel.P5_PT = program5?.PT
+                                            channel.P5_SY = program5?.SY
+                                        }
+                                        if (channel.P6_ID != null) {
+                                            val program6 =
+                                                it.programsListMap?.get(channel.P6_ID)
+                                            channel.P6_PT = program6?.PT
+                                            channel.P6_SY = program6?.SY
+                                        }
+                                        if (channel.P7_ID != null) {
+                                            val program7 =
+                                                it.programsListMap?.get(channel.P7_ID)
+                                            channel.P7_PT = program7?.PT
+                                            channel.P7_SY = program7?.SY
+                                        }
+                                        if (channel.P8_ID != null) {
+                                            val program8 =
+                                                it.programsListMap?.get(channel.P8_ID)
+                                            channel.P8_PT = program8?.PT
+                                            channel.P8_SY = program8?.SY
+                                        }
+                                    } else {
+                                        //Calculating next Program Time from program1 end Time when Only One Program is Available
+                                        val nextProgramTime = Calendar.getInstance()
+                                        nextProgramTime.time =
+                                            simpleDateFormatter.parse(channel.P1_DET)
+                                        val nextProgramKey =
+                                            fetchCurrentProgramKey(nextProgramTime)
+                                        val nextProgram: ChannelEpgDTO? =
+                                            it.epgListMap[nextProgramKey]?.first {
+                                                it.CI == channelApi.CI
+                                            }
+                                        when (nextProgramTime.get(Calendar.MINUTE)) {
+                                            0, 30 -> {
+                                                channel.prog2Time =
+                                                    "${nextProgram?.P1_ST} - ${channel.P1_ET}"
+                                                channel.liveProg2 =
+                                                    it.programsListMap?.get(nextProgram?.P1_ID)?.PT
+                                            }
+
+                                            else -> {
+                                                channel.prog2Time =
+                                                    "${channel.P2_ST} - ${channel.P2_ET}"
+                                                channel.liveProg2 =
+                                                    it.programsListMap?.get(nextProgram?.P2_ID)?.PT
+                                            }
+                                        }
+                                    }
+                                    break
+                                }
+                            }
+                            if (!isFound)
+                                iterator.remove()
+                            else {
+                                //Removing Duplicate Channels
+                                if (ciMap[channel.CI] != null)
+                                    iterator.remove()
+                                else
+                                    ciMap[channel.CI] = true
+                            }
+                        }
+                    }
+                    //Sorting Channels by Channel No
+                    entries.value.sortBy { it.CNO?.toInt() }
+                    //Adding Channels to RoomDB.
+                    GlobalScope.launch(Dispatchers.IO) {
+                        roomRepository.insertChannels(entries.value)
+                    }
+                }
+            } else {
+                //TODO EPG DATA INVALID
+            }
+        }
+    }
+
+    private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
+        val currentDate = Date()
+        return !(currentDate.before(startDate) or currentDate.after(endDate))
+    }
+
+    private fun fetchCurrentProgramKey(cal: Calendar = Calendar.getInstance()): String {
+        val date = cal.get(Calendar.DATE)
+        val month = cal.get(Calendar.MONTH) + 1
+        val year = cal.get(Calendar.YEAR)
+        var hour = cal.get(Calendar.HOUR)
+        val minutes = cal.get(Calendar.MINUTE)
+        val amPm = cal.get(Calendar.AM_PM)
+        val time = StringBuilder()
+
+        if (date < 10) time.append(appendZeros(date))
+        else time.append(date)
+
+        if (month < 10) time.append(appendZeros(month))
+        else time.append(month)
+
+        time.append(year)
+
+        if (hour == 0) hour = 12
+
+        if (hour < 10) time.append(appendZeros(hour))
+        else time.append(hour.toString())
+
+        if (minutes < 30) time.append("00")
+        else time.append("30")
+
+        if (amPm == 0) time.append("AM")
+        else time.append("PM")
+
+        return time.toString()
+    }
+
+    private fun appendZeros(value: Int): String {
+        val str = StringBuffer(value.toString()).reverse()
+        str.append("0")
+        return str.reverse().toString()
+    }
+
+    private fun removeEarlierData(
+        iterator: MutableIterator<MutableMap.MutableEntry<String, MutableList<ChannelEpgDTO>>>?,
+        currentKey: String
+    ) {
+        while (iterator?.hasNext() == true) {
+            val entry = iterator.next()
+            if (entry.key == currentKey)
+                break
+            iterator.remove()
         }
     }
 
@@ -1157,7 +1493,7 @@ class EndlessService : Service() {
 
     private fun getCurrentPanelNumber(): String {
         when (activityStack.last()) {
-            //TODO Register Stb Page
+            RegisterSTBActivity::class.java.simpleName -> return PanelConstants.BLUE_SCREEN
             STBDetailsActivity::class.java.simpleName -> return PanelConstants.LOADER_SCREEN
             MainMenuActivity::class.java.simpleName -> return PanelConstants.MAIN_MENU
             MoviesActivity::class.java.simpleName -> return PanelConstants.VOD
