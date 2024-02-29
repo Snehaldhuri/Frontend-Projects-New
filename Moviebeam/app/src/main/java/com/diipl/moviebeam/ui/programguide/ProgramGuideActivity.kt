@@ -27,18 +27,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -86,7 +83,6 @@ class ProgramGuideActivity : BaseActivity() {
         observe(programGuideViewModel.weatherLiveData, ::handleWeatherResponse)
 
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
-
         observeToast(programGuideViewModel.showToast)
     }
 
@@ -113,12 +109,13 @@ class ProgramGuideActivity : BaseActivity() {
                         0
                     )?.itemView?.requestFocus()
                     setOnScrollListener()
-                    binding.pbLoader.toInvisible()
+
                 }
                 setNextPrograms()
-        LoggingService.sendMessageToWebSocket("In ProgramGuidePage activity","06")
-
+            }else{
+                programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
             }
+            binding.pbLoader.toInvisible()
         }
     }
 
@@ -177,6 +174,7 @@ class ProgramGuideActivity : BaseActivity() {
             false
         }
     }
+
     private fun searchInAdapter(name: String) {
         val adapter = binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter as ChannelAdapter
         val list = adapter.getChannelList()
@@ -200,18 +198,8 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     private fun fetchDetails() {
-        intent.extras?.getString("hotelChannel")?.let {
-            hotelChannel = it.fromJson()
-        }
-
         intent.extras?.getString("themeLogoFileName")?.let {
             binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        intent.extras?.getString("hotelChannel")?.let {
-            hotelChannel = it.fromJson()
-        }
-        intent.extras?.getString("hotelChannelVideo")?.let {
-            hotelChannelVideo = it
         }
         intent.extras?.let {
             binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)

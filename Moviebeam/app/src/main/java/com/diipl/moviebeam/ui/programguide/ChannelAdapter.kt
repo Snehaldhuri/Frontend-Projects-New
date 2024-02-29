@@ -47,11 +47,11 @@ class ChannelAdapter(
                 onChannelFocused(item)
                 view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
                 holder.binding.tvChannelNo.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
-                holder.binding.tvChannelLogo.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                holder.binding.tvChannelName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
             } else {
                 view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
                 holder.binding.tvChannelNo.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
-                holder.binding.tvChannelLogo.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                holder.binding.tvChannelName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
             }
         }
         holder.binding.root.setOnClickListener {
@@ -64,14 +64,14 @@ class ChannelAdapter(
             holder.binding.tvChannelName.text = item?.CN
             holder.binding.tvChannelName.toVisible()
         }
-        if (item.CL != null) {
-            holder.binding.ivChannelLogo.loadImagesWithGlideExt(item.CL)
-            holder.binding.tvChannelLogo.toGone()
+        if (item?.CL != null) {
+            holder.binding.ivChannelLogo.loadImagesWithGlideExt(item.CL!!)
+            holder.binding.tvChannelName.toGone()
             holder.binding.ivChannelLogo.toVisible()
         } else {
-            holder.binding.tvChannelLogo.text = item.CN
+            holder.binding.tvChannelName.text = item?.CN
             holder.binding.ivChannelLogo.toGone()
-            holder.binding.tvChannelLogo.toVisible()
+            holder.binding.tvChannelName.toVisible()
         }
     }
 

@@ -174,7 +174,6 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun setRentalReversal(request: RentalReversalRequest): RentalReversalResponse? {
         val result = safeAPiCall { moviesAPIService.setRentalReversal(request.toQueryMap()) }
-        Log.e("setRentalReversal: ", result.data.toString())
         return ApiResponseParsing().getResponseAsObject(result.data, RentalReversalResponse::class)
     }
 

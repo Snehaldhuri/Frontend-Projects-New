@@ -14,8 +14,8 @@ import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
 
 @Database(
-    entities = [RentalMovieModel::class, ChannelEpgDTO::class],
-    version = 2,
+    entities = [RentalMovieModel::class, ChannelEpgDTO::class, ShowTimeModel::class],
+    version = 4,
     exportSchema = false
 )
 abstract class MoviesDatabase : RoomDatabase() {
@@ -32,7 +32,7 @@ abstract class MoviesDatabase : RoomDatabase() {
         fun getDatabase(context: Context): MoviesDatabase {
             return instance ?: synchronized(this) {
                 Room.databaseBuilder(context, MoviesDatabase::class.java, "MovieBeam")
-                    .addMigrations(MIGRATION)
+//                    .addMigrations(MIGRATION)
                     .fallbackToDestructiveMigration()
                     .build()
             }
