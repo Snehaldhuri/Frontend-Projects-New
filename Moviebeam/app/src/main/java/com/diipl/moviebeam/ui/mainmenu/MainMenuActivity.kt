@@ -16,6 +16,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -114,6 +115,13 @@ class MainMenuActivity : BaseActivity() {
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
+       /* preference.isAdultContentEnabled = true
+        preference.isBtnAdultMCW = false
+        preference.isMainAdultMCW = false
+        preference.isAdultMCD = false
+        preference.adultPassCode = "____"*/
+//        preference.adultPassCode = "1111"
+
         player = ExoPlayer.Builder(this).build()
         player.trackSelectionParameters = player.trackSelectionParameters
             .buildUpon()
@@ -136,6 +144,36 @@ class MainMenuActivity : BaseActivity() {
         LoggingService.sendMessageToWebSocket("In MainMenu activity")
 
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        binding.rvMenuButton.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                // Check if any item is focused
+                checkIfAnyItemFocused(recyclerView)
+            }
+        })
+
+    }
+
+    fun checkIfAnyItemFocused(recyclerView: RecyclerView) {
+        for (i in 0 until recyclerView.childCount) {
+            val childView = recyclerView.getChildAt(i)
+            if (childView != null) {
+                val viewHolder = recyclerView.getChildViewHolder(childView)
+                if (viewHolder.itemView.hasFocus()) {
+                    // At least one item is focused
+                    // Handle accordingly
+                    return
+                }
+            }
+        }
+
+        recyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
     }
 
     fun startDownload(fileURL: String) = CoroutineScope(Dispatchers.Default).launch {

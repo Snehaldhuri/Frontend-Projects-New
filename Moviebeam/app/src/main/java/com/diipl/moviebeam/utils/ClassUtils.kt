@@ -8,6 +8,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
@@ -152,6 +153,32 @@ fun getGradientColor(): GradientDrawable {
 
     gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
     return gradientDrawable
+}
+
+fun RecyclerView.addOnScrollListenerWithFocusCheck(
+    onItemFocused: (Boolean) -> Unit
+) {
+    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+
+            // Check if any item is focused
+            onItemFocused(isAnyItemFocused())
+        }
+    })
+}
+
+fun RecyclerView.isAnyItemFocused(): Boolean {
+    for (i in 0 until childCount) {
+        val childView = getChildAt(i)
+        if (childView != null) {
+            val viewHolder = getChildViewHolder(childView)
+            if (viewHolder.itemView.hasFocus()) {
+                return true
+            }
+        }
+    }
+    return false
 }
 
 fun Long.toDateFormat(): String {

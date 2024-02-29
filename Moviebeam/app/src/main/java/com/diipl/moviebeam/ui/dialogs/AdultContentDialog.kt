@@ -1,10 +1,13 @@
 package com.diipl.moviebeam.ui.dialogs
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.DialogFragment
 import com.diipl.moviebeam.R
@@ -57,24 +60,41 @@ class AdultContentDialog(
         binding.btnEnterParentalCode.setOnFocusChangeListener(::handleFocusChange)
         binding.btnCodeCancel.setOnFocusChangeListener(::handleFocusChange)
 
-        
+        // PASSCODE
+        binding.btn1.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn2.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn3.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn4.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn5.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn6.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn7.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn8.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn9.setOnFocusChangeListener(::handleFocusChange)
+        binding.btn0.setOnFocusChangeListener(::handleFocusChange)
+        binding.btnDelete.setOnFocusChangeListener(::handleFocusChange)
+        binding.btnCodeOk.setOnFocusChangeListener(::handleFocusChange)
+
         when (viewType) {
             ADULT_MCW_MAIN -> {
                 binding.layoutParentalMCW.toVisible()
                 binding.btnParentalControl.requestFocus()
             }
+
             ADULT_MCW_BTN -> {
                 binding.layoutMCW.toVisible()
                 binding.btnContinue.requestFocus()
             }
+
             ADULT_CONTENT_DISABLED -> {
                 binding.layoutDisabled.toVisible()
                 binding.btnOk.requestFocus()
             }
+
             ADULT_MCD_BTN -> {
                 binding.layoutParentalMCD.toVisible()
                 binding.btnMcdParentalControl.requestFocus()
             }
+
             ADULT_LOCKED -> {
                 binding.layoutLocked.toVisible()
                 binding.btnEnterParentalCode.requestFocus()
@@ -101,7 +121,7 @@ class AdultContentDialog(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        requireActivity().onBackPressedDispatcher.addCallback{
+        requireActivity().onBackPressedDispatcher.addCallback {
             Log.e("onViewCreated: ", "onBackPressedDispatcher")
         }
 
@@ -173,8 +193,94 @@ class AdultContentDialog(
             }
         }
 
+        binding.btnCodeOk.requestFocus()
+        binding.btn1.setOnClickListener(::updateFields)
+        binding.btn2.setOnClickListener(::updateFields)
+        binding.btn3.setOnClickListener(::updateFields)
+        binding.btn4.setOnClickListener(::updateFields)
+        binding.btn5.setOnClickListener(::updateFields)
+        binding.btn6.setOnClickListener(::updateFields)
+        binding.btn7.setOnClickListener(::updateFields)
+        binding.btn8.setOnClickListener(::updateFields)
+        binding.btn9.setOnClickListener(::updateFields)
+        binding.btn0.setOnClickListener(::updateFields)
+        binding.btnCodeOk.setOnClickListener(::updateFields)
+        binding.btnDelete.setOnClickListener(::updateFields)
 
 
+    }
+
+    private var length = 0
+    private fun updateFields(it: View) {
+        val btn: Button = it as Button
+        when (btn.text.toString()) {
+            "Del" -> {
+                if (length == 4) {
+                    binding.etPass4.setText("")
+                    length--
+                    return
+                }
+                if (length == 3) {
+                    binding.etPass3.setText("")
+                    length--
+                    return
+                }
+                if (length == 2) {
+                    binding.etPass2.setText("")
+                    length--
+                    return
+                }
+                if (length == 1) {
+                    binding.etPass1.setText("")
+                    length--
+                    return
+                }
+            }
+
+            "OK" -> {
+                val pass =
+                    binding.etPass1.text.toString() + binding.etPass2.text.toString() + binding.etPass3.text.toString() + binding.etPass4.text.toString()
+                if (pass.length < 4) {
+                    showToast(requireContext(), "Incomplete password!")
+                } else if (!preference.isAdultPassCodeEmpty && pass != preference.adultPassCode) {
+                    showToast(requireContext(), "Password doesn't match.")
+                } else {
+                    if (pass == preference.adultPassCode)
+                        onClicked(1)
+                    if (preference.isAdultPassCodeEmpty)
+                        preference.adultPassCode = pass
+                    dismiss()
+                }
+            }
+
+            else -> {
+                val pass = btn.text.toString()
+                if (length == 0) {
+                    binding.etPass1.setText(pass)
+                    length++
+                    return
+                }
+                if (length == 1) {
+                    binding.etPass2.setText(pass)
+                    length++
+                    return
+                }
+                if (length == 2) {
+                    binding.etPass3.setText(pass)
+                    length++
+                    return
+                }
+                if (length == 3) {
+                    binding.etPass4.setText(pass)
+                    length++
+                    return
+                }
+            }
+        }
+    }
+
+    private fun showToast(context: Context, s: String) {
+        Toast.makeText(context, s, Toast.LENGTH_SHORT).show()
     }
 
     private fun handleFocusChange(view: View, focus: Boolean) {
