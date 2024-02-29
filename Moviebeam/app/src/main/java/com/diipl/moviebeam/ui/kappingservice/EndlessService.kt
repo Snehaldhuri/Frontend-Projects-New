@@ -305,9 +305,9 @@ class EndlessService : Service() {
                         pingFakeServer()
                         callKapingApi()
 
-                        if (Constants.SESSION_ID.isNotEmpty()) {
+                        if (Constants.SESSION_ID.isNotEmpty())
                             roomRepository.removeOverTimeMovies()
-                        }
+                        
                         if (Constants.SESSION_ID == "null") {
                             roomRepository.deleteRecentMovies()
                             roomRepository.deleteRecentShows()
@@ -448,17 +448,12 @@ class EndlessService : Service() {
                     log(result.toString())
                     kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
 
-
-                    log(result.toString())
-
                     AS_FLAG = if (result?.AS.isNullOrEmpty()) {
-                        Log.e("true_as", "endless_service $AS_FLAG")
                         updateStbAllocationStatus(preferenceDataStoreHelper, true)
                         true
                     } else {
-                        Log.e("false_as", "endless_service $AS_FLAG")
                         updateStbAllocationStatus(preferenceDataStoreHelper, false)
-                        if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                             startActivity(
                                 Intent(
                                     applicationContext,

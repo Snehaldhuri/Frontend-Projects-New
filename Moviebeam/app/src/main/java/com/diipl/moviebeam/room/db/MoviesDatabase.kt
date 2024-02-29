@@ -6,24 +6,31 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.room.dao.ProgramGuideDao
 import com.diipl.moviebeam.room.dao.RentalMovieDao
 import com.diipl.moviebeam.room.dao.ShowTimeDao
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
 
-@Database(entities = [RentalMovieModel::class, ShowTimeModel::class], version = 1, exportSchema = false)
-abstract class MoviesDatabase : RoomDatabase(){
+@Database(
+    entities = [RentalMovieModel::class, ChannelEpgDTO::class],
+    version = 2,
+    exportSchema = false
+)
+abstract class MoviesDatabase : RoomDatabase() {
 
-    abstract fun movieDao() : RentalMovieDao
+    abstract fun movieDao(): RentalMovieDao
     abstract fun showDao() : ShowTimeDao
+    abstract fun programGuideDao(): ProgramGuideDao
 
-    companion object{
+    companion object {
 
         @Volatile
-        private var instance : MoviesDatabase? = null
+        private var instance: MoviesDatabase? = null
 
         fun getDatabase(context: Context): MoviesDatabase {
-            return instance ?: synchronized(this){
+            return instance ?: synchronized(this) {
                 Room.databaseBuilder(context, MoviesDatabase::class.java, "MovieBeam")
                     .addMigrations(MIGRATION)
                     .fallbackToDestructiveMigration()

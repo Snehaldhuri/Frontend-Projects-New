@@ -27,16 +27,16 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tv_channel_logo"
+        android:id="@+id/tv_channel_name"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
+        android:contentDescription="@string/channel_logo"
+        android:ellipsize="marquee"
         android:fontFamily="@font/manrope_semibold_600"
-        android:paddingHorizontal="@dimen/dp_10"
+        android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="@dimen/sp_14"
         android:visibility="gone"
-        android:singleLine="true"
-        android:ellipsize="marquee"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_30"
         app:layout_constraintStart_toStartOf="parent"

@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.di
 
 import android.content.Context
+import com.diipl.moviebeam.room.dao.ProgramGuideDao
 import com.diipl.moviebeam.room.dao.RentalMovieDao
 import com.diipl.moviebeam.room.db.MoviesDatabase
 import com.diipl.moviebeam.utils.SharedPreference
@@ -31,6 +32,12 @@ class RoomModule {
     @Provides
     fun providePreference(@ApplicationContext appContext: Context): SharedPreference {
         return SharedPreference(appContext)
+    }
+    
+    @Singleton
+    @Provides
+    fun provideProgramGuideDao(database: MoviesDatabase): ProgramGuideDao {
+        return database.programGuideDao()
     }
 
 }

@@ -97,16 +97,16 @@
 
     <EditText
         android:id="@+id/et_search"
-        android:layout_width="0dp"
-        android:visibility="gone"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/dp_20"
         android:background="@color/white"
         android:fontFamily="@font/manrope_semibold_600"
+        android:imeOptions="actionDone"
+        android:inputType="text"
         android:textColor="@color/black"
         android:textSize="@dimen/sp_25"
-        android:inputType="text"
-        android:imeOptions="actionDone"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
         app:layout_constraintEnd_toStartOf="@+id/btn_Search"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_27"
@@ -154,9 +154,10 @@
         app:layout_constraintTop_toBottomOf="@+id/tv_program_title" />
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardView"
+        android:id="@+id/cv_program_guide"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_27"

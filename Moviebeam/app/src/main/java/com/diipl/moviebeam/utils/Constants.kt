@@ -4,6 +4,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 
 object Constants {
 
@@ -65,9 +66,11 @@ object Constants {
     const val THEME_DIRECTORY = "ThemeImages"
     const val HOTEL_LOGO = "HotelLogo.jpg"
     const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
+    const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
 
     const val ASSET = "ASSET"
     const val MOVIE_ACCESS = "MOVIE_ACCESS"
+    const val EPG = "EPG"
 
     //Home Page Menu Button Id
     const val PRG_GUIDE_ID = "prgGuide"
@@ -327,7 +330,6 @@ object Constants {
     const val LAVER = "1510818301"
     const val HSVER = "1513951822"
     const val THMVER = "1509529572"
-    const val CMDRES = "4105aa725d84402348900"
     const val INRMVER = "1520924235"
     const val LAUVER = "1520937775"
 
@@ -342,6 +344,7 @@ object Constants {
     const val NEXT_PROGRAM_PARAM = "nextProgram"
     const val PROG_1_TIME_PARAM = "prog1Time"
     const val PROG_2_TIME_PARAM = "prog2Time"
+    const val NO_INFORMATION_AVAILABLE = "No Information Available"
 
     const val GRADIENT_START_COLOR_PARAM = "gradientStartColor"
     const val GRADIENT_END_COLOR_PARAM = "gradientEndColor"
@@ -350,6 +353,8 @@ object Constants {
     const val LOGO_IMAGE_URL = "logoImageUrl"
 
     var NEXT_BUTTON_STATE = 0
+
+    var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
 
 }
 

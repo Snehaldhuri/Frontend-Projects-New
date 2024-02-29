@@ -3,6 +3,7 @@ package com.diipl.moviebeam.di
 import androidx.databinding.ktx.BuildConfig
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
+import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import com.diipl.moviebeam.utils.Constants
@@ -13,6 +14,7 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
@@ -75,6 +77,15 @@ object NetworkModule {
         .client(okHttpClient)
         .build()
 
+    @Singleton
+    @Provides
+    @Named(Constants.EPG)
+    fun provideRetrofitEpg(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl(Constants.BASE_URL_LG_REST)
+        .client(okHttpClient)
+        .build()
+
     @Provides
     fun provideLgRestApiService(@Named(Constants.LG_REST) retrofit: Retrofit): LgRestApiService =
         retrofit.create(LgRestApiService::class.java)
@@ -88,7 +99,11 @@ object NetworkModule {
         retrofit.create(AssetApiService::class.java)
 
     @Provides
-    fun provideMovieAPIService(@Named(Constants.MOVIE_ACCESS) retrofit: Retrofit) : MoviesAPIService =
+    fun provideMovieAPIService(@Named(Constants.MOVIE_ACCESS) retrofit: Retrofit): MoviesAPIService =
         retrofit.create(MoviesAPIService::class.java)
+
+    @Provides
+    fun provideEpgAPIService(@Named(Constants.EPG) retrofit: Retrofit): EpgApiService =
+        retrofit.create(EpgApiService::class.java)
 
 }

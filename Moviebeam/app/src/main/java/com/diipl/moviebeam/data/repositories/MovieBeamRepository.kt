@@ -2,6 +2,7 @@ package com.diipl.moviebeam.data.repositories
 
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
@@ -16,6 +17,7 @@ import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -96,7 +98,7 @@ class MovieBeamRepository @Inject constructor(
     }
 
     suspend fun getLaundryDetails(ua: String, srno: String): LaundryResponce? {
-        return remoteDataSource.laundryResponce(ua, srno)
+        return remoteDataSource.laundryResponse(ua, srno)
     }
 
     suspend fun sendGuestFeedback(
@@ -114,4 +116,13 @@ class MovieBeamRepository @Inject constructor(
     suspend fun buyPassRequest(request: AdultDayPassRequest): DayPassResponse? {
         return remoteDataSource.buyPassRequest(request)
     }
+
+    suspend fun getChannelList(ua: String): ChannelListResponse? {
+        return remoteDataSource.getChannelList(ua)
+    }
+
+    suspend fun getEPGFromCloud(url: String): EPGResponse? {
+        return remoteDataSource.getEPGFromCloud(url)
+    }
+
 }

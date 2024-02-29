@@ -1,8 +1,8 @@
 package com.diipl.moviebeam.data.remote.datasource
 
-import android.util.Log
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
@@ -17,12 +17,14 @@ import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
+import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import com.diipl.moviebeam.utils.ApiResponseParsing
@@ -36,7 +38,8 @@ class RemoteDataSource @Inject constructor(
     private val lgRestApiService: LgRestApiService,
     private val accountSetupApiService: AccountSetupApiService,
     private val assetApiService: AssetApiService,
-    private val moviesAPIService: MoviesAPIService
+    private val moviesAPIService: MoviesAPIService,
+    private val epgApiService: EpgApiService
 ) : NetworkHandler(networkUtils) {
 
     suspend fun getMoviesAccess(request: RentalMovieRequest): RentalMovieResponse? {
@@ -154,9 +157,19 @@ class RemoteDataSource @Inject constructor(
         return ApiResponseParsing().getResponseAsObject(result.data, FeedbackResponse::class)
     }
 
-    suspend fun laundryResponce(UA: String, serviceId: String): LaundryResponce? {
+    suspend fun laundryResponse(UA: String, serviceId: String): LaundryResponce? {
         val result = safeAPiCall { lgRestApiService.getLaundry(UA, serviceId) }
         return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
+    }
+
+    suspend fun getChannelList(ua: String): ChannelListResponse? {
+        val result = safeAPiCall { lgRestApiService.getChannelList(ua) }
+        return ApiResponseParsing().getResponseAsObject(result.data, ChannelListResponse::class)
+    }
+
+    suspend fun getEPGFromCloud(url: String): EPGResponse? {
+        val result = safeAPiCall { epgApiService.getEPGFromCloud(url) }
+        return result.data
     }
 
     suspend fun setRentalReversal(request: RentalReversalRequest): RentalReversalResponse? {
