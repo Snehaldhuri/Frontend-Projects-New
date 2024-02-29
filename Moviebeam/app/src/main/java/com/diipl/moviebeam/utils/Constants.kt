@@ -298,14 +298,14 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
-        "Prime Video",
-        "Crackle",
-        "Spotify",
-        "Plex",
-        "Vudu Movies & TV",
-        "DAZN",
-        "Pac-12 Now",
-        "ESPN"
+//        "Prime Video",
+//        "Crackle",
+//        "Spotify",
+//        "Plex",
+//        "Vudu Movies & TV",
+//        "DAZN",
+//        "Pac-12 Now",
+//        "ESPN"
     //Guest Feedback
     const val UNACCEPTABLE = "Unacceptable"
     const val DISAPPOINTING = "Disappointing"

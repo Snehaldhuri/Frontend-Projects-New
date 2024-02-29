@@ -109,11 +109,12 @@ class ChildAdapter(
                     }
                 }
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                        pos = if (holder.absoluteAdapterPosition == 0 && pos != "0"){
-                            "-1"
-                        } else {
-                            holder.absoluteAdapterPosition.toString()
-                        }                    }
+                        pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                            -1
+                        }
+                        else {
+                            holder.absoluteAdapterPosition
+                        }
                 }
                 KeyEvent.KEYCODE_DPAD_UP -> {
                     pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){

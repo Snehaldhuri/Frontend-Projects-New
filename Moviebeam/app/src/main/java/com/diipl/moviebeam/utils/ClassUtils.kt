@@ -14,7 +14,6 @@ import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
-import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -116,13 +115,6 @@ fun isNetworkAvailable(context: Context): Boolean {
     } else {
         return connectivityManager.activeNetworkInfo?.isConnected ?: false
     }
-}
-inline fun <reified T> T.toJson(): String {
-    return Gson().toJson(this)
-}
-
-inline fun <reified T> String.fromJson(): T {
-    return Gson().fromJson(this, T::class.java)
 }
 fun replaceDegreeSymbol(temp: String?): String {
     var temperature = ""
