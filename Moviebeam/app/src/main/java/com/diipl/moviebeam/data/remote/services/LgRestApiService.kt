@@ -1,9 +1,11 @@
 package com.diipl.moviebeam.data.remote.services
 
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 interface LgRestApiService {
 
@@ -119,4 +121,10 @@ interface LgRestApiService {
         @Query("INRMVER") INRMVER: String,
         @Query("LAUVER") LAUVER: String
     ): Call<String>
+
+    @GET("content/lcnNew")
+    suspend fun getChannelList(
+        @Query("UA") ua: String
+    ): Response<String>
+
 }

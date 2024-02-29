@@ -9,17 +9,19 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.data.dto.program.ProgramDTO
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ProgramCardBinding
 import kotlin.math.roundToInt
 
 class ProgramAdapter(
-    private val onProgramFocused: (program: ProgramDTO) -> Unit,
-    private val onProgramClicked: (program: ProgramDTO) -> Unit
+    private val onProgramFocused: (program: ChannelEpgDTO, title: String?, synopsis: String?) -> Unit,
+    private val onProgramClicked: (program: ChannelEpgDTO) -> Unit,
+    private val loadPreviousPrograms: () -> Unit,
+    private val loadNextPrograms: () -> Unit
 ) : RecyclerView.Adapter<ProgramAdapter.MyViewHolder>() {
 
-    private var programDto: ProgramDTO? = null
-    private var programs = 0
+    private var programDto: ChannelEpgDTO? = null
+    private var programs: Int = 0
     private var p4Dst: String? = null
 
     inner class MyViewHolder(val binding: ProgramCardBinding) :
@@ -29,18 +31,7 @@ class ProgramAdapter(
         val binding = ProgramCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
-        binding.root.setOnFocusChangeListener { view, isFocused ->
-            if (isFocused) {
-                programDto?.let {
-                    onProgramFocused(it)
-                }
-                view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
-                binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
-            } else {
-                view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
-                binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
-            }
-        }
+
         binding.root.setOnClickListener {
             programDto?.let {
                 onProgramClicked(it)
@@ -56,28 +47,158 @@ class ProgramAdapter(
             0 -> {
                 setProgramTitle(holder.binding.programName, programDto?.P1_PT)
                 setProgramWidth(holder.binding.root, programDto?.P1_CLS)
+                holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+                    if (isFocused) {
+                        programDto?.let {
+                            onProgramFocused(it, programDto?.P1_PT, programDto?.P1_SY)
+                        }
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                    } else {
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    }
+                }
             }
 
             1 -> {
                 setProgramTitle(holder.binding.programName, programDto?.P2_PT)
                 setProgramWidth(holder.binding.root, programDto?.P2_CLS)
+                holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+                    if (isFocused) {
+                        programDto?.let {
+                            onProgramFocused(it, programDto?.P2_PT, programDto?.P2_SY)
+                        }
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                    } else {
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    }
+                }
             }
 
             2 -> {
                 setProgramTitle(holder.binding.programName, programDto?.P3_PT)
                 setProgramWidth(holder.binding.root, programDto?.P3_CLS)
+                holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+                    if (isFocused) {
+                        programDto?.let {
+                            onProgramFocused(it, programDto?.P3_PT, programDto?.P3_SY)
+                        }
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                    } else {
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    }
+                }
             }
 
             3 -> {
                 setProgramTitle(holder.binding.programName, programDto?.P4_PT)
                 setProgramWidth(holder.binding.root, programDto?.P4_CLS)
+                holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+                    if (isFocused) {
+                        programDto?.let {
+                            onProgramFocused(it, programDto?.P4_PT, programDto?.P4_SY)
+                        }
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                    } else {
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    }
+                }
+            }
+
+            4 -> {
+                setProgramTitle(holder.binding.programName, programDto?.P5_PT)
+                setProgramWidth(holder.binding.root, programDto?.P5_CLS)
+                holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+                    if (isFocused) {
+                        programDto?.let {
+                            onProgramFocused(it, programDto?.P5_PT, programDto?.P5_SY)
+                        }
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                    } else {
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    }
+                }
+            }
+
+            5 -> {
+                setProgramTitle(holder.binding.programName, programDto?.P6_PT)
+                setProgramWidth(holder.binding.root, programDto?.P6_CLS)
+                holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+                    if (isFocused) {
+                        programDto?.let {
+                            onProgramFocused(it, programDto?.P6_PT, programDto?.P6_SY)
+                        }
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                    } else {
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    }
+                }
+            }
+
+            6 -> {
+                setProgramTitle(holder.binding.programName, programDto?.P7_PT)
+                setProgramWidth(holder.binding.root, programDto?.P7_CLS)
+                holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+                    if (isFocused) {
+                        programDto?.let {
+                            onProgramFocused(it, programDto?.P7_PT, programDto?.P7_SY)
+                        }
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                    } else {
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    }
+                }
+            }
+
+            7 -> {
+                setProgramTitle(holder.binding.programName, programDto?.P8_PT)
+                setProgramWidth(holder.binding.root, programDto?.P8_CLS)
+                holder.binding.root.setOnFocusChangeListener { view, isFocused ->
+                    if (isFocused) {
+                        programDto?.let {
+                            onProgramFocused(it, programDto?.P8_PT, programDto?.P8_SY)
+                        }
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
+                    } else {
+                        view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                        holder.binding.programName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
+                    }
+                }
             }
         }
+
         if (position == programs - 1) {
             holder.binding.root.setOnKeyListener { _, keycode, keyEvent ->
                 if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                     when (keycode) {
-                        KeyEvent.KEYCODE_DPAD_RIGHT -> {}
+                        KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                            loadNextPrograms()
+                        }
+                    }
+                }
+                false
+            }
+        } else if (position == 0) {
+            holder.binding.root.setOnKeyListener { _, keycode, keyEvent ->
+                if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                    when (keycode) {
+                        KeyEvent.KEYCODE_DPAD_LEFT -> {
+                            loadPreviousPrograms()
+                        }
                     }
                 }
                 false
@@ -86,7 +207,7 @@ class ProgramAdapter(
     }
 
     private fun setProgramWidth(view: View, percentStr: String?) {
-        val percent = getWidthInPercent(view.context, extractPercent(percentStr))
+        val percent = getWidthInPercent(view.context, percentStr?.toFloat() ?: 0F)
         val params = view.layoutParams
         params.width = percent
     }
@@ -124,26 +245,8 @@ class ProgramAdapter(
         this.p4Dst = p4Dst
     }
 
-    fun setProgramDto(programDTO: ProgramDTO) {
+    fun setProgramDto(programDTO: ChannelEpgDTO?) {
         this.programDto = programDTO
-        if (programDto?.C != null) {
-            if (programDto?.C?.toInt()!! > 4) {
-                if (programDto?.P5_ST == p4Dst)
-                    programs = 5
-                else if (programDto?.P4_ID != null)
-                    programs = 4
-                else if (programDto?.P3_ID != null)
-                    programs = 3
-                else if (programDto?.P2_ID != null)
-                    programs = 2
-                else if (programDto?.P1_ID != null)
-                    programs = 1
-
-            } else {
-                programDTO.C.toInt().let {
-                    programs = it
-                }
-            }
-        }
+        programs = programDTO?.C?.toInt() ?: 0
     }
 }

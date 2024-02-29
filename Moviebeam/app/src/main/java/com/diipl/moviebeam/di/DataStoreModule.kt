@@ -11,6 +11,7 @@ import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -39,6 +40,8 @@ private const val LOCAL_ATTRACTION_DATA_STORE_FILE_NAME = "local_attraction_pref
 private const val MOVIES__DATA_STORE_FILE_NAME = "movies_prefs.pb"
 private const val SHOWTIME__DATA_STORE_FILE_NAME = "showtime_prefs.pb"
 private const val GUEST_DETAILS_DATA_STORE_FILE_NAME = "guests_details.pb"
+private const val CHANNEL_LIST_DATA_STORE_FILE_NAME = "channel_list.pb"
+private const val EPG_DATA_STORE_FILE_NAME = "epg.pb"
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -157,6 +160,19 @@ object DataStoreModule {
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
+
+    @Singleton
+    @Provides
+    fun provideChannelListDataStore(@ApplicationContext appContext: Context): DataStore<ChannelListResponse> {
+        return DataStoreFactory.create(
+            serializer = ChannelListSerializer(),
+            produceFile = { appContext.dataStoreFile(CHANNEL_LIST_DATA_STORE_FILE_NAME) },
+            corruptionHandler = null,
+            migrations = listOf(),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
+
 }
 
 @Singleton
@@ -353,6 +369,29 @@ class GuestDetailsSerializer @Inject constructor() : Serializer<CmdDataDto> {
     override suspend fun writeTo(t: CmdDataDto, output: OutputStream) {
         output.write(
             Json.encodeToString(CmdDataDto.serializer(), t)
+                .encodeToByteArray()
+        )
+    }
+}
+
+@Singleton
+class ChannelListSerializer @Inject constructor() : Serializer<ChannelListResponse> {
+    override val defaultValue: ChannelListResponse
+        get() = ChannelListResponse()
+
+    override suspend fun readFrom(input: InputStream): ChannelListResponse =
+        try {
+            Json.decodeFromString(
+                ChannelListResponse.serializer(),
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read Settings", serialization)
+        }
+
+    override suspend fun writeTo(t: ChannelListResponse, output: OutputStream) {
+        output.write(
+            Json.encodeToString(ChannelListResponse.serializer(), t)
                 .encodeToByteArray()
         )
     }

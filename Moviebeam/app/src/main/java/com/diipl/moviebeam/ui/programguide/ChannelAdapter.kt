@@ -6,16 +6,18 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.Constants
-import com.diipl.moviebeam.data.dto.program.ProgramDTO
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ChannelCardBinding
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.toInvisible
+import com.diipl.moviebeam.utils.toVisible
 
 class ChannelAdapter(
-    private val onChannelFocused: (program: ProgramDTO) -> Unit,
-    private val onChannelClicked: (program: ProgramDTO) -> Unit
+    private val onChannelFocused: (program: ChannelEpgDTO?) -> Unit,
+    private val onChannelClicked: (program: ChannelEpgDTO?) -> Unit
 ) : RecyclerView.Adapter<ChannelAdapter.MyViewHolder>() {
 
-    private var channelList: List<ProgramDTO> = emptyList()
+    private var channelList: List<ChannelEpgDTO>? = emptyList()
     private var focusIndex = -1
 
     inner class MyViewHolder(val binding: ChannelCardBinding) :
@@ -29,13 +31,13 @@ class ChannelAdapter(
         return MyViewHolder(binding)
     }
 
-    override fun getItemCount(): Int = channelList.size
+    override fun getItemCount(): Int = channelList?.size ?: 0
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val item = channelList[position]
-        holder.binding.tvChannelNo.text = item.CNO.toString()
+        val item = channelList?.get(position)
+        holder.binding.tvChannelNo.text = item?.CNO.toString()
 
-        if (focusIndex == holder.absoluteAdapterPosition){
+        if (focusIndex == holder.absoluteAdapterPosition) {
             holder.binding.root.requestFocus()
         } else holder.binding.root.clearFocus()
 
@@ -52,16 +54,20 @@ class ChannelAdapter(
         holder.binding.root.setOnClickListener {
             onChannelClicked(item)
         }
-        item.CL?.let {
-            holder.binding.ivChannelLogo.loadImagesWithGlideExt(it)
+        if (item?.CL != null) {
+            holder.binding.ivChannelLogo.loadImagesWithGlideExt(item.CL!!)
+        } else {
+            holder.binding.ivChannelLogo.toInvisible()
+            holder.binding.tvChannelName.text = item?.CN
+            holder.binding.tvChannelName.toVisible()
         }
     }
 
-    fun setChannelList(list: List<ProgramDTO>) {
+    fun setChannelList(list: List<ChannelEpgDTO>?) {
         this.channelList = list
     }
 
-    fun getChannelList(): List<ProgramDTO>{
+    fun getChannelList(): List<ChannelEpgDTO>? {
         return channelList
     }
 

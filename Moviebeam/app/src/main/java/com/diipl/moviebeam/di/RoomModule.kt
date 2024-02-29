@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.di
 
 import android.content.Context
+import com.diipl.moviebeam.room.dao.ProgramGuideDao
 import com.diipl.moviebeam.room.dao.RentalMovieDao
 import com.diipl.moviebeam.room.db.MoviesDatabase
 import dagger.Module
@@ -24,6 +25,12 @@ class RoomModule {
     @Provides
     fun provideRentalMovieDao(database: MoviesDatabase): RentalMovieDao {
         return database.movieDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideProgramGuideDao(database: MoviesDatabase): ProgramGuideDao {
+        return database.programGuideDao()
     }
 
 }

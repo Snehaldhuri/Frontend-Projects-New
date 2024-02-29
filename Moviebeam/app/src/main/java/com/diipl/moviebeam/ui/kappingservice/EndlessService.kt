@@ -18,7 +18,6 @@ import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.Constants
 import com.diipl.moviebeam.KapingConstants
@@ -85,6 +84,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TAG = "EndlessService"
+
 @AndroidEntryPoint
 class EndlessService : Service() {
 
@@ -140,6 +140,7 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
+
     @Inject
     lateinit var roomRepository: RoomRepository
 
@@ -288,10 +289,10 @@ class EndlessService : Service() {
                         pingFakeServer()
                         callKapingApi()
 
-                    if (Constants.SESSION_ID.isNotEmpty())
-                       roomRepository.removeOverTimeMovies()
-                    if (Constants.SESSION_ID == "null")
-                        roomRepository.deleteRecentMovies()
+                        if (Constants.SESSION_ID.isNotEmpty())
+                            roomRepository.removeOverTimeMovies()
+                        if (Constants.SESSION_ID == "null")
+                            roomRepository.deleteRecentMovies()
 
                     }
                 }
@@ -419,18 +420,18 @@ class EndlessService : Service() {
                         log(result.toString())
                         kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
 
-
-                        log(result.toString())
-
                         AS_FLAG = if (result?.AS.isNullOrEmpty()) {
-                            Log.e("true_as", "endless_service $AS_FLAG")
                             updateStbAllocationStatus(preferenceDataStoreHelper, true)
                             true
                         } else {
-                            Log.e("false_as", "endless_service $AS_FLAG")
                             updateStbAllocationStatus(preferenceDataStoreHelper, false)
-                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName){
-                                startActivity(Intent(applicationContext, RegisterSTBActivity::class.java))
+                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                                startActivity(
+                                    Intent(
+                                        applicationContext,
+                                        RegisterSTBActivity::class.java
+                                    )
+                                )
                             }
                             false
                         }

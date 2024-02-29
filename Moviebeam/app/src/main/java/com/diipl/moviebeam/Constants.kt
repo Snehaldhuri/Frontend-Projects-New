@@ -3,6 +3,7 @@ package com.diipl.moviebeam
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 
 object Constants {
 
@@ -16,7 +17,8 @@ object Constants {
 
     const val SPLASH_DELAY = 3000
     var timer = ""
-    const val BASE_URL_LG_REST = "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
+    const val BASE_URL_LG_REST =
+        "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
     const val BASE_URL_ACCOUNT_SETUP = "https://stb.moviebeam.com:1926/"
     const val BASE_URL_MOVIE_RENTAL = "https://stb.moviebeam.com:1927/"
     const val BASE_URL_ASSET = "https://stb.moviebeam.com:1928/Asset/"
@@ -47,9 +49,11 @@ object Constants {
     const val THEME_DIRECTORY = "ThemeImages"
     const val HOTEL_LOGO = "HotelLogo.jpg"
     const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
+    const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
 
     const val ASSET = "ASSET"
     const val MOVIE_ACCESS = "MOVIE_ACCESS"
+    const val EPG = "EPG"
 
     //Home Page Menu Button Id
     const val PRG_GUIDE_ID = "prgGuide"
@@ -123,23 +127,27 @@ object Constants {
     // Static Movies URl
 
     const val MOVIE_URL = "http://d3rh9vbn3pp0qe.cloudfront.net/41177_T.m2t"
-    const val BASE_PLAYBACK_URL ="https://d14ez9fl8x9e1s.cloudfront.net/"
+    const val BASE_PLAYBACK_URL = "https://d14ez9fl8x9e1s.cloudfront.net/"
     const val TRAILER_EXTENSION = "_T.m2t"
     const val CONTENT_EXTENSION = ".m2t"
     const val CONTENT_EXTENSION_MP = ".mp4"
-   /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
-    const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
-    const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
-    const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"*/
-   const val MOVIE_URL1 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974.mp4"
-    const val MOVIE_URL2 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974_B.mp4"
-    const val MOVIE_URL3 = "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/7107/hotelData/7107.mp4"
+
+    /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
+     const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
+     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
+     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"*/
+    const val MOVIE_URL1 =
+        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974.mp4"
+    const val MOVIE_URL2 =
+        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974_B.mp4"
+    const val MOVIE_URL3 =
+        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/7107/hotelData/7107.mp4"
     const val TRAILER_URL = "trailer_url"
 
     const val RELEASE_ID = "releaseId"
     const val IS_TRAILER = "isTrailer"
-    const val IS_CONTENT  = "isContent"
-    const val IS_CONTINUE  = "isContinue"
+    const val IS_CONTENT = "isContent"
+    const val IS_CONTINUE = "isContinue"
 
     val MOVIES_PAGE_MENU_BUTTON_LIST = mutableListOf(
         BtnModel(MOVIE_RENTALS_ID, R.drawable.movie_rentals_img, MOVIE_RENTALS),
@@ -285,14 +293,13 @@ object Constants {
     // Kaping
     const val KAPING = "KAPING"
     const val DV = "3.0.1.23"
-    const val CLISTVER="201803130001"
+    const val CLISTVER = "201803130001"
     const val RBTY = "0100"
-    const val LAVER="1510818301"
-    const val HSVER= "1513951822"
-    const val THMVER= "1509529572"
-    const val CMDRES = "4105aa725d84402348900"
+    const val LAVER = "1510818301"
+    const val HSVER = "1513951822"
+    const val THMVER = "1509529572"
     const val INRMVER = "1520924235"
-    const val LAUVER="1520937775"
+    const val LAUVER = "1520937775"
 
     //Program Guide
     const val CONTENT_LIST_PARAM = "contentList"
@@ -305,6 +312,7 @@ object Constants {
     const val NEXT_PROGRAM_PARAM = "nextProgram"
     const val PROG_1_TIME_PARAM = "prog1Time"
     const val PROG_2_TIME_PARAM = "prog2Time"
+    const val NO_INFORMATION_AVAILABLE = "No Information Available"
 
     const val GRADIENT_START_COLOR_PARAM = "gradientStartColor"
     const val GRADIENT_END_COLOR_PARAM = "gradientEndColor"
@@ -313,6 +321,8 @@ object Constants {
     const val LOGO_IMAGE_URL = "logoImageUrl"
 
     var NEXT_BUTTON_STATE = 0
+
+    var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
 
 }
 
