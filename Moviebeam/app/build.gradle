@@ -10,6 +10,16 @@ plugins {
 }
 
 android {
+
+    signingConfigs {
+        debug {
+            storeFile file('D:\\Projects\\Moviebeam\\Production\\moviebeam_prod.jks')
+            storePassword 'diipl@123'
+            keyAlias 'key0'
+            keyPassword 'diipl@123'
+        }
+    }
+
     namespace 'com.diipl.moviebeam'
     compileSdk 33
 

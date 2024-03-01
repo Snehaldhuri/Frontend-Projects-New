@@ -115,6 +115,7 @@ class EndlessService : Service() {
     private var EVENT = ""
     private var epochTime = ""
     private var transactionId = ""
+    private var isEPGServerApiCalled = false
 
     private val _accountSetupLiveData = MutableLiveData<AccountSetupResponse>()
     val accountSetupLiveData: LiveData<AccountSetupResponse> get() = _accountSetupLiveData
@@ -908,15 +909,50 @@ class EndlessService : Service() {
             val response =
                 movieBeamRepository.getEPGFromCloud(accountSetupLiveData.value?.epgCdnUrl + accountSetupLiveData.value?.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
             if (response != null) {
+
+                val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
+                response.let {
+                    val startDate = simpleDateFormatter.parse(it.ST)
+                    val endDate = simpleDateFormatter.parse(it.ET)
+                    if (isEpgDataValid(startDate, endDate)) {
+                        processEPGData(response)
+                        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                        LoggingService.sendMessageToWebSocket(
+                            "In Get EPG Data callback success ",
+                            getCurrentPanelNumber()
+                        )
+                    }else{
+                        if(!isEPGServerApiCalled){
+                            fetchEPGDataFromServer(UA)
+                            isEPGServerApiCalled = true
+                        }else{
+                            isEPGServerApiCalled = false
+                        }
+                    }
+                }
+
+            } else {
+                LoggingService.sendMessageToWebSocket(
+                    "In Get EPG Data callback fail ",
+                    getCurrentPanelNumber()
+                )
+            }
+        }
+    }
+
+    private fun fetchEPGDataFromServer(ua: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = movieBeamRepository.getEPGDataFromServer(ua)
+            if (response != null) {
                 processEPGData(response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "In Get EPG Data callback success ",
+                    "In Get EPG Data Server callback success ",
                     getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Get EPG Data callback fail ",
+                    "In Get EPG Data Server callback fail ",
                     getCurrentPanelNumber()
                 )
             }

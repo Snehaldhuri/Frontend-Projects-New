@@ -125,4 +125,8 @@ class MovieBeamRepository @Inject constructor(
         return remoteDataSource.getEPGFromCloud(url)
     }
 
+    suspend fun getEPGDataFromServer(ua: String): EPGResponse? {
+        return remoteDataSource.getEPGDataFromServer(ua)
+    }
+
 }

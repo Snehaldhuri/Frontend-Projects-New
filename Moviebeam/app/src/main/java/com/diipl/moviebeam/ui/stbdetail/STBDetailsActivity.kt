@@ -9,8 +9,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
@@ -46,6 +46,7 @@ class STBDetailsActivity : BaseActivity() {
     private lateinit var binding: ActivityStbdetailsBinding
     private var serialNumber: String = ""
     private var UA = ""
+    private var isEPGServerApiCalled = false
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -397,19 +398,18 @@ class STBDetailsActivity : BaseActivity() {
                                 roomRepository.insertChannels(entries.value)
                             }
                         }
+                        redirectToMainMenuPage()
                     } else {
-                        //TODO EPG DATA INVALID
+                        if (!isEPGServerApiCalled) {
+                            stbDetailViewModel.fetchEPGDataFromServer(UA)
+                            isEPGServerApiCalled = true
+                        } else {
+                            redirectToMainMenuPage()
+                        }
                     }
                 }
 
-                val bundle = Bundle()
-                bundle.putString("UA", UA)
-                val intent = Intent(this, MainMenuActivity::class.java)
-                intent.let {
-                    it.putExtras(bundle)
-                    startActivity(it)
-                }
-                finish()
+
             }
 
             else -> {
@@ -418,6 +418,17 @@ class STBDetailsActivity : BaseActivity() {
 
             }
         }
+    }
+
+    private fun redirectToMainMenuPage() {
+        val bundle = Bundle()
+        bundle.putString("UA", UA)
+        val intent = Intent(this, MainMenuActivity::class.java)
+        intent.let {
+            it.putExtras(bundle)
+            startActivity(it)
+        }
+        finish()
     }
 
     //  Removes Data Before Current Time.

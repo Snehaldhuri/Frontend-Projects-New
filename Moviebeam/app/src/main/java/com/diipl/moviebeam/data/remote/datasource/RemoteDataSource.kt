@@ -172,6 +172,11 @@ class RemoteDataSource @Inject constructor(
         return result.data
     }
 
+    suspend fun getEPGDataFromServer(ua: String): EPGResponse? {
+        val result = safeAPiCall { lgRestApiService.getEPGDataFromServer(ua) }
+        return ApiResponseParsing().getResponseAsObject(result.data, EPGResponse::class)
+    }
+
     suspend fun setRentalReversal(request: RentalReversalRequest): RentalReversalResponse? {
         val result = safeAPiCall { moviesAPIService.setRentalReversal(request.toQueryMap()) }
         return ApiResponseParsing().getResponseAsObject(result.data, RentalReversalResponse::class)

@@ -121,6 +121,18 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         }
     }
 
+    fun fetchEPGDataFromServer(ua: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _epgLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getEPGDataFromServer(ua)
+            if (response == null) {
+                _epgLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Epg Server Api"))
+            } else {
+                _epgLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
     private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: String) {
         viewModelScope.launch(Dispatchers.IO) {
 

@@ -153,6 +153,18 @@ class RefreshingUiViewModel @Inject constructor(
         }
     }
 
+    fun fetchEPGDataFromServer(ua: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _epgLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getEPGDataFromServer(ua)
+            if (response == null) {
+                _epgLiveData.postValue(Resource.DataError(code = R.string.server_error))
+            } else {
+                _epgLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
     fun updateGuestSession(
         preferenceDataStoreHelper: PreferenceDataStoreHelper,
         guestDetailsDatastore: DataStore<CmdDataDto>,

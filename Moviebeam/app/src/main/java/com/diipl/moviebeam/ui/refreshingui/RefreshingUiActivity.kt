@@ -55,6 +55,8 @@ class RefreshingUiActivity : BaseActivity() {
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private val refreshingUiViewModel: RefreshingUiViewModel by viewModels()
 
+    private var isEPGServerApiCalled = false
+
     @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
@@ -441,14 +443,28 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.epgLiveData.value?.data?.let {
-                    processEPGData(it)
-                    EndlessService.kapingCmdExecutionResponse =
-                        KapingConstants.EXECUTED_SUCCESSFULLY
-                    LoggingService.sendMessageToWebSocket(
-                        "In Get EPG data callback Success ",
-                        getCurrentPanelNumber()
-                    )
-                    redirectToMainMenuScreen()
+                    val simpleDateFormatter =
+                        SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
+                    val startDate = simpleDateFormatter.parse(it.ST)
+                    val endDate = simpleDateFormatter.parse(it.ET)
+                    if (isEpgDataValid(startDate, endDate)) {
+                        processEPGData(it)
+                        EndlessService.kapingCmdExecutionResponse =
+                            KapingConstants.EXECUTED_SUCCESSFULLY
+                        LoggingService.sendMessageToWebSocket(
+                            "In Get EPG data callback Success ",
+                            getCurrentPanelNumber()
+                        )
+                        redirectToMainMenuScreen()
+                    } else {
+                        if (!isEPGServerApiCalled) {
+                            refreshingUiViewModel.fetchEPGDataFromServer(Constants.UA)
+                            isEPGServerApiCalled = true
+                        }else{
+                            redirectToMainMenuScreen()
+                            isEPGServerApiCalled = false
+                        }
+                    }
                 }
             }
 

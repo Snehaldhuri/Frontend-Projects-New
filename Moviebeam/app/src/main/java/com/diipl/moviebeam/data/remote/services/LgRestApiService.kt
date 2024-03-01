@@ -127,4 +127,9 @@ interface LgRestApiService {
         @Query("UA") ua: String
     ): Response<String>
 
+    @GET("content/epgNew/v3")
+    suspend fun getEPGDataFromServer(
+        @Query("UA") ua: String
+    ): Response<String>
+
 }
