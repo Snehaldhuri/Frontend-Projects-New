@@ -16,7 +16,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -48,11 +47,13 @@ import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_LOOP_COUNT
 import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_URL
 import com.diipl.moviebeam.utils.Constants.LA_ID
+import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.setItemFocused
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInvisible
@@ -96,6 +97,8 @@ class MainMenuActivity : BaseActivity() {
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
+    @Inject
+    lateinit var preference: SharedPreference
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -114,13 +117,6 @@ class MainMenuActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-
-       /* preference.isAdultContentEnabled = true
-        preference.isBtnAdultMCW = false
-        preference.isMainAdultMCW = false
-        preference.isAdultMCD = false
-        preference.adultPassCode = "____"*/
-//        preference.adultPassCode = "1111"
 
         player = ExoPlayer.Builder(this).build()
         player.trackSelectionParameters = player.trackSelectionParameters
@@ -149,31 +145,16 @@ class MainMenuActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
 
-        binding.rvMenuButton.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
+   /*     preference.isAdultLocked = true
+        preference.isAdultContentEnabled = true
+        preference.isBtnAdultMCW = false
+        preference.isMainAdultMCW = false
+        preference.isAdultMCD = false
+        preference.adultPassCode = "____"
+//        preference.adultPassCode = "1111"
+*/
+        binding.rvMenuButton.setItemFocused()
 
-                // Check if any item is focused
-                checkIfAnyItemFocused(recyclerView)
-            }
-        })
-
-    }
-
-    fun checkIfAnyItemFocused(recyclerView: RecyclerView) {
-        for (i in 0 until recyclerView.childCount) {
-            val childView = recyclerView.getChildAt(i)
-            if (childView != null) {
-                val viewHolder = recyclerView.getChildViewHolder(childView)
-                if (viewHolder.itemView.hasFocus()) {
-                    // At least one item is focused
-                    // Handle accordingly
-                    return
-                }
-            }
-        }
-
-        recyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
     }
 
     fun startDownload(fileURL: String) = CoroutineScope(Dispatchers.Default).launch {

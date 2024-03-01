@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!-- <uses-permission android:name="android.permission.REBOOT" /> -->
     <uses-permission android:name="android.permission.REBOOT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -26,9 +25,11 @@
 
     <application
         android:name=".di.App"
+        android:banner="@mipmap/ic_banner"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.Moviebeam"
@@ -79,16 +80,16 @@
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.serial_info.SerialActivity"
-            android:banner="@drawable/app_icon_your_company"
+            android:banner="@mipmap/ic_banner"
             android:exported="true"
-            android:icon="@drawable/app_icon_your_company"
+            android:icon="@mipmap/ic_launcher"
             android:launchMode="singleInstance"
-            android:logo="@drawable/app_icon_your_company"
+            android:logo="@mipmap/ic_launcher"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustPan|adjustNothing">
 
-            <!-- TODO Uncomment this for release -->
+            <!-- TODO Uncomment this for release-->
             <intent-filter>
                 <category android:name="android.intent.category.HOME" />
                 <action android:name="android.intent.action.MAIN" />
@@ -98,11 +99,11 @@
         </activity>
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
-            android:banner="@drawable/app_icon_your_company"
+            android:banner="@mipmap/ic_banner"
             android:enabled="true"
             android:exported="true"
-            android:icon="@drawable/app_icon_your_company"
-            android:logo="@drawable/app_icon_your_company"
+            android:icon="@mipmap/ic_launcher"
+            android:logo="@mipmap/ic_launcher"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
 <!--

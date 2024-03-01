@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/text_color_secondary"
@@ -36,6 +37,13 @@
             android:text="@string/call_the_front_desk_to_enable_adult_content"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_20" />
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="@dimen/dp_8"
+            android:src="@drawable/img_lock_color"
+            />
 
         <Button
             android:id="@+id/btn_ok"
@@ -119,7 +127,7 @@
             android:text="@string/mature_content_warning_parental_note"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_18"
-            app:drawableStartCompat="@drawable/adult" />
+            app:drawableStartCompat="@drawable/img_under18" />
 
         <Button
             android:id="@+id/btn_parental_control"
@@ -167,7 +175,7 @@
             android:text="@string/mature_content_disabled_note"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_24"
-            app:drawableStartCompat="@drawable/adult" />
+            app:drawableStartCompat="@drawable/img_under18" />
 
         <Button
             android:id="@+id/btn_mcd_parental_control"
@@ -230,7 +238,8 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_margin="@dimen/dp_10"
-            android:src="@drawable/baseline_lock_24" />
+            android:src="@drawable/img_lock_color"
+            app:tint="@color/white" />
 
         <Button
             android:id="@+id/btn_enter_parental_code"
@@ -256,16 +265,18 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/layout_pass_code"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
+        android:visibility="gone"
         android:orientation="vertical"
         android:weightSum="1">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.05"
+            android:layout_weight="0.1"
             android:gravity="center"
             android:text="@string/enter_pass_code"
             android:textAllCaps="true"
@@ -273,215 +284,253 @@
             android:textSize="@dimen/sp_28"
             android:textStyle="bold" />
 
-        <GridLayout
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_gravity="center"
-            android:layout_weight="0.54"
-            android:columnCount="3"
-            android:rowCount="4">
+            android:padding="@dimen/dp_8"
+            android:layout_weight="0.8">
 
-            <Button
-                android:id="@+id/btn_1"
+            <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="1"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
+                android:layout_marginHorizontal="@dimen/dp_24"
+                android:layout_marginEnd="20dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/img_mb_remote"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/gridLayout"
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
-                android:id="@+id/btn_2"
+            <GridLayout
+                android:id="@+id/gridLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="2"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
+                android:layout_gravity="center"
+                android:columnCount="3"
+                android:rowCount="4"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.5">
 
-            <Button
-                android:id="@+id/btn_3"
+                <Button
+                    android:id="@+id/btn_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="1"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="2"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="3"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="4"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="5"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="6"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="7"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_8"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="8"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_9"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="9"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_code_ok"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="@string/OK"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="0"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+                <Button
+                    android:id="@+id/btn_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/dp_6"
+                    android:background="@drawable/btn_bg_gradient_default"
+                    android:text="Del"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_16" />
+
+            </GridLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="3"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
+                android:gravity="center"
+                app:layout_constraintEnd_toEndOf="@+id/gridLayout"
+                app:layout_constraintStart_toStartOf="@+id/gridLayout"
+                app:layout_constraintTop_toBottomOf="@+id/gridLayout">
 
-            <Button
-                android:id="@+id/btn_4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="4"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
+                <EditText
+                    android:id="@+id/et_pass1"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="@dimen/dp_8"
+                    android:background="@drawable/view_rect_round_white_stroke_24"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:inputType="numberPassword"
+                    android:maxLength="1"
+                    android:padding="@dimen/dp_0"
+                    android:textColor="@color/white"
+                    android:textSize="36sp" />
 
-            <Button
-                android:id="@+id/btn_5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="5"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
+                <EditText
+                    android:id="@+id/et_pass2"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="@dimen/dp_8"
+                    android:background="@drawable/view_rect_round_white_stroke_24"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:inputType="numberPassword"
+                    android:maxLength="1"
+                    android:padding="@dimen/dp_0"
+                    android:textColor="@color/white"
+                    android:textSize="36sp" />
 
-            <Button
-                android:id="@+id/btn_6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="6"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
+                <EditText
+                    android:id="@+id/et_pass3"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="@dimen/dp_8"
+                    android:background="@drawable/view_rect_round_white_stroke_24"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:inputType="numberPassword"
+                    android:maxLength="1"
+                    android:padding="@dimen/dp_0"
+                    android:textColor="@color/white"
+                    android:textSize="36sp" />
 
-            <Button
-                android:id="@+id/btn_7"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="7"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
+                <EditText
+                    android:id="@+id/et_pass4"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="@dimen/dp_8"
+                    android:background="@drawable/view_rect_round_white_stroke_24"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:inputType="numberPassword"
+                    android:maxLength="1"
+                    android:padding="@dimen/dp_0"
+                    android:textColor="@color/white"
+                    android:textSize="36sp" />
+            </LinearLayout>
 
-            <Button
-                android:id="@+id/btn_8"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="8"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <Button
-                android:id="@+id/btn_9"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="9"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
 
-            <Button
-                android:id="@+id/btn_code_ok"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="@string/OK"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
 
-            <Button
-                android:id="@+id/btn_0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="0"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
-
-            <Button
-                android:id="@+id/btn_delete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/dp_6"
-                android:background="@drawable/btn_bg_gradient_default"
-                android:text="Del"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="@dimen/sp_16" />
-
-        </GridLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tv_image_desc"
+            android:layout_width="560dp"
+            android:layout_weight="0.05"
             android:layout_height="wrap_content"
-            android:layout_weight="0.03"
-            android:gravity="center">
-
-            <EditText
-                android:id="@+id/et_pass1"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="@dimen/dp_8"
-                android:background="@drawable/view_rect_round_white_stroke_24"
-                android:gravity="center"
-                android:maxLength="1"
-                android:focusable="false"
-                android:clickable="false"
-                android:inputType="numberPassword"
-                android:padding="@dimen/dp_0"
-                android:textColor="@color/white"
-                android:textSize="36sp" />
-
-            <EditText
-                android:id="@+id/et_pass2"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="@dimen/dp_8"
-                android:background="@drawable/view_rect_round_white_stroke_24"
-                android:gravity="center"
-                android:inputType="numberPassword"
-                android:padding="@dimen/dp_0"
-                android:maxLength="1"
-                android:focusable="false"
-                android:clickable="false"
-                android:textColor="@color/white"
-                android:textSize="36sp" />
-
-            <EditText
-                android:id="@+id/et_pass3"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="@dimen/dp_8"
-                android:background="@drawable/view_rect_round_white_stroke_24"
-                android:gravity="center"
-                android:inputType="numberPassword"
-                android:padding="@dimen/dp_0"
-                android:maxLength="1"
-                android:focusable="false"
-                android:clickable="false"
-                android:textColor="@color/white"
-                android:textSize="36sp" />
-
-            <EditText
-                android:id="@+id/et_pass4"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="@dimen/dp_8"
-                android:background="@drawable/view_rect_round_white_stroke_24"
-                android:gravity="center"
-                android:inputType="numberPassword"
-                android:padding="@dimen/dp_0"
-                android:maxLength="1"
-                android:focusable="false"
-                android:clickable="false"
-                android:textColor="@color/white"
-                android:textSize="36sp" />
-        </LinearLayout>
-
+            android:gravity="center"
+            android:lineSpacingExtra="6dp"
+            android:text="@string/parental_control_desc"
+            android:textColor="@color/white"
+            android:textSize="@dimen/sp_16" />
 
     </LinearLayout>
 

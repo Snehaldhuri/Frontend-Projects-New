@@ -36,8 +36,7 @@ import com.diipl.moviebeam.utils.Constants.ADULT_CONTENT_DISABLED
 import com.diipl.moviebeam.utils.Constants.ADULT_LOCKED
 import com.diipl.moviebeam.utils.Constants.ADULT_MCD_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_BTN
-import com.diipl.moviebeam.utils.Constants.ADULT_MCW_MAIN
-import com.diipl.moviebeam.utils.Constants.SESSION_ID
+import com.diipl.moviebeam.utils.Constants.isUserCheckedIn
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
@@ -112,15 +111,6 @@ class MoviesActivity : BaseActivity() {
         setContentView(view)
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        if (!preference.isMainAdultMCW && preference.isAdultPassCodeEmpty) {
-            openACDDialog(ADULT_MCW_MAIN)
-        }
-
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -179,6 +169,19 @@ class MoviesActivity : BaseActivity() {
 
     }
 
+    override fun onStart() {
+        super.onStart()
+
+       if (isUserCheckedIn) {
+           if (!preference.isMainAdultMCW && preference.isAdultPassCodeEmpty) {
+               openACDDialog(Constants.ADULT_MCW_MAIN)
+           }
+           if (!preference.isMainAdultMCW && !preference.isAdultPassCodeEmpty) {
+               openACDDialog(ADULT_MCD_BTN)
+           }
+       }
+    }
+
     private fun requestFocus() {
         if (!isRecentView) {
             if (itemView != null) {
@@ -220,7 +223,7 @@ class MoviesActivity : BaseActivity() {
                     loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                     val genreMap: LinkedHashMap<String, MutableList<ContentDto>> = LinkedHashMap()
                     withContext(Dispatchers.IO) {
-                        response?.premiumContentList?.forEach {
+                        response.premiumContentList?.forEach {
                             if (it.genre1 != "Adult") {
                                 if (genreMap[it.genre1] != null) {
                                     genreMap[it.genre1]?.add(it)
@@ -273,7 +276,7 @@ class MoviesActivity : BaseActivity() {
                             Constants.FREE_MOVIES_ID -> {
                                 val freeGenreMap: HashMap<String, MutableList<ContentDto>> =
                                     HashMap()
-                                response?.freeContentList?.forEach {
+                                response.freeContentList?.forEach {
                                     if (freeGenreMap[it.genre1] != null) {
                                         freeGenreMap[it.genre1]?.add(it)
                                     } else {
@@ -294,53 +297,57 @@ class MoviesActivity : BaseActivity() {
                             }
 
                             Constants.ADULT_DAY_PASS_ID -> {
-                                if (!preference.isAdultContentEnabled) {
-                                    openACDDialog(ADULT_CONTENT_DISABLED)
-                                } else {
-                                    if (!preference.isAdultPassCodeEmpty) {
-                                        if (!preference.isAdultMCD)
-                                            openACDDialog(ADULT_MCD_BTN)
-                                        else if (preference.isAdultLocked)
-                                            openACDDialog(ADULT_LOCKED)
+                                if (isUserCheckedIn){
+                                    if (!preference.isAdultContentEnabled) {
+                                        openACDDialog(ADULT_CONTENT_DISABLED)
                                     } else {
-                                        if (!preference.isBtnAdultMCW)
-                                            openACDDialog(ADULT_MCW_BTN)
-                                    }
-                                    if (preference.isBtnAdultMCW && !isAdultDayPassPurchased){
-                                        startActivity(
-                                            Intent(
-                                                this@MoviesActivity,
-                                                ConfirmRentalActivity::class.java
-                                            ).putExtra(
-                                                "price",
-                                                response.adultDayPassPrice.toString()
+                                        if (!preference.isAdultPassCodeEmpty) {
+                                            if (!preference.isAdultMCD)
+                                                openACDDialog(ADULT_MCD_BTN)
+                                            else if (preference.isAdultLocked)
+                                                openACDDialog(ADULT_LOCKED)
+                                        } else {
+                                            if (!preference.isBtnAdultMCW)
+                                                openACDDialog(ADULT_MCW_BTN)
+                                        }
+                                        if (preference.isBtnAdultMCW && !isAdultDayPassPurchased && isUserCheckedIn){
+                                            startActivity(
+                                                Intent(
+                                                    this@MoviesActivity,
+                                                    ConfirmRentalActivity::class.java
+                                                ).putExtra(
+                                                    "price",
+                                                    response.adultDayPassPrice.toString()
+                                                )
                                             )
-                                        )
 
-                                    }
-                                    if (isAdultDayPassPurchased && !preference.isAdultLocked) {
-                                        setAdultData(response)
+                                        }
+                                        if (isAdultDayPassPurchased && !preference.isAdultLocked) {
+                                            setAdultData(response)
+                                        }
                                     }
                                 }
                             }
 
                             Constants.ADULT_ID -> {
-                                if (!preference.isAdultContentEnabled)
-                                    openACDDialog(ADULT_CONTENT_DISABLED)
-                                else {
-                                    if (!preference.isAdultPassCodeEmpty) {
-                                        if (!preference.isAdultMCD)
-                                            openACDDialog(ADULT_MCD_BTN)
-                                        else if (preference.isAdultLocked)
-                                            openACDDialog(ADULT_LOCKED)
-                                    } else {
-                                        if (!preference.isBtnAdultMCW)
-                                            openACDDialog(ADULT_MCW_BTN)
-                                    }
+                                if (isUserCheckedIn){
+                                    if (!preference.isAdultContentEnabled)
+                                        openACDDialog(ADULT_CONTENT_DISABLED)
+                                    else {
+                                        if (!preference.isAdultPassCodeEmpty) {
+                                            if (!preference.isAdultMCD)
+                                                openACDDialog(ADULT_MCD_BTN)
+                                            else if (preference.isAdultLocked)
+                                                openACDDialog(ADULT_LOCKED)
+                                        } else {
+                                            if (!preference.isBtnAdultMCW)
+                                                openACDDialog(ADULT_MCW_BTN)
+                                        }
 
-                                    if (!preference.isAdultLocked && (SESSION_ID.isNotEmpty() || SESSION_ID!="null"))
-                                        setAdultData(response)
-                                }
+                                        if (!preference.isAdultLocked)
+                                            setAdultData(response)
+                                    }
+                                } else setAdultData(response)
                             }
                         }
                     }, onRightKeyPressed = {
@@ -424,7 +431,7 @@ class MoviesActivity : BaseActivity() {
                 }
             }
         }
-        dialog.show(supportFragmentManager, "Dialog")
+        dialog.show(supportFragmentManager, null)
     }
 
 

@@ -155,30 +155,19 @@ fun getGradientColor(): GradientDrawable {
     return gradientDrawable
 }
 
-fun RecyclerView.addOnScrollListenerWithFocusCheck(
-    onItemFocused: (Boolean) -> Unit
-) {
-    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-            super.onScrolled(recyclerView, dx, dy)
-
-            // Check if any item is focused
-            onItemFocused(isAnyItemFocused())
-        }
-    })
-}
-
-fun RecyclerView.isAnyItemFocused(): Boolean {
+fun RecyclerView.setItemFocused() {
     for (i in 0 until childCount) {
         val childView = getChildAt(i)
         if (childView != null) {
             val viewHolder = getChildViewHolder(childView)
             if (viewHolder.itemView.hasFocus()) {
-                return true
+                return
             }
         }
     }
-    return false
+    this.post {
+        this.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+    }
 }
 
 fun Long.toDateFormat(): String {
