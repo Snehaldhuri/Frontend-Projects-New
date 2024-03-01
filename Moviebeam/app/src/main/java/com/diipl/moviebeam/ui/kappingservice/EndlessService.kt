@@ -43,14 +43,11 @@ import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.room.models.RentalMovieModel
-import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
-import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
-import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
@@ -63,14 +60,13 @@ import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
-import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.KapingResponseParsing
-import com.diipl.moviebeam.utils.PanelConstants
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.fromJson
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.toTimestamp
@@ -237,7 +233,7 @@ class EndlessService : Service() {
         super.onCreate()
         log("The service has been created".uppercase(Locale.ROOT))
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        versionNumber = getVersionNumber().replace(".", "").trim()
+        versionNumber = getVersionNumber()
         log(versionNumber)
 
         val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
@@ -758,9 +754,15 @@ class EndlessService : Service() {
                 Constants.STB_ROOM_NO = response.roomNo
                 Constants.EPG_CDN_URL = response.epgCdnUrl
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("AccountSetup callbackSuccess", "")
+                LoggingService.sendMessageToWebSocket(
+                    "AccountSetup callbackSuccess",
+                    getCurrentPanelNumber()
+                )
             } else {
-                LoggingService.sendMessageToWebSocket("In Account Setup callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Account Setup callback fail ",
+                    getCurrentPanelNumber()
+                )
             }
         }
     }
@@ -772,9 +774,15 @@ class EndlessService : Service() {
             if (response != null) {
                 updateThemeData(themeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In theme callback success ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In theme callback success ",
+                    getCurrentPanelNumber()
+                )
             } else {
-                LoggingService.sendMessageToWebSocket("In theme callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In theme callback fail ",
+                    getCurrentPanelNumber()
+                )
             }
         }
     }
@@ -800,9 +808,15 @@ class EndlessService : Service() {
             if (response != null) {
                 updateHotelServices(hotelServicesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback success ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Hotel Services callback success ",
+                    getCurrentPanelNumber()
+                )
             } else {
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Hotel Services callback fail ",
+                    getCurrentPanelNumber()
+                )
             }
         }
     }
@@ -813,10 +827,16 @@ class EndlessService : Service() {
             if (response != null) {
                 updateLocalAttractions(localAttractionsDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback success ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Local Attractions callback success ",
+                    getCurrentPanelNumber()
+                )
 
             } else {
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Local Attractions callback fail ",
+                    getCurrentPanelNumber()
+                )
 
             }
         }
@@ -828,10 +848,16 @@ class EndlessService : Service() {
             if (response != null) {
                 setMoviesResponseData(moviesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                LoggingService.sendMessageToWebSocket("In Releases callback success ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Releases callback success ",
+                    getCurrentPanelNumber()
+                )
 
             } else {
-                LoggingService.sendMessageToWebSocket("In Releases callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Releases callback fail ",
+                    getCurrentPanelNumber()
+                )
 
             }
         }
@@ -845,13 +871,13 @@ class EndlessService : Service() {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
                     "In ShowtimeReleasesCollection callback success ",
-                    ""
+                    getCurrentPanelNumber()
                 )
 
             } else {
                 LoggingService.sendMessageToWebSocket(
                     "In ShowtimeReleasesCollection callback fail ",
-                    ""
+                    getCurrentPanelNumber()
                 )
 
             }
@@ -866,12 +892,12 @@ class EndlessService : Service() {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
                     "In Channel List callback success ",
-                    ""
+                    getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
                     "In Channel List callback fail ",
-                    ""
+                    getCurrentPanelNumber()
                 )
             }
         }
@@ -886,12 +912,12 @@ class EndlessService : Service() {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
                     "In Get EPG Data callback success ",
-                    ""
+                    getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
                     "In Get EPG Data callback fail ",
-                    ""
+                    getCurrentPanelNumber()
                 )
             }
         }
@@ -916,7 +942,7 @@ class EndlessService : Service() {
         )
     }
 
-    fun updateGuestSession(
+    private fun updateGuestSession(
         preferenceDataStoreHelper: PreferenceDataStoreHelper,
         guestDetailsDatastore: DataStore<CmdDataDto>,
         isCheckedIn: Boolean,
@@ -1061,7 +1087,7 @@ class EndlessService : Service() {
         }
     }
 
-    fun updateThemeData(
+    private fun updateThemeData(
         dataStore: DataStore<ThemeResponse>,
         data: ThemeResponse
     ) {
@@ -1424,7 +1450,7 @@ class EndlessService : Service() {
     }
 
     private fun getVersionNumber(): String {
-        return BuildConfig.VERSION_NAME
+        return BuildConfig.VERSION_NAME.replace(".", "").trim()
     }
 
     private fun createNotification(): Notification {
@@ -1489,35 +1515,6 @@ class EndlessService : Service() {
     private fun isScreenOn(): String {
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         return if (pm.isInteractive) KapingConstants.POWER_MODE_ON else KapingConstants.POWER_MODE_STAND_BY
-    }
-
-    private fun getCurrentPanelNumber(): String {
-        when (activityStack.last()) {
-            RegisterSTBActivity::class.java.simpleName -> return PanelConstants.BLUE_SCREEN
-            STBDetailsActivity::class.java.simpleName -> return PanelConstants.LOADER_SCREEN
-            MainMenuActivity::class.java.simpleName -> return PanelConstants.MAIN_MENU
-            MoviesActivity::class.java.simpleName -> return PanelConstants.VOD
-            HotelInfoActivity::class.java.simpleName -> return PanelConstants.HOTEL_SERVICES
-            //TODO Live services
-            MovieDetailFragment::class.java.simpleName -> return PanelConstants.MOVIE_DETAIL_PAGE
-            ProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
-            HelpInfoFragment::class.java.simpleName -> return PanelConstants.HELP_AND_INFO
-            GuestServiceActivity::class.java.simpleName -> return PanelConstants.GUEST_SERVICES
-            AppWorldActivity::class.java.simpleName -> return PanelConstants.APP_WORLD
-            ExoPlayerActivity::class.java.simpleName -> return PanelConstants.MOVIE_SHOWTIME_PLAYER_PAGE
-            PrgGuidePlayerActivity::class.java.simpleName -> return PanelConstants.FULL_SCREEN_TV
-            ShowtimeActivity::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_LISTENING
-            ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
-            CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
-            //TODO Pairing Page
-            //TODO Inroom Dining Page
-            //TOdo Food Delivery
-            //TODO Crackle
-            //TODO NDVR
-            //TODO CALENDER
-
-            else -> return PanelConstants.MAIN_MENU
-        }
     }
 
 }

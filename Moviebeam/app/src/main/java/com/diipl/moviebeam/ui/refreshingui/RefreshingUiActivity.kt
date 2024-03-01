@@ -32,6 +32,7 @@ import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -159,7 +160,10 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket("Signal for check out command", "")
+        LoggingService.sendMessageToWebSocket(
+            "Signal for check out command",
+            getCurrentPanelNumber()
+        )
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -172,7 +176,10 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket("Signal for check in command", "")
+        LoggingService.sendMessageToWebSocket(
+            "Signal for check in command",
+            getCurrentPanelNumber()
+        )
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -185,7 +192,10 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleAccountActivateCmd() {
-        LoggingService.sendMessageToWebSocket("Signalling to get account set up", "")
+        LoggingService.sendMessageToWebSocket(
+            "Signalling to get account set up",
+            getCurrentPanelNumber()
+        )
         refreshingUiViewModel.fetchAccountSetupDetails(
             Constants.ACTIVATE,
             Constants.UA,
@@ -219,7 +229,10 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleGetEPGDataCmd() {
-        LoggingService.sendMessageToWebSocket("Signal for check out command", "")
+        LoggingService.sendMessageToWebSocket(
+            "Signal for check out command",
+            getCurrentPanelNumber()
+        )
         refreshingUiViewModel.getChannelList(channelListDataStore)
 
     }
@@ -235,14 +248,20 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("AccountSetup callback Success ", "")
+                    LoggingService.sendMessageToWebSocket(
+                        "AccountSetup callback Success ",
+                        getCurrentPanelNumber()
+                    )
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In AccountSetup callback fail", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In AccountSetup callback fail",
+                    getCurrentPanelNumber()
+                )
             }
         }
     }
@@ -255,7 +274,10 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("In Theme callback Success", "")
+                    LoggingService.sendMessageToWebSocket(
+                        "In Theme callback Success",
+                        getCurrentPanelNumber()
+                    )
 
                 }
             }
@@ -263,7 +285,10 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Theme Callback fail", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Theme Callback fail",
+                    getCurrentPanelNumber()
+                )
 
 
             }
@@ -278,14 +303,20 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket("In Hotel Services callback Success", "")
+                    LoggingService.sendMessageToWebSocket(
+                        "In Hotel Services callback Success",
+                        getCurrentPanelNumber()
+                    )
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Hotel Services callback fail",
+                    getCurrentPanelNumber()
+                )
             }
         }
     }
@@ -303,7 +334,7 @@ class RefreshingUiActivity : BaseActivity() {
                     redirectToMainMenuScreen()
                     LoggingService.sendMessageToWebSocket(
                         "In Local Attractions callback Success ",
-                        ""
+                        getCurrentPanelNumber()
                     )
 
                 }
@@ -312,7 +343,10 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Local Attractions callback fail ",
+                    getCurrentPanelNumber()
+                )
 
             }
         }
@@ -329,7 +363,7 @@ class RefreshingUiActivity : BaseActivity() {
                     redirectToMainMenuScreen()
                     LoggingService.sendMessageToWebSocket(
                         "In MoviesReleasesCollection callback Success ",
-                        ""
+                        getCurrentPanelNumber()
                     )
 
                 }
@@ -338,7 +372,10 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Movies callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Movies callback fail ",
+                    getCurrentPanelNumber()
+                )
             }
         }
     }
@@ -353,7 +390,7 @@ class RefreshingUiActivity : BaseActivity() {
                     redirectToMainMenuScreen()
                     LoggingService.sendMessageToWebSocket(
                         "In ShowtimeReleasesCollection callback Success ",
-                        ""
+                        getCurrentPanelNumber()
                     )
                 }
             }
@@ -361,7 +398,10 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Showtime callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Showtime callback fail ",
+                    getCurrentPanelNumber()
+                )
             }
         }
     }
@@ -377,7 +417,7 @@ class RefreshingUiActivity : BaseActivity() {
                         redirectToMainMenuScreen()
                         LoggingService.sendMessageToWebSocket(
                             "In Channel List callback Success ",
-                            ""
+                            getCurrentPanelNumber()
                         )
                     } else {
                         refreshingUiViewModel.fetchEPGData(Constants.EPG_CDN_URL + Constants.ACCOUNT_ID + Constants.EPG_CLOUD_URL_SUFFIX)
@@ -389,7 +429,10 @@ class RefreshingUiActivity : BaseActivity() {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
                 if (EndlessService.kapingCMD == KapingConstants.KAP_CMD_GET_CHANNEL_LIST)
-                    LoggingService.sendMessageToWebSocket("In Channel List callback fail ", "")
+                    LoggingService.sendMessageToWebSocket(
+                        "In Channel List callback fail ",
+                        getCurrentPanelNumber()
+                    )
             }
         }
     }
@@ -401,7 +444,10 @@ class RefreshingUiActivity : BaseActivity() {
                     processEPGData(it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
-                    LoggingService.sendMessageToWebSocket("In Get EPG data callback Success ", "")
+                    LoggingService.sendMessageToWebSocket(
+                        "In Get EPG data callback Success ",
+                        getCurrentPanelNumber()
+                    )
                     redirectToMainMenuScreen()
                 }
             }
@@ -409,7 +455,10 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Get EPG data callback fail ", "")
+                LoggingService.sendMessageToWebSocket(
+                    "In Get EPG data callback fail ",
+                    getCurrentPanelNumber()
+                )
             }
         }
     }
