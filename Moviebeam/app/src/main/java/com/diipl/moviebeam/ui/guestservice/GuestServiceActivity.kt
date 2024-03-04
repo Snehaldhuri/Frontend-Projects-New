@@ -5,10 +5,12 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN
@@ -249,7 +251,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
 
         when (btnId) {
             Constants.CONCIERGE_ID -> {
-                conciergeIndex = 1
 
                 val concierge = ConciergeFragment { cView, conciergeService ->
                     conciergeIndex = 1
@@ -491,12 +492,12 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
     private fun handleBackRemoteClick() {
         if (conciergeIndex == 1) {
             bindAdapterView(binding.root, Constants.CONCIERGE_ID)
-           /*if (binding.fvTabContent.isVisible) {
-                binding.fvTabContent.toInvisible()
-                binding.rvTabContent.toVisible()
-            } else{
-                finish()
-            }*/
+            /*if (binding.fvTabContent.isVisible) {
+                 binding.fvTabContent.toInvisible()
+                 binding.rvTabContent.toVisible()
+             } else{
+                 finish()
+             }*/
             conciergeIndex = 0
         } else {
             finish()
