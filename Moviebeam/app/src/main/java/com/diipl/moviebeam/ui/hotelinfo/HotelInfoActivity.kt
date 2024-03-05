@@ -270,6 +270,7 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
                         val fragment = HelpInfoFragment {
                             handleBackClick()
                         }
+                        helpInfoTabIndex = pos
                         val mBundle = Bundle()
                         mBundle.putString("gradientStartColor", gradientStartColor)
                         mBundle.putString("gradientEndColor", gradientEndColor)

@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentMakeMyRoomBinding
@@ -118,15 +119,31 @@ class MakeMyRoomFragment(
                                     currentRangeIndex++
                                     binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
                                         timeRanges[currentRangeIndex]
+                                    if(currentRangeIndex == timeRanges.size-1){
+                                        binding.layoutDateTimeSelector.timeSelectorLayout.btnHourDown.visibility = View.INVISIBLE
+                                        binding.layoutDateTimeSelector.timeSelectorLayout.btnHourUp.visibility = View.VISIBLE
+                                    }
+                                    else{
+                                        binding.layoutDateTimeSelector.timeSelectorLayout.btnHourUp.visibility = View.VISIBLE
+                                        binding.layoutDateTimeSelector.timeSelectorLayout.btnHourDown.visibility = View.VISIBLE
+                                    }
                                 }
                                 return@setOnKeyListener true
                             }
 
                             KeyEvent.KEYCODE_DPAD_UP -> {
+
                                 if (currentRangeIndex > 0) {
                                     currentRangeIndex--
                                     binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
                                         timeRanges[currentRangeIndex]
+
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.btnHourUp.visibility = View.VISIBLE
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.btnHourDown.visibility = View.VISIBLE
+                                }
+                                if (currentRangeIndex == 0){
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.btnHourUp.visibility = View.INVISIBLE
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.btnHourDown.visibility = View.VISIBLE
                                 }
                                 return@setOnKeyListener true
                             }
@@ -199,7 +216,6 @@ class MakeMyRoomFragment(
         binding.btnOk.setOnClickListener(View.OnClickListener {
             layout_dt.visibility = View.GONE
             layout_confirmation.visibility = View.VISIBLE
-
             binding.btnPopOk.postDelayed({
                 binding.btnPopOk.requestFocus()
             }, 1)

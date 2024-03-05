@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.guestservice
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -55,10 +56,12 @@ class GuestServiceTabAdapter(
         val item = itemList[position]
 
         holder.textView.text = item.categoryName
+
         if (item.isClicked) {
             holder.imageView.setImageResource(item.spotlightImage)
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
             holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
+
         } else {
             holder.imageView.setImageResource(item.defaultImage)
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
@@ -78,12 +81,17 @@ class GuestServiceTabAdapter(
                         } else {
                             if(btn.isClicked)
                                 notifyItemChanged(itemList.indexOf(btn))
-                            btn.isClicked = false
                             holder.imageView.setImageResource(item.spotlightImage)
                             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
                             holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
+
+                            btn.isClicked = false
+
+
                         }
                     }
+                    setFocus(holder.card)
+
                 }
 
                 holder.card.setOnKeyListener { view, code, keyEvent ->
@@ -95,7 +103,8 @@ class GuestServiceTabAdapter(
                     false
                 }
 
-            } else {
+            }
+            else {
                 if (item.isClicked) {
                     holder.imageView.setImageResource(item.spotlightImage)
                     holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))

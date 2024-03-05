@@ -29,6 +29,7 @@
                 android:id="@+id/btn_hour_up"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:visibility="invisible"
                 android:layout_gravity="center"
                 android:src="@drawable/up_arrow"
                 android:backgroundTint="@color/transparent"/>
@@ -49,17 +50,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:backgroundTint="@color/transparent"
                 android:src="@drawable/down_arrow"
-                android:backgroundTint="@color/transparent"/>
+                />
         </LinearLayout>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textStyle="bold"
-            android:textSize="25sp"
-            android:text="Hour"
-            android:textAlignment="center"
-            android:textColor="@color/white"/>
+
     </LinearLayout>
 
     <LinearLayout
