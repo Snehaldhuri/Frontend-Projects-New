@@ -449,8 +449,7 @@ class EndlessService : Service() {
         log(hotelServicesVersion1.toString())
 
         var epoch =
-            parseInt(((Date().getTime() / 1000).toString())).toString(16); //Date => timestamp => HEX
-        log("epoch - > $epoch")
+            parseInt(((Date().time / 1000).toString())).toString(16); //Date => timestamp => HEX
         var Prefix = "";
         var Prfixzero = "";
         //Epoch should be 9 charcters, append 0 if not
@@ -462,7 +461,6 @@ class EndlessService : Service() {
                 Prefix = "00";
             }
             epoch = Prefix + epoch;
-            log("prefix epoch ->  $epoch")
             epochTime = epoch
         }
         CMDRES = if (kapingCMD == "00") {
@@ -776,6 +774,18 @@ class EndlessService : Service() {
 
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
+        when (kapingResponse.cmdData?.cmd) {
+            KapingConstants.KAP_CMD_CHECK_IN -> {
+                resetPopUps(true)
+                kapingResponse.CMD?.let {
+                    if (it.length > 19){
+                        val isEnabled = it[19] == '1'
+                        updateAdultContent(isEnabled)
+                    }
+                }
+            }
+            KapingConstants.KAP_CMD_CHECK_OUT -> resetPopUps(false)
+        }
         val i = Intent(applicationContext, RefreshingUiActivity::class.java)
         i.putExtra("response", kapingResponse)
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -793,13 +803,30 @@ class EndlessService : Service() {
             }
 
             KapingConstants.KAP_CMD_CHECK_IN -> {
+                resetPopUps(true)
+                kapingResponse.CMD?.let {
+                    if (it.length > 19){
+                        val isEnabled = it[19] == '1'
+                        updateAdultContent(isEnabled)
+                    }
+                }
                 handleCheckInCmd(kapingResponse)
             }
 
             KapingConstants.KAP_CMD_CHECK_OUT -> {
+                resetPopUps(false)
                 handleCheckOutCmd(kapingResponse)
             }
         }
+    }
+
+    private fun resetPopUps(isIn : Boolean) {
+         if (!isIn) sharedPreference.adultPassCode = "____"
+        sharedPreference.isAdultLocked = true
+        sharedPreference.isMainAdultMCW = false
+        sharedPreference.isBtnAdultMCW = false
+        sharedPreference.isAdultMCD = false
+
     }
 
     private fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
@@ -854,7 +881,6 @@ class EndlessService : Service() {
 
     private fun removeAdultData() {
         CoroutineScope(Dispatchers.IO).launch {
-            updateAdultContent(false)
             preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, false)
         }
     }
@@ -1610,4 +1636,30 @@ class EndlessService : Service() {
         return if (pm.isInteractive) KapingConstants.POWER_MODE_ON else KapingConstants.POWER_MODE_STAND_BY
     }
 
+        if (activityStack.isNotEmpty())
+            when (activityStack.last()) {
+                //TODO Register Stb Page
+                STBDetailsActivity::class.java.simpleName -> return PanelConstants.LOADER_SCREEN
+                MainMenuActivity::class.java.simpleName -> return PanelConstants.MAIN_MENU
+                MoviesActivity::class.java.simpleName -> return PanelConstants.VOD
+                HotelInfoActivity::class.java.simpleName -> return PanelConstants.HOTEL_SERVICES
+                //TODO Live services
+                MovieDetailFragment::class.java.simpleName -> return PanelConstants.MOVIE_DETAIL_PAGE
+                ProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
+                HelpInfoFragment::class.java.simpleName -> return PanelConstants.HELP_AND_INFO
+                GuestServiceActivity::class.java.simpleName -> return PanelConstants.GUEST_SERVICES
+                AppWorldActivity::class.java.simpleName -> return PanelConstants.APP_WORLD
+                ExoPlayerActivity::class.java.simpleName -> return PanelConstants.MOVIE_SHOWTIME_PLAYER_PAGE
+                PrgGuidePlayerActivity::class.java.simpleName -> return PanelConstants.FULL_SCREEN_TV
+                ShowtimeActivity::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_LISTENING
+                ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
+                CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
+                //TODO Pairing Page
+                //TODO Inroom Dining Page
+                //TOdo Food Delivery
+                //TODO Crackle
+                //TODO NDVR
+                //TODO CALENDER
+            }
+        return PanelConstants.MAIN_MENU
 }

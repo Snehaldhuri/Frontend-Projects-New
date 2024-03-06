@@ -14,6 +14,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
@@ -154,10 +155,10 @@ class SerialActivity : BaseActivity() {
         builder.setView(input)
 //          29221HFGN30WG1	Suite	LABGEN4	No	Living Room	Inactive
 //         Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14/507KKWK1C017  -- 29221HFGN30WG1
-     /*   if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             input.setText("26271HFGN11NHH")
             input.clearFocus()
-        }*/
+        }
 
         builder.setPositiveButton("OK") { dialog, which ->
             serialNo = input.text.toString().uppercase()

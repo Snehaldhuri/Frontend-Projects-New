@@ -2,6 +2,9 @@ package com.diipl.moviebeam.ui.dialogs
 
 import android.content.Context
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ImageSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +12,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.DialogAdultContentBinding
 import com.diipl.moviebeam.utils.Constants.ADULT_CONTENT_DISABLED
@@ -17,13 +22,17 @@ import com.diipl.moviebeam.utils.Constants.ADULT_LOCKED
 import com.diipl.moviebeam.utils.Constants.ADULT_MCD_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_MAIN
+import com.diipl.moviebeam.utils.Constants.PARENTAL_CONTROL
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TAG = "AdultContentDialog"
 @AndroidEntryPoint
 class AdultContentDialog(
     val viewType: Int,
@@ -34,7 +43,6 @@ class AdultContentDialog(
     lateinit var preference: SharedPreference
 
     private lateinit var binding: DialogAdultContentBinding
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -74,32 +82,53 @@ class AdultContentDialog(
         binding.btnDelete.setOnFocusChangeListener(::handleFocusChange)
         binding.btnCodeOk.setOnFocusChangeListener(::handleFocusChange)
 
-        when (viewType) {
-            ADULT_MCW_MAIN -> {
-                binding.layoutParentalMCW.toVisible()
-                binding.btnParentalControl.requestFocus()
-            }
+        val textSpan = SpannableString(getString(R.string.parental_control_desc) )
+        val positionToPlaceImageAt = 18
+        val image = getDrawable(requireContext(), R.drawable.img_dpad_navigation)
+        image?.let {
+            image.setBounds(0, 0, 24, 24)
+            val imageSpan = ImageSpan(image, ImageSpan.ALIGN_CENTER)
+            textSpan.setSpan(imageSpan, positionToPlaceImageAt - 1, positionToPlaceImageAt, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            binding.tvImageDesc.text = textSpan
+        }
 
-            ADULT_MCW_BTN -> {
-                binding.layoutMCW.toVisible()
-                binding.btnContinue.requestFocus()
-            }
+        lifecycleScope.launch {
+            delay(500)
+            when (viewType) {
+                ADULT_MCW_MAIN -> {
+                    preference.isMainAdultMCW = true
+                    binding.layoutParentalMCW.toVisible()
+                    binding.btnParentalControl.requestFocus()
+                }
 
-            ADULT_CONTENT_DISABLED -> {
-                binding.layoutDisabled.toVisible()
-                binding.btnOk.requestFocus()
-            }
+                ADULT_MCW_BTN -> {
+                    preference.isBtnAdultMCW = true
+                    binding.layoutMCW.toVisible()
+                    binding.btnContinue.requestFocus()
+                }
 
-            ADULT_MCD_BTN -> {
-                binding.layoutParentalMCD.toVisible()
-                binding.btnMcdParentalControl.requestFocus()
-            }
+                ADULT_CONTENT_DISABLED -> {
+                    binding.layoutDisabled.toVisible()
+                    binding.btnOk.requestFocus()
+                }
 
-            ADULT_LOCKED -> {
-                binding.layoutLocked.toVisible()
-                binding.btnEnterParentalCode.requestFocus()
+                ADULT_MCD_BTN -> {
+                    preference.isAdultMCD = true
+                    binding.layoutParentalMCD.toVisible()
+                    binding.btnMcdParentalControl.requestFocus()
+                }
+
+                ADULT_LOCKED -> {
+                    binding.layoutLocked.toVisible()
+                    binding.btnEnterParentalCode.requestFocus()
+                }
+                PARENTAL_CONTROL -> {
+                    binding.layoutPassCode.toVisible()
+                    binding.btnCodeOk.requestFocus()
+                }
             }
         }
+
         return binding.root
     }
 
@@ -118,12 +147,17 @@ class AdultContentDialog(
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onResume() {
+        super.onResume()
 
         requireActivity().onBackPressedDispatcher.addCallback {
             Log.e("onViewCreated: ", "onBackPressedDispatcher")
         }
+
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         binding.btnOk.setOnClickListener {
             dismiss()
@@ -132,11 +166,11 @@ class AdultContentDialog(
         // MCW
         binding.btnCancel.setOnClickListener {
             preference.isBtnAdultMCW = true
-            dismiss()
+            dismissNow()
         }
         binding.btnContinue.setOnClickListener {
             preference.isBtnAdultMCW = true
-            dismiss()
+            dismissNow()
         }
 
         // MCW
@@ -193,6 +227,8 @@ class AdultContentDialog(
             }
         }
 
+        binding.layoutPassCode.toVisible()
+
         binding.btnCodeOk.requestFocus()
         binding.btn1.setOnClickListener(::updateFields)
         binding.btn2.setOnClickListener(::updateFields)
@@ -245,10 +281,19 @@ class AdultContentDialog(
                 } else if (!preference.isAdultPassCodeEmpty && pass != preference.adultPassCode) {
                     showToast(requireContext(), "Password doesn't match.")
                 } else {
-                    if (pass == preference.adultPassCode)
+                    if (pass == preference.adultPassCode) {
+                        preference.isAdultLocked = false
                         onClicked(1)
-                    if (preference.isAdultPassCodeEmpty)
+                        if (viewType == ADULT_MCD_BTN){
+                            binding.layoutPassCode.toGone()
+                            binding.layoutMCW.toVisible()
+                            binding.btnContinue.requestFocus()
+                            return
+                        }
+                    }
+                    if (preference.isAdultPassCodeEmpty) {
                         preference.adultPassCode = pass
+                    }
                     dismiss()
                 }
             }

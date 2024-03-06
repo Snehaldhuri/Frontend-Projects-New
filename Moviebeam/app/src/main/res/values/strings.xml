@@ -129,7 +129,7 @@
     <string name="call_the_front_desk_to_enable_adult_content">Call the front desk to enable adult content</string>
     <string name="mature_content_warning">MATURE CONTENT WARNING</string>
     <string name="mature_content_disabled">Mature Content Disabled</string>
-    <string name="mature_content_warning_note">The content in this section is for ADULTS ONLY and NOT suitable for minors and people offended by sexually explicit material.
+    <string name="mature_content_warning_note">The content in this section is for <font color="#0096a6"><i>ADULTS ONLY</i></font> and <font color="#0096a6"><i>NOT</i></font> suitable for minors and people offended by sexually explicit material.
         \nClick \'CANCEL\' to go back. Click \'CONTINUE\' if you agree to view the content.</string>
     <string name="tv_continue">Continue</string>
     <string name="skip">Skip</string>
@@ -143,4 +143,7 @@
     <string name="mature_content_disabled_note">Some of the Movies and Shows available to you may be inappropriate for younger audiences. To prevent inappropriate access, the hotel has enabled Parental Controls for your Convenience. Please disable Parental Controls to access the Content.
         \n\nNo Charge will be posted on your folio for any of the free movies.</string>
     <string name="enter_pass_code">Enter Passcode</string>
+    <string name="parental_control_desc">Use the arrow key and hit OK button to set passcode. Use stop button to <font color="#FFB81A">CANCEL</font> or <font color="#FFB81A">START</font> again.
+        \nDO NOT USE NUMERIC KEYS ON REMOTE to set the passcode
+        \nPlease call frontdesk for assistance</string>
 </resources>
