@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:id="@+id/hour_picker_container"
-        android:layout_width="90dp"
+        android:layout_width="170dp"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:orientation="vertical"
@@ -15,54 +15,52 @@
         app:layout_constraintEnd_toStartOf="@id/minute_picker_container"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
-    <LinearLayout
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:id="@+id/hour_picker"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        >
-
-        <ImageButton
-            android:id="@+id/btn_hour_up"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:src="@drawable/up_arrow"
-            android:backgroundTint="@color/transparent"/>
-
-        <TextView
-            android:id="@+id/tv_selected_hour"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textSize="25sp"
-            android:textAlignment="center"
-            android:textColor="@color/white"/>
-
-        <ImageButton
-            android:id="@+id/btn_hour_down"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:src="@drawable/down_arrow"
-            android:backgroundTint="@color/transparent"/>
-        </LinearLayout>
-        <TextView
+        <LinearLayout
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:id="@+id/hour_picker"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:textStyle="bold"
-            android:textSize="25sp"
-            android:text="Hour"
-            android:textAlignment="center"
-            android:textColor="@color/white"/>
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            >
+
+            <ImageButton
+                android:id="@+id/btn_hour_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                android:layout_gravity="center"
+                android:src="@drawable/up_arrow"
+                android:backgroundTint="@color/transparent"/>
+
+            <TextView
+                android:id="@+id/tv_selected_hour"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="7dp"
+                android:paddingBottom="7dp"
+                android:textStyle="bold"
+                android:textSize="25sp"
+                android:textAlignment="center"
+                android:textColor="@color/white"/>
+
+            <ImageButton
+                android:id="@+id/btn_hour_down"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/transparent"
+                android:src="@drawable/down_arrow"
+                />
+        </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/minute_picker_container"
         android:layout_width="90dp"
+        android:visibility="gone"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toEndOf="@id/hour_picker_container"
         app:layout_constraintEnd_toEndOf="parent"
@@ -71,40 +69,40 @@
         android:orientation="vertical"
         >
 
-    <LinearLayout
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:id="@+id/minute_picker"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        >
-
-        <ImageButton
-            android:id="@+id/btn_minute_up"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/up_arrow"
-            android:layout_gravity="center"
-            android:backgroundTint="@color/transparent"/>
-
-        <TextView
-            android:id="@+id/tv_selected_minute"
+        <LinearLayout
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:id="@+id/minute_picker"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textSize="25sp"
-            android:textColor="@color/white"
-            android:textAlignment="center"/>
-
-        <ImageButton
-            android:id="@+id/btn_minute_down"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:src="@drawable/down_arrow"
-            android:backgroundTint="@color/transparent"/>
+            android:orientation="vertical"
+            >
+
+            <ImageButton
+                android:id="@+id/btn_minute_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/up_arrow"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/transparent"/>
+
+            <TextView
+                android:id="@+id/tv_selected_minute"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="25sp"
+                android:textColor="@color/white"
+                android:textAlignment="center"/>
+
+            <ImageButton
+                android:id="@+id/btn_minute_down"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/down_arrow"
+                android:backgroundTint="@color/transparent"/>
         </LinearLayout>
         <TextView
             android:layout_width="match_parent"

@@ -15,6 +15,7 @@ import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseFragment
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
@@ -42,6 +43,7 @@ class ShowtimeDetailFragment : BaseFragment() {
         arguments?.let {
             position = it.getInt("movieReleaseId")
         }
+
     }
 
     override fun observeViewModel() {
@@ -54,6 +56,7 @@ class ShowtimeDetailFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
+        LoggingService.sendMessageToWebSocket("In ShowtimeDetailPage create ","13")
         binding.layoutMovie.toVisible()
         return binding.root
     }

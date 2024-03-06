@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.guestservice
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +19,9 @@ import com.diipl.moviebeam.utils.getWidthInPercent
 
 class GuestServiceTabAdapter(
     private var onMenuItemClicked: (View, GsBtnModel) -> Unit,
-    private var onRightClicked: (View) -> Unit
+    private var onRightClicked: (View) -> Unit,
+    private val onFocusChangeListener: OnFocusChangeListener
+
 ) : RecyclerView.Adapter<GuestServiceTabAdapter.MyViewHolder>() {
 
     private var startColor = ""
@@ -46,15 +49,19 @@ class GuestServiceTabAdapter(
     }
 
     override fun getItemCount(): Int = itemList.size
-
+    interface OnFocusChangeListener {
+        fun onItemFocused(position: Int, itemList: List<GsBtnModel>)
+    }
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 
         holder.textView.text = item.categoryName
+
         if (item.isClicked) {
             holder.imageView.setImageResource(item.spotlightImage)
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
             holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
+
         } else {
             holder.imageView.setImageResource(item.defaultImage)
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
@@ -63,6 +70,8 @@ class GuestServiceTabAdapter(
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 setFocus(holder.card)
+                onFocusChangeListener.onItemFocused(position, itemList)
+
                 holder.card.setOnClickListener {
 //                    Log.d("TAG CLICK", "onBindViewHolder: ${Constants.GUEST_SERVICE_BUTTON_LIST[2].categoryName}-${Constants.GUEST_SERVICE_BUTTON_LIST[2].isClicked}")
                     itemList.forEach { btn ->
@@ -72,12 +81,17 @@ class GuestServiceTabAdapter(
                         } else {
                             if(btn.isClicked)
                                 notifyItemChanged(itemList.indexOf(btn))
-                            btn.isClicked = false
                             holder.imageView.setImageResource(item.spotlightImage)
                             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
                             holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
+
+                            btn.isClicked = false
+
+
                         }
                     }
+                    setFocus(holder.card)
+
                 }
 
                 holder.card.setOnKeyListener { view, code, keyEvent ->
@@ -89,7 +103,8 @@ class GuestServiceTabAdapter(
                     false
                 }
 
-            } else {
+            }
+            else {
                 if (item.isClicked) {
                     holder.imageView.setImageResource(item.spotlightImage)
                     holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))

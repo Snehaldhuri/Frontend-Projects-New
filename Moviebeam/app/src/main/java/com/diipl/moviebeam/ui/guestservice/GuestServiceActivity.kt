@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -10,6 +11,7 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN
@@ -24,6 +26,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
+import com.diipl.moviebeam.data.dto.localattraction.LAService
 import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -38,6 +41,7 @@ import com.diipl.moviebeam.ui.guestservice.concierge.laundry.LaundryFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
 import com.diipl.moviebeam.ui.guestservice.inroomdininggs.InRoomDiningGsFragment
+import com.diipl.moviebeam.ui.guestservice.localAttraction.LaCardAdapterGs
 import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
@@ -56,17 +60,20 @@ import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class GuestServiceActivity : BaseActivity() {
+class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChangeListener{
 
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
     private var conciergeIndex = 0
+    private var conciergePosition = 0
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -93,89 +100,109 @@ class GuestServiceActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            fetchDetails()
 
-        fetchDetails()
+            btnId = intent.getStringExtra("btnId").toString()
+            if (btnId == ALL_SERVICES) {
+                binding.rvTabLayout.layoutManager =
+                    LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+                binding.rvTabLayout.toVisible()
+                binding.tvServiceTitle.toVisible()
+            } else {
+                binding.rvTabLayout.toGone()
+                binding.tvServiceTitle.toGone()
+                bindAdapterView(binding.root, btnId)
+            }
 
-        btnId = intent.getStringExtra("btnId").toString()
-        if (btnId == ALL_SERVICES) {
-            binding.rvTabLayout.layoutManager =
-                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-            binding.rvTabLayout.toVisible()
-            binding.tvServiceTitle.toVisible()
-        } else {
-            binding.rvTabLayout.toGone()
-            binding.tvServiceTitle.toGone()
-            bindAdapterView(binding.root, btnId)
+            binding.btnBack.toDelayVisible()
+            binding.btnBack.setOnFocusChangeListener(::handleBackClick)
+            binding.btnBack.setOnClickListener { finish() }
+            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity","08")
+
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity onCreate:${e.message}","08")
         }
-
-        binding.btnBack.toDelayVisible()
-        binding.btnBack.setOnFocusChangeListener(::handleBackClick)
-        binding.btnBack.setOnClickListener { finish() }
-        LoggingService.sendMessageToWebSocket("In GuestServicesMain activity")
-
     }
 
 
     private fun readLaundryJson(): LaundryDataResponse? {
+        return try {
         val gson = Gson()
         val inputStream = this.assets.open("LaundryData.json")
         val br = BufferedReader(InputStreamReader(inputStream))
-        return gson.fromJson(br, LaundryDataResponse::class.java)
-    }
-    private fun readToiletryJson(): ToiletryResponse {
-        val gson = Gson()
-        val inputStream = this.assets.open("ToiletryData.json")
-        val br = BufferedReader(InputStreamReader(inputStream))
-        val stringBuilder = StringBuilder()
-        for (str in br.readLines()) {
-            stringBuilder.append(str)
+        gson.fromJson(br, LaundryDataResponse::class.java)
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity readLaundryJson:${e.message}","08")
+            null
         }
-        val data = JSONObject(stringBuilder.toString())
-        return gson.fromJson(data.toString(), ToiletryResponse::class.java)
     }
 
-//    private fun readToiletryJson(): ToiletryDataResponse? {
-//        val gson = Gson()
-//        val inputStream = this.assets.open("ToiletryData.json")
-//        val br = BufferedReader(InputStreamReader(inputStream))
-//        return gson.fromJson(br, ToiletryDataResponse::class.java)
-//    }
+    private fun readToiletryJson(): ToiletryResponse {
+        return try {
+            val gson = Gson()
+            val inputStream = this.assets.open("ToiletryData.json")
+            val br = BufferedReader(InputStreamReader(inputStream))
+            val stringBuilder = StringBuilder()
+            for (str in br.readLines()) {
+                stringBuilder.append(str)
+            }
+            val data = JSONObject(stringBuilder.toString())
+            gson.fromJson(data.toString(), ToiletryResponse::class.java)
+        }
+        catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity readToiletryJson:${e.message}","08")
+            ToiletryResponse()
+        }
+    }
 
 
+    @SuppressLint("SetTextI18n")
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
             is Resource.Loading -> {
                 binding.loaderView.toVisible()
             }
+
             is Resource.Success -> {
-                val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
-                    .value?.data?.gsButtonsList?.map { it.buttonName }
-                val gsBtnModelList: List<GsBtnModel> = Constants.GUEST_SERVICE_BUTTON_LIST.filter {
-                    gsBtnListFromApi?.contains(it.btnId) == true
+                try {
+                    val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
+                        .value?.data?.gsButtonsList?.map { it.buttonName }
+                    val gsBtnModelList: List<GsBtnModel> =
+                        Constants.GUEST_SERVICE_BUTTON_LIST.filter {
+                            gsBtnListFromApi?.contains(it.btnId) == true
+                        }
+                    val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
+                        gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
+                    }
+                    val adapter = GuestServiceTabAdapter(onMenuItemClicked = { view, service ->
+                        if(service.btnId == "flightStatus"){
+                            binding.tvServiceTitle.text ="Departures"
+                        }else{
+                            binding.tvServiceTitle.text = service.categoryName
+                        }
+                        adapterView = view
+                        bindAdapterView(view, service.btnId)
+                    }, onRightClicked = {
+
+                    },
+                        onFocusChangeListener = this // Provide the onFocusChangeListener here
+                    )
+                    if(btnId != Constants.LA_ID) {
+                        val transaction = supportFragmentManager.beginTransaction()
+                        val fragment = WeatherFragment()
+                        transaction.replace(R.id.fv_tab_content, fragment)
+                        transaction.commit()
+                    }
+                    adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
+                    adapter.setGradientColor(gradientStartColor, gradientEndColor)
+
+                    binding.rvTabLayout.adapter = adapter
+
+                    binding.loaderView.toInvisible()
+                } catch (e: Exception) {
+                    LoggingService.sendMessageToWebSocket("handleAccountSetupResponse Exception in GuestServicesMain activity: ${e.message}","08")
                 }
-                val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
-                    gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
-                }
-                val adapter = GuestServiceTabAdapter(onMenuItemClicked =  { view, service ->
-                    binding.tvServiceTitle.text = service.categoryName
-                    adapterView = view
-                    bindAdapterView(view, service.btnId)
-                }, onRightClicked = {
-
-                })
-                if(btnId != Constants.LA_ID){
-                    val transaction = supportFragmentManager.beginTransaction()
-                    val fragment = WeatherFragment()
-                    transaction.replace(R.id.fv_tab_content, fragment)
-                    transaction.commit()
-                }
-
-                adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
-                adapter.setGradientColor(gradientStartColor, gradientEndColor)
-
-                binding.rvTabLayout.adapter = adapter
-
-                binding.loaderView.toInvisible()
             }
 
             else -> {
@@ -199,13 +226,12 @@ class GuestServiceActivity : BaseActivity() {
         }
     }
 
-
     private fun bindAdapterView(view: View, btnId: String) {
         requestFocus()
-        when (btnId) {
 
+        when (btnId) {
             Constants.CONCIERGE_ID -> {
-                conciergeIndex = 1
+
                 val concierge = ConciergeFragment { cView, conciergeService ->
                     conciergeIndex = 1
                     focusView = cView
@@ -214,8 +240,8 @@ class GuestServiceActivity : BaseActivity() {
                     when (conciergeService.serviceId) {
                         1 -> {
                             val fragment = MakeMyRoomFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
 
                             changeFragment(fragment)
@@ -229,9 +255,11 @@ class GuestServiceActivity : BaseActivity() {
 
                         2 -> {
                             val fragment = VelvetParkingFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
+
+
                             changeFragment(fragment)
                             fragment.setGradientColor(
                                 gradientStartColor,
@@ -243,8 +271,8 @@ class GuestServiceActivity : BaseActivity() {
                             binding.layoutHeader.tvTitle.text =
                                 getString(R.string.toiletry_requests)
                             val fragment = ToiletryRequestFragment {
-                                view.requestFocus()
-                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
                             val mBundle = Bundle()
                             mBundle.putString("gradientStartColor", gradientStartColor)
@@ -252,31 +280,24 @@ class GuestServiceActivity : BaseActivity() {
                             fragment.arguments = mBundle
                             val toiletryData = readToiletryJson()
                             fragment.setToiletryData(toiletryData)
-                            Log.d("snehald","$toiletryData")
                             changeFragment(fragment)
                         }
 
                         5 -> {
-                            val fragment = SpaFragment {
-
-                            }
+                            val fragment = SpaFragment()
 
                             changeFragment(fragment)
                         }
 
                         6 -> {
-
-                            val fragment = GolfFragment {
-                                view.requestFocus()
-                                view.performClick()
-                            }
+                            val fragment = GolfFragment()
                             changeFragment(fragment)
                         }
 
                         7 -> {
                             val fragment = LaundryTimeFragment {
-//                                view.requestFocus()
-//                                view.performClick()
+                                requestFocus()
+                                handleBackRemoteClick()
                             }
                             changeFragment(fragment)
 
@@ -288,7 +309,10 @@ class GuestServiceActivity : BaseActivity() {
                         }
 
                         3 -> {
-                            val fragment = LaundryFragment()
+                            val fragment = LaundryFragment {
+                                requestFocus()
+                                handleBackRemoteClick()
+                            }
 
 
                             fragment.setGradientColor(
@@ -299,8 +323,6 @@ class GuestServiceActivity : BaseActivity() {
                             if (laundryData != null) {
                                 fragment.setLaundryData(laundryData)
                             }
-
-                            changeFragment(fragment)
 
                             changeFragment(fragment)
                         }
@@ -327,9 +349,20 @@ class GuestServiceActivity : BaseActivity() {
                 conciergeIndex = 0
                 focusView = null
 
-                val fragment = FlightStatusFragment {
-                    view.requestFocus()
-                }
+
+                val fragment = FlightStatusFragment(
+                    onLeftKeyPressed = {
+                    },
+                    flightStatusChangedListener = object : FlightStatusFragment.OnFlightStatusChangedListener {
+                        override fun onFlightStatusChanged(isDeparture: Boolean) {
+                            if (isDeparture) {
+                                binding.tvServiceTitle.text = "Departures"
+                            } else {
+                                binding.tvServiceTitle.text = "Arrivals"
+                            }
+                        }
+                    }
+                )
 
                 guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
                     fragment.setAirportList(airports)
@@ -349,10 +382,10 @@ class GuestServiceActivity : BaseActivity() {
                 conciergeIndex = 0
                 focusView = null
                 val fragment = NewsFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -360,22 +393,22 @@ class GuestServiceActivity : BaseActivity() {
                 conciergeIndex = 0
                 focusView = null
                 val fragment = FeedbackFragment {
-                    view.requestFocus()
+                    requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
             Constants.LA_ID -> {
                 conciergeIndex = 0
 
-                val fragment = LocalAttractionGsFragment{v ->
+                val fragment = LocalAttractionGsFragment { v ->
                     focusView = v
                     requestFocus()
                 }
-                changeFragment(fragment)
                 fragment.setGradientColor(gradientStartColor, gradientEndColor)
+                changeFragment(fragment)
 
             }
 
@@ -386,7 +419,6 @@ class GuestServiceActivity : BaseActivity() {
             }
         }
     }
-
 
     private fun loadBg(imgUrl: String?) {
         Glide.with(this).load(imgUrl)
@@ -452,11 +484,11 @@ class GuestServiceActivity : BaseActivity() {
         if (conciergeIndex == 1) {
             bindAdapterView(binding.root, Constants.CONCIERGE_ID)
             /*if (binding.fvTabContent.isVisible) {
-                binding.fvTabContent.toInvisible()
-                binding.rvTabContent.toVisible()
-            } else{
-                finish()
-            }*/
+                 binding.fvTabContent.toInvisible()
+                 binding.rvTabContent.toVisible()
+             } else{
+                 finish()
+             }*/
             conciergeIndex = 0
         } else {
             finish()
@@ -472,4 +504,19 @@ class GuestServiceActivity : BaseActivity() {
         return false
     }
 
+    override fun onItemFocused(position:Int, itemList: List<GsBtnModel>) {
+        if (position == 0) {
+            binding.gsUp.visibility = View.GONE
+        }
+        else{
+            binding.gsUp.visibility = View.VISIBLE
+        }
+        if(position == itemList.size - 1){
+            binding.gsDown.visibility = View.GONE
+        }
+        else {
+            binding.gsDown.visibility = View.VISIBLE
+        }
+    }
 }
+

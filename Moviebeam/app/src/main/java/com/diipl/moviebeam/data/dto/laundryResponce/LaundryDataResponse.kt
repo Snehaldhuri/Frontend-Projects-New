@@ -35,6 +35,7 @@ data class LaundrySubCategory(
     val id: Int,
     val imgSrc: String,
     val categoryName: String,
+    var quantity: Int = 0,
     val subTitle: String,
     val langWiseList: Map<String, LangWiseSubCategory>
 )

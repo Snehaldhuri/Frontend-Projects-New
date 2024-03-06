@@ -24,6 +24,7 @@ class WeatherFragment : BaseFragment() {
     private var _binding: FragmentWeatherBinding? = null
     val binding get() = _binding!!
     private val weatherViewModel: WeatherViewModel by activityViewModels()
+
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 

@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.guestservice.news
 import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
@@ -42,12 +43,29 @@ class NewsTabAdapter(
         val item = newsList[position]
         holder.binding.tvNews.text = item.title
 
+        holder.itemView.post {
+            if (position == 0){
+                holder.itemView.requestFocus()
+            }
+        }
 
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
             onMenuItemFocused(item)
             if(isFocused){
+                if (position == 0) {
+                    view.nextFocusUpId = view.id
+                }
+                if (position == newsList.size.minus(1)) {
+                    view.nextFocusDownId = view.id
+                }
                 holder.binding.clCard.background = gradient
             }else{
+                if (position == 0) {
+                    view.nextFocusUpId = View.NO_ID
+                }
+                if (position == newsList.size.minus(1)) {
+                    view.nextFocusDownId = View.NO_ID
+                }
                 holder.binding.clCard.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
             }
         }

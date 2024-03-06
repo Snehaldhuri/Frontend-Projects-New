@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentMakeMyRoomBinding
@@ -94,40 +95,18 @@ class MakeMyRoomFragment(
                 binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-        binding.btnOk.setOnClickListener(View.OnClickListener {
-            layout_dt.visibility = View.GONE
-            layout_confirmation.visibility = View.VISIBLE
-
-            binding.btnPopOk.postDelayed({
-                binding.btnPopOk.requestFocus()
-            }, 1)
-
-            binding.tvMessage.text =
-                "Thank you.Your request has been received and your room will be serviced on " + day + ". " + month + " " + date + " " + year + " at " + currentHour + ":" + currentminute
-            binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-                    setFocus(binding.btnPopOk)
-                } else {
-                    binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
-            }
-            binding.btnPopOk.setOnClickListener {
-                onOkClicked()
-            }
-
-        })
 
         binding.layoutDateTimeSelector.tvDay.text = day
         binding.layoutDateTimeSelector.tvDate.text = "$date / $month / $year"
 
+        val timeRanges = arrayOf("8 - 10 AM", "10 - 12 PM", "12 - 2 PM", "2 - 4 PM")
+        var currentRangeIndex = 0
+
         binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
-            currentHour.toString()
+            timeRanges[currentRangeIndex]
 
         binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedMinute.text =
             currentminute.toString()
-
-
-
 
         hourPicker.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
@@ -135,20 +114,36 @@ class MakeMyRoomFragment(
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
-                            KeyEvent.KEYCODE_DPAD_UP -> {
-                                if (currentHour < 24) {
-                                    currentHour++
+                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                if (currentRangeIndex < timeRanges.size - 1) {
+                                    currentRangeIndex++
                                     binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
-                                        currentHour.toString()
+                                        timeRanges[currentRangeIndex]
+                                    if(currentRangeIndex == timeRanges.size-1){
+                                        binding.layoutDateTimeSelector.timeSelectorLayout.btnHourDown.visibility = View.INVISIBLE
+                                        binding.layoutDateTimeSelector.timeSelectorLayout.btnHourUp.visibility = View.VISIBLE
+                                    }
+                                    else{
+                                        binding.layoutDateTimeSelector.timeSelectorLayout.btnHourUp.visibility = View.VISIBLE
+                                        binding.layoutDateTimeSelector.timeSelectorLayout.btnHourDown.visibility = View.VISIBLE
+                                    }
                                 }
                                 return@setOnKeyListener true
                             }
 
-                            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                                if (currentHour > 1) {
-                                    currentHour--
+                            KeyEvent.KEYCODE_DPAD_UP -> {
+
+                                if (currentRangeIndex > 0) {
+                                    currentRangeIndex--
                                     binding.layoutDateTimeSelector.timeSelectorLayout.tvSelectedHour.text =
-                                        currentHour.toString()
+                                        timeRanges[currentRangeIndex]
+
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.btnHourUp.visibility = View.VISIBLE
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.btnHourDown.visibility = View.VISIBLE
+                                }
+                                if (currentRangeIndex == 0){
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.btnHourUp.visibility = View.INVISIBLE
+                                    binding.layoutDateTimeSelector.timeSelectorLayout.btnHourDown.visibility = View.VISIBLE
                                 }
                                 return@setOnKeyListener true
                             }
@@ -217,6 +212,29 @@ class MakeMyRoomFragment(
                 view.setBackgroundResource(R.color.transparent)
             }
         }
+
+        binding.btnOk.setOnClickListener(View.OnClickListener {
+            layout_dt.visibility = View.GONE
+            layout_confirmation.visibility = View.VISIBLE
+            binding.btnPopOk.postDelayed({
+                binding.btnPopOk.requestFocus()
+            }, 1)
+
+            binding.tvMessage.text =
+                "Thank you.Your request has been received and your room will be serviced between " + timeRanges[currentRangeIndex] +" on " + day + ". " + month + " " + date + " " + year
+            binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
+                if (hasFocus) {
+                    setFocus(binding.btnPopOk)
+                } else {
+                    binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                }
+            }
+            binding.btnPopOk.setOnClickListener {
+                onOkClicked()
+            }
+
+        })
+
         return binding.root
     }
 

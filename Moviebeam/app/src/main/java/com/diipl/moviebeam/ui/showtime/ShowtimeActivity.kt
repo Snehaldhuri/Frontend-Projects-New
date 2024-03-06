@@ -64,33 +64,37 @@ class ShowtimeActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fetchDetailsFromBundle()
-        fetchDataFromDataStore()
-        binding.btnBack.setOnFocusChangeListener { view, isFocused ->
-            if (isFocused) {
-                view.background = gradient
-            } else {
-                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+        try{
+            fetchDetailsFromBundle()
+            fetchDataFromDataStore()
+            binding.btnBack.setOnFocusChangeListener { view, isFocused ->
+                if (isFocused) {
+                    view.background = gradient
+                } else {
+                    view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                }
             }
-        }
-        binding.btnBack.setOnClickListener {
-            handleBackClick()
-        }
-
-        val parentRecyclerView: RecyclerView = binding.parentRecyclerView
-        parentRecyclerView.setHasFixedSize(true)
-        binding.parentRecyclerView.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-
-        binding.nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-            if (scrollY < oldScrollY) {
-                v.scrollTo(scrollX, scrollY.minus(100))
+            binding.btnBack.setOnClickListener {
+                handleBackClick()
             }
-        })
 
-        val cardRecyclerView: RecyclerView = binding.menuRecyclerView
-        cardRecyclerView.layoutManager = LinearLayoutManager(this)
-        LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity")
+            val parentRecyclerView: RecyclerView = binding.parentRecyclerView
+            parentRecyclerView.setHasFixedSize(true)
+            binding.parentRecyclerView.layoutManager =
+                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
+            binding.nestedScroll.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+                if (scrollY < oldScrollY) {
+                    v.scrollTo(scrollX, scrollY.minus(100))
+                }
+            })
+
+            val cardRecyclerView: RecyclerView = binding.menuRecyclerView
+            cardRecyclerView.layoutManager = LinearLayoutManager(this)
+            LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity","12")
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity onCreate: ${e.message}","12")
+        }
 
     }
 
@@ -223,6 +227,7 @@ class ShowtimeActivity : BaseActivity() {
     }
 
     private fun onShowsClick(shows: Detail, position: Int) {
+        try{
         val transaction = supportFragmentManager.beginTransaction()
         if (shows.episodesPresent) {
             val bundle = Bundle()
@@ -242,6 +247,9 @@ class ShowtimeActivity : BaseActivity() {
         binding.parentRecyclerView.toInvisible()
         binding.fcvMovieDetail.toVisible()
         transaction.commit()
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity onShowsClick: ${e.message}","12")
+        }
     }
 
     fun gotoExoPlayerActivity(
@@ -249,7 +257,7 @@ class ShowtimeActivity : BaseActivity() {
         seekPosition: Long
     ) {
         val bundle = Bundle()
-
+        bundle.putString(Constants.RELEASE_ID, "ShowTime")
         bundle.putString(Constants.SHOW_DETAILS, movieDetails.toJson())
         bundle.putBoolean(Constants.IS_TRAILER, isTrailer)
         bundle.putBoolean(Constants.IS_CONTENT, isContent)

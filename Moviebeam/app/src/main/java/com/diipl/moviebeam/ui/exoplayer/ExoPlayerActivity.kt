@@ -22,6 +22,7 @@ import com.diipl.moviebeam.databinding.ActivityExoPlayerBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.fromJson
@@ -125,56 +126,61 @@ class ExoPlayerActivity : BaseActivity() {
 
     @androidx.annotation.OptIn(UnstableApi::class)
     private fun initializePlayer() {
-        player = ExoPlayer.Builder(this)
-            .build()
-            .also { exoPlayer ->
-                exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
-                    .buildUpon()
-                    .setMaxVideoSizeSd()
-                    .build()
-                binding.playerView.player = exoPlayer
+        try {
+            player = ExoPlayer.Builder(this)
+                .build()
+                .also { exoPlayer ->
+                    exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
+                        .buildUpon()
+                        .setMaxVideoSizeSd()
+                        .build()
+                    binding.playerView.player = exoPlayer
 
 //                binding.playerView.setShowFastForwardButton(false)
 //                binding.playerView.setShowRewindButton(false)
-                binding.playerView.setShowNextButton(false)
-                binding.playerView.setShowPreviousButton(false)
+                    binding.playerView.setShowNextButton(false)
+                    binding.playerView.setShowPreviousButton(false)
 
 
-                if (isTrailer) {
-                    playbackUrl =
-                        Constants.BASE_PLAYBACK_URL + releaseId + Constants.TRAILER_EXTENSION
-                }
+                    if (isTrailer) {
+                        playbackUrl =
+                            Constants.BASE_PLAYBACK_URL + releaseId + Constants.TRAILER_EXTENSION
+                    }
 
                 // TODO remove below code in release
                 /*if (releaseId == 41232)
                     releaseId = 41391*/
 
-                if (isContent) {
-                    playbackUrl =
-                        Constants.BASE_PLAYBACK_URL + releaseId + Constants.CONTENT_EXTENSION
-                }
-                if (playbackUrl.isNotEmpty()) {
-                    val mediaItem = MediaItem.Builder()
-                        .setUri(playbackUrl)
+                    if (isContent) {
+                        playbackUrl =
+                            Constants.BASE_PLAYBACK_URL + releaseId + Constants.CONTENT_EXTENSION
+                    }
+                    if (playbackUrl.isNotEmpty()) {
+                        val mediaItem = MediaItem.Builder()
+                            .setUri(playbackUrl)
 //                        .setMimeType(MimeTypes.APPLICATION_MPD) // For using DASH format use this mediaItem Builder
-                        .build()
-                    exoPlayer.setMediaItem(mediaItem)
-                    exoPlayer.playWhenReady = playWhenReady
-                    exoPlayer.addListener(playerListener)
-                    exoPlayer.seekTo(seekPosition)
-                    exoPlayer.prepare()
-                    exoPlayer.play()
-                }
-                val mediaItem1 = MediaItem.fromUri(Constants.MOVIE_URL1)
-                val mediaItem2 = MediaItem.fromUri(Constants.MOVIE_URL2)
-                val mediaItem3 = MediaItem.fromUri(Constants.MOVIE_URL3)
-                val secondMediaItem = MediaItem.fromUri(getString(R.string.media_url_mp4))
+                            .build()
+                        exoPlayer.setMediaItem(mediaItem)
+                        exoPlayer.playWhenReady = playWhenReady
+                        exoPlayer.addListener(playerListener)
+                        exoPlayer.seekTo(seekPosition)
+                        exoPlayer.prepare()
+                        exoPlayer.play()
+                    }
+                    val mediaItem1 = MediaItem.fromUri(Constants.MOVIE_URL1)
+                    val mediaItem2 = MediaItem.fromUri(Constants.MOVIE_URL2)
+                    val mediaItem3 = MediaItem.fromUri(Constants.MOVIE_URL3)
+                    val secondMediaItem = MediaItem.fromUri(getString(R.string.media_url_mp4))
 
-            }
+                }
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("initializePlayer Exception: ${e.message}","")
+        }
     }
 
     private fun releasePlayer() {
-        player?.let { exoPlayer ->
+        try {
+            player?.let { exoPlayer ->
             if (isContent && ::rentalMovieModel.isInitialized) {
                 rentalMovieModel.currentSeek = exoPlayer.getLastSeek()
                 moviesViewModel.updateMovieDetails(rentalMovieModel)
@@ -182,13 +188,16 @@ class ExoPlayerActivity : BaseActivity() {
             if (isContent && ::showTimeModel.isInitialized) {
                 showTimeModel.currentSeek = exoPlayer.getLastSeek()
                 moviesViewModel.updateShowDetails(showTimeModel)
+                }
+                playbackPosition = exoPlayer.currentPosition
+                mediaItemIndex = exoPlayer.currentMediaItemIndex
+                playWhenReady = exoPlayer.playWhenReady
+                exoPlayer.release()
             }
-            playbackPosition = exoPlayer.currentPosition
-            mediaItemIndex = exoPlayer.currentMediaItemIndex
-            playWhenReady = exoPlayer.playWhenReady
-            exoPlayer.release()
+            player = null
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("releasePlayer Exception: ${e.message}","")
         }
-        player = null
     }
 
     override fun onPause() {
@@ -198,9 +207,13 @@ class ExoPlayerActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        releasePlayer()
-        super.onBackPressed()
-        finish()
+        try {
+            releasePlayer()
+            super.onBackPressed()
+            finish()
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket("onBackPressed Exception: ${e.message}","")
+        }
     }
 
     private fun playerListener() = object : Player.Listener {

@@ -11,9 +11,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -59,6 +61,12 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
     private var _serialNoLiveData = MutableLiveData<String>()
     val serialNoLiveData: LiveData<String> get() = _serialNoLiveData
 
+    private var _channelListLiveData = MutableLiveData<Resource<ChannelListResponse>>()
+    val channelListLiveData: LiveData<Resource<ChannelListResponse>> get() = _channelListLiveData
+
+    private var _epgLiveData = MutableLiveData<Resource<EPGResponse>>()
+    val epgLiveData: LiveData<Resource<EPGResponse>> get() = _epgLiveData
+
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
     val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
 
@@ -85,9 +93,10 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         }
     }
 
-    fun fetchHotelService(){
+    fun fetchHotelService() {
         viewModelScope.launch(Dispatchers.IO) {
-            val hotelServicesResponse = async { movieBeamRepository.getHotelServiceInfo(Constants.ACCOUNT_ID) }
+            val hotelServicesResponse =
+                async { movieBeamRepository.getHotelServiceInfo(Constants.ACCOUNT_ID) }
             val result = awaitAll(
                 hotelServicesResponse
             )
@@ -99,13 +108,40 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         }
     }
 
+    fun fetchEpgData(url: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val epgResponse =
+                async { movieBeamRepository.getEPGFromCloud(url) }
+            val result = awaitAll(epgResponse)
+            if (result[0] == null) {
+                _epgLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Epg Api"))
+            } else {
+                _epgLiveData.postValue(Resource.Success(result[0]))
+            }
+        }
+    }
+
+    fun fetchEPGDataFromServer(ua: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _epgLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getEPGDataFromServer(ua)
+            if (response == null) {
+                _epgLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Epg Server Api"))
+            } else {
+                _epgLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
     private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: String) {
         viewModelScope.launch(Dispatchers.IO) {
 
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
             val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
-            val accountSetupApiResponse = async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
+            val accountSetupApiResponse =
+                async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
             val localAttractionResponse = async { movieBeamRepository.getLocalAttractionInfo(ua) }
+            val channelListResponse = async { movieBeamRepository.getChannelList(ua) }
             val releasesMoviesMoreResponse = async { movieBeamRepository.getMoviesInfo(ua) }
             val showTimeResponse = async { movieBeamRepository.getShowtimeInfo(ua) }
 
@@ -114,6 +150,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                 themeApiResponse,
                 accountSetupApiResponse,
                 localAttractionResponse,
+                channelListResponse,
                 releasesMoviesMoreResponse,
                 showTimeResponse
             )
@@ -143,15 +180,21 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
             }
 
             if (result[4] == null) {
-                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Api"))
+                _channelListLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Channel List Api"))
             } else {
-                _moviesLiveData.postValue(Resource.Success(result[4] as MoviesResponse))
+                _channelListLiveData.postValue(Resource.Success(result[4] as ChannelListResponse))
             }
 
             if (result[5] == null) {
+                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Api"))
+            } else {
+                _moviesLiveData.postValue(Resource.Success(result[5] as MoviesResponse))
+            }
+
+            if (result[6] == null) {
                 _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in ShowTime Api"))
             } else {
-                _showtimeLiveData.postValue(Resource.Success(result[5] as ShowTimeResponse))
+                _showtimeLiveData.postValue(Resource.Success(result[6] as ShowTimeResponse))
             }
         }
     }
@@ -209,7 +252,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         dataStore: DataStore<WeatherResponse>,
         data: WeatherResponse
     ) {
-
         viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
@@ -234,7 +276,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                     weatherProviderImageCloud = data.weatherProviderImageCloud,
                     windSpeed = data.windSpeed
                 )
-
             }
         }
     }
@@ -343,7 +384,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                     vodVisible = data.vodVisible,
                     welcomeScreenVisible = data.welcomeScreenVisible
                 )
-
             }
         }
     }
@@ -352,7 +392,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         dataStore: DataStore<HotelServiceResponse>,
         data: HotelServiceResponse
     ) {
-
         viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
@@ -361,7 +400,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                     type = data.type,
                     version = data.version
                 )
-
             }
         }
     }
@@ -370,7 +408,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         dataStore: DataStore<LocalAttractionResponse>,
         data: LocalAttractionResponse
     ) {
-
         viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
@@ -379,7 +416,21 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                     type = data.type,
                     version = data.version
                 )
+            }
+        }
+    }
 
+    fun setChannelListResponseData(
+        dataStore: DataStore<ChannelListResponse>,
+        data: ChannelListResponse
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    channelLcnList = data.channelLcnList,
+                    type = data.type,
+                )
             }
         }
     }
@@ -388,7 +439,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
         dataStore: DataStore<MoviesResponse>,
         data: MoviesResponse
     ) {
-
         viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
@@ -402,7 +452,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                     type = data.type,
                     version = data.version
                 )
-
             }
         }
     }

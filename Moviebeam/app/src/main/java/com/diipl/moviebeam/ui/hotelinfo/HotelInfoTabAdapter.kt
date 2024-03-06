@@ -10,11 +10,14 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.ui.guestservice.GuestServiceTabAdapter
 
 class HotelInfoTabAdapter(
     private val itemList: List<String>,
     private var onItemFocused: ((String),View) -> Unit,
-    private var onHelpInfoTabClick: ((String), (Int),View) -> Unit
+    private var onHelpInfoTabClick: ((String), (Int),View) -> Unit,
+    private val onFocusChangeListener: OnFocusChangeListener
 ) :
     RecyclerView.Adapter<HotelInfoTabAdapter.MyViewHolder>() {
 
@@ -25,7 +28,9 @@ class HotelInfoTabAdapter(
         val textView: TextView = itemView.findViewById(R.id.tv_tabInfo)
         val card: ConstraintLayout = itemView.findViewById(R.id.card1)
     }
-
+    interface OnFocusChangeListener {
+        fun onItemFocused(position: Int, itemList: List<String>)
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.hotel_info_tab, parent, false)
@@ -43,6 +48,8 @@ class HotelInfoTabAdapter(
         holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 onItemFocused(itemList[position], view)
+                onFocusChangeListener.onItemFocused(position, itemList)
+
                 fetchGradientColorsFromApi(holder.card)
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)

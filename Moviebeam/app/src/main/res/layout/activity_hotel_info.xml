@@ -67,11 +67,23 @@
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/gs_up"
+        android:layout_width="18dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:src="@drawable/up_arrow"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_29"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
+        app:layout_constraintBottom_toTopOf="@+id/rv_hotel_info_header"
+        />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_hotel_info_header"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:focusable="true"
+        android:layout_marginTop="10dp"
         android:focusableInTouchMode="true"
         android:nextFocusRight="@id/fragment_container_carousel"
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
@@ -79,6 +91,16 @@
         app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27" />
 
+    <ImageView
+        android:id="@+id/gs_down"
+        android:layout_width="18dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:src="@drawable/down_arrow"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_29"
+        app:layout_constraintStart_toStartOf="@id/gl_vertical_5"
+        app:layout_constraintTop_toBottomOf="@+id/rv_hotel_info_header"
+        />
     <Button
         android:id="@+id/btn_back"
         android:layout_width="wrap_content"

@@ -11,9 +11,22 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.ui.appworld.AppWorldActivity
+import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.casting.CastingActivity
+import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
+import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
+import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.ui.movies.MovieDetailFragment
+import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
+import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
+import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
+import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -40,11 +53,11 @@ fun <T : Any> T.toQueryMap(): Map<String, Any> {
 
 fun String.isNotAllowed(): Boolean {
     var result = true
-    when(this){
-       MainMenuActivity::class.java.simpleName -> result = true
-       SerialActivity::class.java.simpleName -> result = false
-       STBDetailsActivity::class.java.simpleName -> result = true
-       RegisterSTBActivity::class.java.simpleName -> result = false
+    when (this) {
+        MainMenuActivity::class.java.simpleName -> result = true
+        SerialActivity::class.java.simpleName -> result = false
+        STBDetailsActivity::class.java.simpleName -> result = true
+        RegisterSTBActivity::class.java.simpleName -> result = false
     }
     return result
 }
@@ -64,7 +77,7 @@ fun RentalMovieModel.getRentalDetails(): String {
     }.toString()
 }
 
-fun isRentalMovieTimeOver(): Boolean{
+fun isRentalMovieTimeOver(): Boolean {
     val timestamp1 = System.currentTimeMillis()
     val timestamp2 = Constants.RENTAL_TIME // 24 hours ago
 
@@ -73,7 +86,8 @@ fun isRentalMovieTimeOver(): Boolean{
     val calendar2 = Calendar.getInstance().apply { timeInMillis = timestamp2 }
 
     // Compare timestamps with a 24-hour difference
-    val is24HoursApart = calendar1.after(Calendar.getInstance().apply { timeInMillis = timestamp2 + (24 * 60 * 60 * 1000) })
+    val is24HoursApart = calendar1.after(
+        Calendar.getInstance().apply { timeInMillis = timestamp2 + (24 * 60 * 60 * 1000) })
 
 
     return is24HoursApart
@@ -132,9 +146,9 @@ fun replaceDegreeSymbol(temp: String?): String {
     return temperature
 }
 
-fun ExoPlayer?.getLastSeek() : Long {
-    if (this != null){
-        if (this.contentPosition.toTimeFormat() == this.duration.toTimeFormat()){
+fun ExoPlayer?.getLastSeek(): Long {
+    if (this != null) {
+        if (this.contentPosition.toTimeFormat() == this.duration.toTimeFormat()) {
             return 0
         }
         return this.contentPosition
@@ -190,17 +204,46 @@ fun Long.toTimeFormat(): String {
     return time
 }
 
+fun getCurrentPanelNumber(): String {
+    when (BaseActivity.activityStack.last()) {
+        RegisterSTBActivity::class.java.simpleName -> return PanelConstants.BLUE_SCREEN
+        STBDetailsActivity::class.java.simpleName -> return PanelConstants.LOADER_SCREEN
+        MainMenuActivity::class.java.simpleName -> return PanelConstants.MAIN_MENU
+        MoviesActivity::class.java.simpleName -> return PanelConstants.VOD
+        HotelInfoActivity::class.java.simpleName -> return PanelConstants.HOTEL_SERVICES
+        //TODO Live services
+        MovieDetailFragment::class.java.simpleName -> return PanelConstants.MOVIE_DETAIL_PAGE
+        ProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
+        HelpInfoFragment::class.java.simpleName -> return PanelConstants.HELP_AND_INFO
+        GuestServiceActivity::class.java.simpleName -> return PanelConstants.GUEST_SERVICES
+        AppWorldActivity::class.java.simpleName -> return PanelConstants.APP_WORLD
+        ExoPlayerActivity::class.java.simpleName -> return PanelConstants.MOVIE_SHOWTIME_PLAYER_PAGE
+        PrgGuidePlayerActivity::class.java.simpleName -> return PanelConstants.FULL_SCREEN_TV
+        ShowtimeActivity::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_LISTENING
+        ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
+        CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
+        //TODO Pairing Page
+        //TODO Inroom Dining Page
+        //TOdo Food Delivery
+        //TODO Crackle
+        //TODO NDVR
+        //TODO CALENDER
+
+        else -> return PanelConstants.MAIN_MENU
+    }
+}
+
 fun Any.resetField(fieldName: String) {
     val field = this.javaClass.getDeclaredField(fieldName)
 
-    with (field) {
+    with(field) {
         isAccessible = true
         set(this, null)
     }
 }
 
 
-class Converters{
+class Converters {
     @TypeConverter
     fun fromMap(value: Map<String, String>?): String? {
         val gson = Gson()

@@ -49,71 +49,63 @@ class ToiletryRequestAdapter(
         holder.binding.tvLvTitle.text = item.name
         holder.binding.ivItem.loadImagesWithGlideExtFomAssets(item.imgSrc)
         holder.binding.tvCount.text = item.quantity.toString()
-        holder.binding.toiletryData.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                setImageFocus(holder.binding.imgAdd)
-                view.setOnKeyListener { _, keyCode, event ->
-                    if (event.action == KeyEvent.ACTION_DOWN) {
-                        when (keyCode) {
-                            KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                                holder.binding.imgRemove.postDelayed(
-                                    {
-                                        holder.binding.imgRemove.requestFocus()
-                                    }, 50
-                                )
-                                holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
-                                    if (hasFocus) {
-                                        setImageFocus(holder.binding.imgRemove)
-                                        view.setOnKeyListener { _, keyCode, event ->
-                                            if (event.action == KeyEvent.ACTION_DOWN) {
-                                                when (keyCode) {
-                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
-                                                        holder.binding.imgAdd.postDelayed(
-                                                            {
-                                                                holder.binding.imgAdd.requestFocus()
-                                                            }, 50
-                                                        )
-                                                        holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
-                                                            if (hasFocus) {
-                                                                setImageFocus(holder.binding.imgAdd)
-                                                            } else {
-                                                                holder.binding.imgAdd.setBackgroundResource(
-                                                                    R.drawable.btn_bg_gradient_default_5dp
-                                                                )
+        holder.binding.root.setOnFocusChangeListener{ view, isFocused ->
+            if (isFocused) {
+                holder.binding.imgAdd.post{
+                    holder.binding.imgAdd.requestFocus()
+                }
+                holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
+                    if (hasFocus) {
+                        setImageFocus(holder.binding.imgAdd)
+                        view.setOnKeyListener { _, keyCode, event ->
+                            if (event.action == KeyEvent.ACTION_DOWN) {
+                                when (keyCode) {
+                                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                                        holder.binding.imgRemove.post {
+                                            holder.binding.imgRemove.requestFocus()
+                                        }
+                                        holder.binding.imgRemove.setOnFocusChangeListener { view, hasFocus ->
+                                            if (hasFocus) {
+                                                setImageFocus(holder.binding.imgRemove)
+                                                view.setOnKeyListener { _, keyCode, event ->
+                                                    if (event.action == KeyEvent.ACTION_DOWN) {
+                                                        when (keyCode) {
+                                                            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                                                                holder.binding.imgAdd.post {
+                                                                    holder.binding.imgAdd.requestFocus()
+                                                                }
+                                                                holder.binding.imgAdd.setOnFocusChangeListener { view, hasFocus ->
+                                                                    if (hasFocus) {
+                                                                        setImageFocus(holder.binding.imgAdd)
+                                                                    } else {
+                                                                        holder.binding.imgAdd.setBackgroundResource(
+                                                                            R.drawable.btn_bg_gradient_default_5dp
+                                                                        )
+                                                                    }
+                                                                }
                                                             }
                                                         }
-                                                        return@setOnKeyListener true
                                                     }
-
-//                                                    KeyEvent.KEYCODE_DPAD_LEFT -> {
-//                                                        holder.binding.clToiletryItems.postDelayed({
-//                                                            holder.binding.clToiletryItems.requestFocus()
-//                                                        }, 50)
-//                                                        holder.binding.clToiletryItems.setOnFocusChangeListener { view, hasFocus ->
-//                                                            if (hasFocus) {
-//                                                                setFocus(holder.binding.clItem)
-//                                                            } else {
-//                                                                holder.binding.clItem.setBackgroundResource(
-//                                                                    R.color.transparent
-//                                                                )
-//                                                            }
-//                                                        }
-//                                                    }
+                                                    false
                                                 }
+                                            } else {
+                                                holder.binding.imgRemove.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
                                             }
-                                            false
                                         }
-                                    } else {
-                                        holder.binding.imgRemove.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
+                                        return@setOnKeyListener true
                                     }
                                 }
-                                return@setOnKeyListener true
                             }
+                            false
                         }
                     }
-                    false
+                    else{
+                        holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
+                    }
                 }
-            } else {
+
+            }
+            else{
                 holder.binding.imgAdd.setBackgroundResource(R.drawable.btn_bg_gradient_default_5dp)
             }
         }

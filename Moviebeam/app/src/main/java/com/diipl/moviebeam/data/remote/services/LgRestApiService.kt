@@ -119,4 +119,15 @@ interface LgRestApiService {
         @Query("INRMVER") INRMVER: String,
         @Query("LAUVER") LAUVER: String
     ): Call<String>
+
+    @GET("content/lcnNew")
+    suspend fun getChannelList(
+        @Query("UA") ua: String
+    ): Response<String>
+
+    @GET("content/epgNew/v3")
+    suspend fun getEPGDataFromServer(
+        @Query("UA") ua: String
+    ): Response<String>
+
 }

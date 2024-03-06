@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +20,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProgramGuideViewModel @Inject constructor(
-    private val movieBeamRepository: MovieBeamRepository
+    private val roomRepository: RoomRepository
 ) : ViewModel() {
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
@@ -34,6 +36,10 @@ class ProgramGuideViewModel @Inject constructor(
                 _weatherLiveData.postValue(Resource.Success(it))
             }
         }
+    }
+
+    fun getAllChannels(key: String?): LiveData<MutableList<ChannelEpgDTO>> {
+        return roomRepository.getAllChannels(key)
     }
 
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()

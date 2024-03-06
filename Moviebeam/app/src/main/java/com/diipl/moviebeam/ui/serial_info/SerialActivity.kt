@@ -112,8 +112,10 @@ class SerialActivity : BaseActivity() {
     private fun handleStbStatusResponse(isStbRegistered: Boolean) {
         if (isStbRegistered) {
             serialViewModel.getStbAllocationStatusFromDataStore(preferenceDataStoreHelper)
+            LoggingService.sendMessageToWebSocket("In App Loader create ","98")
         } else {
             redirectToRegisterStbActivity()
+            LoggingService.sendMessageToWebSocket("Showing Landing Page","99")
         }
     }
 
@@ -133,7 +135,6 @@ class SerialActivity : BaseActivity() {
     private fun redirectToRegisterStbActivity(){
         startActivity(Intent(this, RegisterSTBActivity::class.java))
         finish()
-        LoggingService.sendMessageToWebSocket("In App Loader create ")
     }
 
     private fun showSerialNumberDialog() {
@@ -154,10 +155,10 @@ class SerialActivity : BaseActivity() {
         builder.setView(input)
 //          29221HFGN30WG1	Suite	LABGEN4	No	Living Room	Inactive
 //         Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14/507KKWK1C017  -- 29221HFGN30WG1
-        if (BuildConfig.DEBUG) {
+        /*if (BuildConfig.DEBUG) {
             input.setText("26271HFGN11NHH")
             input.clearFocus()
-        }
+        }*/
 
         builder.setPositiveButton("OK") { dialog, which ->
             serialNo = input.text.toString().uppercase()

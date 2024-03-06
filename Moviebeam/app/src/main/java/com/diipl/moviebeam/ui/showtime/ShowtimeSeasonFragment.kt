@@ -17,6 +17,7 @@ import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentShowtimeSeasonBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 import com.diipl.moviebeam.utils.observe
@@ -55,6 +56,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentShowtimeSeasonBinding.inflate(inflater, container, false)
+        LoggingService.sendMessageToWebSocket("In ShowtimeDetailPage Season create ","13")
         return binding.root
     }
 

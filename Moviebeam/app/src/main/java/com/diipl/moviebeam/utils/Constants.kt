@@ -4,6 +4,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 
 object Constants {
 
@@ -33,7 +34,6 @@ object Constants {
     var MOVIE_PARENT_POSITION: Int = -1
 //    var isUserCheckedIn = false
 //    var isUserCheckedIn = true
-
     const val SPLASH_DELAY = 3000
     var timer = ""
     const val BASE_URL_LG_REST =
@@ -54,7 +54,7 @@ object Constants {
     var HOTEL_VIDEO_LOOP_COUNT = 3
     var HOTEL_VIDEO_DURATION = 0L
     var HOTEL_VIDEO_URL = ""
-    var UA = "14508KKMH0K299"
+    var UA = ""
     var SERIAL_NO = ""
     val MAC_ADDRESS = "test"
     val STB_TYPE = "LG"
@@ -63,14 +63,18 @@ object Constants {
     var ACCOUNT_ID = "13827"
     var STB_ROOM_NO = ""
     var C_LIST_VERSION = ""
+    var NETFLIX_LAUNCHED = false
     const val ACTIVATE = "ACTIVATE"
     const val MODE = "JSON"
     const val THEME_DIRECTORY = "ThemeImages"
     const val HOTEL_LOGO = "HotelLogo.jpg"
     const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
+    var EPG_CDN_URL = ""
+    const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
 
     const val ASSET = "ASSET"
     const val MOVIE_ACCESS = "MOVIE_ACCESS"
+    const val EPG = "EPG"
 
     //Home Page Menu Button Id
     const val PRG_GUIDE_ID = "prgGuide"
@@ -301,6 +305,14 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
+//        "Prime Video",
+//        "Crackle",
+//        "Spotify",
+//        "Plex",
+//        "Vudu Movies & TV",
+//        "DAZN",
+//        "Pac-12 Now",
+//        "ESPN"
     //Guest Feedback
     const val UNACCEPTABLE = "Unacceptable"
     const val DISAPPOINTING = "Disappointing"
@@ -322,7 +334,6 @@ object Constants {
     const val LAVER = "1510818301"
     const val HSVER = "1513951822"
     const val THMVER = "1509529572"
-    const val CMDRES = "4105aa725d84402348900"
     const val INRMVER = "1520924235"
     const val LAUVER = "1520937775"
 
@@ -337,6 +348,7 @@ object Constants {
     const val NEXT_PROGRAM_PARAM = "nextProgram"
     const val PROG_1_TIME_PARAM = "prog1Time"
     const val PROG_2_TIME_PARAM = "prog2Time"
+    const val NO_INFORMATION_AVAILABLE = "No Information Available"
 
     const val GRADIENT_START_COLOR_PARAM = "gradientStartColor"
     const val GRADIENT_END_COLOR_PARAM = "gradientEndColor"
@@ -345,6 +357,8 @@ object Constants {
     const val LOGO_IMAGE_URL = "logoImageUrl"
 
     var NEXT_BUTTON_STATE = 0
+
+    var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
 
 }
 

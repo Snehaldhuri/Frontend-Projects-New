@@ -79,7 +79,7 @@
     <string name="add_symbol">+</string>
     <string name="minus_symbol">-</string>
     <string name="error">ERROR</string>
-    <string name="please_slelect_items_to_send_request">Please slelect items to send request</string>
+    <string name="please_select_items_to_send_request">Please select items to send request</string>
     <string name="confirm_service_n_your_request_for_following_items_has_been_received_and_will_n_be_serviced_shortly">Confirm Service \n Your Request for following items has been received and will \n be serviced shortly</string>
     <string name="qty">Qty</string>
     <string name="background_image">Background Image</string>
