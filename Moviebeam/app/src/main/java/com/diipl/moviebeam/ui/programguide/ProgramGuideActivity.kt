@@ -32,7 +32,6 @@ import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -102,7 +101,7 @@ class ProgramGuideActivity : BaseActivity() {
 
                 }
                 setNextPrograms()
-            }else{
+            } else {
                 programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
             }
             binding.pbLoader.toInvisible()
@@ -441,7 +440,6 @@ class ProgramGuideActivity : BaseActivity() {
 
     private fun loadPreviousPrograms() {
         if (!previousPrograms.isNullOrEmpty()) {
-            binding.root.clearFocus()
             loadProgramGuide(true, previousPrograms?.toMutableList())
             requestFocusOnProgram()
             nextPrograms = currentPrograms
@@ -456,7 +454,6 @@ class ProgramGuideActivity : BaseActivity() {
 
     private fun loadNextPrograms() {
         if (!nextPrograms.isNullOrEmpty()) {
-            binding.root.clearFocus()
             loadProgramGuide(true, nextPrograms?.toMutableList())
             requestFocusOnProgram()
             previousPrograms = currentPrograms

@@ -367,7 +367,8 @@ class RefreshingUiActivity : BaseActivity() {
 
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
                     Constants.C_LIST_VERSION = it.version
-                    EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
                     LoggingService.sendMessageToWebSocket(
                         "In MoviesReleasesCollection callback Success ",
                         getCurrentPanelNumber()
@@ -387,31 +388,31 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
-/*
-    private fun startWork(isMovie: Boolean) {
-//        Log.e(TAG, "startWork: $isMovie   $data")
-        val workManager = WorkManager.getInstance(applicationContext)
-        val inputData = Data.Builder()
-            .putBoolean("isMovie", isMovie)
-//            .putString("json", data)
-            .build()
+    /*
+        private fun startWork(isMovie: Boolean) {
+    //        Log.e(TAG, "startWork: $isMovie   $data")
+            val workManager = WorkManager.getInstance(applicationContext)
+            val inputData = Data.Builder()
+                .putBoolean("isMovie", isMovie)
+    //            .putString("json", data)
+                .build()
 
-        val workRequest = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
-            .setInputData(inputData)
-            .build()
+            val workRequest = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
+                .setInputData(inputData)
+                .build()
 
-        workManager.enqueueUniqueWork("movieShow", ExistingWorkPolicy.REPLACE, workRequest)
+            workManager.enqueueUniqueWork("movieShow", ExistingWorkPolicy.REPLACE, workRequest)
 
-        workManager.getWorkInfoByIdLiveData(workRequest.id).observe(this){
-            Log.e(TAG, "startWork: $it")
-            if (it.state == WorkInfo.State.SUCCEEDED){
-                redirectToMainMenuScreen()
+            workManager.getWorkInfoByIdLiveData(workRequest.id).observe(this){
+                Log.e(TAG, "startWork: $it")
+                if (it.state == WorkInfo.State.SUCCEEDED){
+                    redirectToMainMenuScreen()
+                }
             }
+
+
         }
-
-
-    }
-*/
+    */
 
     private fun handleShowtimeResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
@@ -492,7 +493,7 @@ class RefreshingUiActivity : BaseActivity() {
                         if (!isEPGServerApiCalled) {
                             refreshingUiViewModel.fetchEPGDataFromServer(Constants.UA)
                             isEPGServerApiCalled = true
-                        }else{
+                        } else {
                             redirectToMainMenuScreen()
                             isEPGServerApiCalled = false
                         }

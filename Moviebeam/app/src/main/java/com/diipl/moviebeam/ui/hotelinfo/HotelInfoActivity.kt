@@ -5,7 +5,6 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
@@ -28,6 +27,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -40,8 +40,9 @@ import java.io.File
 import javax.inject.Inject
 
 private const val TAG = "HotelInfoActivity"
+
 @AndroidEntryPoint
-class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListener {
+class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListener {
 
     private val hotelInfoViewModel: HotelInfoViewModel by viewModels()
 
@@ -74,7 +75,7 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
     override fun initViewBinding() {
         binding = ActivityHotelInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+//        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         gradientStartColor = intent.extras?.getString("gradientStartColor").toString()
         gradientEndColor = intent.extras?.getString("gradientEndColor").toString()
 
@@ -104,9 +105,15 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
             }
             binding.rvHotelInfoHeader.layoutManager =
                 LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-            LoggingService.sendMessageToWebSocket("In HotelServicesMain activity", "03")
+            LoggingService.sendMessageToWebSocket(
+                "In HotelServicesMain activity",
+                getCurrentPanelNumber()
+            )
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In HotelServicesMain activity onCreate: ${e.message}","03")
+            LoggingService.sendMessageToWebSocket(
+                "In HotelServicesMain activity onCreate: ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
 
@@ -195,7 +202,8 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
                     }
                 }
 
-                adapter = HotelInfoTabAdapter(itemList = tabs,
+                adapter = HotelInfoTabAdapter(
+                    itemList = tabs,
                     onItemFocused = { it, view ->
                         val transaction = supportFragmentManager.beginTransaction()
                         when (tabMap[it]?.serviceType) {
@@ -313,19 +321,22 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
     private fun loadBg(imgUrl: String?) {
         try {
             Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
+                .into(object : CustomTarget<Drawable?>() {
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        transition: Transition<in Drawable?>?
+                    ) {
+                        resource.alpha = 120
+                        binding.root.background = resource
+                    }
 
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
+                    override fun onLoadCleared(placeholder: Drawable?) {}
+                })
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In HotelServicesMain activity loadBg: ${e.message}","03")
+            LoggingService.sendMessageToWebSocket(
+                "In HotelServicesMain activity loadBg: ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
 
     }
@@ -333,23 +344,26 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
     private fun loadBgImageFromLocalStorage(filename: File) {
         try {
             Glide.with(this)
-            .load(filename)
-            .into(object : CustomTarget<Drawable>() {
+                .load(filename)
+                .into(object : CustomTarget<Drawable>() {
 
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        transition: Transition<in Drawable>?
+                    ) {
+                        resource.alpha = 120
+                        binding.root.background = resource
+                    }
 
-                override fun onLoadCleared(placeholder: Drawable?) {
+                    override fun onLoadCleared(placeholder: Drawable?) {
 
-                }
-            })
+                    }
+                })
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In HotelServicesMain activity loadBgImageFromLocalStorage: ${e.message}","03")
+            LoggingService.sendMessageToWebSocket(
+                "In HotelServicesMain activity loadBgImageFromLocalStorage: ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
 
@@ -371,12 +385,10 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
-                Log.d("TAG1212", "onKeyDownMain: Back working")
                 handleBackClick()
             }
 
             KeyEvent.KEYCODE_ESCAPE -> {
-                Log.d("TAG1212", "onKeyDownMain: Esc working")
                 handleBackClick()
             }
         }
@@ -397,17 +409,16 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
             finish()
         }
     }
-    override fun onItemFocused(position:Int, itemList: List<String>) {
+
+    override fun onItemFocused(position: Int, itemList: List<String>) {
         if (position == 0) {
             binding.gsUp.visibility = View.GONE
-        }
-        else{
+        } else {
             binding.gsUp.visibility = View.VISIBLE
         }
-        if(position == itemList.size - 1){
+        if (position == itemList.size - 1) {
             binding.gsDown.visibility = View.GONE
-        }
-        else {
+        } else {
             binding.gsDown.visibility = View.VISIBLE
         }
     }

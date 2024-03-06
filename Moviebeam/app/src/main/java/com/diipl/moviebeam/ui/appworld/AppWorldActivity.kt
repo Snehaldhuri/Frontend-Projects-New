@@ -25,6 +25,7 @@ import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -65,11 +66,11 @@ class AppWorldActivity : BaseActivity() {
         binding = ActivityAppWorldBinding.inflate(layoutInflater)
         setContentView(binding.root)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
             appWorldViewModel.getAccountSetupResponseData(accountSetupDataStore)
-            appWorldViewModel.getWeatherResponseData(weatherDataStore)
             preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
             appWorldViewModel.validateSession(preferenceDataStoreHelper)
@@ -83,17 +84,24 @@ class AppWorldActivity : BaseActivity() {
                     view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 }
             }
-            Log.d("checked in ","checked in $isCheckedIn")
-            LoggingService.sendMessageToWebSocket("In AppWorldMain activity", "09")
-        }catch (e: Exception) {
+            Log.d("checked in ", "checked in $isCheckedIn")
+            LoggingService.sendMessageToWebSocket(
+                "In AppWorldMain activity",
+                getCurrentPanelNumber()
+            )
+        } catch (e: Exception) {
             e.printStackTrace()
-            LoggingService.sendMessageToWebSocket("launchApp Exception in AppWorldMain activity ${e.message}","09")
+            LoggingService.sendMessageToWebSocket(
+                "launchApp Exception in AppWorldMain activity ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
 
     private fun handleValidateSessionResponse(status: Boolean) {
         this.isCheckedIn = status
     }
+
     private fun getInstalledApps(apiAppList: List<SelectedApps>) {
         try {
             val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
@@ -115,9 +123,13 @@ class AppWorldActivity : BaseActivity() {
             adapter.setAppList(selectedApps)
             binding.rvApps.adapter = adapter
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("getInstalledApps Exception in AppWorldMain activity ${e.message}","09")
+            LoggingService.sendMessageToWebSocket(
+                "getInstalledApps Exception in AppWorldMain activity ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
+
     private fun createRequestBody(roomNo: String, UA: String, accessType: Int): String {
         val netflixDetails = JSONObject().apply {
             put("stbRoomNo", roomNo)
@@ -126,6 +138,7 @@ class AppWorldActivity : BaseActivity() {
         }
         return netflixDetails.toString()
     }
+
     private fun postRequest(url: String, requestBody: String) {
         val client = OkHttpClient()
 
@@ -142,22 +155,27 @@ class AppWorldActivity : BaseActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    Log.d("sessionid url success","sessionid url success")
+                    Log.d("sessionid url success", "sessionid url success")
                 } else {
                     val responseBody = response.body?.string() ?: "No response body"
                     val responseCode = response.code
-                    Log.e("sessionid error", "sessionid Failed to call URL. Response code: $responseCode, Response body: $responseBody")
+                    Log.e(
+                        "sessionid error",
+                        "sessionid Failed to call URL. Response code: $responseCode, Response body: $responseBody"
+                    )
                 }
             }
         })
     }
+
     private fun launchApp(packageName: String) {
         try {
             startActivity(packageManager.getLaunchIntentForPackage(packageName))
 
             if (packageName == "com.netflix.ninja") {
                 val sessionId = Constants.SESSION_ID
-                val url = "https://stb.moviebeam.com:1930/LG/rest/content/netflixAccess/enter?sessionId=$sessionId"
+                val url =
+                    "https://stb.moviebeam.com:1930/LG/rest/content/netflixAccess/enter?sessionId=$sessionId"
 
                 val requestBody = createRequestBody(Constants.STB_ROOM_NO, Constants.UA, 1)
 
@@ -167,7 +185,10 @@ class AppWorldActivity : BaseActivity() {
 
         } catch (e: Exception) {
             e.printStackTrace()
-            LoggingService.sendMessageToWebSocket("launchApp Exception in AppWorldMain activity ${e.message}", "09")
+            LoggingService.sendMessageToWebSocket(
+                "launchApp Exception in AppWorldMain activity ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
 
@@ -192,7 +213,10 @@ class AppWorldActivity : BaseActivity() {
                 startActivity(i)
             }
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("launchAppSecured Exception in AppWorldMain activity ${e.message}","09")
+            LoggingService.sendMessageToWebSocket(
+                "launchAppSecured Exception in AppWorldMain activity ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
 

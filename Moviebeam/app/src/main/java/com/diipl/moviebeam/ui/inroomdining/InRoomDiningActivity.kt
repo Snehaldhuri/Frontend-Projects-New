@@ -15,6 +15,7 @@ import com.diipl.moviebeam.databinding.ActivityInRoomDiningBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -29,6 +30,7 @@ class InRoomDiningActivity : BaseActivity() {
     private var gradient: GradientDrawable? = null
 
     private val inRoomDiningViewModel: InRoomDiningViewModel by viewModels()
+
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
 
@@ -49,7 +51,10 @@ class InRoomDiningActivity : BaseActivity() {
 //        setContentView(R.layout.activity_in_room_dining)
 
         inRoomDiningViewModel.getThemeResponseData(themeDataStore)
-        LoggingService.sendMessageToWebSocket("In InRoomDiningMM activity","16")
+        LoggingService.sendMessageToWebSocket(
+            "In InRoomDiningMM activity",
+            getCurrentPanelNumber()
+        )
 
         binding.btnBack.setOnFocusChangeListener { view, b ->
             if (b) {
@@ -58,27 +63,30 @@ class InRoomDiningActivity : BaseActivity() {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-        binding.btnBack.setOnClickListener{
-           finish()
+        binding.btnBack.setOnClickListener {
+            finish()
         }
     }
 
     private fun loadBg(imgUrl: String?) {
-        try{
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
+        try {
+            Glide.with(this).load(imgUrl)
+                .into(object : CustomTarget<Drawable?>() {
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        transition: Transition<in Drawable?>?
+                    ) {
+                        resource.alpha = 120
+                        binding.root.background = resource
+                    }
 
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
+                    override fun onLoadCleared(placeholder: Drawable?) {}
+                })
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In InRoomDiningMM activity loadBg: ${e.message}","16")
+            LoggingService.sendMessageToWebSocket(
+                "In InRoomDiningMM activity loadBg: ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
 

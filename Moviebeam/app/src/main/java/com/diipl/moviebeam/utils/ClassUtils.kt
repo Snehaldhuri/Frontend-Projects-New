@@ -236,14 +236,14 @@ fun getCurrentPanelNumber(): String {
 fun Any.resetField(fieldName: String) {
     val field = this.javaClass.getDeclaredField(fieldName)
 
-    with (field) {
+    with(field) {
         isAccessible = true
         set(this, null)
     }
 }
 
 
-class Converters{
+class Converters {
     @TypeConverter
     fun fromMap(value: Map<String, String>?): String? {
         val gson = Gson()

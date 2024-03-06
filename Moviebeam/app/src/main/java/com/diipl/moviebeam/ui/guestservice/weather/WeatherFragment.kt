@@ -24,6 +24,7 @@ class WeatherFragment : BaseFragment() {
     private var _binding: FragmentWeatherBinding? = null
     val binding get() = _binding!!
     private val weatherViewModel: WeatherViewModel by activityViewModels()
+
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
 
@@ -55,7 +56,7 @@ class WeatherFragment : BaseFragment() {
                         )
                     }
                 weatherDetails?.tempConditionUrlCloud?.let {
-                    binding.ivWeatherProvider.loadImagesWithGlideExt(it)
+                    binding.ivWeather.loadImagesWithGlideExt(it)
                 }
                 binding.tvTemperature.text = replaceDegreeSymbol(weatherDetails?.tempCondition)
                 binding.tvCity.text = weatherDetails?.location

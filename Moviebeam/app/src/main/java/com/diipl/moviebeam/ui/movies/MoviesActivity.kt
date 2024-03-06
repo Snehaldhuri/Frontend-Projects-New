@@ -38,6 +38,7 @@ import com.diipl.moviebeam.utils.Constants.ADULT_MCW_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_MAIN
 import com.diipl.moviebeam.utils.Constants.SESSION_ID
 import com.diipl.moviebeam.utils.SharedPreference
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
@@ -101,8 +102,8 @@ class MoviesActivity : BaseActivity() {
         setContentView(view)
     }
 
-        /*
-        */
+    /*
+    */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -131,7 +132,7 @@ class MoviesActivity : BaseActivity() {
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
-        LoggingService.sendMessageToWebSocket("In MoviesMain activity", "02")
+        LoggingService.sendMessageToWebSocket("In MoviesMain activity", getCurrentPanelNumber())
 
         try {
             val params = binding.recentRecyclerView.layoutParams
@@ -163,7 +164,7 @@ class MoviesActivity : BaseActivity() {
         } catch (e: Exception) {
             LoggingService.sendMessageToWebSocket(
                 "In MoviesMain activity onResume: ${e.message}",
-                "02"
+                getCurrentPanelNumber()
             )
         }
 
@@ -179,17 +180,17 @@ class MoviesActivity : BaseActivity() {
     override fun onStart() {
         super.onStart()
 
-        isUserCheckedIn = (SESSION_ID.isNotEmpty() && SESSION_ID!="null")
+        isUserCheckedIn = (SESSION_ID.isNotEmpty() && SESSION_ID != "null")
 
-       if (isUserCheckedIn) {
-           if (!preference.isMainAdultMCW) {
-               if (preference.isAdultPassCodeEmpty)
-                   openACDDialog(ADULT_MCW_MAIN)
-               else
-                   if (!preference.isAdultMCD)
-                       openACDDialog(ADULT_MCD_BTN)
-           }
-       }
+        if (isUserCheckedIn) {
+            if (!preference.isMainAdultMCW) {
+                if (preference.isAdultPassCodeEmpty)
+                    openACDDialog(ADULT_MCW_MAIN)
+                else
+                    if (!preference.isAdultMCD)
+                        openACDDialog(ADULT_MCD_BTN)
+            }
+        }
     }
 
     private fun requestFocus() {
@@ -286,7 +287,7 @@ class MoviesActivity : BaseActivity() {
                                 Constants.FREE_MOVIES_ID -> {
                                     val freeGenreMap: HashMap<String, MutableList<ContentDto>> =
                                         HashMap()
-                                response.freeContentList?.forEach {
+                                    response.freeContentList?.forEach {
                                         if (freeGenreMap[it.genre1] != null) {
                                             freeGenreMap[it.genre1]?.add(it)
                                         } else {
@@ -307,65 +308,65 @@ class MoviesActivity : BaseActivity() {
                                 }
 
                                 Constants.ADULT_DAY_PASS_ID -> {
-                                if (isUserCheckedIn){
-                                    if (!preference.isAdultContentEnabled) {
-                                        openACDDialog(ADULT_CONTENT_DISABLED)
-                                    } else {
-                                        if (!preference.isAdultPassCodeEmpty) {
-                                            if (!preference.isAdultMCD)
-                                                openACDDialog(ADULT_MCD_BTN)
-                                            else if (preference.isAdultLocked)
-                                                openACDDialog(ADULT_LOCKED)
+                                    if (isUserCheckedIn) {
+                                        if (!preference.isAdultContentEnabled) {
+                                            openACDDialog(ADULT_CONTENT_DISABLED)
                                         } else {
-                                            if (!preference.isBtnAdultMCW)
-                                                openACDDialog(ADULT_MCW_BTN)
-                                        }
-                                        if (preference.isBtnAdultMCW && !isAdultDayPassPurchased && isUserCheckedIn){
-                                            startActivity(
-                                                Intent(
-                                                    this@MoviesActivity,
-                                                    ConfirmRentalActivity::class.java
-                                                ).putExtra(
-                                                    "price",
-                                                    response.adultDayPassPrice.toString()
+                                            if (!preference.isAdultPassCodeEmpty) {
+                                                if (!preference.isAdultMCD)
+                                                    openACDDialog(ADULT_MCD_BTN)
+                                                else if (preference.isAdultLocked)
+                                                    openACDDialog(ADULT_LOCKED)
+                                            } else {
+                                                if (!preference.isBtnAdultMCW)
+                                                    openACDDialog(ADULT_MCW_BTN)
+                                            }
+                                            if (preference.isBtnAdultMCW && !isAdultDayPassPurchased && isUserCheckedIn) {
+                                                startActivity(
+                                                    Intent(
+                                                        this@MoviesActivity,
+                                                        ConfirmRentalActivity::class.java
+                                                    ).putExtra(
+                                                        "price",
+                                                        response.adultDayPassPrice.toString()
+                                                    )
                                                 )
-                                            )
 
+                                            }
+                                            if (isAdultDayPassPurchased && !preference.isAdultLocked) {
+                                                setAdultData(response)
+                                            }
                                         }
-                                        if (isAdultDayPassPurchased && !preference.isAdultLocked) {
-                                            setAdultData(response)
-                                        }
+                                    } else {
+                                        if (!preference.isBtnAdultMCW)
+                                            openACDDialog(ADULT_MCW_BTN)
+                                        setAdultData(response)
                                     }
-                                } else {
-                                    if (!preference.isBtnAdultMCW)
-                                        openACDDialog(ADULT_MCW_BTN)
-                                    setAdultData(response)
                                 }
-                            }
 
                                 Constants.ADULT_ID -> {
-                                if (isUserCheckedIn){
-                                    if (!preference.isAdultContentEnabled)
-                                        openACDDialog(ADULT_CONTENT_DISABLED)
-                                    else {
-                                        if (!preference.isAdultPassCodeEmpty) {
-                                            if (!preference.isAdultMCD)
-                                                openACDDialog(ADULT_MCD_BTN)
-                                            else if (preference.isAdultLocked)
-                                                openACDDialog(ADULT_LOCKED)
-                                        } else {
-                                            if (!preference.isBtnAdultMCW)
-                                                openACDDialog(ADULT_MCW_BTN)
-                                        }
+                                    if (isUserCheckedIn) {
+                                        if (!preference.isAdultContentEnabled)
+                                            openACDDialog(ADULT_CONTENT_DISABLED)
+                                        else {
+                                            if (!preference.isAdultPassCodeEmpty) {
+                                                if (!preference.isAdultMCD)
+                                                    openACDDialog(ADULT_MCD_BTN)
+                                                else if (preference.isAdultLocked)
+                                                    openACDDialog(ADULT_LOCKED)
+                                            } else {
+                                                if (!preference.isBtnAdultMCW)
+                                                    openACDDialog(ADULT_MCW_BTN)
+                                            }
 //                                    if (!preference.isAdultLocked && (SESSION_ID.isNotEmpty() || SESSION_ID!="null"))
-                                        if (!preference.isAdultLocked)
-                                            setAdultData(response)
+                                            if (!preference.isAdultLocked)
+                                                setAdultData(response)
+                                        }
+                                    } else {
+                                        if (!preference.isBtnAdultMCW)
+                                            openACDDialog(ADULT_MCW_BTN)
+                                        setAdultData(response)
                                     }
-                                } else {
-                                    if (!preference.isBtnAdultMCW)
-                                        openACDDialog(ADULT_MCW_BTN)
-                                    setAdultData(response)
-                                }
                                 }
                             }
                         }, onRightKeyPressed = {
