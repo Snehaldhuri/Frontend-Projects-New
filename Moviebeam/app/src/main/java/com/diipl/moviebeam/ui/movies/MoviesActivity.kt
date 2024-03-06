@@ -24,7 +24,6 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -36,10 +35,10 @@ import com.diipl.moviebeam.utils.Constants.ADULT_CONTENT_DISABLED
 import com.diipl.moviebeam.utils.Constants.ADULT_LOCKED
 import com.diipl.moviebeam.utils.Constants.ADULT_MCD_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_BTN
-import com.diipl.moviebeam.utils.Constants.isUserCheckedIn
+import com.diipl.moviebeam.utils.Constants.ADULT_MCW_MAIN
+import com.diipl.moviebeam.utils.Constants.SESSION_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.getHeightInPercent
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toGone
@@ -73,9 +72,6 @@ class MoviesActivity : BaseActivity() {
     lateinit var themeDataStore: DataStore<ThemeResponse>
 
     @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
-    @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
 
     @Inject
@@ -85,18 +81,14 @@ class MoviesActivity : BaseActivity() {
     private var itemView: View? = null
     private var isRecentView = false
     private var isAdultDayPassPurchased = false
+    private var isUserCheckedIn = false
     private lateinit var adultResponse : MoviesResponse
 
     override fun observeViewModel() {
-        observe(moviesViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(moviesViewModel.themeLiveData, ::handleThemeResponse)
         observe(moviesViewModel.moviesLiveData, ::handleMoviesServiceResponse)
 //        observe(moviesViewModel.adultStatus, ::handleAdultResponse)
         observe(moviesViewModel.adultDayPassStatus, ::handleAdultDayPassResponse)
-
-        moviesViewModel.getThemeResponseData(themeDataStore)
-        moviesViewModel.getWeatherResponseData(weatherDataStore)
-        moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
 
     }
 
@@ -117,6 +109,8 @@ class MoviesActivity : BaseActivity() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(applicationContext)
 
         moviesViewModel.getAdultStatus(preferenceDataStoreHelper)
+        moviesViewModel.getThemeResponseData(themeDataStore)
+        moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
 
         binding.btnBack.setOnFocusChangeListener(::handleFocusChange)
         binding.btnBack.setOnClickListener {
@@ -166,18 +160,27 @@ class MoviesActivity : BaseActivity() {
             }
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        binding.dialogContainer.toGone()
 
     }
 
     override fun onStart() {
         super.onStart()
 
+        isUserCheckedIn = (SESSION_ID.isNotEmpty() && SESSION_ID!="null")
+
        if (isUserCheckedIn) {
-           if (!preference.isMainAdultMCW && preference.isAdultPassCodeEmpty) {
-               openACDDialog(Constants.ADULT_MCW_MAIN)
-           }
-           if (!preference.isMainAdultMCW && !preference.isAdultPassCodeEmpty) {
-               openACDDialog(ADULT_MCD_BTN)
+           if (!preference.isMainAdultMCW) {
+               if (preference.isAdultPassCodeEmpty)
+                   openACDDialog(ADULT_MCW_MAIN)
+               else
+                   if (!preference.isAdultMCD)
+                       openACDDialog(ADULT_MCD_BTN)
            }
        }
     }
@@ -326,6 +329,10 @@ class MoviesActivity : BaseActivity() {
                                             setAdultData(response)
                                         }
                                     }
+                                } else {
+                                    if (!preference.isBtnAdultMCW)
+                                        openACDDialog(ADULT_MCW_BTN)
+                                    setAdultData(response)
                                 }
                             }
 
@@ -347,7 +354,11 @@ class MoviesActivity : BaseActivity() {
                                         if (!preference.isAdultLocked)
                                             setAdultData(response)
                                     }
-                                } else setAdultData(response)
+                                } else {
+                                    if (!preference.isBtnAdultMCW)
+                                        openACDDialog(ADULT_MCW_BTN)
+                                    setAdultData(response)
+                                }
                             }
                         }
                     }, onRightKeyPressed = {
@@ -435,25 +446,6 @@ class MoviesActivity : BaseActivity() {
     }
 
 
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    moviesViewModel.weatherLiveData.value?.data?.tempCondition
-                moviesViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
-                        it
-                    )
-                }
-            }
-
-            else -> {
-                status.errorCode?.let { moviesViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
@@ -512,6 +504,7 @@ class MoviesActivity : BaseActivity() {
         binding.parentRecyclerView.toGone()
         binding.recentRecyclerView.toGone()
         binding.fcvMovieDetail.toVisible()
+        movieDetailFragment.movie = null
         movieDetailFragment.setMovieDetails(movie)
     }
 

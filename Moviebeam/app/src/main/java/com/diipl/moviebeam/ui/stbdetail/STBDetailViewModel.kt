@@ -394,8 +394,8 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                 currentPreferences.copy(
                     accountId = data.accountId,
                     adultDayPassPrice = data.adultDayPassPrice,
-                    freeContentList = data.freeContentList,
                     freeGenreList = data.freeGenreList,
+                    freeContentList = data.freeContentList,
                     premiumContentList = data.premiumContentList,
                     premiumGenreList = data.premiumGenreList,
                     id = data.id,

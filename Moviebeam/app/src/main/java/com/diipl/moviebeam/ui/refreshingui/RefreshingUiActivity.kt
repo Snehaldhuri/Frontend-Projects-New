@@ -31,6 +31,8 @@ import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+private const val TAG = "RefreshingUiActivity"
+
 @AndroidEntryPoint
 class RefreshingUiActivity : BaseActivity() {
 
@@ -70,16 +72,18 @@ class RefreshingUiActivity : BaseActivity() {
         observe(refreshingUiViewModel.localAttractionLiveData, ::handleLocalAttractionResponse)
         observe(refreshingUiViewModel.moviesLiveData, ::handleMoviesResponse)
         observe(refreshingUiViewModel.showtimeLiveData, ::handleShowtimeResponse)
+        observe(refreshingUiViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
     }
 
     override fun initViewBinding() {
         binding = ActivityRefreshingUiBinding.inflate(layoutInflater)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         setContentView(binding.root)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            kapingResponse = intent.getParcelableExtra("response", KapingResponse::class.java)
+
+        kapingResponse = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("response", KapingResponse::class.java)
         } else {
-            kapingResponse = intent.getParcelableExtra("response")
+            intent.getParcelableExtra("response")
         }
         binding.root.postDelayed({
             this.handleKaping(kapingResponse)
@@ -117,10 +121,12 @@ class RefreshingUiActivity : BaseActivity() {
             }
 
             KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> {
+//                startWork(true)
                 handleFetchSyncListCmd()
             }
 
             KapingConstants.KAP_CMD_FETCH_SHOWTIME_DATA -> {
+//                startWork(false)
                 handleFetchShowtimeCmd()
             }
         }
@@ -128,7 +134,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket("Signal for check out command" )
+        LoggingService.sendMessageToWebSocket("Signal for check out command")
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -141,7 +147,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket("Signal for check in command" )
+        LoggingService.sendMessageToWebSocket("Signal for check in command")
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -154,7 +160,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleAccountActivateCmd() {
-        LoggingService.sendMessageToWebSocket("Signalling to get account set up" )
+        LoggingService.sendMessageToWebSocket("Signalling to get account set up")
         refreshingUiViewModel.fetchAccountSetupDetails(
             Constants.ACTIVATE,
             Constants.UA,
@@ -186,7 +192,7 @@ class RefreshingUiActivity : BaseActivity() {
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
             is Resource.Success -> {
-                refreshingUiViewModel.accountSetupLiveData.value?.data?.let {
+                status.data?.let {
                     refreshingUiViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
@@ -200,7 +206,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In AccountSetup callback fail" )
+                LoggingService.sendMessageToWebSocket("In AccountSetup callback fail")
             }
         }
     }
@@ -221,7 +227,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Theme Callback fail" )
+                LoggingService.sendMessageToWebSocket("In Theme Callback fail")
 
 
             }
@@ -243,7 +249,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail" )
+                LoggingService.sendMessageToWebSocket("In Hotel Services callback fail")
             }
         }
     }
@@ -267,7 +273,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail " )
+                LoggingService.sendMessageToWebSocket("In Local Attractions callback fail ")
 
             }
         }
@@ -276,28 +282,56 @@ class RefreshingUiActivity : BaseActivity() {
     private fun handleMoviesResponse(status: Resource<MoviesResponse>) {
         when (status) {
             is Resource.Success -> {
-                refreshingUiViewModel.moviesLiveData.value?.data?.let {
+                status.data?.let {
+//                    startWork(true, it.toJson())
+
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
                     Constants.C_LIST_VERSION = it.version
-                    EndlessService.kapingCmdExecutionResponse =
-                        KapingConstants.EXECUTED_SUCCESSFULLY
-                    redirectToMainMenuScreen()
+                    EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                     LoggingService.sendMessageToWebSocket("In MoviesReleasesCollection callbackSuccess ")
+                    redirectToMainMenuScreen()
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Movies callback fail " )
+                LoggingService.sendMessageToWebSocket("In Movies callback fail ")
             }
         }
     }
+
+/*
+    private fun startWork(isMovie: Boolean) {
+//        Log.e(TAG, "startWork: $isMovie   $data")
+        val workManager = WorkManager.getInstance(applicationContext)
+        val inputData = Data.Builder()
+            .putBoolean("isMovie", isMovie)
+//            .putString("json", data)
+            .build()
+
+        val workRequest = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
+            .setInputData(inputData)
+            .build()
+
+        workManager.enqueueUniqueWork("movieShow", ExistingWorkPolicy.REPLACE, workRequest)
+
+        workManager.getWorkInfoByIdLiveData(workRequest.id).observe(this){
+            Log.e(TAG, "startWork: $it")
+            if (it.state == WorkInfo.State.SUCCEEDED){
+                redirectToMainMenuScreen()
+            }
+        }
+
+
+    }
+*/
 
     private fun handleShowtimeResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.showtimeLiveData.value?.data?.let {
+//                    startWork(false, it.toJson())
                     refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
@@ -309,7 +343,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket("In Showtime callback fail " )
+                LoggingService.sendMessageToWebSocket("In Showtime callback fail ")
             }
         }
     }

@@ -23,6 +23,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.io.InputStream
@@ -282,10 +283,12 @@ class LocalAttractionSerializer @Inject constructor() : Serializer<LocalAttracti
         }
 
     override suspend fun writeTo(t: LocalAttractionResponse, output: OutputStream) {
-        output.write(
-            Json.encodeToString(LocalAttractionResponse.serializer(), t)
-                .encodeToByteArray()
-        )
+        withContext(Dispatchers.IO) {
+            output.write(
+                Json.encodeToString(LocalAttractionResponse.serializer(), t)
+                    .encodeToByteArray()
+            )
+        }
     }
 }
 
@@ -305,10 +308,12 @@ class MoviesSerializer @Inject constructor() : Serializer<MoviesResponse> {
         }
 
     override suspend fun writeTo(t: MoviesResponse, output: OutputStream) {
-        output.write(
-            Json.encodeToString(MoviesResponse.serializer(), t)
-                .encodeToByteArray()
-        )
+        withContext(Dispatchers.IO) {
+            output.write(
+                Json.encodeToString(MoviesResponse.serializer(), t)
+                    .encodeToByteArray()
+            )
+        }
     }
 }
 
@@ -328,10 +333,12 @@ class ShowTimeSerializer @Inject constructor() : Serializer<ShowTimeResponse> {
         }
 
     override suspend fun writeTo(t: ShowTimeResponse, output: OutputStream) {
-        output.write(
-            Json.encodeToString(ShowTimeResponse.serializer(), t)
-                .encodeToByteArray()
-        )
+        withContext(Dispatchers.IO) {
+            output.write(
+                Json.encodeToString(ShowTimeResponse.serializer(), t)
+                    .encodeToByteArray()
+            )
+        }
     }
 }
 

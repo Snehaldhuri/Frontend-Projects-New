@@ -1,13 +1,14 @@
 package com.diipl.moviebeam.ui.guestservice.weather
 
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,41 @@ class WeatherViewModel @Inject constructor(
             }
         }
     }
+
+    fun setWeatherResponseData(
+        dataStore: DataStore<WeatherResponse>,
+        data: WeatherResponse
+    ) {
+
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    accountId = data.accountId,
+                    dewPoint = data.dewPoint,
+                    durationMin = data.durationMin,
+                    high = data.high,
+                    highForLingual = data.highForLingual,
+                    humidity = data.humidity,
+                    id = data.id,
+                    location = data.location,
+                    low = data.low,
+                    lowForLingual = data.lowForLingual,
+                    sunrise = data.sunrise,
+                    sunset = data.sunset,
+                    tempCondition = data.tempCondition,
+                    tempConditionUrl = data.tempConditionUrl,
+                    tempConditionUrlCloud = data.tempConditionUrlCloud,
+                    type = data.type,
+                    visibility = data.visibility,
+                    weatherProviderImage = data.weatherProviderImage,
+                    weatherProviderImageCloud = data.weatherProviderImageCloud,
+                    windSpeed = data.windSpeed
+                )
+
+            }
+        }
+    }
+
 
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
     val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate

@@ -634,7 +634,7 @@ class EndlessService : Service() {
                         val syncResponse = data.fromJson<RentalSyncResponse>()
                         moviesLiveData.value?.let { res ->
                             syncResponse.syncList.forEach { sync ->
-                                res.premiumContentList.forEach {
+                                res.premiumContentList?.forEach {
                                     if (sync.releaseId == it.releaseId && sync.productId == it.productId) {
                                         val model = RentalMovieModel()
                                         model.movieData = it
@@ -688,12 +688,13 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_CHECK_IN -> {
                 resetPopUps(true)
                 kapingResponse.CMD?.let {
-                    if (it.length > 19){
+                    if (it.length > 19) {
                         val isEnabled = it[19] == '1'
                         updateAdultContent(isEnabled)
                     }
                 }
             }
+
             KapingConstants.KAP_CMD_CHECK_OUT -> resetPopUps(false)
         }
         val i = Intent(applicationContext, RefreshingUiActivity::class.java)
@@ -715,7 +716,7 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_CHECK_IN -> {
                 resetPopUps(true)
                 kapingResponse.CMD?.let {
-                    if (it.length > 19){
+                    if (it.length > 19) {
                         val isEnabled = it[19] == '1'
                         updateAdultContent(isEnabled)
                     }
@@ -730,8 +731,8 @@ class EndlessService : Service() {
         }
     }
 
-    private fun resetPopUps(isIn : Boolean) {
-         if (!isIn) sharedPreference.adultPassCode = "____"
+    private fun resetPopUps(isIn: Boolean) {
+        if (!isIn) sharedPreference.adultPassCode = "____"
         sharedPreference.isAdultLocked = true
         sharedPreference.isMainAdultMCW = false
         sharedPreference.isBtnAdultMCW = false
@@ -1072,13 +1073,13 @@ class EndlessService : Service() {
                 currentPreferences.copy(
                     accountId = data.accountId,
                     adultDayPassPrice = data.adultDayPassPrice,
+                    id = data.id,
+                    type = data.type,
+                    version = data.version,
                     freeContentList = data.freeContentList,
                     freeGenreList = data.freeGenreList,
                     premiumContentList = data.premiumContentList,
-                    premiumGenreList = data.premiumGenreList,
-                    id = data.id,
-                    type = data.type,
-                    version = data.version
+                    premiumGenreList = data.premiumGenreList
                 )
 
             }

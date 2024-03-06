@@ -14,7 +14,7 @@ interface LgRestApiService {
 
     @GET("content/hotelServices")
     suspend fun getHotelServices(
-        @Query("accountId") accountId: String
+        @Query("UA") accountId: String
     ): Response<String>
 
     @GET("content/localAttraction")

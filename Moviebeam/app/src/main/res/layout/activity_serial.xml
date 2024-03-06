@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:text="user_serial"
         android:textSize="20sp"
+        android:visibility="gone"
         android:textAlignment="center"/>
 
 </LinearLayout>

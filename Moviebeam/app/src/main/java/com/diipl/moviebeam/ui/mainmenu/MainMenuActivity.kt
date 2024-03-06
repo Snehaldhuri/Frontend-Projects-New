@@ -24,7 +24,6 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
@@ -49,7 +48,6 @@ import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_URL
 import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -90,9 +88,6 @@ class MainMenuActivity : BaseActivity() {
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
-    @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
@@ -101,7 +96,6 @@ class MainMenuActivity : BaseActivity() {
     lateinit var preference: SharedPreference
 
     override fun observeViewModel() {
-        observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
 
@@ -127,7 +121,7 @@ class MainMenuActivity : BaseActivity() {
         // call below function to get data from datastore
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
-        mainMenuViewModel.getWeatherResponseData(weatherDataStore)
+
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
 
         val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
@@ -245,26 +239,6 @@ class MainMenuActivity : BaseActivity() {
     private fun releaseVideoPlayer() {
         binding.videoView.toInvisible()
         player.release()
-    }
-
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    mainMenuViewModel.weatherLiveData.value?.data?.tempCondition
-                mainMenuViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(it)
-                }
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
-
-            }
-        }
     }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {

@@ -6,6 +6,7 @@ import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -27,6 +28,7 @@ import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getLastSeek
 import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.cancel
 
 
 private const val TAG = "ExoPlayerActivity"
@@ -205,13 +207,17 @@ class ExoPlayerActivity : BaseActivity() {
 
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
-            if (::showTimeModel.isInitialized){
-                moviesViewModel.deleteShowDetails(showTimeModel)
-                finish()
+            if (error.localizedMessage!!.contains("Source error")){
+                if (::showTimeModel.isInitialized){
+                    moviesViewModel.deleteShowDetails(showTimeModel)
+                    moviesViewModel.viewModelScope.cancel()
+                    finish()
+                }
+                if (::rentalMovieModel.isInitialized ){
+                    moviesViewModel.setRentalReversal(rentalMovieModel)
+                }
             }
-            if (::rentalMovieModel.isInitialized && error.localizedMessage!!.contains("Source error") ){
-                moviesViewModel.setRentalReversal(rentalMovieModel)
-            }
+
         }
 
         override fun onPositionDiscontinuity(

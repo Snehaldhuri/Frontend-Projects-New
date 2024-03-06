@@ -122,6 +122,7 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
 
         adapter = ShowtimeSeasonChildAdapter(
             onItemClicked = { movieDetail ->
+                viewModel.insertShowDetails(movieDetail)
                 viewModel.getShowData(movieDetail.releaseId)
                 viewModel.seriesData.observe(this){
                     (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(movieDetail, false, true,

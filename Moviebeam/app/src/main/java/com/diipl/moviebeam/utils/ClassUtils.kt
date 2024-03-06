@@ -9,6 +9,7 @@ import android.os.Build
 import android.util.Log
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.TypeConverter
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
@@ -16,6 +17,7 @@ import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -186,4 +188,28 @@ fun Long.toTimeFormat(): String {
     secs = if (sec < 10) "0$sec" else "" + sec
     time = "$minute:$secs"
     return time
+}
+
+fun Any.resetField(fieldName: String) {
+    val field = this.javaClass.getDeclaredField(fieldName)
+
+    with (field) {
+        isAccessible = true
+        set(this, null)
+    }
+}
+
+
+class Converters{
+    @TypeConverter
+    fun fromMap(value: Map<String, String>?): String? {
+        val gson = Gson()
+        return gson.toJson(value)
+    }
+
+    @TypeConverter
+    fun toMap(value: String?): Map<String, String>? {
+        val mapType = object : TypeToken<Map<String, String>?>() {}.type
+        return Gson().fromJson(value, mapType)
+    }
 }

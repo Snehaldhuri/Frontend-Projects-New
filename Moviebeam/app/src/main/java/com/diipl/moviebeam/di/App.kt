@@ -8,11 +8,21 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-open class App : Application(), LifecycleEventObserver {
+open class App : Application(), LifecycleEventObserver/*, Configuration.Provider*/{
+/*
+    @Inject
+    lateinit var workerFactory : HiltWorkerFactory
+
+    override fun getWorkManagerConfiguration(): Configuration {
+        return Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
+    }*/
 
     override fun onCreate() {
         super.onCreate()
 
+//        WorkManager.initialize(this, workManagerConfiguration)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
     }

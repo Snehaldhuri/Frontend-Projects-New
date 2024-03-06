@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.dialogs
 
-import android.content.Context
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -166,11 +165,11 @@ class AdultContentDialog(
         // MCW
         binding.btnCancel.setOnClickListener {
             preference.isBtnAdultMCW = true
-            dismissNow()
+            dismiss()
         }
         binding.btnContinue.setOnClickListener {
             preference.isBtnAdultMCW = true
-            dismissNow()
+            dismiss()
         }
 
         // MCW
@@ -277,9 +276,9 @@ class AdultContentDialog(
                 val pass =
                     binding.etPass1.text.toString() + binding.etPass2.text.toString() + binding.etPass3.text.toString() + binding.etPass4.text.toString()
                 if (pass.length < 4) {
-                    showToast(requireContext(), "Incomplete password!")
+                    showToast("Incomplete password!")
                 } else if (!preference.isAdultPassCodeEmpty && pass != preference.adultPassCode) {
-                    showToast(requireContext(), "Password doesn't match.")
+                    showToast("Password doesn't match.")
                 } else {
                     if (pass == preference.adultPassCode) {
                         preference.isAdultLocked = false
@@ -293,6 +292,7 @@ class AdultContentDialog(
                     }
                     if (preference.isAdultPassCodeEmpty) {
                         preference.adultPassCode = pass
+                        showToast("Passcode set successfully.")
                     }
                     dismiss()
                 }
@@ -324,8 +324,8 @@ class AdultContentDialog(
         }
     }
 
-    private fun showToast(context: Context, s: String) {
-        Toast.makeText(context, s, Toast.LENGTH_SHORT).show()
+    private fun showToast(msg: String) {
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
     }
 
     private fun handleFocusChange(view: View, focus: Boolean) {

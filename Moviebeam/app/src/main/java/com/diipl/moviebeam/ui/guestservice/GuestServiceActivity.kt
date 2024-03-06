@@ -18,8 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -27,7 +25,6 @@ import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
 import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.concierge.ConciergeFragment
@@ -45,8 +42,9 @@ import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFrag
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
 import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -72,10 +70,6 @@ class GuestServiceActivity : BaseActivity() {
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
-
-    @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private var gradient: GradientDrawable? = null
@@ -89,12 +83,10 @@ class GuestServiceActivity : BaseActivity() {
     }
 
     override fun observeViewModel() {
-        observe(guestServiceViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observeSnackBarMessages(guestServiceViewModel.showSnackBar)
         observeToast(guestServiceViewModel.showToast)
 
-        guestServiceViewModel.getWeatherResponseData(weatherDataStore)
         guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
 
     }
@@ -149,24 +141,6 @@ class GuestServiceActivity : BaseActivity() {
 //        return gson.fromJson(br, ToiletryDataResponse::class.java)
 //    }
 
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    guestServiceViewModel.weatherLiveData.value?.data?.tempCondition
-                guestServiceViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
-                        it
-                    )
-                }
-            }
-
-            else -> {
-                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {

@@ -36,7 +36,7 @@ class MovieDetailFragment : BaseFragment() {
     private var _binding: FragmentMovieDetailBinding? = null
     val binding get() = _binding!!
 
-    private lateinit var movie: ContentDto
+    var movie: ContentDto? = null
     private var gradient: GradientDrawable? = null
     private var isCheckedIn = false
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
@@ -77,7 +77,7 @@ class MovieDetailFragment : BaseFragment() {
 
         binding.btnWatchTrailer.setOnClickListener {
             apiCall(0, Constants.C_TYPE_TRAILER)
-            movie.let { it1 ->
+            movie?.let { it1 ->
                 (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                     it1,
                     true,
@@ -90,8 +90,8 @@ class MovieDetailFragment : BaseFragment() {
         binding.btnRentNow.setOnClickListener {
             if (binding.btnRentNow.text == getString(R.string.watch_free)) {
                 apiCall(0, Constants.C_TYPE_MOVIE)
-                viewModel.insertMovieDetails(RentalMovieResponse(), movie)
-                movie.let { it1 ->
+                movie?.let { it1 ->
+                    viewModel.insertMovieDetails(RentalMovieResponse(), it1)
                     (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                         it1,
                         false,
@@ -109,12 +109,14 @@ class MovieDetailFragment : BaseFragment() {
             }
         }
         binding.btnAdultPlay.setOnClickListener {
-            if (binding.btnAdultPlay.text == getString(R.string.watch_free) || binding.btnAdultPlay.text == getString(R.string.watch_now)
+            if (binding.btnAdultPlay.text == getString(R.string.watch_free) || binding.btnAdultPlay.text == getString(
+                    R.string.watch_now
+                )
                 || binding.btnAdultPlay.text == getString(R.string.continue_watch)
             ) {
                 apiCall(0, Constants.C_TYPE_MOVIE)
-                viewModel.insertMovieDetails(RentalMovieResponse(), movie)
-                movie.let { it1 ->
+                movie?.let { it1 ->
+                    viewModel.insertMovieDetails(RentalMovieResponse(), it1)
                     (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                         it1,
                         false,
@@ -136,7 +138,7 @@ class MovieDetailFragment : BaseFragment() {
             val seekType =
                 if (binding.btnContinueWatch.text.toString() == getString(R.string.watch_now)) 0 else 1
             apiCall(seekType, Constants.C_TYPE_MOVIE)
-            movie.let { it1 ->
+            movie?.let { it1 ->
                 (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                     it1,
                     false,
@@ -148,7 +150,7 @@ class MovieDetailFragment : BaseFragment() {
 
         binding.btnWatchFromStart.setOnClickListener {
             apiCall(1, Constants.C_TYPE_MOVIE)
-            movie.let { it1 ->
+            movie?.let { it1 ->
                 (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                     it1,
                     false,
@@ -162,8 +164,8 @@ class MovieDetailFragment : BaseFragment() {
 
     private fun apiCall(seekType: Int, cType: String) {
         val request = RentalMovieRequest()
-        if (::movie.isInitialized) {
-            movie.let {
+        if (movie != null) {
+            movie?.let {
                 request.productId = it.productId
                 request.releaseID = it.releaseId
                 request.price = it.price
@@ -189,45 +191,24 @@ class MovieDetailFragment : BaseFragment() {
         binding.btnWatchFromStart.setOnFocusChangeListener(::handleBackClick)
         binding.btnAdultPlay.setOnFocusChangeListener(::handleBackClick)
 
-        if (::movie.isInitialized)
-            setMovieDetails(movie)
+        if (movie != null)
+            setMovieDetails(movie!!)
 
     }
 
     fun setMovieDetails(content: ContentDto) {
-        movie = content
-        viewModel.getRentalMovie(movie.releaseId)
+        viewModel.getRentalMovie(content.releaseId)
 
         viewModel.movieData.observe(this) { data ->
-            if (data != null)
-                movie = data.movieData!!
-            updateUI(movie, data)
+            movie = if (data != null) data.movieData!! else content
+            updateUI(movie!!, data)
+            binding.root.invalidate()
         }
-
-        val httpStreamingHotelVideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
-        movie.imagePathPoster =
-            httpStreamingHotelVideoUrl + movie.releaseId + "/" + movie.releaseId + "_P.jpg"
-        movie.imagePathPoster.let {
-            binding.ivMovieImage.loadImagesWithGlideExtPoster(it)
-        }
-
-        binding.tvTitle.text = movie.movieName
-        binding.tvHeading.text = movie.headingDetailsNew
-        binding.tvSynopsis.text = movie.synopsis
-        binding.tvCastTitle.text = buildString {
-            append("Cast : ")
-            append(movie.actor)
-        }
-        binding.tvDirectorTitle.text = buildString {
-            append("Director : ")
-            append(movie.director)
-        }
-
-        binding.root.invalidate()
 
     }
 
     private fun updateUI(content: ContentDto, data: RentalMovieModel?) {
+
         when (content.releaseTypeId) {
             Constants.FREE_MOVIE_RELEASE_TYPE_ID -> {
                 if (content.genre1 == getString(R.string.adult)) {
@@ -292,6 +273,25 @@ class MovieDetailFragment : BaseFragment() {
                 }
 
             }
+        }
+
+        val httpStreamingHotelVideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
+        content.imagePathPoster =
+            httpStreamingHotelVideoUrl + content.releaseId + "/" + content.releaseId + "_P.jpg"
+        content.imagePathPoster.let {
+            binding.ivMovieImage.loadImagesWithGlideExtPoster(it)
+        }
+
+        binding.tvTitle.text = content.movieName
+        binding.tvHeading.text = content.headingDetailsNew
+        binding.tvSynopsis.text = content.synopsis
+        binding.tvCastTitle.text = buildString {
+            append("Cast : ")
+            append(content.actor)
+        }
+        binding.tvDirectorTitle.text = buildString {
+            append("Director : ")
+            append(content.director)
         }
     }
 

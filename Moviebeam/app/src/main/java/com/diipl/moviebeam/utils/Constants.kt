@@ -31,7 +31,7 @@ object Constants {
     var RENTAL_TIME: Long = 1707840000000
     var MOVIE_SELECTED_POSITION: Int = -1
     var MOVIE_PARENT_POSITION: Int = -1
-    var isUserCheckedIn = SESSION_ID.isNotEmpty() && SESSION_ID!="null"
+//    var isUserCheckedIn = false
 //    var isUserCheckedIn = true
 
     const val SPLASH_DELAY = 3000

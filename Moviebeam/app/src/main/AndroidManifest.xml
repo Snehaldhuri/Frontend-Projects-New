@@ -25,12 +25,12 @@
 
     <application
         android:name=".di.App"
-        android:banner="@mipmap/ic_banner"
         android:allowBackup="true"
+        android:banner="@mipmap/ic_banner"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:largeHeap="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true"
@@ -154,6 +154,7 @@
         <activity
             android:name=".ui.exoplayer.ExoPlayerActivity"
             android:exported="true"
+            android:launchMode="singleInstance"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
@@ -184,8 +185,8 @@
 
         <service
             android:name=".ui.loggerService.LoggingService"
-            android:foregroundServiceType="dataSync|location"
-            android:exported="false"/>
+            android:exported="false"
+            android:foregroundServiceType="dataSync|location" />
 
         <receiver
             android:name=".ui.kappingservice.StartReceiver"
@@ -197,6 +198,25 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+<!--        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="merge" />-->
+
+
+        <!--
+                <provider
+                    android:name="androidx.startup.InitializationProvider"
+                    android:authorities="${applicationId}.androidx-startup"
+                    android:exported="false"
+                    tools:node="merge">
+                    <meta-data
+                        android:name="androidx.work.WorkManagerInitializer"
+                        android:value="androidx.startup"
+                        tools:node="remove" />
+                </provider>
+        -->
     </application>
 
 </manifest>

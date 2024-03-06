@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -18,11 +17,14 @@ import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val TAG = "RefreshingUiViewModel"
 
 @HiltViewModel
 class RefreshingUiViewModel @Inject constructor(
@@ -343,21 +345,19 @@ class RefreshingUiViewModel @Inject constructor(
         dataStore: DataStore<MoviesResponse>,
         data: MoviesResponse
     ) {
-
         viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
                     adultDayPassPrice = data.adultDayPassPrice,
+                    id = data.id,
+                    type = data.type,
+                    version = data.version,
                     freeContentList = data.freeContentList,
                     freeGenreList = data.freeGenreList,
                     premiumContentList = data.premiumContentList,
-                    premiumGenreList = data.premiumGenreList,
-                    id = data.id,
-                    type = data.type,
-                    version = data.version
+                    premiumGenreList = data.premiumGenreList
                 )
-
             }
         }
     }
