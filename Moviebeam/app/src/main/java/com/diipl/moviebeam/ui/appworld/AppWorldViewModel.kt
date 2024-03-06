@@ -9,6 +9,8 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +27,19 @@ class AppWorldViewModel @Inject constructor() : ViewModel() {
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
+    private var _isGuestCheckedInLiveData = MutableLiveData<Boolean>()
+    val isGuestCheckedInLiveData: LiveData<Boolean> get() = _isGuestCheckedInLiveData
+
+    fun validateSession(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferenceDataStoreHelper.getPreference(
+                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                false
+            ).collect {
+                _isGuestCheckedInLiveData.postValue(it)
+            }
+        }
+    }
     //------------------------fetching data from datasource--------------------
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
         viewModelScope.launch(Dispatchers.IO) {

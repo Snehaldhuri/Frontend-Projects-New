@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -182,6 +183,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
             is Resource.Loading -> {
@@ -200,7 +202,11 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                         gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
                     }
                     val adapter = GuestServiceTabAdapter(onMenuItemClicked = { view, service ->
-                        binding.tvServiceTitle.text = service.categoryName
+                        if(service.btnId == "flightStatus"){
+                            binding.tvServiceTitle.text ="Departures"
+                        }else{
+                            binding.tvServiceTitle.text = service.categoryName
+                        }
                         adapterView = view
                         bindAdapterView(view, service.btnId)
                     }, onRightClicked = {
@@ -369,9 +375,20 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 conciergeIndex = 0
                 focusView = null
 
-                val fragment = FlightStatusFragment {
-                    requestFocus()
-                }
+
+                val fragment = FlightStatusFragment(
+                    onLeftKeyPressed = {
+                    },
+                    flightStatusChangedListener = object : FlightStatusFragment.OnFlightStatusChangedListener {
+                        override fun onFlightStatusChanged(isDeparture: Boolean) {
+                            if (isDeparture) {
+                                binding.tvServiceTitle.text = "Departures"
+                            } else {
+                                binding.tvServiceTitle.text = "Arrivals"
+                            }
+                        }
+                    }
+                )
 
                 guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
                     fragment.setAirportList(airports)
@@ -527,6 +544,5 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
             binding.gsDown.visibility = View.VISIBLE
         }
     }
-
 }
 
