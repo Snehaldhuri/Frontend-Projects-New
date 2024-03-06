@@ -44,6 +44,8 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
+private const val TAG = "RefreshingUiActivity"
+
 @AndroidEntryPoint
 class RefreshingUiActivity : BaseActivity() {
 
@@ -102,10 +104,11 @@ class RefreshingUiActivity : BaseActivity() {
         binding = ActivityRefreshingUiBinding.inflate(layoutInflater)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         setContentView(binding.root)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            kapingResponse = intent.getParcelableExtra("response", KapingResponse::class.java)
+
+        kapingResponse = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("response", KapingResponse::class.java)
         } else {
-            kapingResponse = intent.getParcelableExtra("response")
+            intent.getParcelableExtra("response")
         }
         binding.root.postDelayed({
             this.handleKaping(kapingResponse)
@@ -143,10 +146,12 @@ class RefreshingUiActivity : BaseActivity() {
             }
 
             KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> {
+//                startWork(true)
                 handleFetchSyncListCmd()
             }
 
             KapingConstants.KAP_CMD_FETCH_SHOWTIME_DATA -> {
+//                startWork(false)
                 handleFetchShowtimeCmd()
             }
 
@@ -242,7 +247,7 @@ class RefreshingUiActivity : BaseActivity() {
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
             is Resource.Success -> {
-                refreshingUiViewModel.accountSetupLiveData.value?.data?.let {
+                status.data?.let {
                     refreshingUiViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
@@ -357,12 +362,12 @@ class RefreshingUiActivity : BaseActivity() {
     private fun handleMoviesResponse(status: Resource<MoviesResponse>) {
         when (status) {
             is Resource.Success -> {
-                refreshingUiViewModel.moviesLiveData.value?.data?.let {
+                status.data?.let {
+//                    startWork(true, it.toJson())
+
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
                     Constants.C_LIST_VERSION = it.version
-                    EndlessService.kapingCmdExecutionResponse =
-                        KapingConstants.EXECUTED_SUCCESSFULLY
-                    redirectToMainMenuScreen()
+                    EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                     LoggingService.sendMessageToWebSocket(
                         "In MoviesReleasesCollection callback Success ",
                         getCurrentPanelNumber()
@@ -382,10 +387,37 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
+/*
+    private fun startWork(isMovie: Boolean) {
+//        Log.e(TAG, "startWork: $isMovie   $data")
+        val workManager = WorkManager.getInstance(applicationContext)
+        val inputData = Data.Builder()
+            .putBoolean("isMovie", isMovie)
+//            .putString("json", data)
+            .build()
+
+        val workRequest = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
+            .setInputData(inputData)
+            .build()
+
+        workManager.enqueueUniqueWork("movieShow", ExistingWorkPolicy.REPLACE, workRequest)
+
+        workManager.getWorkInfoByIdLiveData(workRequest.id).observe(this){
+            Log.e(TAG, "startWork: $it")
+            if (it.state == WorkInfo.State.SUCCEEDED){
+                redirectToMainMenuScreen()
+            }
+        }
+
+
+    }
+*/
+
     private fun handleShowtimeResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.showtimeLiveData.value?.data?.let {
+//                    startWork(false, it.toJson())
                     refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY

@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -24,12 +23,11 @@ import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -41,6 +39,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import javax.inject.Inject
 
+private const val TAG = "HotelInfoActivity"
 @AndroidEntryPoint
 class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListener {
 
@@ -61,9 +60,6 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
     lateinit var dateTimeDataStore: DataStore<DateTimeResponse>
 
     @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
-    @Inject
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
 
     private lateinit var adapter: HotelInfoTabAdapter
@@ -71,7 +67,6 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(hotelInfoViewModel.themeLiveData, ::handleThemeResponse)
-        observe(hotelInfoViewModel.weatherLiveData, ::handleWeatherResponse)
         observeSnackBarMessages(hotelInfoViewModel.showSnackBar)
         observeToast(hotelInfoViewModel.showToast)
     }
@@ -90,7 +85,6 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
         try {
             // fetch data from dataStore
             hotelInfoViewModel.getThemeResponseData(themeDataStore)
-            hotelInfoViewModel.getWeatherResponseData(weatherDataStore)
             hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
             hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
 
@@ -295,27 +289,8 @@ class HotelInfoActivity : BaseActivity(),HotelInfoTabAdapter.OnFocusChangeListen
                     adapter.setGradientColor(gradientStartColor, gradientEndColor)
                 }
                 binding.rvHotelInfoHeader.adapter = adapter
-                binding.tvHeaderTitle.text = tabs[0]
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
-
-            }
-        }
-    }
-
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    hotelInfoViewModel.weatherLiveData.value?.data?.tempCondition
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
-                    hotelInfoViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud ?: ""
-                )
+                if (tabs.isNotEmpty())
+                    binding.tvHeaderTitle.text = tabs[0]
                 binding.pbLoader.toInvisible()
             }
 

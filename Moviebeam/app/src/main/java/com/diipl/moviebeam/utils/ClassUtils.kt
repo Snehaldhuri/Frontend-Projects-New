@@ -9,6 +9,7 @@ import android.os.Build
 import android.util.Log
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.TypeConverter
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -29,6 +30,7 @@ import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -228,5 +230,29 @@ fun getCurrentPanelNumber(): String {
         //TODO CALENDER
 
         else -> return PanelConstants.MAIN_MENU
+    }
+}
+
+fun Any.resetField(fieldName: String) {
+    val field = this.javaClass.getDeclaredField(fieldName)
+
+    with (field) {
+        isAccessible = true
+        set(this, null)
+    }
+}
+
+
+class Converters{
+    @TypeConverter
+    fun fromMap(value: Map<String, String>?): String? {
+        val gson = Gson()
+        return gson.toJson(value)
+    }
+
+    @TypeConverter
+    fun toMap(value: String?): Map<String, String>? {
+        val mapType = object : TypeToken<Map<String, String>?>() {}.type
+        return Gson().fromJson(value, mapType)
     }
 }

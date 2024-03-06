@@ -4,22 +4,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.datastore.core.DataStore
 import androidx.fragment.app.activityViewModels
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.FragmentWeatherBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class WeatherFragment : BaseFragment() {
 
     private var _binding: FragmentWeatherBinding? = null
     val binding get() = _binding!!
     private val weatherViewModel: WeatherViewModel by activityViewModels()
+    @Inject
+    lateinit var weatherDataStore: DataStore<WeatherResponse>
 
     override fun observeViewModel() {
         observe(weatherViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -41,6 +47,13 @@ class WeatherFragment : BaseFragment() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 val weatherDetails = weatherViewModel.weatherLiveData.value?.data
+                weatherDetails?.copy(tempCondition = replaceDegreeSymbol(weatherDetails.tempCondition))
+                    ?.let {
+                        weatherViewModel.setWeatherResponseData(
+                            weatherDataStore,
+                            it
+                        )
+                    }
                 weatherDetails?.tempConditionUrlCloud?.let {
                     binding.ivWeatherProvider.loadImagesWithGlideExt(it)
                 }

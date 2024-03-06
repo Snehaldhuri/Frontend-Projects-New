@@ -20,13 +20,11 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -54,8 +52,6 @@ class AppWorldActivity : BaseActivity() {
     private var isCheckedIn = false
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
-    @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -63,7 +59,6 @@ class AppWorldActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(appWorldViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(appWorldViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-        observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
     }
 
     override fun initViewBinding() {
@@ -201,25 +196,6 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    appWorldViewModel.weatherLiveData.value?.data?.tempCondition
-                appWorldViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
-                        it
-                    )
-                }
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {

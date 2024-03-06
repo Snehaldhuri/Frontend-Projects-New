@@ -147,6 +147,7 @@
         <activity
             android:name=".ui.exoplayer.ExoPlayerActivity"
             android:exported="true"
+            android:launchMode="singleInstance"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
@@ -211,6 +212,25 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
+
+<!--        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="merge" />-->
+
+
+        <!--
+                <provider
+                    android:name="androidx.startup.InitializationProvider"
+                    android:authorities="${applicationId}.androidx-startup"
+                    android:exported="false"
+                    tools:node="merge">
+                    <meta-data
+                        android:name="androidx.work.WorkManagerInitializer"
+                        android:value="androidx.startup"
+                        tools:node="remove" />
+                </provider>
+        -->
     </application>
 
 </manifest>

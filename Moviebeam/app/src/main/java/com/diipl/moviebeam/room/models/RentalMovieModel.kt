@@ -5,9 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.diipl.moviebeam.data.dto.movies.ContentDto
-import com.diipl.moviebeam.data.dto.movies.Converters
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Converters
 
 @Entity(tableName = "recentMovies")
 @TypeConverters(Converters::class)
@@ -34,7 +34,7 @@ data class ShowTimeModel(
     var sessionID: String = "",
     var cType: String = Constants.C_TYPE_MOVIE,
     var currentSeek: Long = 0,
-    var finishTimeStamp: Long = startTimeStamp + (24 * 60 * 60 * 1000),
+    var finishTimeStamp: Long = 0,
     var lastTimeStamp: Long = 0,
     @Embedded var seriesData: Detail? = null
 )

@@ -16,7 +16,6 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -28,18 +27,15 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.hideKeyboard
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
-import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
@@ -51,7 +47,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import javax.inject.Inject
 
 private const val TAG = "ProgramGuideActivity"
 
@@ -76,11 +71,7 @@ class ProgramGuideActivity : BaseActivity() {
     private var currentPrograms: List<ChannelEpgDTO>? = null
     private var nextPrograms: List<ChannelEpgDTO>? = null
 
-    @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
     override fun observeViewModel() {
-        observe(programGuideViewModel.weatherLiveData, ::handleWeatherResponse)
 
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
@@ -90,7 +81,6 @@ class ProgramGuideActivity : BaseActivity() {
         binding = ActivityProgramGuideBinding.inflate(layoutInflater)
         this.getChannelsFromRoomDB()
         fetchDetails()
-        fetchDataFromDatastore()
         setContentView(binding.root)
         binding.btnBack.setOnFocusChangeListener(::handleBtnFocus)
         binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
@@ -213,7 +203,6 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     private fun fetchDataFromDatastore() {
-        programGuideViewModel.getWeatherResponseData(weatherDataStore)
     }
 
     private fun getGradient(
@@ -251,25 +240,6 @@ class ProgramGuideActivity : BaseActivity() {
             view.background = gradient
         } else {
             view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        }
-    }
-
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    programGuideViewModel.weatherLiveData.value?.data?.tempCondition
-                programGuideViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
-                        it
-                    )
-                }
-            }
-
-            else -> {
-                status.errorCode?.let { programGuideViewModel.showToastMessage(getString(it)) }
-            }
         }
     }
 

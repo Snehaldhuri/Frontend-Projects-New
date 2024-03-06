@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TAG = "RefreshingUiViewModel"
+
 @HiltViewModel
 class RefreshingUiViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository
@@ -377,21 +379,19 @@ class RefreshingUiViewModel @Inject constructor(
         dataStore: DataStore<MoviesResponse>,
         data: MoviesResponse
     ) {
-
         viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
                     adultDayPassPrice = data.adultDayPassPrice,
+                    id = data.id,
+                    type = data.type,
+                    version = data.version,
                     freeContentList = data.freeContentList,
                     freeGenreList = data.freeGenreList,
                     premiumContentList = data.premiumContentList,
-                    premiumGenreList = data.premiumGenreList,
-                    id = data.id,
-                    type = data.type,
-                    version = data.version
+                    premiumGenreList = data.premiumGenreList
                 )
-
             }
         }
     }

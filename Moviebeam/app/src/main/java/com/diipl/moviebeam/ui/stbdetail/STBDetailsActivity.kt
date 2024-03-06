@@ -493,7 +493,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.moviesLiveData.value?.data?.let {
                     stbDetailViewModel.setMoviesResponseData(moviesDataStore, it)
-                    Constants.C_LIST_VERSION = it.version
+                    Constants.C_LIST_VERSION = it.version.toString()
                     Log.d("DataStoreResponse", "handleMoviesResponse: $it")
                 }
             }

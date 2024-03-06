@@ -730,7 +730,7 @@ class EndlessService : Service() {
                         val syncResponse = data.fromJson<RentalSyncResponse>()
                         moviesLiveData.value?.let { res ->
                             syncResponse.syncList.forEach { sync ->
-                                res.premiumContentList.forEach {
+                                res.premiumContentList?.forEach {
                                     if (sync.releaseId == it.releaseId && sync.productId == it.productId) {
                                         val model = RentalMovieModel()
                                         model.movieData = it
@@ -1283,13 +1283,13 @@ class EndlessService : Service() {
                 currentPreferences.copy(
                     accountId = data.accountId,
                     adultDayPassPrice = data.adultDayPassPrice,
+                    id = data.id,
+                    type = data.type,
+                    version = data.version,
                     freeContentList = data.freeContentList,
                     freeGenreList = data.freeGenreList,
                     premiumContentList = data.premiumContentList,
-                    premiumGenreList = data.premiumGenreList,
-                    id = data.id,
-                    type = data.type,
-                    version = data.version
+                    premiumGenreList = data.premiumGenreList
                 )
 
             }

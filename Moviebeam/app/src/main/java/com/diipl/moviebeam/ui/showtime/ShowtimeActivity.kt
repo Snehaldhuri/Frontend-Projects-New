@@ -18,19 +18,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
-import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.ui.loggerService.LoggingService
-import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.ui.movies.MoviesViewModel
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -45,9 +43,6 @@ class ShowtimeActivity : BaseActivity() {
     private lateinit var binding: ActivityShowtimeBinding
 
     @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
-    @Inject
     lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
 
     private var gradient: GradientDrawable? = null
@@ -59,7 +54,6 @@ class ShowtimeActivity : BaseActivity() {
     private var selectedView: View? = null
 
     override fun observeViewModel() {
-        observe(showtimeViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(showtimeViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
     }
 
@@ -258,26 +252,6 @@ class ShowtimeActivity : BaseActivity() {
         }
     }
 
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    showtimeViewModel.weatherLiveData.value?.data?.tempCondition
-                showtimeViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud?.let {
-                    binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather.loadImagesWithGlideExt(
-                        it
-                    )
-                }
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { showtimeViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
     fun gotoExoPlayerActivity(
         movieDetails: Detail, isTrailer: Boolean, isContent: Boolean,
         seekPosition: Long
@@ -327,7 +301,6 @@ class ShowtimeActivity : BaseActivity() {
     }
 
     private fun fetchDataFromDataStore() {
-        showtimeViewModel.getWeatherResponseData(weatherDataStore)
         showtimeViewModel.getShowtimeResponseData(showtimeDataStore)
     }
 

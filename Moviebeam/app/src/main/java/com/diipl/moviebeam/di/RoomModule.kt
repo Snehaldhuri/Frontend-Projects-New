@@ -39,5 +39,10 @@ class RoomModule {
     fun provideProgramGuideDao(database: MoviesDatabase): ProgramGuideDao {
         return database.programGuideDao()
     }
-
+ /*   @Singleton
+    @Provides
+    fun provideWorkManager(@ApplicationContext appContext: Context): WorkManager {
+        return WorkManager.getInstance(appContext)
+    }
+*/
 }

@@ -70,14 +70,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent=".17" />
 
-    <include
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/layout_weather_time"
-        layout="@layout/item_weather_time_date_row"
+        android:name="com.diipl.moviebeam.ui.dialogs.WeatherDateTimeFragment"
         android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="@id/gl_horizontal_10"
         app:layout_constraintEnd_toStartOf="@id/gl_vertical_95"
-        app:layout_constraintStart_toStartOf="@+id/gl_vertical_57" />
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_57"
+        tools:layout="@layout/view_weather_time_date_row" />
 
     <TextView
         android:id="@+id/tv_welcome"
@@ -87,9 +88,9 @@
         android:layout_marginTop="@dimen/dp_12"
         android:fontFamily="@font/gloock_regular"
         android:includeFontPadding="false"
-        android:visibility="gone"
         android:textColor="@color/white"
-        android:textSize="@dimen/sp_44"
+        android:textSize="@dimen/sp_32"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo"
@@ -99,13 +100,13 @@
         android:id="@+id/tv_greeting"
         android:layout_width="@dimen/dp_0"
         android:layout_height="0dp"
-        android:gravity="start|bottom"
-        android:ellipsize="end"
-        android:justificationMode="inter_word"
         android:layout_margin="@dimen/dp_8"
+        android:ellipsize="end"
         android:fontFamily="@font/manrope_semibold_600"
+        android:gravity="start"
+        android:justificationMode="inter_word"
         android:textColor="@color/home_page_greeting_text_color"
-        android:textSize="@dimen/sp_16"
+        android:textSize="@dimen/sp_14"
         app:layout_constraintBottom_toTopOf="@+id/cardView"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_57"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"

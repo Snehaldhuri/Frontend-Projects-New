@@ -15,7 +15,6 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ActivityLocalAttractionBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -42,14 +41,10 @@ class LocalAttractionActivity : BaseActivity() {
     lateinit var themeDataStore: DataStore<ThemeResponse>
 
     @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
-    @Inject
     lateinit var localAttractionDataStore: DataStore<LocalAttractionResponse>
 
     override fun observeViewModel() {
         observe(localAttractionViewModel.localAttractionLiveData, ::handleLAServiceResponse)
-        observe(localAttractionViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(localAttractionViewModel.themeLiveData, ::handleThemeResponse)
     }
 
@@ -66,7 +61,6 @@ class LocalAttractionActivity : BaseActivity() {
         // call below function to fetch data from dataStore
 
         localAttractionViewModel.getThemeResponseData(themeDataStore)
-        localAttractionViewModel.getWeatherResponseData(weatherDataStore)
         localAttractionViewModel.getLocalAttractionResponseData(localAttractionDataStore)
 
 
@@ -130,23 +124,6 @@ class LocalAttractionActivity : BaseActivity() {
         }
     }
 
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                binding.layoutHeader.layoutWeatherTime.layoutWeather.txtTemperature.text =
-                    localAttractionViewModel.weatherLiveData.value?.data?.tempCondition
-                Glide.with(this)
-                    .load(localAttractionViewModel.weatherLiveData.value?.data?.tempConditionUrlCloud)
-                    .into(binding.layoutHeader.layoutWeatherTime.layoutWeather.ivWeather)
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { localAttractionViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
         when (status) {
