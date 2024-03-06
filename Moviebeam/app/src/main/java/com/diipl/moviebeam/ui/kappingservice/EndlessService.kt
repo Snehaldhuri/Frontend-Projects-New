@@ -80,14 +80,19 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.io.IOException
 import java.lang.Integer.parseInt
 import java.util.Date
 import java.util.Locale
@@ -232,6 +237,39 @@ class EndlessService : Service() {
         val notification = createNotification()
         startForeground(1, notification)
     }
+    private fun createRequestBody(roomNo: String, UA: String, accessType: Int): String {
+        val netflixDetails = JSONObject().apply {
+            put("stbRoomNo", roomNo)
+            put("ua", UA)
+            put("accessType", accessType)
+        }
+        return netflixDetails.toString()
+    }
+    private fun postRequest(url: String, requestBody: String) {
+        val client = OkHttpClient()
+
+        val request = Request.Builder()
+            .url(url)
+            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody))
+            .build()
+
+        client.newCall(request).enqueue(object : okhttp3.Callback {
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                e.printStackTrace()
+                LoggingService.sendMessageToWebSocket("Network error: ${e.message}", "09")
+            }
+
+            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                if (response.isSuccessful) {
+                    Log.d(TAG,"netflixDataModel url success")
+                } else {
+                    val responseBody = response.body?.string() ?: "No response body"
+                    val responseCode = response.code
+                    Log.e(TAG, "netflixDataModel url failed. Response code: $responseCode, Response body: $responseBody")
+                }
+            }
+        })
+    }
 
     private val homePressReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -242,6 +280,24 @@ class EndlessService : Service() {
                     Log.e(TAG, "homePressReceiver: --->>> $reason")
                     if (reason == "homekey") {
                         if (currentActivity?.javaClass?.simpleName!!.isNotAllowed()) {
+                            if (activityStack.last() == AppWorldActivity::class.java.simpleName) {
+                                if (Constants.NETFLIX_LAUNCHED) {
+                                    val sessionId = Constants.SESSION_ID
+                                    val url =
+                                        "https://stb.moviebeam.com:1930/LG/rest/content/netflixAccess/enter?sessionId=$sessionId"
+
+                                    val requestBody =
+                                        createRequestBody(
+                                            Constants.STB_ROOM_NO,
+                                            Constants.UA,
+                                            2
+                                        )
+
+                                    postRequest(url, requestBody)
+                                    Constants.NETFLIX_LAUNCHED = false;
+                                    return
+                                }
+                            }
                             startActivity(Intent(context, MainMenuActivity::class.java).also { i ->
                                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             })
@@ -307,7 +363,7 @@ class EndlessService : Service() {
 
                         if (Constants.SESSION_ID.isNotEmpty())
                             roomRepository.removeOverTimeMovies()
-                        
+
                         if (Constants.SESSION_ID == "null") {
                             roomRepository.deleteRecentMovies()
                             roomRepository.deleteRecentShows()
@@ -453,7 +509,7 @@ class EndlessService : Service() {
                         true
                     } else {
                         updateStbAllocationStatus(preferenceDataStoreHelper, false)
-                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                        if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                             startActivity(
                                 Intent(
                                     applicationContext,
@@ -817,6 +873,7 @@ class EndlessService : Service() {
             kapingResponse.cmdData?.cmdData
 
         )
+
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {

@@ -52,7 +52,7 @@ object Constants {
     var HOTEL_VIDEO_LOOP_COUNT = 3
     var HOTEL_VIDEO_DURATION = 0L
     var HOTEL_VIDEO_URL = ""
-    var UA = "14508KKMH0K299"
+    var UA = ""
     var SERIAL_NO = ""
     val MAC_ADDRESS = "test"
     val STB_TYPE = "LG"
@@ -61,6 +61,7 @@ object Constants {
     var ACCOUNT_ID = "13827"
     var STB_ROOM_NO = ""
     var C_LIST_VERSION = ""
+    var NETFLIX_LAUNCHED = false
     const val ACTIVATE = "ACTIVATE"
     const val MODE = "JSON"
     const val THEME_DIRECTORY = "ThemeImages"

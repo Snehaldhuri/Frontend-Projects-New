@@ -28,6 +28,18 @@
         app:layout_constraintGuide_percent="0.5" />
 
     <TextView
+        android:id="@+id/tv_service_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_20"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:textColor="@color/text_color_primary"
+        android:textSize="@dimen/sp_25"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+
+    <TextView
         android:id="@+id/tv_temperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -49,17 +61,6 @@
         app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_50" />
 
-    <ImageView
-        android:id="@+id/iv_weather"
-        android:layout_width="@dimen/dp_0"
-        android:layout_height="@dimen/dp_0"
-        android:layout_marginEnd="@dimen/dp_8"
-        android:contentDescription="@string/sunrise"
-        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_27"
-        app:layout_constraintDimensionRatio="1.1:1"
-        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
-        app:layout_constraintWidth_percent="0.1" />
-
     <TextView
         android:id="@+id/tv_temp_high_title"
         android:layout_width="wrap_content"
@@ -69,8 +70,7 @@
         android:textColor="@color/white"
         android:textSize="@dimen/sp_12"
         app:layout_constraintBottom_toTopOf="@+id/tv_temp_low_title"
-        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50"
-        app:layout_constraintTop_toBottomOf="@+id/iv_weather" />
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_50" />
 
     <TextView
         android:id="@+id/tv_temp_high"

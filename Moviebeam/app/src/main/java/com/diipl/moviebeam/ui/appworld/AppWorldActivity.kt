@@ -9,27 +9,38 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.Response
+import org.json.JSONObject
+import java.io.IOException
 import java.util.Collections
 import javax.inject.Inject
 
@@ -40,6 +51,8 @@ class AppWorldActivity : BaseActivity() {
     private val appWorldViewModel: AppWorldViewModel by viewModels()
 
     private var gradient: GradientDrawable? = null
+    private var isCheckedIn = false
+    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     @Inject
     lateinit var weatherDataStore: DataStore<WeatherResponse>
@@ -48,6 +61,7 @@ class AppWorldActivity : BaseActivity() {
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     override fun observeViewModel() {
+        observe(appWorldViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(appWorldViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(appWorldViewModel.weatherLiveData, ::handleWeatherResponse)
     }
@@ -56,12 +70,14 @@ class AppWorldActivity : BaseActivity() {
         binding = ActivityAppWorldBinding.inflate(layoutInflater)
         setContentView(binding.root)
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
-        appWorldViewModel.getAccountSetupResponseData(accountSetupDataStore)
-        appWorldViewModel.getWeatherResponseData(weatherDataStore)
+            appWorldViewModel.getAccountSetupResponseData(accountSetupDataStore)
+            appWorldViewModel.getWeatherResponseData(weatherDataStore)
+            preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+
+            appWorldViewModel.validateSession(preferenceDataStoreHelper)
             fetchDetails()
             binding.rvApps.layoutManager = GridLayoutManager(this, 4)
             binding.btnBack.setOnClickListener { finish() }
@@ -72,24 +88,28 @@ class AppWorldActivity : BaseActivity() {
                     view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 }
             }
-            LoggingService.sendMessageToWebSocket("In AppWorldMain activity","09")
-        } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("handleGuestDetailsResponse Exception in AppWorldMain activity ${e.message}","09")
+            Log.d("checked in ","checked in $isCheckedIn")
+            LoggingService.sendMessageToWebSocket("In AppWorldMain activity", "09")
+        }catch (e: Exception) {
+            e.printStackTrace()
+            LoggingService.sendMessageToWebSocket("launchApp Exception in AppWorldMain activity ${e.message}","09")
         }
     }
 
+    private fun handleValidateSessionResponse(status: Boolean) {
+        this.isCheckedIn = status
+    }
     private fun getInstalledApps(apiAppList: List<SelectedApps>) {
-        // get list of all the apps installed
         try {
             val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-        val installedApps = filterSystemApps(allApps)
-        val selectedApps = mutableListOf<ApplicationInfo>()
-        apiAppList.forEach { selectedApp ->
-            installedApps.forEach { installedApp ->
-                if (selectedApp.forAndroid and (selectedApp.value == installedApp.packageName))
-                    selectedApps.add(installedApp)
+            val installedApps = filterSystemApps(allApps)
+            val selectedApps = mutableListOf<ApplicationInfo>()
+            apiAppList.forEach { selectedApp ->
+                installedApps.forEach { installedApp ->
+                    if (selectedApp.forAndroid and (selectedApp.value == installedApp.packageName))
+                        selectedApps.add(installedApp)
+                }
             }
-        }
             val adapter = AppAdapter {
                 if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
                     launchAppSecured(it.packageName)
@@ -103,14 +123,59 @@ class AppWorldActivity : BaseActivity() {
             LoggingService.sendMessageToWebSocket("getInstalledApps Exception in AppWorldMain activity ${e.message}","09")
         }
     }
+    private fun createRequestBody(roomNo: String, UA: String, accessType: Int): String {
+        val netflixDetails = JSONObject().apply {
+            put("stbRoomNo", roomNo)
+            put("ua", UA)
+            put("accessType", accessType)
+        }
+        return netflixDetails.toString()
+    }
+    private fun postRequest(url: String, requestBody: String) {
+        val client = OkHttpClient()
 
+        val request = Request.Builder()
+            .url(url)
+            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody))
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                LoggingService.sendMessageToWebSocket("Network error: ${e.message}", "09")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    Log.d("sessionid url success","sessionid url success")
+                } else {
+                    val responseBody = response.body?.string() ?: "No response body"
+                    val responseCode = response.code
+                    Log.e("sessionid error", "sessionid Failed to call URL. Response code: $responseCode, Response body: $responseBody")
+                }
+            }
+        })
+    }
     private fun launchApp(packageName: String) {
         try {
             startActivity(packageManager.getLaunchIntentForPackage(packageName))
+
+            if (packageName == "com.netflix.ninja") {
+                val sessionId = Constants.SESSION_ID
+                val url = "https://stb.moviebeam.com:1930/LG/rest/content/netflixAccess/enter?sessionId=$sessionId"
+
+                val requestBody = createRequestBody(Constants.STB_ROOM_NO, Constants.UA, 1)
+
+                postRequest(url, requestBody)
+                Constants.NETFLIX_LAUNCHED = true;
+            }
+
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("launchApp Exception in AppWorldMain activity ${e.message}","09")
+            e.printStackTrace()
+            LoggingService.sendMessageToWebSocket("launchApp Exception in AppWorldMain activity ${e.message}", "09")
         }
     }
+
 
     private fun launchAppSecured(packageName: String?) {
         try {

@@ -24,15 +24,15 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 
-
 @AndroidEntryPoint
 class FlightStatusFragment(
-    private val onLeftKeyPressed: () -> Unit
+    private val onLeftKeyPressed: () -> Unit,
+    private val flightStatusChangedListener: OnFlightStatusChangedListener? = null
 ) : BaseFragment(), AdapterView.OnItemSelectedListener {
 
     private val flightStatusViewModel: FlightStatusViewModel by activityViewModels()
     private var _binding: FragmentFlightStatusBinding? = null
-    val binding get() = _binding!!
+    private val binding get() = _binding!!
 
     private var airPorts: List<String> = listOf()
     private var isDep = true
@@ -42,13 +42,15 @@ class FlightStatusFragment(
     private var gradientButton: GradientDrawable? = null
     private var gradientTable: GradientDrawable? = null
 
+    interface OnFlightStatusChangedListener {
+        fun onFlightStatusChanged(isDeparture: Boolean)
+    }
+
     override fun observeViewModel() {
         observe(flightStatusViewModel.flightStatusLiveData, ::handleFlightStatusResponse)
     }
 
-    override fun initViewBinding() {
-
-    }
+    override fun initViewBinding() {}
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -72,6 +74,7 @@ class FlightStatusFragment(
                 binding.btnArrDep.text = getString(R.string.switch_to_arrival)
             }
             fetchFlightStatus()
+            flightStatusChangedListener?.onFlightStatusChanged(isDep)
         }
 
         binding.btnArrDep.setOnFocusChangeListener { view, isFocused ->
@@ -84,7 +87,6 @@ class FlightStatusFragment(
                                 view.nextFocusUpId = View.NO_ID
                                 return@setOnKeyListener true
                             }
-
                         }
                     }
                     false
@@ -96,7 +98,11 @@ class FlightStatusFragment(
 
         val dropdown: Spinner = binding.spAirport
 
-        val adapter = ArrayAdapter(binding.root.context, R.layout.item_spinner_header, airPorts)
+        val adapter = ArrayAdapter(
+            binding.root.context,
+            R.layout.item_spinner_header,
+            airPorts
+        )
         adapter.setDropDownViewResource(R.layout.item_spinner_item)
 
         dropdown.adapter = adapter
@@ -111,7 +117,7 @@ class FlightStatusFragment(
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
                             KeyEvent.KEYCODE_DPAD_UP -> {
-                                    view.nextFocusUpId = View.NO_ID
+                                view.nextFocusUpId = View.NO_ID
                                 return@setOnKeyListener true
                             }
                             KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
@@ -119,26 +125,14 @@ class FlightStatusFragment(
                     }
                     false
                 }
-
             } else {
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 view.findViewById<TextView>(R.id.tv_title)?.let {
                     it.isSelected = false
                 }
             }
-
         }
         dropdown.requestFocus()
-/*
-        dropdown.setOnKeyListener { _, keycode, keyEvent ->
-            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-                when (keycode) {
-                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
-                }
-            }
-            false
-        }
-*/
     }
 
     private fun handleFlightStatusResponse(status: Resource<FlightStatusResponse>) {

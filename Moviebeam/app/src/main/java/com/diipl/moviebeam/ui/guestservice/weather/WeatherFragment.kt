@@ -42,7 +42,7 @@ class WeatherFragment : BaseFragment() {
             is Resource.Success -> {
                 val weatherDetails = weatherViewModel.weatherLiveData.value?.data
                 weatherDetails?.tempConditionUrlCloud?.let {
-                    binding.ivWeather.loadImagesWithGlideExt(it)
+                    binding.ivWeatherProvider.loadImagesWithGlideExt(it)
                 }
                 binding.tvTemperature.text = replaceDegreeSymbol(weatherDetails?.tempCondition)
                 binding.tvCity.text = weatherDetails?.location
