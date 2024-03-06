@@ -32,10 +32,5 @@ class RoomModule {
     fun providePreference(@ApplicationContext appContext: Context): SharedPreference {
         return SharedPreference(appContext)
     }
- /*   @Singleton
-    @Provides
-    fun provideWorkManager(@ApplicationContext appContext: Context): WorkManager {
-        return WorkManager.getInstance(appContext)
-    }
-*/
+
 }

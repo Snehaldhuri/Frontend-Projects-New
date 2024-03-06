@@ -25,7 +25,7 @@ abstract class MoviesDatabase : RoomDatabase(){
         fun getDatabase(context: Context): MoviesDatabase {
             return instance ?: synchronized(this){
                 Room.databaseBuilder(context, MoviesDatabase::class.java, "MovieBeam")
-                    .addMigrations(MIGRATION)
+//                    .addMigrations(MIGRATION)
                     .fallbackToDestructiveMigration()
                     .build()
             }

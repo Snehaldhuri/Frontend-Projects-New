@@ -128,8 +128,7 @@ object DataStoreModule {
             serializer = MoviesSerializer(),
             produceFile = { appContext.dataStoreFile(MOVIES__DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
-            migrations = listOf(
-            ),
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }

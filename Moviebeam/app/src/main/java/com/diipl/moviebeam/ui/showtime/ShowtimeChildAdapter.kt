@@ -80,10 +80,10 @@ class ShowtimeChildAdapter(
         val item = childList[position]
 
         val httpStreamingHotelvideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
-        item.imagePathSushi =
+        val url =
             httpStreamingHotelvideoUrl + item.releaseId + "/" + item.releaseId + "_S.jpg"
 
-        holder.logo.loadImagesWithGlideExtSushi(item.imagePathSushi)
+        holder.logo.loadImagesWithGlideExtSushi(url)
 //        holder.binding.childTitleTv.text = item.movieName
 //        holder.binding.childTitleTv.toInvisible()
         holder.movieview.setOnClickListener {

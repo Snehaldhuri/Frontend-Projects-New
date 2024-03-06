@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.refreshingui
 
 private const val TAG = "UpdateDataWorker"
+
 /*
 class UpdateDataWorker @Inject constructor(
     private val moviesDataStore: DataStore<MoviesResponse>,
@@ -8,35 +9,32 @@ class UpdateDataWorker @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository,
     context: Context,
     workerParams: WorkerParameters
-) : Worker(context, workerParams) {
+) : CoroutineWorker(context, workerParams) {
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
 
         val isMovie = inputData.getBoolean("isMovie", false)
 
         try {
-
-            CoroutineScope(Dispatchers.IO).launch {
-                if (isMovie) {
-                    val response = movieBeamRepository.getMoviesInfo(Constants.UA)
-                    if (response != null) {
-                        updateSyncList(moviesDataStore, response)
-                        EndlessService.kapingCmdExecutionResponse =
-                            KapingConstants.EXECUTED_SUCCESSFULLY
-                        LoggingService.sendMessageToWebSocket("In MoviesReleasesCollection callbackSuccess ")
-                    } else {
-                        LoggingService.sendMessageToWebSocket("In Movies callback fail ")
-                    }
+            if (isMovie) {
+                val response = movieBeamRepository.getMoviesInfo(Constants.UA)
+                if (response != null) {
+                    updateSyncList(moviesDataStore, response)
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    LoggingService.sendMessageToWebSocket("In MoviesReleasesCollection callbackSuccess ")
                 } else {
-                    val response = movieBeamRepository.getShowtimeInfo(Constants.UA)
-                    if (response != null) {
-                        updateShowtimeData(showTimeDataStore, response)
-                        EndlessService.kapingCmdExecutionResponse =
-                            KapingConstants.EXECUTED_SUCCESSFULLY
-                        LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callbackSuccess ")
-                    } else {
-                        LoggingService.sendMessageToWebSocket("In Showtime callback fail ")
-                    }
+                    LoggingService.sendMessageToWebSocket("In Movies callback fail ")
+                }
+            } else {
+                val response = movieBeamRepository.getShowtimeInfo(Constants.UA)
+                if (response != null) {
+                    updateShowtimeData(showTimeDataStore, response)
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    LoggingService.sendMessageToWebSocket("In ShowtimeReleasesCollection callbackSuccess ")
+                } else {
+                    LoggingService.sendMessageToWebSocket("In Showtime callback fail ")
                 }
             }
 

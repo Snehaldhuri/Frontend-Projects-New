@@ -155,7 +155,7 @@ class STBDetailsActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
-                stbDetailViewModel.hotelServiceLiveData.value?.data?.let {
+                status.data?.let {
                     stbDetailViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
                     Log.d("DataStoreResponse", "handleHotelServiceResponse: $it")
                 }

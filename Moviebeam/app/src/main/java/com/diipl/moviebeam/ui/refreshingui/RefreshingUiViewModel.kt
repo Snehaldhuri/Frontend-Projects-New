@@ -29,6 +29,7 @@ private const val TAG = "RefreshingUiViewModel"
 @HiltViewModel
 class RefreshingUiViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository
+//    private val workManager: WorkManager
 ) : ViewModel() {
 
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
@@ -85,10 +86,10 @@ class RefreshingUiViewModel @Inject constructor(
         }
     }
 
-    fun fetchHotelServiceInfo(ua: String) {
+    fun fetchHotelServiceInfo(accountId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _hotelServiceLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getHotelServiceInfo(ua)
+            val response = movieBeamRepository.getHotelServiceInfo(accountId)
             if (response == null) {
                 _hotelServiceLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {

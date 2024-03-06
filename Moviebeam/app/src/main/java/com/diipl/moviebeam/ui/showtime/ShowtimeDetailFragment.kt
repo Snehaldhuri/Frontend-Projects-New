@@ -160,9 +160,9 @@ class ShowtimeDetailFragment : BaseFragment() {
         }
 
         val httpStreamingHotelVideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
-        show.imagePathPoster =
+        val url =
             httpStreamingHotelVideoUrl + show.releaseId + "/" + show.releaseId + "_P.jpg"
-        show.imagePathPoster.let {
+        url.let {
             binding.ivMovieImage.loadImagesWithGlideExtPoster(it)
         }
         binding.ivMovieImage.setBackgroundResource(R.drawable.round_outline_5dp)

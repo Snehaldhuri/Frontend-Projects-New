@@ -39,6 +39,7 @@ import java.io.File
 import javax.inject.Inject
 
 private const val TAG = "HotelInfoActivity"
+
 @AndroidEntryPoint
 class HotelInfoActivity : BaseActivity() {
 
@@ -157,133 +158,132 @@ class HotelInfoActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                hotelInfoViewModel.hotelServiceLiveData.value?.data?.let {
+                status.data?.let {
                     hotelInfoViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
-                }
-
-                val tabMap = mutableMapOf<String, TabListObj>()
-                val tabs = mutableListOf<String>()
-                val response = hotelInfoViewModel.hotelServiceLiveData.value?.data
-                for (service in response?.servicesList!!) {
-                    when (service.categoryName) {
-                        "All" -> {
-                            var helpInfoAdded = false
-                            service.serviceList.forEach {
-                                if (it.title == "Help & Info") {
-                                    tabMap[it.title] = TabListObj(2, it, null)
-                                    tabs.add(it.title)
-                                    helpInfoAdded = true
-                                } else {
-                                    tabMap[it.title] = TabListObj(2, it, null)
-                                    tabs.add(it.title)
-                                }
-                            }
-
-                            if (!helpInfoAdded) {
-                                tabs.add(Constants.HELP_INFO)
-                                tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
-                            }
-                        }
-
-                        else -> {
-                            tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
-                            tabs.add(service.categoryName)
-                        }
-                    }
-                }
-
-                adapter = HotelInfoTabAdapter(itemList = tabs,
-                    onItemFocused = { it, view ->
-                        val transaction = supportFragmentManager.beginTransaction()
-                        when (tabMap[it]?.serviceType) {
-                            1 -> {
-                                binding.tvHeaderTitle.text = tabMap[it]?.serviceList?.get(0)?.title
-                                val carousel = CarouselListFragment({ title ->
-                                    binding.tvHeaderTitle.text = title
-                                }, { title ->
-                                    if (tabMap[it]?.serviceList?.get(0)?.title == title) {
-                                        view.requestFocus()
+                    val tabMap = mutableMapOf<String, TabListObj>()
+                    val tabs = mutableListOf<String>()
+                    val response = it
+                    for (service in response.servicesList) {
+                        when (service.categoryName) {
+                            "All" -> {
+                                var helpInfoAdded = false
+                                service.serviceList.forEach { s->
+                                    if (s.title == "Help & Info") {
+                                        tabMap[s.title] = TabListObj(2, s, null)
+                                        tabs.add(s.title)
+                                        helpInfoAdded = true
+                                    } else {
+                                        tabMap[s.title] = TabListObj(2, s, null)
+                                        tabs.add(s.title)
                                     }
-                                })
-                                carousel.bindData(tabMap[it]?.serviceList)
-                                transaction.replace(R.id.fragment_container_carousel, carousel)
-                            }
-
-                            2 -> {
-                                binding.tvHeaderTitle.text = it
-                                val bundle = Bundle()
-                                bundle.putString("title", it)
-                                tabMap[it]?.service?.description?.let { desc ->
-                                    bundle.putString("desc", desc)
                                 }
-                                val list = tabMap[it]?.service?.serviceImageList
-                                var imgUrl = "null"
-                                if (list!!.isNotEmpty()) {
-                                    imgUrl = list[0]
+
+                                if (!helpInfoAdded) {
+                                    tabs.add(Constants.HELP_INFO)
+                                    tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
                                 }
-                                bundle.putString("imgUrl", imgUrl)
-                                val fragment = HotelServiceInfoFragment()
-                                fragment.arguments = bundle
-                                transaction.replace(R.id.fragment_container_carousel, fragment)
-                            }
-
-                            3 -> {
-                                binding.tvHeaderTitle.text = it
-                                val bundle = Bundle()
-                                bundle.putString("title", it)
-
-                                bundle.putString(
-                                    "desc",
-                                    hotelInfoViewModel.accountSetupLiveData.value?.data?.address
-                                )
-                                val fragment = HotelServiceInfoFragment()
-                                fragment.arguments = bundle
-                                transaction.replace(R.id.fragment_container_carousel, fragment)
                             }
 
                             else -> {
-
-                                binding.tvHeaderTitle.text = it
-                                val bundle = Bundle()
-                                bundle.putString("title", it)
-                                bundle.putString(
-                                    "desc",
-                                    hotelInfoViewModel.accountSetupLiveData.value?.data?.address
-                                )
-                                val fragment = HotelServiceInfoFragment()
-                                fragment.arguments = bundle
-                                transaction.replace(R.id.fragment_container_carousel, fragment)
+                                tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
+                                tabs.add(service.categoryName)
                             }
                         }
-                        transaction.commit()
-                    },
-                    onHelpInfoTabClick = { it, pos, view ->
-                        val fragment = HelpInfoFragment {
-                            handleBackClick()
-                        }
-                        val mBundle = Bundle()
-                        mBundle.putString("gradientStartColor", gradientStartColor)
-                        mBundle.putString("gradientEndColor", gradientEndColor)
-                        binding.fragmentContainerHelpInfo.toVisible()
-                        fragment.arguments = mBundle
-                        supportFragmentManager.beginTransaction()
-                            .add(R.id.fragment_container_help_info, fragment)
+                    }
+
+                    adapter = HotelInfoTabAdapter(itemList = tabs,
+                        onItemFocused = { it, view ->
+                            val transaction = supportFragmentManager.beginTransaction()
+                            when (tabMap[it]?.serviceType) {
+                                1 -> {
+                                    binding.tvHeaderTitle.text = tabMap[it]?.serviceList?.get(0)?.title
+                                    val carousel = CarouselListFragment({ title ->
+                                        binding.tvHeaderTitle.text = title
+                                    }, { title ->
+                                        if (tabMap[it]?.serviceList?.get(0)?.title == title) {
+                                            view.requestFocus()
+                                        }
+                                    })
+                                    carousel.bindData(tabMap[it]?.serviceList)
+                                    transaction.replace(R.id.fragment_container_carousel, carousel)
+                                }
+
+                                2 -> {
+                                    binding.tvHeaderTitle.text = it
+                                    val bundle = Bundle()
+                                    bundle.putString("title", it)
+                                    tabMap[it]?.service?.description?.let { desc ->
+                                        bundle.putString("desc", desc)
+                                    }
+                                    val list = tabMap[it]?.service?.serviceImageList
+                                    var imgUrl = "null"
+                                    if (list!!.isNotEmpty()) {
+                                        imgUrl = list[0]
+                                    }
+                                    bundle.putString("imgUrl", imgUrl)
+                                    val fragment = HotelServiceInfoFragment()
+                                    fragment.arguments = bundle
+                                    transaction.replace(R.id.fragment_container_carousel, fragment)
+                                }
+
+                                3 -> {
+                                    binding.tvHeaderTitle.text = it
+                                    val bundle = Bundle()
+                                    bundle.putString("title", it)
+
+                                    bundle.putString(
+                                        "desc",
+                                        hotelInfoViewModel.accountSetupLiveData.value?.data?.address
+                                    )
+                                    val fragment = HotelServiceInfoFragment()
+                                    fragment.arguments = bundle
+                                    transaction.replace(R.id.fragment_container_carousel, fragment)
+                                }
+
+                                else -> {
+
+                                    binding.tvHeaderTitle.text = it
+                                    val bundle = Bundle()
+                                    bundle.putString("title", it)
+                                    bundle.putString(
+                                        "desc",
+                                        hotelInfoViewModel.accountSetupLiveData.value?.data?.address
+                                    )
+                                    val fragment = HotelServiceInfoFragment()
+                                    fragment.arguments = bundle
+                                    transaction.replace(R.id.fragment_container_carousel, fragment)
+                                }
+                            }
+                            transaction.commit()
+                        },
+                        onHelpInfoTabClick = { it, pos, view ->
+                            val fragment = HelpInfoFragment {
+                                handleBackClick()
+                            }
+                            val mBundle = Bundle()
+                            mBundle.putString("gradientStartColor", gradientStartColor)
+                            mBundle.putString("gradientEndColor", gradientEndColor)
+                            binding.fragmentContainerHelpInfo.toVisible()
+                            fragment.arguments = mBundle
+                            supportFragmentManager.beginTransaction()
+                                .add(R.id.fragment_container_help_info, fragment)
 //                            .addToBackStack("Help Info")
-                            .commit()
-                        binding.fragmentContainerCarousel.toInvisible()
-                        binding.rvHotelInfoHeader.toInvisible()
-                        binding.tvHeaderTitle.toInvisible()
-                        binding.btnBack.toInvisible()
-                        binding.layoutHeader.tvTitle.text = Constants.HELP_INFO
-                        binding.tvHeaderTitle.text = ""
-                    })
-                if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
-                    adapter.setGradientColor(gradientStartColor, gradientEndColor)
-                }
-                binding.rvHotelInfoHeader.adapter = adapter
-                if (tabs.isNotEmpty())
+                                .commit()
+                            binding.fragmentContainerCarousel.toInvisible()
+                            binding.rvHotelInfoHeader.toInvisible()
+                            binding.tvHeaderTitle.toInvisible()
+                            binding.btnBack.toInvisible()
+                            binding.layoutHeader.tvTitle.text = Constants.HELP_INFO
+                            binding.tvHeaderTitle.text = ""
+                        })
+                    if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
+                        adapter.setGradientColor(gradientStartColor, gradientEndColor)
+                    }
+                    binding.rvHotelInfoHeader.adapter = adapter
                     binding.tvHeaderTitle.text = tabs[0]
-                binding.pbLoader.toInvisible()
+                    binding.pbLoader.toInvisible()
+                }
+
             }
 
             else -> {

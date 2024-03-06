@@ -581,7 +581,7 @@ class EndlessService : Service() {
                     }
 
                     else -> {
-                        fetchHotelServiceInfo(Constants.UA)
+                        fetchHotelServiceInfo(Constants.ACCOUNT_ID)
                     }
                 }
             }
@@ -781,9 +781,9 @@ class EndlessService : Service() {
         }
     }
 
-    private fun fetchHotelServiceInfo(ua: String) {
+    private fun fetchHotelServiceInfo(accountId: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val response = movieBeamRepository.getHotelServiceInfo(ua)
+            val response = movieBeamRepository.getHotelServiceInfo(accountId)
             if (response != null) {
                 updateHotelServices(hotelServicesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY

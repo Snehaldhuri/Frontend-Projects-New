@@ -276,9 +276,9 @@ class MovieDetailFragment : BaseFragment() {
         }
 
         val httpStreamingHotelVideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
-        content.imagePathPoster =
+        val url =
             httpStreamingHotelVideoUrl + content.releaseId + "/" + content.releaseId + "_P.jpg"
-        content.imagePathPoster.let {
+        url.let {
             binding.ivMovieImage.loadImagesWithGlideExtPoster(it)
         }
 
