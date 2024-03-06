@@ -55,6 +55,7 @@ import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_URL
 import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
@@ -105,6 +106,7 @@ class MainMenuActivity : BaseActivity() {
 
     private lateinit var devicePolicyManager: DevicePolicyManager
     private lateinit var componentName: ComponentName
+
     @Inject
     lateinit var preference: SharedPreference
 
@@ -130,7 +132,10 @@ class MainMenuActivity : BaseActivity() {
     private fun requestDeviceAdmin() {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Device admin is required to restart the device.")
+        intent.putExtra(
+            DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+            "Device admin is required to restart the device."
+        )
         startActivityForResult(intent, 1)
     }
 
@@ -172,7 +177,7 @@ class MainMenuActivity : BaseActivity() {
         if (!isServiceStarted) {
             actionOnService(Actions.START)
         }
-        LoggingService.sendMessageToWebSocket("In MainMenu activity", "01")
+        LoggingService.sendMessageToWebSocket("In MainMenu activity", getCurrentPanelNumber())
 
 
     }
@@ -180,14 +185,14 @@ class MainMenuActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
 
-   /*     preference.isAdultLocked = true
-        preference.isAdultContentEnabled = true
-        preference.isBtnAdultMCW = false
-        preference.isMainAdultMCW = false
-        preference.isAdultMCD = false
-        preference.adultPassCode = "____"
-//        preference.adultPassCode = "1111"
-*/
+        /*     preference.isAdultLocked = true
+             preference.isAdultContentEnabled = true
+             preference.isBtnAdultMCW = false
+             preference.isMainAdultMCW = false
+             preference.isAdultMCD = false
+             preference.adultPassCode = "____"
+     //        preference.adultPassCode = "1111"
+     */
         binding.rvMenuButton.setItemFocused()
 
     }
@@ -329,7 +334,7 @@ class MainMenuActivity : BaseActivity() {
                 } catch (e: Exception) {
                     LoggingService.sendMessageToWebSocket(
                         "handleThemeResponse Exception in MainMenu activity ${e.message}",
-                        "01"
+                        getCurrentPanelNumber()
                     )
                 }
             }
@@ -348,11 +353,11 @@ class MainMenuActivity : BaseActivity() {
                 try {
                     val response = mainMenuViewModel.accountSetupLiveData.value?.data
 
-                if(response?.contentDetailFlag == true){
-                    HOTEL_VIDEO_URL =
-                        response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
-                    initializePlayer()
-                }
+                    if (response?.contentDetailFlag == true) {
+                        HOTEL_VIDEO_URL =
+                            response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                        initializePlayer()
+                    }
 
                     binding.tvGreeting.text = response?.hotelInfo
                     val btnListFromApi: List<String>? = response?.buttonsList?.map {
@@ -370,11 +375,18 @@ class MainMenuActivity : BaseActivity() {
                     val adapter = MainMenuBtnAdapter { btn ->
                         releaseVideoPlayer()
                         val bundle = Bundle()
-                    bundle.putString("hotelChannel", response?.hotelChannelList?.get(0).toJson())
+                        bundle.putString(
+                            "hotelChannel",
+                            response?.hotelChannelList?.get(0).toJson()
+                        )
                         bundle.putString("title", btn.title)
-                    bundle.putString("hotelChannel", response?.hotelChannelList?.get(0).toJson())
-                    val hotelChannelVideo = response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
-                    bundle.putString("hotelChannelVideo", hotelChannelVideo)
+                        bundle.putString(
+                            "hotelChannel",
+                            response?.hotelChannelList?.get(0).toJson()
+                        )
+                        val hotelChannelVideo =
+                            response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
+                        bundle.putString("hotelChannelVideo", hotelChannelVideo)
                         bundle.putString(
                             "themeLogoFileName",
                             mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
@@ -452,7 +464,7 @@ class MainMenuActivity : BaseActivity() {
                 } catch (e: Exception) {
                     LoggingService.sendMessageToWebSocket(
                         "handleAccountSetupResponse Exception in MainMenu activity ${e.message}",
-                        "01"
+                        getCurrentPanelNumber()
                     )
                 }
             }
@@ -471,7 +483,10 @@ class MainMenuActivity : BaseActivity() {
             }
             binding.pbLoader.toInvisible()
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("handleValidateSessionResponse Exception in MainMenu activity ${e.message}","01")
+            LoggingService.sendMessageToWebSocket(
+                "handleValidateSessionResponse Exception in MainMenu activity ${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
 
@@ -488,9 +503,13 @@ class MainMenuActivity : BaseActivity() {
                         binding.pbLoader.toInvisible()
                     }
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket("handleGuestDetailsResponse Exception in MainMenu activity ${e.message}","01")
+                    LoggingService.sendMessageToWebSocket(
+                        "handleGuestDetailsResponse Exception in MainMenu activity ${e.message}",
+                        getCurrentPanelNumber()
+                    )
                 }
             }
+
             else -> {
                 status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }

@@ -43,6 +43,7 @@ import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
@@ -248,6 +249,7 @@ class EndlessService : Service() {
         val notification = createNotification()
         startForeground(1, notification)
     }
+
     private fun createRequestBody(roomNo: String, UA: String, accessType: Int): String {
         val netflixDetails = JSONObject().apply {
             put("stbRoomNo", roomNo)
@@ -256,6 +258,7 @@ class EndlessService : Service() {
         }
         return netflixDetails.toString()
     }
+
     private fun postRequest(url: String, requestBody: String) {
         val client = OkHttpClient()
 
@@ -272,11 +275,14 @@ class EndlessService : Service() {
 
             override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
                 if (response.isSuccessful) {
-                    Log.d(TAG,"netflixDataModel url success")
+                    Log.d(TAG, "netflixDataModel url success")
                 } else {
                     val responseBody = response.body?.string() ?: "No response body"
                     val responseCode = response.code
-                    Log.e(TAG, "netflixDataModel url failed. Response code: $responseCode, Response body: $responseBody")
+                    Log.e(
+                        TAG,
+                        "netflixDataModel url failed. Response code: $responseCode, Response body: $responseBody"
+                    )
                 }
             }
         })
@@ -778,12 +784,13 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_CHECK_IN -> {
                 resetPopUps(true)
                 kapingResponse.CMD?.let {
-                    if (it.length > 19){
+                    if (it.length > 19) {
                         val isEnabled = it[19] == '1'
                         updateAdultContent(isEnabled)
                     }
                 }
             }
+
             KapingConstants.KAP_CMD_CHECK_OUT -> resetPopUps(false)
         }
         val i = Intent(applicationContext, RefreshingUiActivity::class.java)
@@ -805,7 +812,7 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_CHECK_IN -> {
                 resetPopUps(true)
                 kapingResponse.CMD?.let {
-                    if (it.length > 19){
+                    if (it.length > 19) {
                         val isEnabled = it[19] == '1'
                         updateAdultContent(isEnabled)
                     }
@@ -820,8 +827,8 @@ class EndlessService : Service() {
         }
     }
 
-    private fun resetPopUps(isIn : Boolean) {
-         if (!isIn) sharedPreference.adultPassCode = "____"
+    private fun resetPopUps(isIn: Boolean) {
+        if (!isIn) sharedPreference.adultPassCode = "____"
         sharedPreference.isAdultLocked = true
         sharedPreference.isMainAdultMCW = false
         sharedPreference.isBtnAdultMCW = false
@@ -1003,11 +1010,11 @@ class EndlessService : Service() {
                             "In Get EPG Data callback success ",
                             getCurrentPanelNumber()
                         )
-                    }else{
-                        if(!isEPGServerApiCalled){
+                    } else {
+                        if (!isEPGServerApiCalled) {
                             fetchEPGDataFromServer(UA)
                             isEPGServerApiCalled = true
-                        }else{
+                        } else {
                             isEPGServerApiCalled = false
                         }
                     }
@@ -1636,30 +1643,4 @@ class EndlessService : Service() {
         return if (pm.isInteractive) KapingConstants.POWER_MODE_ON else KapingConstants.POWER_MODE_STAND_BY
     }
 
-        if (activityStack.isNotEmpty())
-            when (activityStack.last()) {
-                //TODO Register Stb Page
-                STBDetailsActivity::class.java.simpleName -> return PanelConstants.LOADER_SCREEN
-                MainMenuActivity::class.java.simpleName -> return PanelConstants.MAIN_MENU
-                MoviesActivity::class.java.simpleName -> return PanelConstants.VOD
-                HotelInfoActivity::class.java.simpleName -> return PanelConstants.HOTEL_SERVICES
-                //TODO Live services
-                MovieDetailFragment::class.java.simpleName -> return PanelConstants.MOVIE_DETAIL_PAGE
-                ProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
-                HelpInfoFragment::class.java.simpleName -> return PanelConstants.HELP_AND_INFO
-                GuestServiceActivity::class.java.simpleName -> return PanelConstants.GUEST_SERVICES
-                AppWorldActivity::class.java.simpleName -> return PanelConstants.APP_WORLD
-                ExoPlayerActivity::class.java.simpleName -> return PanelConstants.MOVIE_SHOWTIME_PLAYER_PAGE
-                PrgGuidePlayerActivity::class.java.simpleName -> return PanelConstants.FULL_SCREEN_TV
-                ShowtimeActivity::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_LISTENING
-                ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
-                CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
-                //TODO Pairing Page
-                //TODO Inroom Dining Page
-                //TOdo Food Delivery
-                //TODO Crackle
-                //TODO NDVR
-                //TODO CALENDER
-            }
-        return PanelConstants.MAIN_MENU
 }
