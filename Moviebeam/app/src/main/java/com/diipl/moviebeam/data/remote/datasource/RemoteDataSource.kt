@@ -20,6 +20,7 @@ import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
+import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
@@ -28,16 +29,19 @@ import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import com.diipl.moviebeam.utils.ApiResponseParsing
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.toQueryMap
 import javax.inject.Inject
+import javax.inject.Named
 
 class RemoteDataSource @Inject constructor(
     networkUtils: NetworkUtils,
     private val lgRestApiService: LgRestApiService,
     private val accountSetupApiService: AccountSetupApiService,
-    private val assetApiService: AssetApiService,
+    @Named(Constants.ASSET) private val assetApiService: AssetApiService,
+    @Named(Constants.SYS_INFO) private val sysInfoService: AssetApiService,
     private val moviesAPIService: MoviesAPIService,
     private val epgApiService: EpgApiService
 ) : NetworkHandler(networkUtils) {
@@ -185,5 +189,10 @@ class RemoteDataSource @Inject constructor(
     suspend fun buyPassRequest(request: AdultDayPassRequest): DayPassResponse? {
         val result = safeAPiCall { moviesAPIService.buyPassRequest(request.toQueryMap()) }
         return ApiResponseParsing().getResponseAsObject(result.data, DayPassResponse::class)
+    }
+
+    suspend fun sendSysInfo(ua: String, body: SysInfoDTO): Int? {
+        val result = safeAPiCall { sysInfoService.sendSysInfo(ua, body) }
+        return ApiResponseParsing().parseSysInfoResponse(result.data)
     }
 }

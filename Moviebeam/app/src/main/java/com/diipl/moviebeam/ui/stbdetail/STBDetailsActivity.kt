@@ -213,6 +213,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.channelListLiveData.value?.data?.let {
                     stbDetailViewModel.setChannelListResponseData(channelListDataStore, it)
+                    Constants.CHANNEL_COUNT = it.channelLcnList.size
                 }
             }
 
@@ -237,6 +238,8 @@ class STBDetailsActivity : BaseActivity() {
                     val startDate = simpleDateFormatter.parse(it.ST)
                     val endDate = simpleDateFormatter.parse(it.ET)
                     if (isEpgDataValid(startDate, endDate)) {
+                        Constants.EPG_START = it.ST?:""
+                        Constants.EPG_END = it.ET?:""
                         val channelList =
                             stbDetailViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()

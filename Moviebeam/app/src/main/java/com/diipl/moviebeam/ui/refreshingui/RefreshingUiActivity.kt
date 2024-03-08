@@ -449,6 +449,7 @@ class RefreshingUiActivity : BaseActivity() {
                         refreshingUiViewModel.updateChannelList(channelListDataStore, it)
                         EndlessService.kapingCmdExecutionResponse =
                             KapingConstants.EXECUTED_SUCCESSFULLY
+                        Constants.CHANNEL_COUNT = it.channelLcnList.size
                         redirectToMainMenuScreen()
                         LoggingService.sendMessageToWebSocket(
                             "In Channel List callback Success ",
@@ -541,6 +542,8 @@ class RefreshingUiActivity : BaseActivity() {
             val startDate = simpleDateFormatter.parse(it.ST)
             val endDate = simpleDateFormatter.parse(it.ET)
             if (isEpgDataValid(startDate, endDate)) {
+                Constants.EPG_START = it.ST?:""
+                Constants.EPG_END = it.ET?:""
                 val channelList =
                     refreshingUiViewModel.channelListLiveData.value?.data?.channelLcnList
                 val currentKey = fetchCurrentProgramKey()

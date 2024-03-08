@@ -18,4 +18,9 @@ class ApiResponseParsing {
             return Gson().fromJson(it, clazz.java)
         }?: return null
     }
+
+    fun parseSysInfoResponse(response: String?): Int? {
+        return response?.get(12)?.digitToInt()
+    }
+
 }

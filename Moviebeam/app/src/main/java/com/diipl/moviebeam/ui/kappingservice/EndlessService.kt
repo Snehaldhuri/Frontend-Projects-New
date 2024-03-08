@@ -10,6 +10,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
+import android.media.AudioManager
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -31,6 +33,7 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalSyncResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
+import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.kaping.CmdDto
@@ -63,11 +66,14 @@ import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.DeviceUtils
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.KapingResponseParsing
+import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.intToString
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.toTimestamp
@@ -101,6 +107,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+
 private const val TAG = "EndlessService"
 
 @AndroidEntryPoint
@@ -116,6 +123,7 @@ class EndlessService : Service() {
     private var themeVersion = ""
     private var laVersion = ""
     private var moviesVersion = ""
+    private var showtimeVersion = ""
     private var hotelServicesVersion = ""
     private var CMDRES = ""
     private var EVENT = ""
@@ -135,11 +143,20 @@ class EndlessService : Service() {
     private val _moviesLiveData = MutableLiveData<MoviesResponse>()
     val moviesLiveData: LiveData<MoviesResponse> get() = _moviesLiveData
 
+    private val _showtimeLiveData = MutableLiveData<ShowTimeResponse>()
+    val showtimeLiveData: LiveData<ShowTimeResponse> get() = _showtimeLiveData
+
     private val _hotelServicesLiveData = MutableLiveData<HotelServiceResponse>()
     val hotelServicesLiveData: LiveData<HotelServiceResponse> get() = _hotelServicesLiveData
 
     private val _channelListLiveData = MutableLiveData<ChannelListResponse>()
     val channelListLiveData: LiveData<ChannelListResponse> get() = _channelListLiveData
+
+    @Inject
+    lateinit var networkUtils: NetworkUtils
+
+    @Inject
+    lateinit var deviceUtils: DeviceUtils
 
     @Inject
     lateinit var movieBeamRepository: MovieBeamRepository
@@ -296,7 +313,7 @@ class EndlessService : Service() {
                     val reason = it.getStringExtra("reason")
                     Log.e(TAG, "homePressReceiver: --->>> $reason")
                     if (reason == "homekey") {
-                        if (currentActivity?.javaClass?.simpleName!!.isNotAllowed()) {
+                        if (currentActivity?.javaClass?.simpleName?.isNotAllowed() == true) {
                             if (activityStack.last() == AppWorldActivity::class.java.simpleName) {
                                 if (Constants.NETFLIX_LAUNCHED) {
                                     val sessionId = Constants.SESSION_ID
@@ -368,6 +385,7 @@ class EndlessService : Service() {
                     _themeLiveData.postValue(themeDataStore.data.first())
                     _localAttractionLiveData.postValue(localAttractionsDataStore.data.first())
                     _moviesLiveData.postValue(moviesDataStore.data.first())
+                    _showtimeLiveData.postValue(showtimeDataStore.data.first())
                     _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())
                     _channelListLiveData.postValue(channelListDatastore.data.first())
                     isGuestCheckedIn = preferenceDataStoreHelper.getFirstPreference(
@@ -447,6 +465,12 @@ class EndlessService : Service() {
             moviesVersion = moviesVersion1
         }
         log(moviesVersion1.toString())
+
+        val showtimeVersion1 = showtimeLiveData.value?.version
+        if (!showtimeVersion1.isNullOrEmpty()) {
+            showtimeVersion = showtimeVersion1
+        }
+        log(showtimeVersion1.toString())
 
         val hotelServicesVersion1 = hotelServicesLiveData.value?.version
         if (!hotelServicesVersion1.isNullOrEmpty()) {
@@ -534,7 +558,6 @@ class EndlessService : Service() {
                         }
                         false
                     }
-
 
                     handleKaping(result)
                 } else {
@@ -775,6 +798,12 @@ class EndlessService : Service() {
                     }
                 }
             }
+
+            KapingConstants.KAP_CMD_SEND_SYS_INFO -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    handleSysInfoCmd()
+                }
+            }
         }
     }
 
@@ -980,6 +1009,7 @@ class EndlessService : Service() {
             if (response != null) {
                 updateChannelList(channelListDatastore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                Constants.CHANNEL_COUNT = response.channelLcnList.size
                 LoggingService.sendMessageToWebSocket(
                     "In Channel List callback success ",
                     getCurrentPanelNumber()
@@ -1046,6 +1076,92 @@ class EndlessService : Service() {
                 )
             }
         }
+    }
+
+    private fun sendSysInfo(ua: String, body: SysInfoDTO) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = movieBeamRepository.sendSysInfo(ua, body)
+            Log.d(TAG, "sendSysInfo: $response")
+            if (response != null && response == 0) {
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                LoggingService.sendMessageToWebSocket(
+                    "In Channel List callback success ",
+                    getCurrentPanelNumber()
+                )
+            } else {
+                LoggingService.sendMessageToWebSocket(
+                    "In Channel List callback fail ",
+                    getCurrentPanelNumber()
+                )
+            }
+        }
+    }
+
+    private fun handleSysInfoCmd() {
+        val accountSetupData = accountSetupLiveData.value
+        val dateFormatter = SimpleDateFormat("EEE. MMM dd, yyyy hh:mm:ss a", Locale.ENGLISH)
+        val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+        val dhcpInfo = wifiManager.dhcpInfo
+        val body = SysInfoDTO()
+        body.HOTELCODE = Constants.ACCOUNT_ID.toInt()
+        body.ROOM = Constants.STB_ROOM_NO.uppercase()
+        body.STBTIME = dateFormatter.format(Date())
+        body.LASTCALLBACK = dateFormatter.format(Date())
+        body.HOTELMODEL = accountSetupData?.hotelModel?.toInt()
+        body.HOTELPLAN = accountSetupData?.hotelPlan
+        body.tvBroadcastType = accountSetupData?.tvBroadcastType
+        body.streamingType = accountSetupData?.streamingType
+        body.UA = Constants.UA
+        body.SRNO = Constants.SERIAL_NO
+        body.stbIp = dhcpInfo.ipAddress.intToString()
+        body.netMask = dhcpInfo.netmask.intToString()
+        body.route = dhcpInfo.gateway.intToString()
+        body.connectivityType = networkUtils.getConnectivityType()
+        body.VOD_MANAGER_IP = accountSetupData?.vodMgrIp
+        body.VOD_MANAGER_PORT = accountSetupData?.vodMgrPort
+        body.streamingIp = accountSetupData?.streamingIp
+        body.streamingPort = accountSetupData?.streamingPort
+        body.fetchIp = accountSetupData?.fetchServerIp
+        body.FETCH_PORT = accountSetupData?.fetchServerPort
+        body.mgIp = accountSetupData?.softwareDownloadIp
+        body.mgPort = accountSetupData?.softwareDownloadPort
+        body.swVersion = BuildConfig.VERSION_NAME
+        body.SYNCLISTVERSON = moviesVersion
+        body.hsVersion = hotelServicesVersion
+        body.laVersion = laVersion
+        body.THVERSION = themeVersion
+        body.epgStart = Constants.EPG_START
+        body.epgEnd = Constants.EPG_END
+        body.channelCount = Constants.CHANNEL_COUNT.toString()
+        body.inRmVersion = Constants.INRMVER
+        body.lauVersion = Constants.LAUVER
+        body.shoVersion = showtimeVersion
+        body.blankChannelLcn = accountSetupData?.blankChannelLcn
+        body.appsCount = accountSetupData?.selectedAppsList?.filter { it.forAndroid }?.size
+        body.zoneId = accountSetupData?.stbZoneId.toString()
+        body.enableShowtime = accountSetupData?.enableShowtime.toString()
+        body.ENABLE_NDVR = accountSetupData?.enableNdvr.toString()
+        body.tvResolution = deviceUtils.getScreenResolution()
+        body.appsList = accountSetupData?.selectedAppsList?.filter { it.forAndroid }?.joinToString {
+            it.label
+        }
+        body.volumeLevel = getVolumeLevel().toString()
+        body.startChannelLcn = "None"
+        body.tlxFile = "None"
+        body.STORAGE1 = "None"
+        body.FREE_STORAGE1 = "None"
+        body.dailyUpdateTime = "None"
+        body.platformVersion = Build.VERSION.RELEASE
+        body.stbModel = Build.MODEL
+        body.bootVersion = Build.ID
+
+        sendSysInfo(Constants.UA, body)
+
+    }
+
+    private fun getVolumeLevel(): Int {
+        val am = getSystemService(AUDIO_SERVICE) as AudioManager
+        return am.getStreamVolume(AudioManager.STREAM_MUSIC)
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
@@ -1341,6 +1457,8 @@ class EndlessService : Service() {
             val startDate = simpleDateFormatter.parse(it.ST)
             val endDate = simpleDateFormatter.parse(it.ET)
             if (isEpgDataValid(startDate, endDate)) {
+                Constants.EPG_START = it.ST ?: ""
+                Constants.EPG_END = it.ET ?: ""
                 val channelList =
                     channelListLiveData.value?.channelLcnList
                 val currentKey = fetchCurrentProgramKey()

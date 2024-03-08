@@ -75,6 +75,7 @@ object Constants {
     const val ASSET = "ASSET"
     const val MOVIE_ACCESS = "MOVIE_ACCESS"
     const val EPG = "EPG"
+    const val SYS_INFO = "SYS_INFO"
 
     //Home Page Menu Button Id
     const val PRG_GUIDE_ID = "prgGuide"
@@ -338,6 +339,7 @@ object Constants {
     const val LAUVER = "1520937775"
 
     //Program Guide
+    var CHANNEL_COUNT = 0
     const val CONTENT_LIST_PARAM = "contentList"
     const val CHANNEL_LIST_PARAM = "channelList"
     const val SELECTED_CHANNEL_INDEX = "index"
@@ -355,6 +357,8 @@ object Constants {
     const val TITLE_PARAM = "title"
     const val BG_IMAGE_URL = "bgImageUrl"
     const val LOGO_IMAGE_URL = "logoImageUrl"
+    var EPG_START = ""
+    var EPG_END = ""
 
     var NEXT_BUTTON_STATE = 0
 

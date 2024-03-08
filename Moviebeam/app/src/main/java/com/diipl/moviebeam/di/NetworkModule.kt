@@ -7,6 +7,7 @@ import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.JsonOrStringConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -86,6 +87,15 @@ object NetworkModule {
         .client(okHttpClient)
         .build()
 
+    @Singleton
+    @Provides
+    @Named(Constants.SYS_INFO)
+    fun provideRetrofitSysInfo(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .addConverterFactory(JsonOrStringConverterFactory())
+        .baseUrl(Constants.BASE_URL_ASSET)
+        .client(okHttpClient)
+        .build()
+
     @Provides
     fun provideLgRestApiService(@Named(Constants.LG_REST) retrofit: Retrofit): LgRestApiService =
         retrofit.create(LgRestApiService::class.java)
@@ -95,6 +105,7 @@ object NetworkModule {
         retrofit.create(AccountSetupApiService::class.java)
 
     @Provides
+    @Named(Constants.ASSET)
     fun provideAssetApiService(@Named(Constants.ASSET) retrofit: Retrofit): AssetApiService =
         retrofit.create(AssetApiService::class.java)
 
@@ -105,5 +116,10 @@ object NetworkModule {
     @Provides
     fun provideEpgAPIService(@Named(Constants.EPG) retrofit: Retrofit): EpgApiService =
         retrofit.create(EpgApiService::class.java)
+
+    @Provides
+    @Named(Constants.SYS_INFO)
+    fun provideSysInfoService(@Named(Constants.SYS_INFO) retrofit: Retrofit): AssetApiService =
+        retrofit.create(AssetApiService::class.java)
 
 }
