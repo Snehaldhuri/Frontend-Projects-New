@@ -71,7 +71,6 @@ class ProgramGuideActivity : BaseActivity() {
     private var nextPrograms: List<ChannelEpgDTO>? = null
 
     override fun observeViewModel() {
-
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
     }
@@ -97,7 +96,7 @@ class ProgramGuideActivity : BaseActivity() {
                     binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(
                         0
                     )?.itemView?.requestFocus()
-                    setOnScrollListener()
+//                    setOnScrollListener()
 
                 }
                 setNextPrograms()
@@ -108,17 +107,13 @@ class ProgramGuideActivity : BaseActivity() {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-        Log.e(TAG, "onStop: ")
-    }
-
-
     override fun onResume() {
         super.onResume()
         if (isFScreenExit) {
             playChannelVideoBg(null)
         }
+
+        setOnScrollListener()
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
@@ -133,6 +128,56 @@ class ProgramGuideActivity : BaseActivity() {
         }
 
     }
+
+    private fun setOnScrollListener() {
+        val recyclerView1 = binding.layoutProgramGuide.layoutPrgGuide.rvProgram
+        val recyclerView2 = binding.layoutProgramGuide.layoutPrgGuide.rvChannel
+
+        val scrollListeners = arrayOfNulls<RecyclerView.OnScrollListener>(2)
+        scrollListeners[0] = object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                recyclerView2.removeOnScrollListener(
+                    scrollListeners[1]!!
+                )
+                recyclerView2.scrollBy(dx, dy)
+                recyclerView2.addOnScrollListener(
+                    scrollListeners[1]!!
+                )
+            }
+        }
+        scrollListeners[1] = object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                recyclerView1.removeOnScrollListener(
+                    scrollListeners[0]!!
+                )
+                recyclerView1.scrollBy(dx, dy)
+                recyclerView1.addOnScrollListener(
+                    scrollListeners[0]!!
+                )
+            }
+        }
+//        recyclerView1.addOnScrollListener(scrollListeners[0]!!)
+//        recyclerView2.addOnScrollListener(scrollListeners[1]!!)
+
+        recyclerView1.addOnScrollListener(createScrollListener(recyclerView2))
+        recyclerView2.addOnScrollListener(createScrollListener(recyclerView1))
+
+    }
+
+    private var isScrolling = false
+    private fun createScrollListener(otherRecyclerView: RecyclerView): RecyclerView.OnScrollListener {
+        return object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (isScrolling) return
+                isScrolling = true
+                otherRecyclerView.scrollBy(dx, dy)
+                isScrolling = false
+            }
+        }
+    }
+
 
     private fun showSearchDialog() {
         val builder = AlertDialog.Builder(this)
@@ -502,34 +547,5 @@ class ProgramGuideActivity : BaseActivity() {
         }
     }
 
-    private fun setOnScrollListener() {
-        val scrollListeners = arrayOfNulls<RecyclerView.OnScrollListener>(2)
-        scrollListeners[0] = object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.removeOnScrollListener(
-                    scrollListeners[1]!!
-                )
-                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.scrollBy(dx, dy)
-                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.addOnScrollListener(
-                    scrollListeners[1]!!
-                )
-            }
-        }
-        scrollListeners[1] = object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                binding.layoutProgramGuide.layoutPrgGuide.rvProgram.removeOnScrollListener(
-                    scrollListeners[0]!!
-                )
-                binding.layoutProgramGuide.layoutPrgGuide.rvProgram.scrollBy(dx, dy)
-                binding.layoutProgramGuide.layoutPrgGuide.rvProgram.addOnScrollListener(
-                    scrollListeners[0]!!
-                )
-            }
-        }
-        binding.layoutProgramGuide.layoutPrgGuide.rvProgram.addOnScrollListener(scrollListeners[0]!!)
-        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.addOnScrollListener(scrollListeners[1]!!)
-    }
 
 }

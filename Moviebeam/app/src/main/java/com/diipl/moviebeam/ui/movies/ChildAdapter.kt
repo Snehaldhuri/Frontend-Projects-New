@@ -79,7 +79,7 @@ class ChildAdapter(
         val item = childList[position]
 
         val httpStreamingHotelVideoUrl = "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
-        val url = httpStreamingHotelvideoUrl + item.releaseId + "/" + item.releaseId + "_S.jpg"
+        val url = httpStreamingHotelVideoUrl + item.releaseId + "/" + item.releaseId + "_S.jpg"
 
         holder.logo.loadImagesWithGlideExtSushi(url)
         if (item.releaseTypeId == Constants.FREE_MOVIE_RELEASE_TYPE_ID) {

@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.hotelinfo
 
 import android.content.Context
 import android.graphics.Color
+import android.text.Html
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -14,8 +15,11 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtHsCard
 
+private const val TAG = "MyCardPresenter"
 
-class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val onLeftKeyPressed: (String) -> Unit) : Presenter() {
+class MyCardPresenter(
+    private val onItemFocused: ((String)) -> Unit, private val onLeftKeyPressed: (String) -> Unit
+) : Presenter() {
     override fun onCreateViewHolder(parent: ViewGroup): ViewHolder {
 
         val defaultColor = "#C0C0C0"
@@ -43,8 +47,7 @@ class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val
             view.setOnKeyListener { _, keycode, keyEvent ->
                 if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                     when (keycode) {
-                        KeyEvent.KEYCODE_DPAD_LEFT ->
-                            onLeftKeyPressed(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
+                        KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed(it.findViewById<TextView>(R.id.tv_card_title).text.toString())
                     }
                 }
                 false
@@ -62,14 +65,16 @@ class MyCardPresenter(private val onItemFocused: ((String),) -> Unit,private val
 
         if (item is Service) {
             val service: Service = item
-            val cardView = viewHolder.view
-            // Set card content
-            cardView.findViewById<TextView>(R.id.tv_card_content).text =
-                service.description.replace("<br>", "", true)
-            cardView.findViewById<TextView>(R.id.tv_card_title).text = service.title
-            // Customize other card attributes as needed
-            val imageview = cardView.findViewById<ImageView>(R.id.iv_card_image)
+            val description = viewHolder.view.findViewById<TextView>(R.id.tv_card_content)
+            val title = viewHolder.view.findViewById<TextView>(R.id.tv_card_title)
+            val imageview = viewHolder.view.findViewById<TextView>(R.id.iv_card_image) as ImageView
 
+            // Set card content
+            if (service.description.contains("<br/>")) {
+                description.text = Html.fromHtml(service.description)
+            } else description.text = service.description
+//            cardView.text = service.description.replace("<br>", "", true)
+            title.text = service.title
             imageview.loadImagesWithGlideExtHsCard(service.serviceImageList[0])
         }
 

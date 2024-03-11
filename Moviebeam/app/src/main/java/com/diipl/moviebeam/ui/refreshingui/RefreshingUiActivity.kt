@@ -363,6 +363,7 @@ class RefreshingUiActivity : BaseActivity() {
                 status.data?.let {
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
                     Constants.C_LIST_VERSION = it.version
+                    Constants.MOVIES_COUNT = it.freeContentList.size.plus(it.premiumContentList.size)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     LoggingService.sendMessageToWebSocket(
@@ -388,6 +389,7 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.showtimeLiveData.value?.data?.let {
+                    Constants.SHOWS_COUNT = it.shoContentList.size
                     refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY

@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 import android.os.Bundle
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,7 +42,9 @@ class HotelServiceInfoFragment : Fragment() {
             layoutParams.dimensionRatio = "H,1:1.64"
             binding.ivServiceImg.layoutParams = layoutParams
         } else {
-            binding.tvServiceDesc.text = description.replace("<br/>", "", true)
+            if (description.contains("<br/>")){
+                binding.tvServiceDesc.text = Html.fromHtml(description)
+            } else binding.tvServiceDesc.text = description
         }
         if (serviceImgUrl != "null") {
             binding.ivServiceImg.loadImagesWithGlideExtHS(serviceImgUrl)

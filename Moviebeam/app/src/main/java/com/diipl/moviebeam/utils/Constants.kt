@@ -20,6 +20,10 @@ object Constants {
     const val ADULT_LOCKED = 5
     const val PARENTAL_CONTROL = 6
 
+    // Content Count
+    var MOVIES_COUNT = 0
+    var SHOWS_COUNT = 0
+
     // Gradient Colors
     var GRADIENT_COLOR_START = ""
     var GRADIENT_COLOR_END = ""

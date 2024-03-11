@@ -13,6 +13,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.utils.Constants
 
+private const val TAG = "MainMenuBtnAdapter"
 class MainMenuBtnAdapter(
     private var onMenuItemClicked: (BtnModel) -> Unit
 ) :
@@ -41,6 +42,7 @@ class MainMenuBtnAdapter(
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
 
+/*
         holder.card.postDelayed(
             {
                 if (holder.absoluteAdapterPosition == 0) {
@@ -48,6 +50,7 @@ class MainMenuBtnAdapter(
                 }
             },200
         )
+*/
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
         holder.card.setOnFocusChangeListener { _, hasFocus ->
@@ -60,6 +63,7 @@ class MainMenuBtnAdapter(
         holder.card.setOnClickListener {
             onMenuItemClicked(item)
         }
+
     }
 
     private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {

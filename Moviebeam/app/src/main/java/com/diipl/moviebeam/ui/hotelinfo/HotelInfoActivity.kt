@@ -176,7 +176,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                         when (service.categoryName) {
                             "All" -> {
                                 var helpInfoAdded = false
-                                service.serviceList.forEach { s->
+                                service.serviceList.forEach { s ->
                                     if (s.title == "Help & Info") {
                                         tabMap[s.title] = TabListObj(2, s, null)
                                         tabs.add(s.title)
@@ -187,26 +187,28 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     }
                                 }
 
-                            if (!helpInfoAdded && service.contentTypeId == 15) {
+                                if (!helpInfoAdded && service.contentTypeId == 15) {
                                     tabs.add(Constants.HELP_INFO)
                                     tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
                                 }
                             }
 
                             else -> {
-                                tabMap[service.categoryName] = TabListObj(1, null, service.serviceList)
+                                tabMap[service.categoryName] =
+                                    TabListObj(1, null, service.serviceList)
                                 tabs.add(service.categoryName)
                             }
                         }
                     }
 
-                adapter = HotelInfoTabAdapter(
-                    itemList = tabs,
+                    adapter = HotelInfoTabAdapter(
+                        itemList = tabs,
                         onItemFocused = { it, view ->
                             val transaction = supportFragmentManager.beginTransaction()
                             when (tabMap[it]?.serviceType) {
                                 1 -> {
-                                    binding.tvHeaderTitle.text = tabMap[it]?.serviceList?.get(0)?.title
+                                    binding.tvHeaderTitle.text =
+                                        tabMap[it]?.serviceList?.get(0)?.title
                                     val carousel = CarouselListFragment({ title ->
                                         binding.tvHeaderTitle.text = title
                                     }, { title ->
@@ -270,12 +272,12 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                             val fragment = HelpInfoFragment {
                                 handleBackClick()
                             }
-                        helpInfoTabIndex = pos
+                            helpInfoTabIndex = pos
                             val mBundle = Bundle()
                             mBundle.putString("gradientStartColor", gradientStartColor)
                             mBundle.putString("gradientEndColor", gradientEndColor)
-                        binding.gsDown.visibility = View.GONE
-                        binding.gsUp.visibility = View.GONE
+                            binding.gsDown.visibility = View.GONE
+                            binding.gsUp.visibility = View.GONE
                             binding.fragmentContainerHelpInfo.toVisible()
                             fragment.arguments = mBundle
                             supportFragmentManager.beginTransaction()
@@ -288,9 +290,9 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                             binding.btnBack.toInvisible()
                             binding.layoutHeader.tvTitle.text = Constants.HELP_INFO
                             binding.tvHeaderTitle.text = ""
-                    },
-                    onFocusChangeListener = this
-                )
+                        },
+                        onFocusChangeListener = this
+                    )
                     if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
                         adapter.setGradientColor(gradientStartColor, gradientEndColor)
                     }
