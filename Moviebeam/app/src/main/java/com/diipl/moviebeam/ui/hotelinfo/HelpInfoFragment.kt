@@ -23,7 +23,10 @@ import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getConnectivityType
+import com.diipl.moviebeam.utils.getIPNetmask
 import com.diipl.moviebeam.utils.intToString
+import com.diipl.moviebeam.utils.toIpAddress
 
 private const val TAG = "HelpInfoFragment"
 
@@ -55,16 +58,19 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
             val wifiManager =
                 requireActivity().applicationContext.getSystemService(AppCompatActivity.WIFI_SERVICE) as WifiManager
             val dhcpInfo = wifiManager.dhcpInfo
-            val ipAddress = "IP Address: " + dhcpInfo.ipAddress.intToString()
-            val netmask = "Net Mask: " + dhcpInfo.netmask.intToString()
+            val ipAddress = "IP Address: " + dhcpInfo.ipAddress.toIpAddress()
+            val netmask = "Net Mask: " + getIPNetmask()
             val gateway = "Gateway: " + dhcpInfo.gateway.intToString()
+            val connectivity = "Connectivity: " + getConnectivityType(requireContext())
 
             binding.tvIpAddress.text = ipAddress
             binding.tvNetMask.text = netmask
             binding.tvGateway.text = gateway
+            binding.tvConnectivity.text = connectivity
 
 
-        val tvInputManager = requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
+            val tvInputManager =
+                requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
             val tvInputInfos = tvInputManager.tvInputList
             if (tvInputInfos.isNotEmpty()) {
                 Log.e(TAG, "Device is connected to an STB $tvInputInfos")
@@ -88,8 +94,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
             LoggingService.sendMessageToWebSocket("In HelpInfoMain activity", "07")
             binding.root
-        }
-        catch (e: Exception){
+        } catch (e: Exception) {
             LoggingService.sendMessageToWebSocket("${e.message}", "07")
             throw IllegalStateException("Failed to create view for HelpInfoFragment", e)
 
@@ -178,7 +183,9 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         binding.tvUa.text = "UA: " + Constants.UA
         binding.tvSerialNo.text = "Serial No: " + Constants.SERIAL_NO
         binding.tvSoftwareVersion.text = "Software Version: " + BuildConfig.VERSION_NAME
-        binding.tvContentListVersion.text = "Content List Version: " + Constants.C_LIST_VERSION
+        binding.tvContentListVersion.text = "Content List Version: ${Constants.C_LIST_VERSION}"
+        binding.tvContentCount.text =
+            "Total Content Count: ${Constants.MOVIES_COUNT.plus(Constants.SHOWS_COUNT)}"
     }
 
 }

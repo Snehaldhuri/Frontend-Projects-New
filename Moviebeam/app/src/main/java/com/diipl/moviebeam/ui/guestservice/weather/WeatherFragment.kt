@@ -47,33 +47,34 @@ class WeatherFragment : BaseFragment() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                val weatherDetails = weatherViewModel.weatherLiveData.value?.data
-                weatherDetails?.copy(tempCondition = replaceDegreeSymbol(weatherDetails.tempCondition))
-                    ?.let {
-                        weatherViewModel.setWeatherResponseData(
-                            weatherDataStore,
-                            it
-                        )
+                status.data?.let { weatherDetails ->
+                    weatherDetails.copy(tempCondition = replaceDegreeSymbol(weatherDetails.tempCondition))
+                        .let {
+                            weatherViewModel.setWeatherResponseData(
+                                weatherDataStore,
+                                it
+                            )
+                        }
+                    weatherDetails.tempConditionUrlCloud.let {
+                        binding.ivWeather.loadImagesWithGlideExt(it)
                     }
-                weatherDetails?.tempConditionUrlCloud?.let {
-                    binding.ivWeather.loadImagesWithGlideExt(it)
+                    binding.tvTemperature.text = replaceDegreeSymbol(weatherDetails.tempCondition)
+                    binding.tvCity.text = weatherDetails.location
+                    binding.tvTempHigh.text =
+                        replaceDegreeSymbol(weatherDetails.high).replace("high ", "")
+                    binding.tvTempLow.text =
+                        replaceDegreeSymbol(weatherDetails.low).replace("low ", "")
+                    binding.tvSunrise.text = weatherDetails.sunrise
+                    binding.tvHumidity.text = weatherDetails.humidity
+                    binding.tvDevPoint.text = replaceDegreeSymbol(weatherDetails.dewPoint)
+                    binding.tvSunset.text = weatherDetails.sunset
+                    binding.tvVisibility.text = weatherDetails.visibility
+                    binding.tvWind.text = weatherDetails.windSpeed
+                    weatherDetails.weatherProviderImageCloud.let {
+                        binding.ivWeatherProvider.loadImagesWithGlideExt(it)
+                    }
+                    binding.pbLoader.toInvisible()
                 }
-                binding.tvTemperature.text = replaceDegreeSymbol(weatherDetails?.tempCondition)
-                binding.tvCity.text = weatherDetails?.location
-                binding.tvTempHigh.text =
-                    replaceDegreeSymbol(weatherDetails?.high).replace("high ", "")
-                binding.tvTempLow.text =
-                    replaceDegreeSymbol(weatherDetails?.low).replace("low ", "")
-                binding.tvSunrise.text = weatherDetails?.sunrise
-                binding.tvHumidity.text = weatherDetails?.humidity
-                binding.tvDevPoint.text = replaceDegreeSymbol(weatherDetails?.dewPoint)
-                binding.tvSunset.text = weatherDetails?.sunset
-                binding.tvVisibility.text = weatherDetails?.visibility
-                binding.tvWind.text = weatherDetails?.windSpeed
-                weatherDetails?.weatherProviderImageCloud?.let {
-                    binding.ivWeatherProvider.loadImagesWithGlideExt(it)
-                }
-                binding.pbLoader.toInvisible()
             }
 
             else -> {

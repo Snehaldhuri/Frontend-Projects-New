@@ -36,6 +36,7 @@ import com.diipl.moviebeam.utils.toQueryMap
 import javax.inject.Inject
 import javax.inject.Named
 
+private const val TAG = "RemoteDataSource"
 class RemoteDataSource @Inject constructor(
     networkUtils: NetworkUtils,
     private val lgRestApiService: LgRestApiService,

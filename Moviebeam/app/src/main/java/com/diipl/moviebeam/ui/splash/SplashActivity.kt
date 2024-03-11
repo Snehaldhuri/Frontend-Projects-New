@@ -5,9 +5,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
-import com.diipl.moviebeam.utils.Constants
+import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.databinding.SplashLayoutBinding
 import com.diipl.moviebeam.ui.login.LoginActivity
+import com.diipl.moviebeam.ui.serial_info.SerialActivity
+import com.diipl.moviebeam.utils.Constants
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class SplashActivity : AppCompatActivity() {
@@ -19,7 +23,13 @@ class SplashActivity : AppCompatActivity() {
         binding = SplashLayoutBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        navigateToMainScreen()
+//        navigateToMainScreen()
+        lifecycleScope.launch {
+            delay(1000)
+            val nextScreenIntent = Intent(applicationContext, SerialActivity::class.java)
+            startActivity(nextScreenIntent)
+            finish()
+        }
     }
 
     private fun navigateToMainScreen() {

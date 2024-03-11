@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -32,7 +33,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
+private const val TAG = "STBDetailViewModel"
 @HiltViewModel
 class STBDetailViewModel @Inject constructor(private val movieBeamRepository: MovieBeamRepository) :
     ViewModel() {
@@ -110,13 +111,11 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
 
     fun fetchEpgData(url: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val epgResponse =
-                async { movieBeamRepository.getEPGFromCloud(url) }
-            val result = awaitAll(epgResponse)
-            if (result[0] == null) {
+            val epgResponse = movieBeamRepository.getEPGFromCloud(url)
+            if (epgResponse == null) {
                 _epgLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Epg Api"))
             } else {
-                _epgLiveData.postValue(Resource.Success(result[0]))
+                _epgLiveData.postValue(Resource.Success(epgResponse))
             }
         }
     }

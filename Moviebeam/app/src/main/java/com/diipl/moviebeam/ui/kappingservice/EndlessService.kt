@@ -332,6 +332,8 @@ class EndlessService : Service() {
                                     return
                                 }
                             }
+                        }
+                        if (activityStack.last() != MainMenuActivity::class.java.simpleName){
                             startActivity(Intent(context, MainMenuActivity::class.java).also { i ->
                                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             })
@@ -674,7 +676,7 @@ class EndlessService : Service() {
                     }
 
                     else -> {
-                        fetchHotelServiceInfo(UA)
+                        fetchHotelServiceInfo(Constants.ACCOUNT_ID)
                     }
                 }
             }
@@ -921,9 +923,9 @@ class EndlessService : Service() {
         }
     }
 
-    private fun fetchHotelServiceInfo(ua: String) {
+    private fun fetchHotelServiceInfo(accountId: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val response = movieBeamRepository.getHotelServiceInfo(ua)
+            val response = movieBeamRepository.getHotelServiceInfo(accountId)
             if (response != null) {
                 updateHotelServices(hotelServicesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
@@ -1395,6 +1397,8 @@ class EndlessService : Service() {
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
+            Constants.MOVIES_COUNT = data.freeContentList.size.plus(data.premiumContentList.size)
+            Constants.C_LIST_VERSION = data.version
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
@@ -1417,6 +1421,7 @@ class EndlessService : Service() {
         data: ShowTimeResponse
     ) {
         CoroutineScope(Dispatchers.IO).launch {
+            Constants.SHOWS_COUNT = data.shoContentList.size
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,

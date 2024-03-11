@@ -19,17 +19,6 @@ import com.diipl.moviebeam.R
 import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
 
-fun Int.intToString(): String {
-    val ip = this
-    val b1 = (ip and 0xff).toByte()
-    val b2 = ((ip shr 8) and 0xff).toByte()
-    val b3 = ((ip shr 16) and 0xff).toByte()
-    val b4 = ((ip shr 24) and 0xff).toByte()
-
-    // Convert bytes to a string in dot-decimal notation
-    return "$b1.$b2.$b3.$b4"
-}
-
 fun String.isServiceRunning(context: Context): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
     for (service in manager.getRunningServices(Int.MAX_VALUE)) {

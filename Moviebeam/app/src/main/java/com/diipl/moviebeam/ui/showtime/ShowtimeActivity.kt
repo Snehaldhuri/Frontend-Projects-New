@@ -64,7 +64,7 @@ class ShowtimeActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try{
+        try {
             fetchDetailsFromBundle()
             fetchDataFromDataStore()
             binding.btnBack.setOnFocusChangeListener { view, isFocused ->
@@ -91,9 +91,12 @@ class ShowtimeActivity : BaseActivity() {
 
             val cardRecyclerView: RecyclerView = binding.menuRecyclerView
             cardRecyclerView.layoutManager = LinearLayoutManager(this)
-            LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity","12")
+            LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity", "12")
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity onCreate: ${e.message}","12")
+            LoggingService.sendMessageToWebSocket(
+                "In ShowtimeMainPage activity onCreate: ${e.message}",
+                "12"
+            )
         }
 
     }
@@ -110,79 +113,81 @@ class ShowtimeActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
-                val response = showtimeViewModel.showtimeLiveData.value?.data
-                val showTimeGenreMap: Map<String, List<Detail>> =
-                    response?.shoGenreList?.associate { genre ->
-                        genre.name to genre.detailList
-                    } ?: emptyMap()
+                status.data?.let { response ->
+                    Constants.SHOWS_COUNT = response.shoContentList.size
+                    val showTimeGenreMap: Map<String, List<Detail>> =
+                        response.shoGenreList.associate { genre ->
+                            genre.name to genre.detailList
+                        }
 
-                val adapter = ShowtimeMenuAdapter(list,
-                    onMoviesMenuItemClicked = { view, btnId ->
-                        binding.fcvMovieDetail.toInvisible()
-                        binding.parentRecyclerView.toVisible()
-                        selectedView = view
-                        when (btnId) {
-                            Constants.ALL_SHOWS_ID -> {
-                                val showtimeParentAdapter =
-                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
-                                        if (it) {
-                                            requestFocus()
+                    val adapter = ShowtimeMenuAdapter(list,
+                        onMoviesMenuItemClicked = { view, btnId ->
+                            binding.fcvMovieDetail.toInvisible()
+                            binding.parentRecyclerView.toVisible()
+                            selectedView = view
+                            when (btnId) {
+                                Constants.ALL_SHOWS_ID -> {
+                                    val showtimeParentAdapter =
+                                        ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
+                                            if (it) {
+                                                requestFocus()
+                                            }
                                         }
-                                    }
-                                showtimeParentAdapter.setShowsList(showTimeGenreMap)
-                                binding.parentRecyclerView.adapter = showtimeParentAdapter
-                            }
+                                    showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                                    binding.parentRecyclerView.adapter = showtimeParentAdapter
+                                }
 
-                            Constants.SHO_SPORTS_ID,
-                            Constants.SHO_SERIES_ID,
-                            Constants.SHO_DOCS_ID -> {
-                                val shoSportsGenre =
-                                    response?.shoGenreList?.find { it.name == getGenreName(btnId) }
+                                Constants.SHO_SPORTS_ID,
+                                Constants.SHO_SERIES_ID,
+                                Constants.SHO_DOCS_ID -> {
+                                    val shoSportsGenre =
+                                        response.shoGenreList?.find { it.name == getGenreName(btnId) }
 
-                                val showTimeGenreMap: Map<String, List<Detail>> =
-                                    shoSportsGenre?.let {
-                                        mapOf(it.name to it.detailList)
-                                    } ?: emptyMap()
+                                    val showTimeGenreMap: Map<String, List<Detail>> =
+                                        shoSportsGenre?.let {
+                                            mapOf(it.name to it.detailList)
+                                        } ?: emptyMap()
 
-                                val showtimeParentAdapter =
-                                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
-                                        if (it) {
-                                            requestFocus()
+                                    val showtimeParentAdapter =
+                                        ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
+                                            if (it) {
+                                                requestFocus()
+                                            }
                                         }
-                                    }
-                                showtimeParentAdapter.setShowsList(showTimeGenreMap)
-                                binding.parentRecyclerView.adapter = showtimeParentAdapter
+                                    showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                                    binding.parentRecyclerView.adapter = showtimeParentAdapter
+                                }
+                            }
+                        },
+                        onRightKeyPressed = {
+                            if (binding.fcvMovieDetail.isVisible) {
+                                binding.fcvMovieDetail.post {
+                                    binding.fcvMovieDetail.findViewById<Spinner>(R.id.btn_season_list)
+                                        ?.requestFocus()
+                                }
+                                binding.fcvMovieDetail.post {
+                                    binding.fcvMovieDetail.findViewById<Button>(R.id.btn_rent_now)
+                                        ?.requestFocus()
+                                }
                             }
                         }
-                    },
-                    onRightKeyPressed = {
-                        if (binding.fcvMovieDetail.isVisible) {
-                            binding.fcvMovieDetail.post {
-                                binding.fcvMovieDetail.findViewById<Spinner>(R.id.btn_season_list)
-                                    ?.requestFocus()
-                            }
-                            binding.fcvMovieDetail.post {
-                                binding.fcvMovieDetail.findViewById<Button>(R.id.btn_rent_now)
-                                    ?.requestFocus()
+                    )
+
+                    binding.fcvMovieDetail.toInvisible()
+
+                    val showtimeParentAdapter =
+                        ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
+                            if (it) {
+                                requestFocus()
                             }
                         }
-                    }
-                )
 
-                binding.fcvMovieDetail.toInvisible()
-
-                val showtimeParentAdapter =
-                    ShowtimeParentAdapter(onItemClicked = ::onShowsClick) {
-                        if (it) {
-                            requestFocus()
-                        }
-                    }
-
-                showtimeParentAdapter.setShowsList(showTimeGenreMap)
-                binding.parentRecyclerView.adapter = showtimeParentAdapter
-                adapter.setGradient(gradient)
-                binding.menuRecyclerView.adapter = adapter
-                binding.loaderView.toInvisible()
+                    showtimeParentAdapter.setShowsList(showTimeGenreMap)
+                    binding.parentRecyclerView.adapter = showtimeParentAdapter
+                    adapter.setGradient(gradient)
+                    binding.menuRecyclerView.adapter = adapter
+                    binding.loaderView.toInvisible()
+                }
             }
 
             else -> {
@@ -227,28 +232,31 @@ class ShowtimeActivity : BaseActivity() {
     }
 
     private fun onShowsClick(shows: Detail, position: Int) {
-        try{
-        val transaction = supportFragmentManager.beginTransaction()
-        if (shows.episodesPresent) {
-            val bundle = Bundle()
-            bundle.putInt("movieReleaseId", shows.releaseId)
-            val fragment = ShowtimeSeasonFragment()
-            fragment.arguments = bundle
-            fragment.setGradient(gradient)
-            transaction.replace(R.id.fcv_movie_detail, fragment)
-        } else {
-            val bundle = Bundle()
-            bundle.putInt("movieReleaseId", shows.releaseId)
-            val fragment = ShowtimeDetailFragment()
-            fragment.arguments = bundle
-            fragment.setGradient(gradient)
-            transaction.replace(R.id.fcv_movie_detail, fragment)
-        }
-        binding.parentRecyclerView.toInvisible()
-        binding.fcvMovieDetail.toVisible()
-        transaction.commit()
+        try {
+            val transaction = supportFragmentManager.beginTransaction()
+            if (shows.episodesPresent) {
+                val bundle = Bundle()
+                bundle.putInt("movieReleaseId", shows.releaseId)
+                val fragment = ShowtimeSeasonFragment()
+                fragment.arguments = bundle
+                fragment.setGradient(gradient)
+                transaction.replace(R.id.fcv_movie_detail, fragment)
+            } else {
+                val bundle = Bundle()
+                bundle.putInt("movieReleaseId", shows.releaseId)
+                val fragment = ShowtimeDetailFragment()
+                fragment.arguments = bundle
+                fragment.setGradient(gradient)
+                transaction.replace(R.id.fcv_movie_detail, fragment)
+            }
+            binding.parentRecyclerView.toInvisible()
+            binding.fcvMovieDetail.toVisible()
+            transaction.commit()
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity onShowsClick: ${e.message}","12")
+            LoggingService.sendMessageToWebSocket(
+                "In ShowtimeMainPage activity onShowsClick: ${e.message}",
+                "12"
+            )
         }
     }
 

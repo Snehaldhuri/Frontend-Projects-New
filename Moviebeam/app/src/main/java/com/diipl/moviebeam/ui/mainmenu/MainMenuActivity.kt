@@ -12,11 +12,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -31,6 +31,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
@@ -66,14 +67,11 @@ import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import javax.inject.Inject
 
 private const val TAG = "MainMenuActivity"
@@ -151,21 +149,11 @@ class MainMenuActivity : BaseActivity() {
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
-        player = ExoPlayer.Builder(this).build()
-        player.trackSelectionParameters = player.trackSelectionParameters
-            .buildUpon()
-            .setMaxVideoSizeSd()
-            .build()
-
         // call below function to get data from datastore
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
 
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
-
-
-        val url = "https://tvbox-app.com/wp-content/uploads/2021/11/File-Manager_v2.6.5.apk"
-//        startDownload(url)
 
         // start the endless service
         if (!isServiceStarted) {
@@ -179,48 +167,86 @@ class MainMenuActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
 
-        /*     preference.isAdultLocked = true
-             preference.isAdultContentEnabled = true
-             preference.isBtnAdultMCW = false
-             preference.isMainAdultMCW = false
-             preference.isAdultMCD = false
-             preference.adultPassCode = "____"
-     //        preference.adultPassCode = "1111"
-     */
+        player = ExoPlayer.Builder(this).build()
+        player.trackSelectionParameters = player.trackSelectionParameters
+            .buildUpon()
+            .setMaxVideoSizeSd()
+            .build()
+        initializePlayer()
+
+        lifecycleScope.launch {
+            val ua = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SERIAL_NO, "")
+            Constants.SERIAL_NO = ua
+            Constants.UA = "21$ua"
+        }
+
         binding.rvMenuButton.setItemFocused()
+
+//        this.startDownload()
+
+/*
+        Log.e(TAG, "TAGS: ${Build.TAGS}")
+        Log.e(TAG, "BOOTLOADER: ${Build.BOOTLOADER}")
+        Log.e(TAG, "TYPE: ${Build.TYPE}")
+        Log.e(TAG, "USER: ${Build.USER}")
+        Log.e(TAG, "SKU: ${Build.SKU}")
+        Log.e(TAG, "ODM_SKU: ${Build.ODM_SKU}")
+        Log.e(TAG, "FINGERPRINT: ${Build.FINGERPRINT}")
+        Log.e(TAG, "MANUFACTURER: ${Build.MANUFACTURER}")
+        Log.e(TAG, "SOC_MANUFACTURER: ${Build.SOC_MANUFACTURER}")
+        Log.e(TAG, "MODEL: ${Build.MODEL}")
+        Log.e(TAG, "SOC_MODEL: ${Build.SOC_MODEL}")
+        Log.e(TAG, "PRODUCT:    ${Build.PRODUCT}")
+        Log.e(TAG, "HOST:    ${Build.HOST}")
+        Log.e(TAG, "HARDWARE:    ${Build.HARDWARE}")
+        Log.e(TAG, "DEVICE:    ${Build.DEVICE}")
+        Log.e(TAG, "BOARD:    ${Build.BOARD}")
+        Log.e(TAG, "BRAND:    ${Build.BRAND}")
+        Log.e(TAG, "DISPLAY:    ${Build.DISPLAY}")
+        Log.e(TAG, "ID:    ${Build.ID}")
+        Log.e(TAG, "CPU_ABI:    ${Build.CPU_ABI}")
+        Log.e(TAG, "CPU_ABI2:    ${Build.CPU_ABI2}")
+        Log.e(TAG, "RADIO:    ${Build.RADIO}")
+        Log.e(TAG, "SERIAL:    ${Build.SERIAL}")
+        Log.e(TAG, "PARTITION_NAME_SYSTEM:    ${Build.Partition.PARTITION_NAME_SYSTEM}")
+
+//        Log.e(TAG, "SUPPORTED_32_BIT_ABIS:    ${Build.SUPPORTED_32_BIT_ABIS.iterator()}")
+//        Log.e(TAG, "SUPPORTED_64_BIT_ABIS:    ${Build.SUPPORTED_64_BIT_ABIS.iterator()}")
+//        Log.e(TAG, "SUPPORTED_ABIS:    ${Build.SUPPORTED_ABIS.iterator()}")
+
+        Build.SUPPORTED_32_BIT_ABIS.forEach {
+            Log.e(TAG, "SUPPORTED_32_BIT_ABIS:    $it")
+        }
+        Build.SUPPORTED_64_BIT_ABIS.forEach {
+            Log.e(TAG, "SUPPORTED_64_BIT_ABIS:    $it")
+        }
+        Build.SUPPORTED_ABIS.forEach {
+            Log.e(TAG, "SUPPORTED_ABIS:    $it")
+        }
+
+
+
+        Log.e(TAG, "ANDROID_ID:    ${getData(Settings.Secure.ANDROID_ID)}")
+        Log.e(TAG, "NAME:    ${getData(Settings.Secure.ADB_ENABLED)}")
+*/
 
     }
 
-    fun startDownload(fileURL: String) = CoroutineScope(Dispatchers.Default).launch {
-        try {
-            val url = URL(fileURL)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.connect()
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val directory = File(externalMediaDirs[0].path + "/APK")
-                if (!directory.exists()) directory.mkdirs()
-                val file = File(directory, url.path.substringAfterLast("/"))
-                val outputStream = FileOutputStream(file)
-                val inputStream = connection.inputStream
-                val buffer = ByteArray(4096)
-                var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
+    fun getData(id : String): String {
+        return Settings.Secure.getString(
+            contentResolver,
+            id
+        ) ?: ""
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 121)
+            if (resultCode != RESULT_OK){
+                data?.getStringExtra("file")?.let {
+//                    startInstall(it)
                 }
-                inputStream.close()
-                outputStream.close()
-                Log.e(TAG, "startDownload: Completed  --->  ${file.absolutePath}")
-
-            } else {
-                // Handle the error or show a message if download fails
-                Log.e(TAG, "startDownload: Failed")
             }
-            connection.disconnect()
-
-        } catch (e: Exception) {
-            Log.e(TAG, "startDownload Exception: ${e.message}")
-        }
     }
 
     override fun initViewBinding() {
@@ -230,17 +256,10 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
-//        player.pause()
         super.onPause()
+        player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
-
-    override fun onRestart() {
-        super.onRestart()
-        player = ExoPlayer.Builder(this).build()
-        initializePlayer()
-    }
-
 
     private fun initializePlayer() {
         if (HOTEL_VIDEO_URL.isNotEmpty()) {
@@ -252,7 +271,11 @@ class MainMenuActivity : BaseActivity() {
             player.addListener(playerListener)
             player.prepare()
             player.play()
-//            player.seekTo(HOTEL_VIDEO_DURATION)
+        } else {
+            lifecycleScope.launch {
+                delay(2000)
+                initializePlayer()
+            }
         }
     }
 
@@ -325,116 +348,122 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
-                    val response = mainMenuViewModel.accountSetupLiveData.value?.data
+                    status.data?.let { response ->
 
-                    if (response?.contentDetailFlag == true) {
-                        HOTEL_VIDEO_URL =
-                            response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
-                        initializePlayer()
-                    }
+                        Constants.ACCOUNT_ID = response.accountId
+                        Constants.STB_ROOM_NO = response.roomNo
 
-                    binding.tvGreeting.text = response?.hotelInfo
-                    val btnListFromApi: List<String>? = response?.buttonsList?.map {
-                        it.buttonName
-                    }
-                    val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
-                        btnListFromApi?.contains(it.btnId) == true
-                    }
+                        if (response.contentDetailFlag) {
+                            HOTEL_VIDEO_URL = response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                            initializePlayer()
+                        }
 
-                    val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
-                        btnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
-                    }
-
-                    binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
-                    val adapter = MainMenuBtnAdapter { btn ->
-                        releaseVideoPlayer()
-                        val bundle = Bundle()
-                        bundle.putString(
-                            "hotelChannel",
-                            response?.hotelChannelList?.get(0).toJson()
-                        )
-                        bundle.putString("title", btn.title)
-                        bundle.putString(
-                            "hotelChannel",
-                            response?.hotelChannelList?.get(0).toJson()
-                        )
-                        val hotelChannelVideo =
-                            response?.httpStreamingHotelvideoUrl + response?.hotelChannelList?.get(0)?.fileName
-                        bundle.putString("hotelChannelVideo", hotelChannelVideo)
-                        bundle.putString(
-                            "themeLogoFileName",
-                            mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
-                        )
-                        bundle.putString(
-                            "themeBackgroundFileName",
-                            mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
-                        )
-                        bundle.putString(
-                            "gradientStartColor",
-                            mainMenuViewModel.themeLiveData.value?.data?.gradientColor
-                        )
-                        bundle.putString(
-                            "gradientEndColor",
-                            mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
-                        )
-                        var intent: Intent? = null
-                        when (btn.btnId) {
-                            Constants.HOTEL_SERVICES_ID -> {
-                                intent = Intent(this, HotelInfoActivity::class.java)
+                        binding.tvGreeting.text = response.hotelInfo
+                        val btnListFromApi: List<String> = response.buttonsList.map {
+                            it.buttonName
+                        }
+                        val btnModelList: List<BtnModel> =
+                            Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
+                                btnListFromApi.contains(it.btnId)
                             }
 
-                            Constants.LOCAL_ATTRACTION_ID -> {
-                                intent = Intent(this, GuestServiceActivity::class.java)
-                                intent.putExtra("btnId", LA_ID)
-                            }
+                        val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
+                            btnListFromApi.indexOf(it.btnId) ?: Int.MAX_VALUE
+                        }
 
-                            Constants.VOD_ID -> {
-                                intent = Intent(this, MoviesActivity::class.java)
-                            }
+                        binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
+                        val adapter = MainMenuBtnAdapter { btn ->
+                            releaseVideoPlayer()
+                            val bundle = Bundle()
+                            bundle.putString(
+                                "hotelChannel",
+                                response.hotelChannelList.get(0).toJson()
+                            )
+                            bundle.putString("title", btn.title)
+                            bundle.putString(
+                                "hotelChannel",
+                                response.hotelChannelList.get(0).toJson()
+                            )
+                            val hotelChannelVideo =
+                                response.httpStreamingHotelvideoUrl + response.hotelChannelList?.get(
+                                    0
+                                )?.fileName
+                            bundle.putString("hotelChannelVideo", hotelChannelVideo)
+                            bundle.putString(
+                                "themeLogoFileName",
+                                mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
+                            )
+                            bundle.putString(
+                                "themeBackgroundFileName",
+                                mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
+                            )
+                            bundle.putString(
+                                "gradientStartColor",
+                                mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                            )
+                            bundle.putString(
+                                "gradientEndColor",
+                                mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                            )
+                            var intent: Intent? = null
+                            when (btn.btnId) {
+                                Constants.HOTEL_SERVICES_ID -> {
+                                    intent = Intent(this, HotelInfoActivity::class.java)
+                                }
 
-                            Constants.GUEST_SERVICES_ID -> {
-                                intent = Intent(this, GuestServiceActivity::class.java)
-                                intent.putExtra("btnId", ALL_SERVICES)
-                            }
+                                Constants.LOCAL_ATTRACTION_ID -> {
+                                    intent = Intent(this, GuestServiceActivity::class.java)
+                                    intent.putExtra("btnId", LA_ID)
+                                }
 
-                            Constants.APPS_ID -> {
-                                intent = Intent(this, AppWorldActivity::class.java)
-                            }
+                                Constants.VOD_ID -> {
+                                    intent = Intent(this, MoviesActivity::class.java)
+                                }
 
-                            Constants.SHOWTIMES_ID -> {
-                                intent = Intent(this, ShowtimeActivity::class.java)
-                            }
+                                Constants.GUEST_SERVICES_ID -> {
+                                    intent = Intent(this, GuestServiceActivity::class.java)
+                                    intent.putExtra("btnId", ALL_SERVICES)
+                                }
 
-                            Constants.CASTING_ID -> {
-                                intent = Intent(this, CastingActivity::class.java)
-                            }
+                                Constants.APPS_ID -> {
+                                    intent = Intent(this, AppWorldActivity::class.java)
+                                }
 
-                            Constants.PRG_GUIDE_ID -> {
-                                intent = Intent(this, ProgramGuideActivity::class.java)
-                            }
+                                Constants.SHOWTIMES_ID -> {
+                                    intent = Intent(this, ShowtimeActivity::class.java)
+                                }
 
-                            Constants.IN_ROOM_DINING_ID -> {
-                                intent = Intent(this, InRoomDiningActivity::class.java)
+                                Constants.CASTING_ID -> {
+                                    intent = Intent(this, CastingActivity::class.java)
+                                }
+
+                                Constants.PRG_GUIDE_ID -> {
+                                    intent = Intent(this, ProgramGuideActivity::class.java)
+                                }
+
+                                Constants.IN_ROOM_DINING_ID -> {
+                                    intent = Intent(this, InRoomDiningActivity::class.java)
 //                            intent = Intent(this, GuestServiceActivity::class.java)
 //                            intent.putExtra("btnId", IN_ROOM_ID)
+                                }
+
+                                else -> {
+
+                                }
                             }
-
-                            else -> {
-
+                            intent?.let {
+                                it.putExtras(bundle)
+                                startActivity(it)
                             }
                         }
-                        intent?.let {
-                            it.putExtras(bundle)
-                            startActivity(it)
+                        adapter.itemList = sortedBtnModelList
+                        if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
+                            adapter.setGradientColor(gradientStartColor, gradientEndColor)
                         }
-                    }
-                    adapter.itemList = sortedBtnModelList
-                    if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
-                        adapter.setGradientColor(gradientStartColor, gradientEndColor)
-                    }
-                    binding.rvMenuButton.adapter = adapter
+                        binding.rvMenuButton.adapter = adapter
 
-                    binding.pbLoader.toInvisible()
+                        binding.pbLoader.toInvisible()
+                    }
                 } catch (e: Exception) {
                     LoggingService.sendMessageToWebSocket(
                         "handleAccountSetupResponse Exception in MainMenu activity ${e.message}",
@@ -572,6 +601,7 @@ class MainMenuActivity : BaseActivity() {
         }
         return false
     }
+
 
 
 }

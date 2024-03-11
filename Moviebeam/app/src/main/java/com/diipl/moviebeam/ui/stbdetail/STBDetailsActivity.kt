@@ -176,7 +176,7 @@ class STBDetailsActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
-                stbDetailViewModel.hotelServiceLiveData.value?.data?.let {
+                status.data?.let {
                     stbDetailViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
                     Log.d("DataStoreResponse", "handleHotelServiceResponse: $it")
                 }
@@ -495,9 +495,9 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.moviesLiveData.value?.data?.let {
+                    Constants.MOVIES_COUNT = it.freeContentList.size.plus(it.premiumContentList.size)
+                    Constants.C_LIST_VERSION = it.version
                     stbDetailViewModel.setMoviesResponseData(moviesDataStore, it)
-                    Constants.C_LIST_VERSION = it.version.toString()
-                    Log.d("DataStoreResponse", "handleMoviesResponse: $it")
                 }
             }
 
@@ -513,7 +513,8 @@ class STBDetailsActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
-                stbDetailViewModel.showtimeLiveData.value?.data?.let {
+                status.data?.let {
+                    Constants.SHOWS_COUNT = it.shoContentList.size
                     stbDetailViewModel.setShowTimeResponseData(showTimeDataStore, it)
                 }
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {

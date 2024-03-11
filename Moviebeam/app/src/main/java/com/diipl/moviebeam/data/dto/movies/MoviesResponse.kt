@@ -21,5 +21,4 @@ data class MoviesResponse(
 //    val premiumContentList: PersistentList<ContentDto> = persistentListOf(),
 //    @Serializable(with = PremiumGenreContentDtoPersistentListSerializer::class)
 //    val premiumGenreList: PersistentList<PremiumGenre> = persistentListOf()
-
 )

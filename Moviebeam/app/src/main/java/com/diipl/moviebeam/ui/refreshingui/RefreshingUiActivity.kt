@@ -146,12 +146,10 @@ class RefreshingUiActivity : BaseActivity() {
             }
 
             KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> {
-//                startWork(true)
                 handleFetchSyncListCmd()
             }
 
             KapingConstants.KAP_CMD_FETCH_SHOWTIME_DATA -> {
-//                startWork(false)
                 handleFetchShowtimeCmd()
             }
 
@@ -216,7 +214,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleHsChangeCmd() {
-        refreshingUiViewModel.fetchHotelServiceInfo(Constants.UA)
+        refreshingUiViewModel.fetchHotelServiceInfo(Constants.ACCOUNT_ID)
     }
 
     private fun handleLAChangeCmd() {
@@ -363,10 +361,9 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
-//                    startWork(true, it.toJson())
-
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
                     Constants.C_LIST_VERSION = it.version
+                    Constants.MOVIES_COUNT = it.freeContentList.size.plus(it.premiumContentList.size)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     LoggingService.sendMessageToWebSocket(
@@ -388,37 +385,11 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
-    /*
-        private fun startWork(isMovie: Boolean) {
-    //        Log.e(TAG, "startWork: $isMovie   $data")
-            val workManager = WorkManager.getInstance(applicationContext)
-            val inputData = Data.Builder()
-                .putBoolean("isMovie", isMovie)
-    //            .putString("json", data)
-                .build()
-
-            val workRequest = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
-                .setInputData(inputData)
-                .build()
-
-            workManager.enqueueUniqueWork("movieShow", ExistingWorkPolicy.REPLACE, workRequest)
-
-            workManager.getWorkInfoByIdLiveData(workRequest.id).observe(this){
-                Log.e(TAG, "startWork: $it")
-                if (it.state == WorkInfo.State.SUCCEEDED){
-                    redirectToMainMenuScreen()
-                }
-            }
-
-
-        }
-    */
-
     private fun handleShowtimeResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.showtimeLiveData.value?.data?.let {
-//                    startWork(false, it.toJson())
+                    Constants.SHOWS_COUNT = it.shoContentList.size
                     refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY

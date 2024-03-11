@@ -78,12 +78,10 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
 
                 val httpStreamingHotelVideoUrl =
                     "http://d1l6t4e2m4gzwb.cloudfront.net/PosterImages/"
-                detail?.imagePathSushi =
+                val imgPath =
                     httpStreamingHotelVideoUrl + detail?.releaseId + "/" + detail?.releaseId + "_S.jpg"
+                binding.ivSeasonMovieImage.loadImagesWithGlideExtSushi(imgPath)
 
-                detail?.imagePathSushi?.let {
-                    setImage(it)
-                }
                 binding.loaderView.toInvisible()
                 binding.btnSeasonList.requestFocus()
             }
@@ -92,10 +90,6 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
                 status.errorCode?.let { showtimeViewModel.showToastMessage(getString(it)) }
             }
         }
-    }
-
-    private fun setImage(imgPath: String) {
-        binding.ivSeasonMovieImage.loadImagesWithGlideExtSushi(imgPath)
     }
 
     private fun setShowDetails(detail: ShowTimeContent) {

@@ -276,9 +276,11 @@ class AdultContentDialog(
                 val pass =
                     binding.etPass1.text.toString() + binding.etPass2.text.toString() + binding.etPass3.text.toString() + binding.etPass4.text.toString()
                 if (pass.length < 4) {
-                    showToast("Incomplete password!")
+                    showToast("Invalid password!")
+                    clearView()
                 } else if (!preference.isAdultPassCodeEmpty && pass != preference.adultPassCode) {
                     showToast("Password doesn't match.")
+                    clearView()
                 } else {
                     if (pass == preference.adultPassCode) {
                         preference.isAdultLocked = false
@@ -322,6 +324,13 @@ class AdultContentDialog(
                 }
             }
         }
+    }
+
+    private fun clearView() {
+        binding.etPass1.setText("")
+        binding.etPass2.setText("")
+        binding.etPass3.setText("")
+        binding.etPass4.setText("")
     }
 
     private fun showToast(msg: String) {

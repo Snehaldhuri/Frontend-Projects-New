@@ -1,13 +1,9 @@
 package com.diipl.moviebeam.ui.kaping
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
@@ -22,10 +18,13 @@ import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.getConnectivityType
+import com.diipl.moviebeam.utils.getIPNetmask
 import com.diipl.moviebeam.utils.intToString
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toIpAddress
 import com.google.android.material.snackbar.Snackbar
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
@@ -49,15 +48,15 @@ class RegisterSTBActivity : BaseActivity() {
 
         val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
         val dhcpInfo = wifiManager.dhcpInfo
-        val ipAddress = dhcpInfo.ipAddress.intToString()
-        val netmask = dhcpInfo.netmask.intToString()
+        val ipAddress = dhcpInfo.ipAddress.toIpAddress()
+        val netmask = getIPNetmask()
         val gateway = dhcpInfo.gateway.intToString()
         binding.tvIp.text = ipAddress
         binding.tvNetMask.text = netmask
         binding.tvGateway.text = gateway
 
         binding.tvSwVersion.text = BuildConfig.VERSION_NAME
-        binding.tvConnectivity.text = getConnectivityType()
+        binding.tvConnectivity.text = getConnectivityType(applicationContext)
 
         validateAsFlag()
     }
@@ -135,31 +134,6 @@ class RegisterSTBActivity : BaseActivity() {
         setContentView(view)
     }
 
-    private fun getConnectivityType(): String {
-        val connectivityManager =
-            applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val nw = connectivityManager.activeNetwork
-            val actNw = connectivityManager.getNetworkCapabilities(nw)
-            return when {
-                actNw?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> "WIFI"
-                actNw?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true -> "MOBILE DATA"
-                actNw?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true -> "LAN"
-                actNw?.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) == true -> "BLUETOOTH"
-                actNw?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true -> "VPN"
-                else -> "UNKNOWN NETWORK"
-            }
-        } else {
-            return when (connectivityManager.activeNetworkInfo?.type) {
-                ConnectivityManager.TYPE_WIFI -> "WIFI"
-                ConnectivityManager.TYPE_MOBILE -> "MOBILE DATA"
-                ConnectivityManager.TYPE_ETHERNET -> "LAN"
-                ConnectivityManager.TYPE_BLUETOOTH -> "BLUETOOTH"
-                ConnectivityManager.TYPE_VPN -> "VPN"
-                else -> "UNKNOWN NETWORK"
-            }
-        }
-    }
 
     private fun generateQRCode(str: String): Bitmap {
         val writer = QRCodeWriter()

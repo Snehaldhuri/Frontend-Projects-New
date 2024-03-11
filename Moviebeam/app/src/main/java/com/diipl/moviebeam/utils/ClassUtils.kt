@@ -1,15 +1,20 @@
 package com.diipl.moviebeam.utils
 
+import android.app.Activity
 import android.content.Context
+import android.content.Context.CONNECTIVITY_SERVICE
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
+import androidx.core.content.FileProvider
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -31,8 +36,19 @@ import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Collections
 import java.util.Date
 import java.util.Locale
 import kotlin.reflect.full.declaredMemberProperties
@@ -86,8 +102,8 @@ fun isRentalMovieTimeOver(): Boolean {
     val calendar2 = Calendar.getInstance().apply { timeInMillis = timestamp2 }
 
     // Compare timestamps with a 24-hour difference
-    val is24HoursApart = calendar1.after(
-        Calendar.getInstance().apply { timeInMillis = timestamp2 + (24 * 60 * 60 * 1000) })
+    val is24HoursApart = calendar1.after(Calendar.getInstance()
+        .apply { timeInMillis = timestamp2 + (24 * 60 * 60 * 1000) })
 
 
     return is24HoursApart
@@ -204,32 +220,167 @@ fun Long.toTimeFormat(): String {
     return time
 }
 
-fun getCurrentPanelNumber(): String {
-    when (BaseActivity.activityStack.last()) {
-        RegisterSTBActivity::class.java.simpleName -> return PanelConstants.BLUE_SCREEN
-        STBDetailsActivity::class.java.simpleName -> return PanelConstants.LOADER_SCREEN
-        MainMenuActivity::class.java.simpleName -> return PanelConstants.MAIN_MENU
-        MoviesActivity::class.java.simpleName -> return PanelConstants.VOD
-        HotelInfoActivity::class.java.simpleName -> return PanelConstants.HOTEL_SERVICES
-        //TODO Live services
-        MovieDetailFragment::class.java.simpleName -> return PanelConstants.MOVIE_DETAIL_PAGE
-        ProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
-        HelpInfoFragment::class.java.simpleName -> return PanelConstants.HELP_AND_INFO
-        GuestServiceActivity::class.java.simpleName -> return PanelConstants.GUEST_SERVICES
-        AppWorldActivity::class.java.simpleName -> return PanelConstants.APP_WORLD
-        ExoPlayerActivity::class.java.simpleName -> return PanelConstants.MOVIE_SHOWTIME_PLAYER_PAGE
-        PrgGuidePlayerActivity::class.java.simpleName -> return PanelConstants.FULL_SCREEN_TV
-        ShowtimeActivity::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_LISTENING
-        ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
-        CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
-        //TODO Pairing Page
-        //TODO Inroom Dining Page
-        //TOdo Food Delivery
-        //TODO Crackle
-        //TODO NDVR
-        //TODO CALENDER
+fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
+    try {
+        val fileURL = "https://testmdm.movie-beam.com/files/files-by-google-1-2729-610141523-0-release.apk"
+        val url = URL(fileURL)
+        withContext(Dispatchers.IO) {
+            val connection = url.openConnection() as HttpURLConnection
+            connection.connect()
+            val responseCode = connection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val directory = File(externalMediaDirs[0].path + "/APK")
+                if (!directory.exists()) directory.mkdirs()
+                val file = File(directory, url.path.substringAfterLast("/"))
+                val outputStream = FileOutputStream(file)
+                val inputStream = connection.inputStream
+                val buffer = ByteArray(4096)
+                var bytesRead: Int
+                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                }
+                inputStream.close()
+                outputStream.close()
+                Log.e("startDownload:", " Completed  --->  ${file.absolutePath}")
+                startInstall(file.absolutePath)
+            } else {
+                // Handle the error or show a message if download fails
+                Log.e("startDownload:", "Failed")
+            }
+            connection.disconnect()
+        }
 
-        else -> return PanelConstants.MAIN_MENU
+    } catch (e: Exception) {
+        Log.e("startDownload:", " Exception: ${e.message}")
+    }
+}
+
+fun Activity.startInstall(file: String) {
+    val apkUri = FileProvider.getUriForFile(
+        this,
+        "${BuildConfig.APPLICATION_ID}.fileprovider",
+        File(file)
+    )
+
+    val installIntent = Intent(Intent.ACTION_INSTALL_PACKAGE)
+    installIntent.data = apkUri
+    installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    installIntent.putExtra("file", file)
+    startActivityForResult(installIntent, 121)
+}
+
+
+fun getCurrentPanelNumber(): String {
+    if (BaseActivity.activityStack.isNotEmpty()) {
+        when (BaseActivity.activityStack.last()) {
+            RegisterSTBActivity::class.java.simpleName -> return PanelConstants.BLUE_SCREEN
+            STBDetailsActivity::class.java.simpleName -> return PanelConstants.LOADER_SCREEN
+            MainMenuActivity::class.java.simpleName -> return PanelConstants.MAIN_MENU
+            MoviesActivity::class.java.simpleName -> return PanelConstants.VOD
+            HotelInfoActivity::class.java.simpleName -> return PanelConstants.HOTEL_SERVICES
+            //TODO Live services
+            MovieDetailFragment::class.java.simpleName -> return PanelConstants.MOVIE_DETAIL_PAGE
+            ProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
+            HelpInfoFragment::class.java.simpleName -> return PanelConstants.HELP_AND_INFO
+            GuestServiceActivity::class.java.simpleName -> return PanelConstants.GUEST_SERVICES
+            AppWorldActivity::class.java.simpleName -> return PanelConstants.APP_WORLD
+            ExoPlayerActivity::class.java.simpleName -> return PanelConstants.MOVIE_SHOWTIME_PLAYER_PAGE
+            PrgGuidePlayerActivity::class.java.simpleName -> return PanelConstants.FULL_SCREEN_TV
+            ShowtimeActivity::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_LISTENING
+            ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
+            CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
+            //TODO Pairing Page
+            //TODO Inroom Dining Page
+            //TOdo Food Delivery
+            //TODO Crackle
+            //TODO NDVR
+            //TODO CALENDER
+
+            else -> return PanelConstants.MAIN_MENU
+
+        }
+    }
+    return PanelConstants.MAIN_MENU
+}
+
+fun Int.intToString(): String {
+    val ip = this
+    val b1 = (ip and 0xff).toByte()
+    val b2 = ((ip shr 8) and 0xff).toByte()
+    val b3 = ((ip shr 16) and 0xff).toByte()
+    val b4 = ((ip shr 24) and 0xff).toByte()
+
+    // Convert bytes to a string in dot-decimal notation
+    return "$b1.$b2.$b3.$b4"
+}
+
+fun Int.toIpAddress(): String {
+    val ipAddress = this
+    val addressParts = ByteArray(4)
+    ipAddress.toByte().let { addressParts[0] = it }
+    (ipAddress shr 8).toByte().let { addressParts[1] = it }
+    (ipAddress shr 16).toByte().let { addressParts[2] = it }
+    (ipAddress shr 24).toByte().let { addressParts[3] = it }
+    val formatter = StringBuilder()
+    for (i in 0..3) {
+        formatter.append(addressParts[i].toInt() and 0xFF)
+        if (i < 3) {
+            formatter.append(".")
+        }
+    }
+    return formatter.toString()
+}
+
+fun getIPNetmask(): String {
+    try {
+        val networkInterfaces: List<NetworkInterface> =
+            Collections.list(NetworkInterface.getNetworkInterfaces())
+
+        for (networkInterface in networkInterfaces) {
+            if (!networkInterface.isUp) continue
+
+            val addresses: ArrayList<InetAddress> = Collections.list(networkInterface.inetAddresses)
+
+            for (address in addresses) {
+                if (!address.isLoopbackAddress) {
+                    val prefixLength =
+                        networkInterface.interfaceAddresses.firstOrNull { it.address == address }?.networkPrefixLength
+
+                    if (prefixLength != null) {
+                        val netmask = (0xFFFFFFFF shl (32 - prefixLength)).inv()
+                        return (netmask shr 24 and 0xFF).toString() + "." + (netmask shr 16 and 0xFF).toString() + "." + (netmask shr 8 and 0xFF).toString() + "." + (netmask and 0xFF).toString()
+                    }
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return ""
+}
+
+fun getConnectivityType(context: Context): String {
+    val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val nw = connectivityManager.activeNetwork
+        val actNw = connectivityManager.getNetworkCapabilities(nw)
+        return when {
+            actNw?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true -> "WIFI"
+            actNw?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true -> "MOBILE DATA"
+            actNw?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true -> "LAN"
+            actNw?.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) == true -> "BLUETOOTH"
+            actNw?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true -> "VPN"
+            else -> "UNKNOWN NETWORK"
+        }
+    } else {
+        return when (connectivityManager.activeNetworkInfo?.type) {
+            ConnectivityManager.TYPE_WIFI -> "WIFI"
+            ConnectivityManager.TYPE_MOBILE -> "MOBILE DATA"
+            ConnectivityManager.TYPE_ETHERNET -> "LAN"
+            ConnectivityManager.TYPE_BLUETOOTH -> "BLUETOOTH"
+            ConnectivityManager.TYPE_VPN -> "VPN"
+            else -> "UNKNOWN NETWORK"
+        }
     }
 }
 

@@ -47,8 +47,10 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private const val TAG = "MoviesActivity"
@@ -102,8 +104,7 @@ class MoviesActivity : BaseActivity() {
         setContentView(view)
     }
 
-    /*
-    */
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -132,35 +133,37 @@ class MoviesActivity : BaseActivity() {
 
         val cardRecyclerView: RecyclerView = binding.menuRecyclerView
         cardRecyclerView.layoutManager = LinearLayoutManager(this)
-        LoggingService.sendMessageToWebSocket("In MoviesMain activity", getCurrentPanelNumber())
 
-        try {
-            val params = binding.recentRecyclerView.layoutParams
+        val params = binding.recentRecyclerView.layoutParams
 //        params.width = getWidthInPercent(applicationContext, 22)
-            params.height = getHeightInPercent(applicationContext, 28)
+        params.height = getHeightInPercent(applicationContext, 28)
 
 
-            moviesViewModel.getAllWatchedMovies().observe(this) { data ->
-                if (data.isNotEmpty()) {
-                    val movieList = mutableListOf<ContentDto>()
-                    data.forEach { model ->
-                        model.movieData?.let { movieList.add(it) }
-                    }
+        moviesViewModel.getAllWatchedMovies().observe(this) { data ->
+            if (data.isNotEmpty()) {
+                val movieList = mutableListOf<ContentDto>()
+                data.forEach { model ->
+                    model.movieData?.let { movieList.add(it) }
+                }
 
-                    if (movieList.isNotEmpty()) {
-                        val adapter = ChildAdapter(movieList, onItemClicked = { it, view ->
-                            onMovieClick(it, view)
-                        }, onLeftKey = {
-                            if (it) {
-                                requestFocus()
-                            }
-                        })
+                if (movieList.isNotEmpty()) {
+                    val adapter = ChildAdapter(movieList, onItemClicked = { it, view ->
+                        onMovieClick(it, view)
+                    }, onLeftKey = {
+                        if (it) {
+                            requestFocus()
+                        }
+                    })
 
-                        binding.recentRecyclerView.adapter = adapter
+                    binding.recentRecyclerView.adapter = adapter
 
-                    }
                 }
             }
+        }
+
+
+        try {
+            LoggingService.sendMessageToWebSocket("In MoviesMain activity", getCurrentPanelNumber())
         } catch (e: Exception) {
             LoggingService.sendMessageToWebSocket(
                 "In MoviesMain activity onResume: ${e.message}",
@@ -226,158 +229,165 @@ class MoviesActivity : BaseActivity() {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 lifecycleScope.launch {
-                    val response = moviesViewModel.moviesLiveData.value?.data
-                    adultResponse = response!!
-                    moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                        binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-                    }
-                    loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                    val genreMap: LinkedHashMap<String, MutableList<ContentDto>> = LinkedHashMap()
-                    lifecycleScope.launch {
-                        response.premiumContentList?.forEach {
-                            if (it.genre1 != "Adult") {
-                                if (genreMap[it.genre1] != null) {
-                                    genreMap[it.genre1]?.add(it)
-                                } else {
-                                    val movieList = mutableListOf<ContentDto>()
-                                    movieList.add(it)
-                                    genreMap[it.genre1] = movieList
-                                }
-                                if (it.genre1 != "New Releases") {
-                                    if (genreMap[Constants.ALL_PAY_MOVIES] != null) {
-                                        genreMap[Constants.ALL_PAY_MOVIES]?.add(it)
+                    status.data?.let { response ->
+                        Constants.MOVIES_COUNT =
+                            response.freeContentList.size.plus(response.premiumContentList.size)
+                        Constants.C_LIST_VERSION = response.version
+                        adultResponse = response
+                        moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
+                            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
+                        }
+                        loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
+                        val genreMap: LinkedHashMap<String, MutableList<ContentDto>> =
+                            LinkedHashMap()
+                        withContext(Dispatchers.IO) {
+                            response.premiumContentList.forEach {
+                                if (it.genre1 != "Adult") {
+                                    if (genreMap[it.genre1] != null) {
+                                        genreMap[it.genre1]?.add(it)
                                     } else {
                                         val movieList = mutableListOf<ContentDto>()
-                                        movieList.add(it.copy(genre1 = Constants.ALL_PAY_MOVIES))
-                                        genreMap[Constants.ALL_PAY_MOVIES] = movieList
+                                        movieList.add(it)
+                                        genreMap[it.genre1] = movieList
+                                    }
+                                    if (it.genre1 != "New Releases") {
+                                        if (genreMap[Constants.ALL_PAY_MOVIES] != null) {
+                                            genreMap[Constants.ALL_PAY_MOVIES]?.add(it)
+                                        } else {
+                                            val movieList = mutableListOf<ContentDto>()
+                                            movieList.add(it.copy(genre1 = Constants.ALL_PAY_MOVIES))
+                                            genreMap[Constants.ALL_PAY_MOVIES] = movieList
+                                        }
                                     }
                                 }
                             }
                         }
 
-
                         val sortedGenreMap = genreMap.toList().sortedBy { it.first }.toMap()
 
-                        val adapter = MoviesBtnAdapter(onMoviesMenuItemClicked = { view, btnId ->
-                            isRecentView = false
-                            binding.fcvMovieDetail.toGone()
-                            binding.recentRecyclerView.toGone()
-                            binding.parentRecyclerView.toVisible()
-                            selectedView = view
-                            when (btnId) {
-                                Constants.RECENT_WATCH_MOVIE_ID -> {
-                                    isRecentView = true
-                                    binding.recentRecyclerView.toVisible()
-                                    binding.parentRecyclerView.toGone()
-                                }
-
-                                Constants.MOVIE_RENTALS_ID -> {
-                                    val parentAdapter = ParentAdapter(onItemClicked = { it, v ->
-                                        onMovieClick(it, v)
-                                    }, onLeftKey = {
-                                        if (it) {
-                                            requestFocus()
-                                        }
-                                    })
-
-                                    parentAdapter.setMovieList(sortedGenreMap, null, true)
-                                    binding.parentRecyclerView.adapter = parentAdapter
-                                }
-
-                                Constants.FREE_MOVIES_ID -> {
-                                    val freeGenreMap: HashMap<String, MutableList<ContentDto>> =
-                                        HashMap()
-                                    response.freeContentList?.forEach {
-                                        if (freeGenreMap[it.genre1] != null) {
-                                            freeGenreMap[it.genre1]?.add(it)
-                                        } else {
-                                            val movieList = mutableListOf<ContentDto>()
-                                            movieList.add(it)
-                                            freeGenreMap[it.genre1] = movieList
-                                        }
+                        val adapter =
+                            MoviesBtnAdapter(onMoviesMenuItemClicked = { view, btnId ->
+                                isRecentView = false
+                                binding.fcvMovieDetail.toGone()
+                                binding.recentRecyclerView.toGone()
+                                binding.parentRecyclerView.toVisible()
+                                selectedView = view
+                                when (btnId) {
+                                    Constants.RECENT_WATCH_MOVIE_ID -> {
+                                        isRecentView = true
+                                        binding.recentRecyclerView.toVisible()
+                                        binding.parentRecyclerView.toGone()
                                     }
-                                    val parentAdapter = ParentAdapter(onItemClicked = { it, v ->
-                                        onMovieClick(it, v)
-                                    }, onLeftKey = {
-                                        if (it) {
-                                            requestFocus()
-                                        }
-                                    })
-                                    parentAdapter.setMovieList(freeGenreMap, null, true)
-                                    binding.parentRecyclerView.adapter = parentAdapter
-                                }
 
-                                Constants.ADULT_DAY_PASS_ID -> {
-                                    if (isUserCheckedIn) {
-                                        if (!preference.isAdultContentEnabled) {
-                                            openACDDialog(ADULT_CONTENT_DISABLED)
-                                        } else {
-                                            if (!preference.isAdultPassCodeEmpty) {
-                                                if (!preference.isAdultMCD)
-                                                    openACDDialog(ADULT_MCD_BTN)
-                                                else if (preference.isAdultLocked)
-                                                    openACDDialog(ADULT_LOCKED)
+                                    Constants.MOVIE_RENTALS_ID -> {
+                                        val parentAdapter =
+                                            ParentAdapter(onItemClicked = { it, v ->
+                                                onMovieClick(it, v)
+                                            }, onLeftKey = {
+                                                if (it) {
+                                                    requestFocus()
+                                                }
+                                            })
+
+                                        parentAdapter.setMovieList(sortedGenreMap, null, true)
+                                        binding.parentRecyclerView.adapter = parentAdapter
+                                    }
+
+                                    Constants.FREE_MOVIES_ID -> {
+                                        val freeGenreMap: HashMap<String, MutableList<ContentDto>> =
+                                            HashMap()
+                                        response.freeContentList?.forEach {
+                                            if (freeGenreMap[it.genre1] != null) {
+                                                freeGenreMap[it.genre1]?.add(it)
                                             } else {
-                                                if (!preference.isBtnAdultMCW)
-                                                    openACDDialog(ADULT_MCW_BTN)
+                                                val movieList = mutableListOf<ContentDto>()
+                                                movieList.add(it)
+                                                freeGenreMap[it.genre1] = movieList
                                             }
-                                            if (preference.isBtnAdultMCW && !isAdultDayPassPurchased && isUserCheckedIn) {
-                                                startActivity(
-                                                    Intent(
-                                                        this@MoviesActivity,
-                                                        ConfirmRentalActivity::class.java
-                                                    ).putExtra(
-                                                        "price",
-                                                        response.adultDayPassPrice.toString()
+                                        }
+                                        val parentAdapter =
+                                            ParentAdapter(onItemClicked = { it, v ->
+                                                onMovieClick(it, v)
+                                            }, onLeftKey = {
+                                                if (it) {
+                                                    requestFocus()
+                                                }
+                                            })
+                                        parentAdapter.setMovieList(freeGenreMap, null, true)
+                                        binding.parentRecyclerView.adapter = parentAdapter
+                                    }
+
+                                    Constants.ADULT_DAY_PASS_ID -> {
+                                        if (isUserCheckedIn) {
+                                            if (!preference.isAdultContentEnabled) {
+                                                openACDDialog(ADULT_CONTENT_DISABLED)
+                                            } else {
+                                                if (!preference.isAdultPassCodeEmpty) {
+                                                    if (!preference.isAdultMCD)
+                                                        openACDDialog(ADULT_MCD_BTN)
+                                                    else if (preference.isAdultLocked)
+                                                        openACDDialog(ADULT_LOCKED)
+                                                } else {
+                                                    if (!preference.isBtnAdultMCW)
+                                                        openACDDialog(ADULT_MCW_BTN)
+                                                }
+                                                if (preference.isBtnAdultMCW && !isAdultDayPassPurchased && isUserCheckedIn) {
+                                                    startActivity(
+                                                        Intent(
+                                                            this@MoviesActivity,
+                                                            ConfirmRentalActivity::class.java
+                                                        ).putExtra(
+                                                            "price",
+                                                            response.adultDayPassPrice.toString()
+                                                        )
                                                     )
-                                                )
 
+                                                }
+                                                if (isAdultDayPassPurchased && !preference.isAdultLocked) {
+                                                    setAdultData(response)
+                                                }
                                             }
-                                            if (isAdultDayPassPurchased && !preference.isAdultLocked) {
-                                                setAdultData(response)
-                                            }
+                                        } else {
+                                            if (!preference.isBtnAdultMCW)
+                                                openACDDialog(ADULT_MCW_BTN)
+                                            setAdultData(response)
                                         }
-                                    } else {
-                                        if (!preference.isBtnAdultMCW)
-                                            openACDDialog(ADULT_MCW_BTN)
-                                        setAdultData(response)
                                     }
-                                }
 
-                                Constants.ADULT_ID -> {
-                                    if (isUserCheckedIn) {
-                                        if (!preference.isAdultContentEnabled)
-                                            openACDDialog(ADULT_CONTENT_DISABLED)
-                                        else {
-                                            if (!preference.isAdultPassCodeEmpty) {
-                                                if (!preference.isAdultMCD)
-                                                    openACDDialog(ADULT_MCD_BTN)
-                                                else if (preference.isAdultLocked)
-                                                    openACDDialog(ADULT_LOCKED)
-                                            } else {
-                                                if (!preference.isBtnAdultMCW)
-                                                    openACDDialog(ADULT_MCW_BTN)
-                                            }
+                                    Constants.ADULT_ID -> {
+                                        if (isUserCheckedIn) {
+                                            if (!preference.isAdultContentEnabled)
+                                                openACDDialog(ADULT_CONTENT_DISABLED)
+                                            else {
+                                                if (!preference.isAdultPassCodeEmpty) {
+                                                    if (!preference.isAdultMCD)
+                                                        openACDDialog(ADULT_MCD_BTN)
+                                                    else if (preference.isAdultLocked)
+                                                        openACDDialog(ADULT_LOCKED)
+                                                } else {
+                                                    if (!preference.isBtnAdultMCW)
+                                                        openACDDialog(ADULT_MCW_BTN)
+                                                }
 //                                    if (!preference.isAdultLocked && (SESSION_ID.isNotEmpty() || SESSION_ID!="null"))
-                                            if (!preference.isAdultLocked)
-                                                setAdultData(response)
+                                                if (!preference.isAdultLocked)
+                                                    setAdultData(response)
+                                            }
+                                        } else {
+                                            if (!preference.isBtnAdultMCW)
+                                                openACDDialog(ADULT_MCW_BTN)
+                                            setAdultData(response)
                                         }
-                                    } else {
-                                        if (!preference.isBtnAdultMCW)
-                                            openACDDialog(ADULT_MCW_BTN)
-                                        setAdultData(response)
                                     }
                                 }
-                            }
-                        }, onRightKeyPressed = {
-                            if (binding.fcvMovieDetail.isVisible) {
-                                binding.fcvMovieDetail.postDelayed({
-                                    val btnRentNow: Button? =
-                                        binding.fcvMovieDetail.findViewById(R.id.btn_rent_now)
-                                    btnRentNow?.requestFocus()
-                                }, 50)
-                            }
-                        })
+                            }, onRightKeyPressed = {
+                                if (binding.fcvMovieDetail.isVisible) {
+                                    binding.fcvMovieDetail.postDelayed({
+                                        val btnRentNow: Button? =
+                                            binding.fcvMovieDetail.findViewById(R.id.btn_rent_now)
+                                        btnRentNow?.requestFocus()
+                                    }, 50)
+                                }
+                            })
 
                         adapter.submitList(list)
 
