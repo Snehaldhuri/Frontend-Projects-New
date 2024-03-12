@@ -30,7 +30,6 @@ class StartReceiver : BroadcastReceiver() {
             val i = Intent(context, MainMenuActivity::class.java)
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             context.startActivity(i)
-
         }
 
     }

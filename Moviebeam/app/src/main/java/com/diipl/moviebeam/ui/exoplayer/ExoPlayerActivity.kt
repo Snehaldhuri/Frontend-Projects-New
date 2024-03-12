@@ -201,8 +201,9 @@ class ExoPlayerActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        releasePlayer()
         super.onPause()
+        releasePlayer()
+        apiCall(0, 2)
         finish()
     }
 
@@ -220,7 +221,7 @@ class ExoPlayerActivity : BaseActivity() {
 
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
-            if (error.localizedMessage!!.contains("Source error")){
+            if (error.localizedMessage!! == "Source error"){
                 if (::showTimeModel.isInitialized){
                     moviesViewModel.deleteShowDetails(showTimeModel)
                     moviesViewModel.viewModelScope.cancel()
@@ -272,42 +273,42 @@ class ExoPlayerActivity : BaseActivity() {
             Log.e("ExoPlayer state", "changed state to $stateString")
         }
 
-        private fun apiCall(seekType: Int, a: Int) {
-            val request = RentalMovieRequest()
-            if (::movieData.isInitialized) {
-                movieData.let {
-                    request.productId = it.productId
-                    request.releaseID = it.releaseId
-                    request.price = it.price
-                    request.contentTypeID = it.contentTypeId
-                    request.rentalID = if (::rentalMovieModel.isInitialized) rentalMovieModel.rentalID.toString() else "+"
-                    request.productType = it.releaseTypeId
-                    request.a = a
-                    request.ra = 0
-                    request.seekType = seekType
-                    request.seek = player.getLastSeek()
-                }
-                moviesViewModel.updateRentalMovieLog(request)
-            }
-            if (::seriesData.isInitialized) {
-                seriesData.let {
-                    request.productId = it.productId
-                    request.releaseID = it.releaseId
-                    request.contentTypeID = it.contentTypeId
-                    request.rentalID = if (::showTimeModel.isInitialized) showTimeModel.rentalID.toString() else ""
-                    request.productType = Constants.SHOWTIME_RELEASE_TYPE_ID
-                    request.a = a
-                    request.ra = 0
-                    request.seekType = seekType
-                    request.seek = player.getLastSeek()
-                }
-                moviesViewModel.updateRentalMovieLog(request)
-            }
+    }
 
+    private fun apiCall(seekType: Int, a: Int) {
+        val request = RentalMovieRequest()
+        if (::movieData.isInitialized) {
+            movieData.let {
+                request.productId = it.productId
+                request.releaseID = it.releaseId
+                request.price = it.price
+                request.contentTypeID = it.contentTypeId
+                request.rentalID = if (::rentalMovieModel.isInitialized) rentalMovieModel.rentalID.toString() else ""
+                request.productType = it.releaseTypeId
+                request.a = a
+                request.ra = 0
+                request.seekType = seekType
+                request.seek = player.getLastSeek()
+            }
+            moviesViewModel.updateRentalMovieLog(request)
+        }
+        if (::seriesData.isInitialized) {
+            seriesData.let {
+                request.productId = it.productId
+                request.releaseID = it.releaseId
+                request.contentTypeID = it.contentTypeId
+                request.rentalID = if (::showTimeModel.isInitialized) showTimeModel.rentalID.toString() else ""
+                request.productType = Constants.SHOWTIME_RELEASE_TYPE_ID
+                request.a = a
+                request.ra = 0
+                request.seekType = seekType
+                request.seek = player.getLastSeek()
+            }
+            moviesViewModel.updateRentalMovieLog(request)
         }
 
-
     }
+
 
 
     private fun hideSystemUi() {

@@ -10,41 +10,36 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.databinding.FragmentVelvetParkingBinding
+import com.diipl.moviebeam.databinding.FragmentValetParkingBinding
+import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.showKeyboard
+import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toVisible
 
 
-class VelvetParkingFragment(
+class ValetParkingFragment(
     private var onOkClicked: () -> Unit
 ) : Fragment() {
 
 
-    private var _binding: FragmentVelvetParkingBinding? = null
+    private var _binding: FragmentValetParkingBinding? = null
     val binding get() = _binding!!
-    lateinit var layout_velvet_parking_number: LinearLayout
-    lateinit var layout_confirmation: LinearLayout
-
     private var startColor = ""
     private var endColor = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
 
-        _binding = FragmentVelvetParkingBinding.inflate(inflater, container, false)
-        layout_velvet_parking_number = binding.root.findViewById(R.id.layout_velvet_parking_number)
-        layout_confirmation = binding.root.findViewById(R.id.layout_confirmation)
+        _binding = FragmentValetParkingBinding.inflate(inflater, container, false)
 
         binding.edtTicketNo.requestFocus()
         binding.edtTicketNo.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-//                setVelvetFocus(view)
-//                showSerialNumberDialog()
                 view.showKeyboard()
 
                 view.setOnKeyListener { _, keyCode, event ->
@@ -60,6 +55,7 @@ class VelvetParkingFragment(
                     false
                 }
             } else {
+                view.hideKeyboard()
                 binding.edtTicketNo.setBackgroundResource(R.drawable.rounded_corner_border)
             }
         }
@@ -92,9 +88,9 @@ class VelvetParkingFragment(
         binding.btnCancel.setOnClickListener {
             onOkClicked()
         }
-        binding.btnOk.setOnClickListener(View.OnClickListener {
-            layout_velvet_parking_number.visibility = View.GONE
-            layout_confirmation.visibility = View.VISIBLE
+        binding.btnOk.setOnClickListener{
+            binding.layoutVelvetParkingNumber.toGone()
+            binding.layoutConfirmation.toVisible()
 
             binding.btnPopOk.postDelayed({
                 binding.btnPopOk.requestFocus()
@@ -113,7 +109,7 @@ class VelvetParkingFragment(
             binding.btnPopOk.setOnClickListener {
                 onOkClicked()
             }
-        })
+        }
 
         return binding.root
     }

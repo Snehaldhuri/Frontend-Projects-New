@@ -28,6 +28,7 @@ import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -93,13 +94,8 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             //   checkHotelLogoImageAvailableLocally()
 
 
-            binding.btnBack.setOnFocusChangeListener { view, b ->
-                if (b) {
-                    binding.btnBack.background = getGradient(gradientStartColor, gradientEndColor)
-                } else {
-                    binding.btnBack.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
-            }
+            binding.btnBack.handleFocusChange()
+
             binding.btnBack.setOnClickListener {
                 finish()
             }
@@ -273,16 +269,11 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                 handleBackClick()
                             }
                             helpInfoTabIndex = pos
-                            val mBundle = Bundle()
-                            mBundle.putString("gradientStartColor", gradientStartColor)
-                            mBundle.putString("gradientEndColor", gradientEndColor)
                             binding.gsDown.visibility = View.GONE
                             binding.gsUp.visibility = View.GONE
                             binding.fragmentContainerHelpInfo.toVisible()
-                            fragment.arguments = mBundle
                             supportFragmentManager.beginTransaction()
-                                .add(R.id.fragment_container_help_info, fragment)
-//                            .addToBackStack("Help Info")
+                                .replace(R.id.fragment_container_help_info, fragment)
                                 .commit()
                             binding.fragmentContainerCarousel.toInvisible()
                             binding.rvHotelInfoHeader.toInvisible()

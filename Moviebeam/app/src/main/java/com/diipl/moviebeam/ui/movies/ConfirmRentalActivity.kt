@@ -80,6 +80,7 @@ class ConfirmRentalActivity : BaseActivity() {
                                     ADULT_DAY_PASS_FINISH_TIME,
                                     System.currentTimeMillis().plus(24 * 60 * 60 * 1000)
                                 )
+                                activityStack.add(Constants.C_TYPE_MOVIE)
                                 finish()
                             }
                         }

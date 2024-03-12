@@ -52,6 +52,7 @@ object Constants {
     const val ACCOUNT_SETUP = "ACCOUNT_SETUP"
     const val HELP_INFO = "Help & Info"
     const val SYSTEM_INFO = "System Info"
+    const val TAB_PARENTAL_CONTROL = "Parental Control"
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"

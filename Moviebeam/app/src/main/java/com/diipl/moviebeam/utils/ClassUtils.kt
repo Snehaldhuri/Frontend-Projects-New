@@ -10,11 +10,13 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
+import android.view.View
 import androidx.core.content.FileProvider
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
 import com.diipl.moviebeam.BuildConfig
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -186,6 +188,17 @@ fun getGradientColor(): GradientDrawable {
     gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
     return gradientDrawable
 }
+
+fun View.handleFocusChange() {
+   setOnFocusChangeListener { _, b ->
+       if (b) {
+           background = getGradientColor()
+       } else {
+           setBackgroundResource(R.drawable.btn_bg_gradient_default)
+       }
+   }
+}
+
 
 fun RecyclerView.setItemFocused() {
     for (i in 0 until childCount) {

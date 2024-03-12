@@ -8,10 +8,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.btn.BtnModel
-import com.diipl.moviebeam.ui.guestservice.GuestServiceTabAdapter
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 
 class HotelInfoTabAdapter(
     private val itemList: List<String>,
@@ -34,6 +34,11 @@ class HotelInfoTabAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.hotel_info_tab, parent, false)
+
+        val params = view.layoutParams
+        params.width = getWidthInPercent(parent.context, 22)
+        params.height = getHeightInPercent(parent.context, 15)
+
         return MyViewHolder(view)
     }
 
@@ -49,7 +54,6 @@ class HotelInfoTabAdapter(
             if (hasFocus) {
                 onItemFocused(itemList[position], view)
                 onFocusChangeListener.onItemFocused(position, itemList)
-
                 fetchGradientColorsFromApi(holder.card)
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)

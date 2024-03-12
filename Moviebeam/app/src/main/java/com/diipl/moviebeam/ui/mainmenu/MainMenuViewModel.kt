@@ -5,15 +5,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +49,35 @@ class MainMenuViewModel @Inject constructor(
 
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
+
+    private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
+    val moviesLiveData: LiveData<Resource<MoviesResponse>> get() = _moviesLiveData
+
+    private val _showtimeLiveData = MutableLiveData<Resource<ShowTimeResponse>>()
+    val showtimeLiveData: LiveData<Resource<ShowTimeResponse>> get() = _showtimeLiveData
+
+    fun getMoviesInfoResponseData(dataStore: DataStore<MoviesResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _moviesLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _moviesLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun getShowtimeResponseData(dataStore: DataStore<ShowTimeResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _showtimeLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _showtimeLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
 
     /* init {
          fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE)

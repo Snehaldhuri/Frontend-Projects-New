@@ -235,8 +235,8 @@ class STBDetailsActivity : BaseActivity() {
 
                 val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
                 stbDetailViewModel.epgLiveData.value?.data?.let {
-                    val startDate = simpleDateFormatter.parse(it.ST)
-                    val endDate = simpleDateFormatter.parse(it.ET)
+                    val startDate = simpleDateFormatter.parse(it.ST ?: "")
+                    val endDate = simpleDateFormatter.parse(it.ET ?: "")
                     if (isEpgDataValid(startDate, endDate)) {
                         Constants.EPG_START = it.ST?:""
                         Constants.EPG_END = it.ET?:""

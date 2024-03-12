@@ -292,7 +292,7 @@ class AdultContentDialog(
                             return
                         }
                     }
-                    if (preference.isAdultPassCodeEmpty) {
+                    if (preference.isAdultPassCodeEmpty && viewType == PARENTAL_CONTROL) {
                         preference.adultPassCode = pass
                         showToast("Passcode set successfully.")
                     }

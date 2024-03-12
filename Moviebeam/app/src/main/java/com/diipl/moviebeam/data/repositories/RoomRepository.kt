@@ -9,6 +9,7 @@ import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.utils.Constants
 import javax.inject.Inject
 
+private const val TAG = "RoomRepository"
 class RoomRepository @Inject constructor(
     private val database: MoviesDatabase,
     private val programGuideDao: ProgramGuideDao
@@ -84,6 +85,11 @@ class RoomRepository @Inject constructor(
     }
 
     suspend fun insertChannels(epgChannels: List<ChannelEpgDTO>) {
+/*
+        epgChannels.forEach {
+            Log.e(TAG, "insertChannels: $it")
+        }
+*/
         programGuideDao.insertChannels(epgChannels)
     }
 

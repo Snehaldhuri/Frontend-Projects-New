@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
+private const val TAG = "MoviesViewModel"
 @HiltViewModel
 class MoviesViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository,

@@ -66,6 +66,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/btn_bg_gradient_default"
         android:text="@string/back"
+        android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 

@@ -3,7 +3,6 @@ package com.diipl.moviebeam.ui.movies
 import android.content.Intent
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -53,7 +52,6 @@ class MovieDetailFragment : BaseFragment() {
 
     private fun handleAdultPassResponse(purchased: Boolean) {
         isAdultDayPassPurchased = purchased
-        Log.e(TAG, "handleAdultDayPassResponse: $purchased   $isAdultDayPassPurchased")
     }
 
     override fun initViewBinding() {
@@ -65,7 +63,7 @@ class MovieDetailFragment : BaseFragment() {
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
         activityStack.add(this::class.java.simpleName)
-        LoggingService.sendMessageToWebSocket("In MovieDetailPage Activity ","05")
+        LoggingService.sendMessageToWebSocket("In MovieDetailPage Activity ", "05")
         return binding.root
     }
 
@@ -93,7 +91,6 @@ class MovieDetailFragment : BaseFragment() {
             if (binding.btnRentNow.text == getString(R.string.watch_free)) {
                 apiCall(0, Constants.C_TYPE_MOVIE)
                 movie?.let { it1 ->
-                    viewModel.insertMovieDetails(RentalMovieResponse(), it1)
                     (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                         it1,
                         false,
@@ -166,20 +163,19 @@ class MovieDetailFragment : BaseFragment() {
 
     private fun apiCall(seekType: Int, cType: String) {
         val request = RentalMovieRequest()
-        if (movie != null) {
-            movie?.let {
-                request.productId = it.productId
-                request.releaseID = it.releaseId
-                request.price = it.price
-                request.contentTypeID = it.contentTypeId
-                request.productType = it.releaseTypeId
-                request.rentalID = rentalID
-                request.ra = 0
-                request.cType = cType
-                request.seekType = seekType
-                request.seek = seekPosition
-                viewModel.updateRentalMovieLog(request)
-            }
+        movie?.let {
+            request.productId = it.productId
+            request.releaseID = it.releaseId
+            request.price = it.price
+            request.contentTypeID = it.contentTypeId
+            request.productType = it.releaseTypeId
+            request.rentalID = rentalID
+            request.ra = 0
+            request.cType = cType
+            request.seekType = seekType
+            request.seek = seekPosition
+            viewModel.insertMovieDetails(RentalMovieResponse(), it)
+            viewModel.updateRentalMovieLog(request)
         }
     }
 
@@ -221,6 +217,7 @@ class MovieDetailFragment : BaseFragment() {
                     binding.btnRentNow.text = getString(R.string.watch_free)
                     binding.layoutMovie.toVisible()
                     binding.btnRentNow.requestFocus()
+                    updateBtn(data)
                 }
             }
 
@@ -251,27 +248,7 @@ class MovieDetailFragment : BaseFragment() {
                 } else {
                     binding.btnAdultPlay.toGone()
                     binding.layoutMovie.toVisible()
-                    if (data != null) {
-                        seekPosition = data.currentSeek
-                        rentalID = if (data.rentalID == 0) "" else data.rentalID.toString()
-                        if (data.currentSeek <= 0) {
-                            binding.btnContinueWatch.text = getString(R.string.watch_now)
-                        } else {
-                            binding.btnContinueWatch.text = getString(R.string.continue_watch)
-                        }
-                        binding.btnRentNow.toGone()
-                        binding.btnWatchTrailer.toGone()
-                        binding.btnContinueWatch.toVisible()
-                        binding.btnWatchFromStart.toVisible()
-                        binding.btnContinueWatch.requestFocus()
-                    } else {
-                        seekPosition = 0
-                        binding.btnContinueWatch.toGone()
-                        binding.btnWatchFromStart.toGone()
-                        binding.btnRentNow.toVisible()
-                        binding.btnWatchTrailer.toVisible()
-                        binding.btnRentNow.requestFocus()
-                    }
+                    updateBtn(data)
                 }
 
             }
@@ -294,6 +271,30 @@ class MovieDetailFragment : BaseFragment() {
         binding.tvDirectorTitle.text = buildString {
             append("Director : ")
             append(content.director)
+        }
+    }
+
+    private fun updateBtn(data: RentalMovieModel?) {
+        if (data != null) {
+            seekPosition = data.currentSeek
+            rentalID = if (data.rentalID == 0) "" else data.rentalID.toString()
+            if (data.currentSeek <= 0) {
+                binding.btnContinueWatch.text = getString(R.string.watch_now)
+            } else {
+                binding.btnContinueWatch.text = getString(R.string.continue_watch)
+            }
+            binding.btnRentNow.toGone()
+            binding.btnWatchTrailer.toGone()
+            binding.btnContinueWatch.toVisible()
+            binding.btnWatchFromStart.toVisible()
+            binding.btnContinueWatch.requestFocus()
+        } else {
+            seekPosition = 0
+            binding.btnContinueWatch.toGone()
+            binding.btnWatchFromStart.toGone()
+            binding.btnRentNow.toVisible()
+            binding.btnWatchTrailer.toVisible()
+            binding.btnRentNow.requestFocus()
         }
     }
 

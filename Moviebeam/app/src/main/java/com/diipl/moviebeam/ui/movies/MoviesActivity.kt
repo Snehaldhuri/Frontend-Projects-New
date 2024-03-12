@@ -24,6 +24,7 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -36,6 +37,7 @@ import com.diipl.moviebeam.utils.Constants.ADULT_LOCKED
 import com.diipl.moviebeam.utils.Constants.ADULT_MCD_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_MAIN
+import com.diipl.moviebeam.utils.Constants.C_TYPE_MOVIE
 import com.diipl.moviebeam.utils.Constants.SESSION_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
@@ -177,6 +179,19 @@ class MoviesActivity : BaseActivity() {
         super.onResume()
 
         binding.dialogContainer.toGone()
+
+        lifecycleScope.launch {
+            val isFree = preferenceDataStoreHelper.getFirstPreference(
+                PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS,
+                false
+            )
+            if (isFree && activityStack.contains(C_TYPE_MOVIE)) {
+                if (preference.isAdultPassCodeEmpty)
+                    setAdultData(adultResponse)
+                else if (!preference.isAdultLocked) setAdultData(adultResponse) else openACDDialog(ADULT_LOCKED)
+                activityStack.remove(C_TYPE_MOVIE)
+            }
+        }
 
     }
 
@@ -341,10 +356,11 @@ class MoviesActivity : BaseActivity() {
                                                             response.adultDayPassPrice.toString()
                                                         )
                                                     )
-
                                                 }
-                                                if (isAdultDayPassPurchased && !preference.isAdultLocked) {
-                                                    setAdultData(response)
+                                                if (isAdultDayPassPurchased) {
+                                                    if (preference.isAdultPassCodeEmpty)
+                                                        setAdultData(adultResponse)
+                                                    else if (!preference.isAdultLocked) setAdultData(adultResponse) else openACDDialog(ADULT_LOCKED)
                                                 }
                                             }
                                         } else {
@@ -368,9 +384,13 @@ class MoviesActivity : BaseActivity() {
                                                     if (!preference.isBtnAdultMCW)
                                                         openACDDialog(ADULT_MCW_BTN)
                                                 }
-//                                    if (!preference.isAdultLocked && (SESSION_ID.isNotEmpty() || SESSION_ID!="null"))
-                                                if (!preference.isAdultLocked)
-                                                    setAdultData(response)
+                                                if (isAdultDayPassPurchased) {
+                                                    if (preference.isAdultPassCodeEmpty)
+                                                        setAdultData(adultResponse)
+                                                    else if (!preference.isAdultLocked) setAdultData(
+                                                        adultResponse
+                                                    ) else openACDDialog(ADULT_LOCKED)
+                                                } else setAdultData(adultResponse)
                                             }
                                         } else {
                                             if (!preference.isBtnAdultMCW)
@@ -471,11 +491,9 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 moviesViewModel.themeLiveData.value?.data?.gradientColor?.let {
                     gradientStartColor = it
-                    Constants.GRADIENT_COLOR_START = it
                 }
                 moviesViewModel.themeLiveData.value?.data?.spotLightColor?.let {
                     gradientEndColor = it
-                    Constants.GRADIENT_COLOR_END = it
                 }
                 movieDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
                 moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {

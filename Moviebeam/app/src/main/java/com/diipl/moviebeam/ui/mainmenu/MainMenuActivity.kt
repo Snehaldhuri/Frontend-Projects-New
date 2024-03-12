@@ -180,6 +180,7 @@ class MainMenuActivity : BaseActivity() {
             Constants.UA = "21$ua"
         }
 
+
         binding.rvMenuButton.setItemFocused()
 
 //        this.startDownload()
@@ -319,9 +320,11 @@ class MainMenuActivity : BaseActivity() {
                     }
                     response?.gradientColor?.let {
                         gradientStartColor = it
+                        Constants.GRADIENT_COLOR_START = it
                     }
                     response?.spotLightColor?.let {
                         gradientEndColor = it
+                        Constants.GRADIENT_COLOR_END = it
                     }
                     response?.themeBackgroundFileName?.let {
 //                    getImageBitmap(it, Constants.BACKGROUND_IMAGE)
@@ -482,8 +485,8 @@ class MainMenuActivity : BaseActivity() {
         try {
             if (status) {
                 mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
-                Constants.SESSION_ID = "null"
             }
+            Constants.SESSION_ID = "null"
             binding.pbLoader.toInvisible()
         } catch (e: Exception) {
             LoggingService.sendMessageToWebSocket(

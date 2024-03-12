@@ -6,12 +6,10 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN
@@ -26,7 +24,6 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
-import com.diipl.moviebeam.data.dto.localattraction.LAService
 import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -36,12 +33,11 @@ import com.diipl.moviebeam.ui.guestservice.concierge.LaundryTimeFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.MakeMyRoomFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.SpaFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestFragment
-import com.diipl.moviebeam.ui.guestservice.concierge.VelvetParkingFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.ValetParkingFragment
 import com.diipl.moviebeam.ui.guestservice.concierge.laundry.LaundryFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
 import com.diipl.moviebeam.ui.guestservice.inroomdininggs.InRoomDiningGsFragment
-import com.diipl.moviebeam.ui.guestservice.localAttraction.LaCardAdapterGs
 import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
@@ -60,10 +56,8 @@ import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
-import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStreamReader
 import javax.inject.Inject
 
@@ -254,7 +248,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                         }
 
                         2 -> {
-                            val fragment = VelvetParkingFragment {
+                            val fragment = ValetParkingFragment {
                                 requestFocus()
                                 handleBackRemoteClick()
                             }
