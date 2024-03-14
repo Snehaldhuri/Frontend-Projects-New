@@ -331,6 +331,10 @@ class EndlessService : Service() {
                         }
                     }
 
+                    Intent.ACTION_MEDIA_BUTTON -> {
+                        Log.e(TAG, "onReceive: ACTION_MEDIA_BUTTON")
+                    }
+
                     else -> {
                         Log.e(TAG, "onReceive: ${it.action}")
                     }
@@ -425,7 +429,7 @@ class EndlessService : Service() {
                         pingFakeServer()
                         callKapingApi()
 
-                        if (Constants.SESSION_ID.isNotEmpty())
+                        if (Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null")
                             roomRepository.removeOverTimeMovies()
 
                         if (Constants.SESSION_ID == "null") {

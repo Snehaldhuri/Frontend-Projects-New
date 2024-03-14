@@ -1,9 +1,13 @@
 package com.diipl.moviebeam.utils
 
 import android.app.Activity
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
+import android.content.IntentSender
+import android.content.pm.PackageInstaller
+import android.content.pm.PackageInstaller.SessionParams
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
@@ -43,18 +47,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.URL
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Collections
 import java.util.Date
 import java.util.Locale
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaField
+
 
 fun <T : Any> T.toQueryMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>()
@@ -91,24 +97,8 @@ inline fun <reified T> String.fromJson(): T {
 fun RentalMovieModel.getRentalDetails(): String {
     // UA + ":" + ReleaseId + ":" + ProductId + ":" + Price + ":" + TimeStamp + ":" + SessionId + ":" + 5
     return this.movieData?.let {
-        "${Constants.UA}:${it.releaseId}:${it.productId}:${it.price}:${System.currentTimeMillis()}:${Constants.SESSION_ID}:5"
+        "${Constants.UA}:${it.releaseId}:${it.productId}:${it.price}:${System.currentTimeMillis()/1000}:${Constants.SESSION_ID}:5"
     }.toString()
-}
-
-fun isRentalMovieTimeOver(): Boolean {
-    val timestamp1 = System.currentTimeMillis()
-    val timestamp2 = Constants.RENTAL_TIME // 24 hours ago
-
-    // Convert timestamps to Calendar objects
-    val calendar1 = Calendar.getInstance().apply { timeInMillis = timestamp1 }
-    val calendar2 = Calendar.getInstance().apply { timeInMillis = timestamp2 }
-
-    // Compare timestamps with a 24-hour difference
-    val is24HoursApart = calendar1.after(Calendar.getInstance()
-        .apply { timeInMillis = timestamp2 + (24 * 60 * 60 * 1000) })
-
-
-    return is24HoursApart
 }
 
 fun String.toTimestamp(): Long {
@@ -190,13 +180,13 @@ fun getGradientColor(): GradientDrawable {
 }
 
 fun View.handleFocusChange() {
-   setOnFocusChangeListener { _, b ->
-       if (b) {
-           background = getGradientColor()
-       } else {
-           setBackgroundResource(R.drawable.btn_bg_gradient_default)
-       }
-   }
+    setOnFocusChangeListener { _, b ->
+        if (b) {
+            background = getGradientColor()
+        } else {
+            setBackgroundResource(R.drawable.btn_bg_gradient_default)
+        }
+    }
 }
 
 
@@ -235,7 +225,8 @@ fun Long.toTimeFormat(): String {
 
 fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
     try {
-        val fileURL = "https://testmdm.movie-beam.com/files/files-by-google-1-2729-610141523-0-release.apk"
+        val fileURL =
+            "https://testmdm.movie-beam.com/files/files-by-google-1-2729-610141523-0-release.apk"
         val url = URL(fileURL)
         withContext(Dispatchers.IO) {
             val connection = url.openConnection() as HttpURLConnection
@@ -269,19 +260,110 @@ fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
 }
 
 fun Activity.startInstall(file: String) {
+    val apkFile =
+        "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240314-debug.apk"
     val apkUri = FileProvider.getUriForFile(
         this,
         "${BuildConfig.APPLICATION_ID}.fileprovider",
-        File(file)
+        File(apkFile)
     )
 
-    val installIntent = Intent(Intent.ACTION_INSTALL_PACKAGE)
+    try {
+        Log.e("startInstall", "Installing $packageName")
+        val `in` = FileInputStream(apkFile)
+        val packageInstaller: PackageInstaller = packageManager.packageInstaller
+        val params = SessionParams(
+            SessionParams.MODE_FULL_INSTALL
+        )
+        params.setAppPackageName(packageName)
+        // set params
+        val sessionId = packageInstaller.createSession(params)
+        val session = packageInstaller.openSession(sessionId)
+        val out = session.openWrite("COSU", 0, -1)
+        val buffer = ByteArray(65536)
+        var c: Int
+        while (`in`.read(buffer).also { c = it } != -1) {
+            out.write(buffer, 0, c)
+        }
+        session.fsync(out)
+        `in`.close()
+        out.close()
+        session.commit(
+            createIntentSender(
+                this,
+                sessionId,
+                packageName
+            )
+        )
+        Log.e("startInstall", "Installation session committed")
+        startActivity(Intent(this, MainMenuActivity::class.java))
+        finish()
+    } catch (e: java.lang.Exception) {
+        Log.e("startInstall", "PackageInstaller error: " + e.message)
+    }
+
+
+    /*  val installIntent = Intent(Intent.ACTION_INSTALL_PACKAGE)
     installIntent.data = apkUri
     installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    installIntent.putExtra("file", file)
-    startActivityForResult(installIntent, 121)
+    installIntent.putExtra("file", apkFile)
+    startActivityForResult(installIntent, 121)*/
+
+}
+@Throws(IOException::class)
+private fun addFileToSession(sessionId: Int, file: File, packageInstaller: PackageInstaller) {
+    val `in` = FileInputStream(file)
+    // set params
+    val session = packageInstaller.openSession(sessionId)
+    val out = session.openWrite(file.name, 0, file.length())
+    val buffer = ByteArray(65536)
+    var c: Int
+    while (`in`.read(buffer).also { c = it } != -1) {
+        out.write(buffer, 0, c)
+    }
+    session.fsync(out)
+    `in`.close()
+    out.close()
+    session.close()
 }
 
+fun createIntentSender(context: Context?, sessionId: Int, packageName: String?): IntentSender {
+    val intent = Intent("INSTALL_COMPLETE")
+    if (packageName != null) {
+        intent.putExtra("PACKAGE_NAME", packageName)
+    }
+    val pendingIntent = PendingIntent.getBroadcast(
+        context,
+        sessionId,
+        intent,
+        PendingIntent.FLAG_IMMUTABLE
+    )
+    return pendingIntent.intentSender
+}
+
+/**
+ * Returns MAC address of the given interface name.
+ * @param interfaceName eth0, wlan0 or NULL=use first interface
+ * @return  mac address or empty string
+ */
+fun getMACAddress(interfaceName: String?): String {
+    try {
+        val interfaces: List<NetworkInterface> =
+            Collections.list(NetworkInterface.getNetworkInterfaces())
+        for (intf in interfaces) {
+            if (interfaceName != null) {
+                if (!intf.name.equals(interfaceName, ignoreCase = true)) continue
+            }
+            val mac = intf.hardwareAddress ?: return ""
+            val buf = java.lang.StringBuilder()
+            for (aMac in mac) buf.append(String.format("%02X:", aMac))
+            if (buf.isNotEmpty()) buf.deleteCharAt(buf.length - 1)
+            return buf.toString()
+        }
+    } catch (ignored: java.lang.Exception) {
+    } // for now eat exceptions
+    return ""
+}
 
 fun getCurrentPanelNumber(): String {
     if (BaseActivity.activityStack.isNotEmpty()) {

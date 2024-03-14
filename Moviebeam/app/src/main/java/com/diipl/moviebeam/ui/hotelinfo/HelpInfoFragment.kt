@@ -18,13 +18,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
+import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.getIPNetmask
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.intToString
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toIpAddress
+import com.diipl.moviebeam.utils.toVisible
 
 private const val TAG = "HelpInfoFragment"
 
@@ -41,7 +44,6 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
         try {
             activityStack.add(this::class.java.simpleName)
-            binding.btnBack.requestFocus()
 
             setHotelInfo()
 
@@ -97,6 +99,9 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         binding.btnBack.handleFocusChange()
         binding.rvHelpInfoHeader.handleFocusChange()
 
+        binding.rvHelpInfoHeader.layoutManager =
+            LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
+
         binding.btnBack.setOnKeyListener { _, keyCode, _ ->
             when (keyCode) {
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
@@ -116,10 +121,33 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         list.add(Constants.SYSTEM_INFO)
         list.add(Constants.TAB_PARENTAL_CONTROL)
 
-        val adapterForHelpInfo = HelpInfoTabAdapter(list)
-        binding.rvHelpInfoHeader.layoutManager =
-            LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
+        val adapterForHelpInfo = HelpInfoTabAdapter(list){pos, v->
+            v.requestFocus()
+            when(pos) {
+                0 -> {
+                    v.requestFocus()
+                    binding.containerControl.toGone()
+                    binding.cardInfo.toVisible()
+                }
+                1 -> {
+                    binding.cardInfo.toGone()
+                    binding.containerControl.toVisible()
+
+                    val fragment = ParentalControlFragment{ i ->
+                        v.requestFocus()
+                    }
+                    parentFragmentManager.beginTransaction()
+                        .replace(binding.containerControl.id, fragment).commitNow()
+
+                }
+            }
+        }
+
         binding.rvHelpInfoHeader.adapter = adapterForHelpInfo
+        binding.rvHelpInfoHeader.post {
+            Log.e(TAG, "onViewCreated: rvHelpInfoHeader post")
+            binding.rvHelpInfoHeader.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+        }
 
     }
 

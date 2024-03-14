@@ -134,8 +134,7 @@ class MoviesViewModel @Inject constructor(
         viewModelScope.launch {
             val model = RentalMovieModel()
             model.rentalID = if (data.rentalID.isEmpty()) 0 else data.rentalID.toInt()
-            model.finishTimeStamp =
-                if (data.rentalID.isEmpty()) 0 else (model.startTimeStamp + (24 * 60 * 60 * 1000))
+            model.finishTimeStamp = (model.startTimeStamp + (24 * 60 * 60 * 1000))
             model.sessionID = Constants.SESSION_ID
             model.movieData = movie
 

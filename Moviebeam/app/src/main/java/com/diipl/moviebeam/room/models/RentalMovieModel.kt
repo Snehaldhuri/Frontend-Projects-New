@@ -34,7 +34,7 @@ data class ShowTimeModel(
     var sessionID: String = "",
     var cType: String = Constants.C_TYPE_MOVIE,
     var currentSeek: Long = 0,
-    var finishTimeStamp: Long = 0,
+    var finishTimeStamp: Long = startTimeStamp + (24 * 60 * 60 * 1000),
     var lastTimeStamp: Long = 0,
     @Embedded var seriesData: Detail? = null
 )

@@ -34,7 +34,7 @@ import javax.inject.Inject
 private const val TAG = "AdultContentDialog"
 @AndroidEntryPoint
 class AdultContentDialog(
-    val viewType: Int,
+    var viewType: Int,
     private val onClicked: (Int) -> Unit
 ) : DialogFragment() {
 
@@ -133,7 +133,7 @@ class AdultContentDialog(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStyle(STYLE_NORMAL, R.style.AppTheme_FullScreenDialog)
+            setStyle(STYLE_NORMAL, R.style.AppTheme_FullScreenDialog)
     }
 
     override fun onStart() {
@@ -189,6 +189,7 @@ class AdultContentDialog(
         }
         binding.btnMcdParentalControl.setOnClickListener {
             preference.isAdultMCD = true
+            viewType = PARENTAL_CONTROL
             setParentalControlView()
         }
 
@@ -292,7 +293,7 @@ class AdultContentDialog(
                             return
                         }
                     }
-                    if (preference.isAdultPassCodeEmpty && viewType == PARENTAL_CONTROL) {
+                    if (viewType == PARENTAL_CONTROL) {
                         preference.adultPassCode = pass
                         showToast("Passcode set successfully.")
                     }

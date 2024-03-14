@@ -44,9 +44,10 @@
 
 
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_info"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
-        app:cardBackgroundColor="@color/transparentBlack_30"
+        app:cardBackgroundColor="@color/transparentBlack_45"
         app:cardCornerRadius="@dimen/dp_8"
         app:cardElevation="@dimen/dp_0"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -321,6 +322,16 @@
 
 
     </androidx.cardview.widget.CardView>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/container_control"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@+id/rv_help_info_header"
+        app:layout_constraintTop_toTopOf="parent"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

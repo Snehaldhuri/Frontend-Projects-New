@@ -2,8 +2,6 @@ package com.diipl.moviebeam.ui.mainmenu
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.util.Log
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,14 +62,6 @@ class MainMenuBtnAdapter(
         }
         holder.card.setOnClickListener {
             onMenuItemClicked(item)
-        }
-
-        holder.card.setOnKeyListener { view, i, keyEvent ->
-            Log.e(TAG, "onBindViewHolder: $i")
-            if (i == KeyEvent.KEYCODE_POWER){
-                Log.e(TAG, "onBindViewHolder: KEYCODE_POWER")
-            }
-            false
         }
 
     }
