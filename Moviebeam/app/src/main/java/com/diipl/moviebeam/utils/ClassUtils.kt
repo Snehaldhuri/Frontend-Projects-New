@@ -91,7 +91,7 @@ inline fun <reified T> String.fromJson(): T {
 fun RentalMovieModel.getRentalDetails(): String {
     // UA + ":" + ReleaseId + ":" + ProductId + ":" + Price + ":" + TimeStamp + ":" + SessionId + ":" + 5
     return this.movieData?.let {
-        "${Constants.UA}:${it.releaseId}:${it.productId}:${it.price}:${System.currentTimeMillis()}:${Constants.SESSION_ID}:5"
+        "${Constants.UA}:${it.releaseId}:${it.productId}:${it.price}:${System.currentTimeMillis()/1000}:${Constants.SESSION_ID}:5"
     }.toString()
 }
 
