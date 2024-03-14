@@ -12,7 +12,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
@@ -163,14 +162,10 @@ class ExoPlayerActivity : BaseActivity() {
                         exoPlayer.setMediaItem(mediaItem)
                         exoPlayer.playWhenReady = playWhenReady
                         exoPlayer.addListener(playerListener)
-                        exoPlayer.seekTo(seekPosition)
                         exoPlayer.prepare()
                         exoPlayer.play()
+                        exoPlayer.seekTo(seekPosition)
                     }
-                    val mediaItem1 = MediaItem.fromUri(Constants.MOVIE_URL1)
-                    val mediaItem2 = MediaItem.fromUri(Constants.MOVIE_URL2)
-                    val mediaItem3 = MediaItem.fromUri(Constants.MOVIE_URL3)
-                    val secondMediaItem = MediaItem.fromUri(getString(R.string.media_url_mp4))
 
                 }
         } catch (e: Exception) {
@@ -221,6 +216,7 @@ class ExoPlayerActivity : BaseActivity() {
 
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
+            Log.e(TAG, "onPlayerError: ${error.localizedMessage}")
             if (error.localizedMessage!! == "Source error"){
                 if (::showTimeModel.isInitialized){
                     moviesViewModel.deleteShowDetails(showTimeModel)

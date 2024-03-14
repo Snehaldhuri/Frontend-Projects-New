@@ -11,9 +11,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 
 class ShowtimeMenuAdapter(
     private val itemList: List<BtnModel>,
@@ -36,9 +38,10 @@ class ShowtimeMenuAdapter(
     ): ShowtimeMenuAdapter.MyViewHolder {
 
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
-        val layoutParams = ViewGroup.MarginLayoutParams(view.layoutParams)
-        layoutParams.setMargins(0, 0, 0, 3)
-        view.layoutParams = layoutParams
+
+        val params = view.layoutParams
+        params.width = getWidthInPercent(parent.context, 22)
+        params.height = getHeightInPercent(parent.context, 15)
 
         view.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {

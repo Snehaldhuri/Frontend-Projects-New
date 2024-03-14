@@ -12,7 +12,8 @@ import com.diipl.moviebeam.utils.getWidthInPercent
 import com.diipl.moviebeam.utils.handleFocusChange
 
 class HelpInfoTabAdapter(
-    private val itemList: List<String>
+    private val itemList: List<String>,
+    private val onFocus: (Int, View) -> Unit
 ) :
     RecyclerView.Adapter<HelpInfoTabAdapter.MyViewHolder>() {
 
@@ -29,6 +30,8 @@ class HelpInfoTabAdapter(
         params.width = getWidthInPercent(parent.context, 22)
         params.height = getHeightInPercent(parent.context, 15)
 
+        view.handleFocusChange()
+
         return MyViewHolder(view)
     }
 
@@ -39,7 +42,11 @@ class HelpInfoTabAdapter(
 
         holder.textView.text = item
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        holder.card.handleFocusChange()
+
+        holder.itemView.setOnClickListener {
+            onFocus(holder.absoluteAdapterPosition, it)
+        }
+
     }
 
 

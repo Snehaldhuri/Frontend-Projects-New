@@ -65,6 +65,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
 
     private lateinit var adapter: HotelInfoTabAdapter
+    private var focusedView: View? = null
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
@@ -200,14 +201,18 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                     adapter = HotelInfoTabAdapter(
                         itemList = tabs,
                         onItemFocused = { it, view ->
+                            focusedView = view
                             val transaction = supportFragmentManager.beginTransaction()
                             when (tabMap[it]?.serviceType) {
                                 1 -> {
                                     binding.tvHeaderTitle.text =
                                         tabMap[it]?.serviceList?.get(0)?.title
-                                    val carousel = CarouselListFragment({ title ->
+                                    val carousel = CarouselListFragment(onItemFocused = { title ->
                                         binding.tvHeaderTitle.text = title
-                                    }, { title ->
+                                    }, onLeftKeyPressed =  { title ->
+                                        binding.rvHotelInfoHeader.post {
+                                            binding.rvHotelInfoHeader.findContainingItemView(focusedView!!)?.requestFocus()
+                                        }
                                         if (tabMap[it]?.serviceList?.get(0)?.title == title) {
                                             view.requestFocus()
                                         }

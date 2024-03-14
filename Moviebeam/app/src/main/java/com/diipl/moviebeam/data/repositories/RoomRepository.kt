@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.data.repositories
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.room.dao.ProgramGuideDao
@@ -17,6 +18,7 @@ class RoomRepository @Inject constructor(
 
     suspend fun insertRentalMovies(rentalMovieModel: RentalMovieModel) {
         rentalMovieModel.movieData?.let {
+            Log.e(TAG, "insertRentalMovies: ${rentalMovieModel.currentSeek}  ${rentalMovieModel.finishTimeStamp}  ${it.movieName}    ")
             if (database.movieDao().getMovieCount(it.releaseId) == 0  && Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null"){
                 database.movieDao().insertMovie(rentalMovieModel)
             }
@@ -25,6 +27,7 @@ class RoomRepository @Inject constructor(
 
     suspend fun updateRentalMovies(rentalMovieModel: RentalMovieModel) {
         rentalMovieModel.movieData?.let {
+            Log.e(TAG, "updateRentalMovies: ${rentalMovieModel.currentSeek}  ${rentalMovieModel.finishTimeStamp} ${it.movieName}    ")
             if (database.movieDao().getMovieCount(it.releaseId) != 0  && Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null"){
                 database.movieDao().updateMovie(rentalMovieModel)
             }
@@ -57,6 +60,7 @@ class RoomRepository @Inject constructor(
     }
 
     suspend fun removeOverTimeMovies() {
+        Log.e(TAG, "removeOverTimeMovies: ${System.currentTimeMillis()}")
         database.movieDao().deleteMovieOverTime(System.currentTimeMillis())
     }
 
@@ -85,11 +89,6 @@ class RoomRepository @Inject constructor(
     }
 
     suspend fun insertChannels(epgChannels: List<ChannelEpgDTO>) {
-/*
-        epgChannels.forEach {
-            Log.e(TAG, "insertChannels: $it")
-        }
-*/
         programGuideDao.insertChannels(epgChannels)
     }
 

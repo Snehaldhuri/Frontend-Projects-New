@@ -3,6 +3,7 @@ package com.diipl.moviebeam.ui.movies
 import android.content.Intent
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -91,6 +92,7 @@ class MovieDetailFragment : BaseFragment() {
             if (binding.btnRentNow.text == getString(R.string.watch_free)) {
                 apiCall(0, Constants.C_TYPE_MOVIE)
                 movie?.let { it1 ->
+                    viewModel.insertMovieDetails(RentalMovieResponse(), it1)
                     (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                         it1,
                         false,
@@ -135,7 +137,7 @@ class MovieDetailFragment : BaseFragment() {
 
         binding.btnContinueWatch.setOnClickListener {
             val seekType =
-                if (binding.btnContinueWatch.text.toString() == getString(R.string.watch_now)) 0 else 1
+                if (binding.btnContinueWatch.text.toString() == getString(R.string.watch_free)) 0 else 1
             apiCall(seekType, Constants.C_TYPE_MOVIE)
             movie?.let { it1 ->
                 (activity as MoviesActivity?)?.gotoExoPlayerActivity(
@@ -149,6 +151,7 @@ class MovieDetailFragment : BaseFragment() {
 
         binding.btnWatchFromStart.setOnClickListener {
             apiCall(1, Constants.C_TYPE_MOVIE)
+            viewModel.insertMovieDetails(RentalMovieResponse(), movie!!)
             movie?.let { it1 ->
                 (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                     it1,
@@ -174,7 +177,6 @@ class MovieDetailFragment : BaseFragment() {
             request.cType = cType
             request.seekType = seekType
             request.seek = seekPosition
-            viewModel.insertMovieDetails(RentalMovieResponse(), it)
             viewModel.updateRentalMovieLog(request)
         }
     }
@@ -206,22 +208,22 @@ class MovieDetailFragment : BaseFragment() {
     }
 
     private fun updateUI(content: ContentDto, data: RentalMovieModel?) {
-
+        Log.e(TAG, "updateUI: ${data?.currentSeek ?: "-1"} == $content")
         when (content.releaseTypeId) {
             Constants.FREE_MOVIE_RELEASE_TYPE_ID -> {
-                if (content.genre1 == getString(R.string.adult)) {
-                    binding.btnAdultPlay.text = getString(R.string.watch_free)
-                    binding.btnAdultPlay.toVisible()
-                    binding.btnAdultPlay.requestFocus()
-                } else {
+//                if (content.genre1 == getString(R.string.adult)) {
+//                    binding.btnAdultPlay.text = getString(R.string.watch_free)
+//                    binding.btnAdultPlay.toVisible()
+//                    binding.btnAdultPlay.requestFocus()
+//                } else {
                     binding.btnRentNow.text = getString(R.string.watch_free)
                     binding.layoutMovie.toVisible()
                     binding.btnRentNow.requestFocus()
                     updateBtn(data)
-                }
+//                }
             }
 
-            else -> {
+            Constants.PAID_MOVIE_RELEASE_TYPE_ID -> {
                 binding.btnRentNow.text =
                     getString(R.string.rent_now, content.qos, content.price.toString())
                 if (content.genre1 == getString(R.string.adult)) {
@@ -237,7 +239,7 @@ class MovieDetailFragment : BaseFragment() {
                         seekPosition = data.currentSeek
                         rentalID = if (data.rentalID == 0) "" else data.rentalID.toString()
                         if (data.currentSeek <= 0) {
-                            binding.btnAdultPlay.text = getString(R.string.watch_now)
+                            binding.btnAdultPlay.text = getString(R.string.watch_free)
                         } else {
                             binding.btnAdultPlay.text = getString(R.string.continue_watch)
                         }
@@ -275,11 +277,12 @@ class MovieDetailFragment : BaseFragment() {
     }
 
     private fun updateBtn(data: RentalMovieModel?) {
+        Log.e(TAG, "updateBtn: $data")
         if (data != null) {
             seekPosition = data.currentSeek
             rentalID = if (data.rentalID == 0) "" else data.rentalID.toString()
             if (data.currentSeek <= 0) {
-                binding.btnContinueWatch.text = getString(R.string.watch_now)
+                binding.btnContinueWatch.text = getString(R.string.watch_free)
             } else {
                 binding.btnContinueWatch.text = getString(R.string.continue_watch)
             }

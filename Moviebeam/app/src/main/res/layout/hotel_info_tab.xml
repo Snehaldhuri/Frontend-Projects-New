@@ -7,7 +7,7 @@
     android:layout_height="87dp"
     android:clickable="true"
     android:focusable="true"
-    android:padding="@dimen/dp_20"
+    android:padding="@dimen/dp_16"
     android:layout_margin="@dimen/dp_4"
     android:background="@drawable/btn_bg_gradient_default"
     app:layout_constraintEnd_toEndOf="parent"
@@ -16,9 +16,10 @@
 
     <TextView
         android:id="@+id/tv_tabInfo"
-        android:layout_width="@dimen/dp_0"
-        android:layout_height="wrap_content"
-        android:textColor="#fff"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textColor="@color/white"
+        android:gravity="center"
         android:textSize="@dimen/sp_20"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

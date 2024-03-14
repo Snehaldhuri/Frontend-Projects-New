@@ -9,9 +9,13 @@ import androidx.leanback.widget.ListRowPresenter
 import com.diipl.moviebeam.data.dto.hotelservice.Service
 
 
-class CarouselListFragment(private val onItemFocused: ((String)) -> Unit,private val onLeftKeyPressed: (String) -> Unit) : RowsSupportFragment() {
+class CarouselListFragment(
+    private val onItemFocused: (String) -> Unit,
+    private val onLeftKeyPressed: (String) -> Unit
+) : RowsSupportFragment() {
 
     private var serviceList: List<Service>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupRows()

@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
@@ -56,6 +57,7 @@ import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.getMACAddress
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -69,10 +71,13 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
+import java.io.FileReader
 import java.io.IOException
 import javax.inject.Inject
+
 
 private const val TAG = "MainMenuActivity"
 
@@ -124,18 +129,14 @@ class MainMenuActivity : BaseActivity() {
     private fun requestDeviceAdmin() {
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
-        intent.putExtra(
-            DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-            "Device admin is required to restart the device."
-        )
-        startActivityForResult(intent, 1)
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Please enable Device Admin")
+        startActivityForResult(intent, -11)
     }
 
     private fun restartDevice() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            powerManager.reboot("Restarting for update")
+            powerManager.reboot("0")
         } else {
             // For older Android versions, open the device restart settings
             val intent = Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)
@@ -161,7 +162,6 @@ class MainMenuActivity : BaseActivity() {
         }
         LoggingService.sendMessageToWebSocket("In MainMenu activity", getCurrentPanelNumber())
 
-
     }
 
     override fun onResume() {
@@ -175,17 +175,29 @@ class MainMenuActivity : BaseActivity() {
         initializePlayer()
 
         lifecycleScope.launch {
-            val ua = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SERIAL_NO, "")
+            val ua = preferenceDataStoreHelper.getFirstPreference(
+                PreferenceDataStoreConstants.SERIAL_NO,
+                ""
+            )
             Constants.SERIAL_NO = ua
             Constants.UA = "21$ua"
         }
 
-
         binding.rvMenuButton.setItemFocused()
 
-//        this.startDownload()
+        devicePolicyManager = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
-/*
+        val isOwner = devicePolicyManager.isDeviceOwnerApp(packageName)
+        Log.e(TAG, "onResume: $isOwner")
+        Log.e(TAG, "MACAddress: ${getMACAddress("wlan0")}")
+        if (isOwner) {
+            devicePolicyManager.clearDeviceOwnerApp(packageName)
+//            this.startInstall("")
+//        showBuild()
+        }
+    }
+
+    fun showBuild() {
         Log.e(TAG, "TAGS: ${Build.TAGS}")
         Log.e(TAG, "BOOTLOADER: ${Build.BOOTLOADER}")
         Log.e(TAG, "TYPE: ${Build.TYPE}")
@@ -208,12 +220,8 @@ class MainMenuActivity : BaseActivity() {
         Log.e(TAG, "CPU_ABI:    ${Build.CPU_ABI}")
         Log.e(TAG, "CPU_ABI2:    ${Build.CPU_ABI2}")
         Log.e(TAG, "RADIO:    ${Build.RADIO}")
-        Log.e(TAG, "SERIAL:    ${Build.SERIAL}")
+        Log.e(TAG, "SERIAL:    ${getSerialNumber()}")
         Log.e(TAG, "PARTITION_NAME_SYSTEM:    ${Build.Partition.PARTITION_NAME_SYSTEM}")
-
-//        Log.e(TAG, "SUPPORTED_32_BIT_ABIS:    ${Build.SUPPORTED_32_BIT_ABIS.iterator()}")
-//        Log.e(TAG, "SUPPORTED_64_BIT_ABIS:    ${Build.SUPPORTED_64_BIT_ABIS.iterator()}")
-//        Log.e(TAG, "SUPPORTED_ABIS:    ${Build.SUPPORTED_ABIS.iterator()}")
 
         Build.SUPPORTED_32_BIT_ABIS.forEach {
             Log.e(TAG, "SUPPORTED_32_BIT_ABIS:    $it")
@@ -225,15 +233,41 @@ class MainMenuActivity : BaseActivity() {
             Log.e(TAG, "SUPPORTED_ABIS:    $it")
         }
 
-
-
-        Log.e(TAG, "ANDROID_ID:    ${getData(Settings.Secure.ANDROID_ID)}")
-        Log.e(TAG, "NAME:    ${getData(Settings.Secure.ADB_ENABLED)}")
-*/
+        Log.e(TAG, "ANDROID_ID:    ${getSecureData(Settings.Secure.ANDROID_ID)}")
 
     }
 
-    fun getData(id : String): String {
+
+
+    @SuppressLint("MissingPermission")
+    fun getSerialNumber(): String? {
+        var serialNumber: String? = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            try {
+                val s = Build.getSerial()
+                Log.e(TAG, "Serial number: $s")
+                return s
+            } catch (e: SecurityException) {
+                Log.e(TAG, "Failed to get serial number from Build.getSerial()")
+                e.printStackTrace()
+            }
+        }
+        try {
+            val c = Class.forName("android.os.SystemProperties")
+            val get = c.getMethod("get", String::class.java)
+            serialNumber = get.invoke(c, "ril.serialnumber") as String
+        } catch (e: java.lang.Exception) {
+            Log.e(TAG, "Failed to get serial number from ril.serialnumber")
+            e.printStackTrace()
+        }
+        if (serialNumber != null && serialNumber != "") {
+            return serialNumber
+        }
+        Log.e(TAG, "Build.SERIAL=" + Build.SERIAL)
+        return Build.SERIAL
+    }
+
+    fun getSecureData(id: String): String {
         return Settings.Secure.getString(
             contentResolver,
             id
@@ -243,7 +277,7 @@ class MainMenuActivity : BaseActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 121)
-            if (resultCode != RESULT_OK){
+            if (resultCode != RESULT_OK) {
                 data?.getStringExtra("file")?.let {
 //                    startInstall(it)
                 }
@@ -357,7 +391,8 @@ class MainMenuActivity : BaseActivity() {
                         Constants.STB_ROOM_NO = response.roomNo
 
                         if (response.contentDetailFlag) {
-                            HOTEL_VIDEO_URL = response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                            HOTEL_VIDEO_URL =
+                                response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
                             initializePlayer()
                         }
 
@@ -604,7 +639,6 @@ class MainMenuActivity : BaseActivity() {
         }
         return false
     }
-
 
 
 }

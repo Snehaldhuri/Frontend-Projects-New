@@ -111,6 +111,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
 
     fun fetchEpgData(url: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            Log.e(TAG, "fetchEpgData: $url")
             val epgResponse = movieBeamRepository.getEPGFromCloud(url)
             if (epgResponse == null) {
                 _epgLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Epg Api"))
