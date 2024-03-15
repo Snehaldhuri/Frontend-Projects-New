@@ -673,4 +673,11 @@ public class SharedPreference {
         return preferences.getBoolean("AdultLocked", true);
     }
 
+    public Boolean isRebooted() {
+        return getBoolean("rebooted");
+    }
+    public void setRebooted(boolean rebooted) {
+        putBoolean("rebooted", rebooted);
+    }
+
 }

@@ -47,6 +47,7 @@
         android:layout_height="@dimen/dp_0"
         android:focusable="true"
         android:focusableInTouchMode="true"
+        tools:listitem="@layout/item_toiletry_request"
         android:orientation="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toTopOf="parent"
@@ -69,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitXY"
-            android:src="@drawable/toiletry_request_background" />
+            android:src="@drawable/toiletries_background" />
 
     </androidx.cardview.widget.CardView>
 

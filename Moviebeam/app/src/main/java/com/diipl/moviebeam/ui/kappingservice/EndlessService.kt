@@ -1202,7 +1202,6 @@ class EndlessService : Service() {
             guestDetailsDatastore,
             true,
             kapingResponse.cmdData?.cmdData
-
         )
 
     }

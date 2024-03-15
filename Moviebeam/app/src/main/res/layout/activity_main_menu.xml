@@ -62,8 +62,19 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/transparentBlack_45"
-        />
+        android:background="@color/transparentBlack_45" />
+
+    <ImageView
+        android:id="@+id/btn_power"
+        android:visibility="gone"
+        android:layout_width="48dp"
+        android:layout_height="@dimen/dp_48"
+        android:background="@color/semiOpaqueBlackColor"
+        android:src="@android:drawable/ic_lock_power_off"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintTop_toBottomOf="@+id/gl_horizontal_10"
+        app:layout_constraintWidth_percent=".17"
+        app:tint="@color/white" />
 
     <ImageView
         android:id="@+id/iv_hotel_logo"
@@ -99,8 +110,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
-        app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/iv_hotel_logo" />
 
     <TextView
         android:id="@+id/tv_greeting"

@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -111,7 +110,6 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
 
     fun fetchEpgData(url: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.e(TAG, "fetchEpgData: $url")
             val epgResponse = movieBeamRepository.getEPGFromCloud(url)
             if (epgResponse == null) {
                 _epgLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Epg Api"))

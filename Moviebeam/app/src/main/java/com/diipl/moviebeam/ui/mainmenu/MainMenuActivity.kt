@@ -1,20 +1,17 @@
 package com.diipl.moviebeam.ui.mainmenu
 
 import android.annotation.SuppressLint
-import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
-import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +23,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.AdminReceiver
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -57,7 +55,8 @@ import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
-import com.diipl.moviebeam.utils.getMACAddress
+import com.diipl.moviebeam.utils.getSerialNumber
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -71,10 +70,8 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
-import java.io.FileReader
 import java.io.IOException
 import javax.inject.Inject
 
@@ -103,11 +100,9 @@ class MainMenuActivity : BaseActivity() {
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     private lateinit var devicePolicyManager: DevicePolicyManager
-    private lateinit var componentName: ComponentName
 
     @Inject
     lateinit var preference: SharedPreference
-
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
@@ -120,29 +115,6 @@ class MainMenuActivity : BaseActivity() {
         observeToast(mainMenuViewModel.showToast)
     }
 
-    private fun isAdminActive(): Boolean {
-        devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        componentName = ComponentName(this, DeviceAdminReceiver::class.java)
-        return devicePolicyManager.isAdminActive(componentName)
-    }
-
-    private fun requestDeviceAdmin() {
-        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
-        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Please enable Device Admin")
-        startActivityForResult(intent, -11)
-    }
-
-    private fun restartDevice() {
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            powerManager.reboot("0")
-        } else {
-            // For older Android versions, open the device restart settings
-            val intent = Intent(Settings.ACTION_DEVICE_INFO_SETTINGS)
-            startActivity(intent)
-        }
-    }
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -188,15 +160,31 @@ class MainMenuActivity : BaseActivity() {
         devicePolicyManager = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
         val isOwner = devicePolicyManager.isDeviceOwnerApp(packageName)
-        Log.e(TAG, "onResume: $isOwner")
-        Log.e(TAG, "MACAddress: ${getMACAddress("wlan0")}")
         if (isOwner) {
-            devicePolicyManager.clearDeviceOwnerApp(packageName)
+            setPowerOnOff()
+//            devicePolicyManager.clearDeviceOwnerApp(packageName)
 //            this.startInstall("")
-//        showBuild()
+//            showBuild()
         }
     }
 
+    private fun setPowerOnOff() {
+        binding.btnPower.toVisible()
+        binding.btnPower.handleFocusChange()
+        binding.btnPower.setOnClickListener {
+            devicePolicyManager.clearDeviceOwnerApp(packageName)
+            rebootDevice()
+        }
+    }
+
+    private fun rebootDevice() {
+        val componentName = ComponentName(applicationContext, AdminReceiver::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            devicePolicyManager.reboot(componentName)
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
     fun showBuild() {
         Log.e(TAG, "TAGS: ${Build.TAGS}")
         Log.e(TAG, "BOOTLOADER: ${Build.BOOTLOADER}")
@@ -233,55 +221,8 @@ class MainMenuActivity : BaseActivity() {
             Log.e(TAG, "SUPPORTED_ABIS:    $it")
         }
 
-        Log.e(TAG, "ANDROID_ID:    ${getSecureData(Settings.Secure.ANDROID_ID)}")
+//        Log.e(TAG, "ANDROID_ID:    ${getSecureData(Settings.Secure.ANDROID_ID)}")
 
-    }
-
-
-
-    @SuppressLint("MissingPermission")
-    fun getSerialNumber(): String? {
-        var serialNumber: String? = null
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            try {
-                val s = Build.getSerial()
-                Log.e(TAG, "Serial number: $s")
-                return s
-            } catch (e: SecurityException) {
-                Log.e(TAG, "Failed to get serial number from Build.getSerial()")
-                e.printStackTrace()
-            }
-        }
-        try {
-            val c = Class.forName("android.os.SystemProperties")
-            val get = c.getMethod("get", String::class.java)
-            serialNumber = get.invoke(c, "ril.serialnumber") as String
-        } catch (e: java.lang.Exception) {
-            Log.e(TAG, "Failed to get serial number from ril.serialnumber")
-            e.printStackTrace()
-        }
-        if (serialNumber != null && serialNumber != "") {
-            return serialNumber
-        }
-        Log.e(TAG, "Build.SERIAL=" + Build.SERIAL)
-        return Build.SERIAL
-    }
-
-    fun getSecureData(id: String): String {
-        return Settings.Secure.getString(
-            contentResolver,
-            id
-        ) ?: ""
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 121)
-            if (resultCode != RESULT_OK) {
-                data?.getStringExtra("file")?.let {
-//                    startInstall(it)
-                }
-            }
     }
 
     override fun initViewBinding() {

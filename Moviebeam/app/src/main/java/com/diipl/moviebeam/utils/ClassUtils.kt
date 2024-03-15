@@ -95,15 +95,15 @@ inline fun <reified T> String.fromJson(): T {
 }
 
 fun RentalMovieModel.getRentalDetails(): String {
+    val timeStamp = System.currentTimeMillis()
     // UA + ":" + ReleaseId + ":" + ProductId + ":" + Price + ":" + TimeStamp + ":" + SessionId + ":" + 5
     return this.movieData?.let {
-        "${Constants.UA}:${it.releaseId}:${it.productId}:${it.price}:${System.currentTimeMillis()/1000}:${Constants.SESSION_ID}:5"
+        "${Constants.UA}:${it.releaseId}:${it.productId}:${it.price}:${timeStamp / 1000}:${Constants.SESSION_ID}:5"
     }.toString()
 }
 
 fun String.toTimestamp(): Long {
     val dateFormat = SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.ENGLISH)
-    Log.e("toTimestamp: ", this)
     return try {
         val date = dateFormat.parse(this)
         date.time
@@ -260,8 +260,7 @@ fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
 }
 
 fun Activity.startInstall(file: String) {
-    val apkFile =
-        "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240314-debug.apk"
+    val apkFile = "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240315-debug.apk"
     val apkUri = FileProvider.getUriForFile(
         this,
         "${BuildConfig.APPLICATION_ID}.fileprovider",
@@ -310,6 +309,7 @@ fun Activity.startInstall(file: String) {
     startActivityForResult(installIntent, 121)*/
 
 }
+
 @Throws(IOException::class)
 private fun addFileToSession(sessionId: Int, file: File, packageInstaller: PackageInstaller) {
     val `in` = FileInputStream(file)
@@ -428,8 +428,7 @@ fun Int.toIpAddress(): String {
 
 fun getIPNetmask(): String {
     try {
-        val networkInterfaces: List<NetworkInterface> =
-            Collections.list(NetworkInterface.getNetworkInterfaces())
+        val networkInterfaces: List<NetworkInterface> = Collections.list(NetworkInterface.getNetworkInterfaces())
 
         for (networkInterface in networkInterfaces) {
             if (!networkInterface.isUp) continue
@@ -443,7 +442,10 @@ fun getIPNetmask(): String {
 
                     if (prefixLength != null) {
                         val netmask = (0xFFFFFFFF shl (32 - prefixLength)).inv()
-                        return (netmask shr 24 and 0xFF).toString() + "." + (netmask shr 16 and 0xFF).toString() + "." + (netmask shr 8 and 0xFF).toString() + "." + (netmask and 0xFF).toString()
+                        return (netmask shr 24 and 0xFF).toString() +
+                                "." + (netmask shr 16 and 0xFF).toString() +
+                                "." + (netmask shr 8 and 0xFF).toString() +
+                                "." + (netmask shr 0xFF).toString()
                     }
                 }
             }
@@ -479,13 +481,26 @@ fun getConnectivityType(context: Context): String {
     }
 }
 
-fun Any.resetField(fieldName: String) {
-    val field = this.javaClass.getDeclaredField(fieldName)
-
-    with(field) {
-        isAccessible = true
-        set(this, null)
+fun getSerialNumber(): String? {
+    var serialNumber: String? = null
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        try {
+            return Build.getSerial()
+        } catch (e: SecurityException) {
+            Log.e("getSerialNumber", "Failed to get serial number from Build.getSerial()")
+        }
     }
+    try {
+        val c = Class.forName("android.os.SystemProperties")
+        val get = c.getMethod("get", String::class.java)
+        serialNumber = get.invoke(c, "ril.serialnumber") as String
+    } catch (e: java.lang.Exception) {
+        Log.e("getSerialNumber", "Failed to get serial number from ril.serialnumber")
+    }
+    if (serialNumber != null && serialNumber != "") {
+        return serialNumber
+    }
+    return Build.SERIAL
 }
 
 

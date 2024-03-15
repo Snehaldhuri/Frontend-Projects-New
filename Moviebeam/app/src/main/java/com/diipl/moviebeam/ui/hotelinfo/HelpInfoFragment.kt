@@ -145,7 +145,6 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
         binding.rvHelpInfoHeader.adapter = adapterForHelpInfo
         binding.rvHelpInfoHeader.post {
-            Log.e(TAG, "onViewCreated: rvHelpInfoHeader post")
             binding.rvHelpInfoHeader.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
         }
 
