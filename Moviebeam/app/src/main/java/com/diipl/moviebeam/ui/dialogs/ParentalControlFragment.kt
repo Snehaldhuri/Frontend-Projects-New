@@ -24,6 +24,7 @@ class ParentalControlFragment(private val onClicked: (Int) -> Unit) : Fragment()
 
     private lateinit var binding: FragmentParentalControlBinding
     private var length = 0
+    private var isOldPassConfirm = false
 
     @Inject
     lateinit var preference: SharedPreference
@@ -61,6 +62,9 @@ class ParentalControlFragment(private val onClicked: (Int) -> Unit) : Fragment()
             )
             binding.tvImageDesc.text = textSpan
         }
+
+        if(!preference.isAdultPassCodeEmpty)
+            binding.tvTitle.text = getString(R.string.enter_old_pass_code)
 
         return binding.root
     }
@@ -117,9 +121,28 @@ class ParentalControlFragment(private val onClicked: (Int) -> Unit) : Fragment()
                     showToast("Invalid password!")
                     clearView()
                 } else {
-                    preference.adultPassCode = pass
-                    showToast("Passcode set successfully.")
-                    onClicked(RESULT_OK)
+                    if (preference.isAdultPassCodeEmpty) {
+                        preference.adultPassCode = pass
+                        showToast("Passcode set successfully.")
+                        onClicked(RESULT_OK)
+                    } else {
+                        if (!isOldPassConfirm) {
+                            if (preference.adultPassCode != pass) {
+                                showToast("Invalid password!")
+                            } else {
+                                isOldPassConfirm = true
+                                binding.tvTitle.text = getString(R.string.enter_new_pass_code)
+                                showToast("Enter new password.")
+                            }
+                        }else{
+                            isOldPassConfirm = false
+                            preference.adultPassCode = pass
+                            preference.isAdultLocked = true
+                            binding.tvTitle.text = getString(R.string.enter_old_pass_code)
+                            showToast("Passcode reset successfully.")
+                        }
+                        clearView()
+                    }
                 }
             }
 
@@ -158,8 +181,8 @@ class ParentalControlFragment(private val onClicked: (Int) -> Unit) : Fragment()
         binding.etPass2.setText("")
         binding.etPass3.setText("")
         binding.etPass4.setText("")
+        length = 0
     }
-
 
     private fun handleFocusChange(view: View, focus: Boolean) {
         if (focus) {
