@@ -213,12 +213,15 @@ class ProgramGuideActivity : BaseActivity() {
         val adapter = binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter as ChannelAdapter
         val list = adapter.getChannelList()
         var focusIndex = -1
-        list?.forEachIndexed { index, model ->
-            if (name.isNotEmpty()) {
-                if ((model.CN?.contains(name, true) == true) or (model.CNO.toString()
-                        .contains(name, true))
-                ) {
-                    focusIndex = index
+        run breaking@{
+            list?.forEachIndexed { index, model ->
+                if (name.isNotEmpty()) {
+                    if ((model.CN?.contains(name, true) == true) or (model.CNO.toString()
+                            .contains(name, true))
+                    ) {
+                        focusIndex = index
+                        return@breaking
+                    }
                 }
             }
         }
