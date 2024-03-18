@@ -202,7 +202,7 @@ class MoviesActivity : BaseActivity() {
 
         if (isUserCheckedIn) {
             if (!preference.isMainAdultMCW) {
-                if (preference.isAdultPassCodeEmpty)
+                if (!preference.isAdultPassCodeEmpty)
                     openACDDialog(ADULT_MCW_MAIN)
                 else
                     if (!preference.isAdultMCD)

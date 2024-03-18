@@ -147,6 +147,7 @@
         android:layout_margin="@dimen/dp_8"
         app:cardCornerRadius="@dimen/dp_18"
         app:cardElevation="@dimen/dp_0"
+        app:cardBackgroundColor="@color/menu_list_bg"
         app:layout_constraintBottom_toBottomOf="@+id/gl_horizontal_95"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"

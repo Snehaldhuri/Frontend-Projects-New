@@ -15,11 +15,9 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import android.view.View
-import androidx.core.content.FileProvider
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
-import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
@@ -49,7 +47,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -261,14 +258,8 @@ fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
 
 fun Activity.startInstall(file: String) {
     val apkFile = "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240315-debug.apk"
-    val apkUri = FileProvider.getUriForFile(
-        this,
-        "${BuildConfig.APPLICATION_ID}.fileprovider",
-        File(apkFile)
-    )
 
     try {
-        Log.e("startInstall", "Installing $packageName")
         val `in` = FileInputStream(apkFile)
         val packageInstaller: PackageInstaller = packageManager.packageInstaller
         val params = SessionParams(
@@ -300,31 +291,6 @@ fun Activity.startInstall(file: String) {
     } catch (e: java.lang.Exception) {
         Log.e("startInstall", "PackageInstaller error: " + e.message)
     }
-
-
-    /*  val installIntent = Intent(Intent.ACTION_INSTALL_PACKAGE)
-    installIntent.data = apkUri
-    installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    installIntent.putExtra("file", apkFile)
-    startActivityForResult(installIntent, 121)*/
-
-}
-
-@Throws(IOException::class)
-private fun addFileToSession(sessionId: Int, file: File, packageInstaller: PackageInstaller) {
-    val `in` = FileInputStream(file)
-    // set params
-    val session = packageInstaller.openSession(sessionId)
-    val out = session.openWrite(file.name, 0, file.length())
-    val buffer = ByteArray(65536)
-    var c: Int
-    while (`in`.read(buffer).also { c = it } != -1) {
-        out.write(buffer, 0, c)
-    }
-    session.fsync(out)
-    `in`.close()
-    out.close()
-    session.close()
 }
 
 fun createIntentSender(context: Context?, sessionId: Int, packageName: String?): IntentSender {
@@ -341,28 +307,14 @@ fun createIntentSender(context: Context?, sessionId: Int, packageName: String?):
     return pendingIntent.intentSender
 }
 
-/**
- * Returns MAC address of the given interface name.
- * @param interfaceName eth0, wlan0 or NULL=use first interface
- * @return  mac address or empty string
- */
-fun getMACAddress(interfaceName: String?): String {
-    try {
-        val interfaces: List<NetworkInterface> =
-            Collections.list(NetworkInterface.getNetworkInterfaces())
-        for (intf in interfaces) {
-            if (interfaceName != null) {
-                if (!intf.name.equals(interfaceName, ignoreCase = true)) continue
-            }
-            val mac = intf.hardwareAddress ?: return ""
-            val buf = java.lang.StringBuilder()
-            for (aMac in mac) buf.append(String.format("%02X:", aMac))
-            if (buf.isNotEmpty()) buf.deleteCharAt(buf.length - 1)
-            return buf.toString()
-        }
-    } catch (ignored: java.lang.Exception) {
-    } // for now eat exceptions
-    return ""
+fun Context.getApkLists() {
+    val mainIntent = Intent(Intent.ACTION_MAIN, null)
+    mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
+    val apps = packageManager.queryIntentActivities(mainIntent, 0)
+    for (info in apps) {
+        val file = File(info.activityInfo.applicationInfo.publicSourceDir)
+        Log.e("getApkLists", "onResume: ${file.absolutePath}")
+    }
 }
 
 fun getCurrentPanelNumber(): String {

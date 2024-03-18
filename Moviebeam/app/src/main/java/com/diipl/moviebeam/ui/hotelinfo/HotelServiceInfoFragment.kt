@@ -42,9 +42,9 @@ class HotelServiceInfoFragment : Fragment() {
             layoutParams.dimensionRatio = "H,1:1.64"
             binding.ivServiceImg.layoutParams = layoutParams
         } else {
-            if (description.contains("<br/>")){
+//            if (description.contains("<br/>") or description.contains("<br>")){
                 binding.tvServiceDesc.text = Html.fromHtml(description)
-            } else binding.tvServiceDesc.text = description
+//            } else binding.tvServiceDesc.text = description
         }
         if (serviceImgUrl != "null") {
             binding.ivServiceImg.loadImagesWithGlideExtHS(serviceImgUrl)

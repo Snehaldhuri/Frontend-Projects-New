@@ -34,10 +34,15 @@ class CarouselListFragment(
     }
 
     private fun createCardRow(): ArrayObjectAdapter {
-        val adapter = ArrayObjectAdapter(MyCardPresenter(onItemFocused, onLeftKeyPressed))
+        val presenter = MyCardPresenter(onItemFocused, onLeftKeyPressed)
+        val adapter = ArrayObjectAdapter(presenter)
 
         // Add cards to the row
         serviceList?.forEach { adapter.add(it) }
+        serviceList?.let {
+            presenter.rowLength = it.size
+        }
+
         return adapter
     }
 

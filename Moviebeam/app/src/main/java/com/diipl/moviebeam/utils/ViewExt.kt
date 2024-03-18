@@ -202,6 +202,7 @@ fun ImageView.loadImagesWithGlideExtHsCard(url: String) {
             .load(url)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .placeholder(R.drawable.hs_card_default)
+            .error(R.drawable.hs_card_default)
             .into(this)
     }
 }

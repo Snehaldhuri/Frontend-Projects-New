@@ -8,10 +8,8 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +22,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.AdminReceiver
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
@@ -55,7 +52,6 @@ import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
-import com.diipl.moviebeam.utils.getSerialNumber
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
@@ -160,6 +156,7 @@ class MainMenuActivity : BaseActivity() {
         devicePolicyManager = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
         val isOwner = devicePolicyManager.isDeviceOwnerApp(packageName)
+
         if (isOwner) {
             setPowerOnOff()
 //            devicePolicyManager.clearDeviceOwnerApp(packageName)
@@ -172,7 +169,7 @@ class MainMenuActivity : BaseActivity() {
         binding.btnPower.toVisible()
         binding.btnPower.handleFocusChange()
         binding.btnPower.setOnClickListener {
-            devicePolicyManager.clearDeviceOwnerApp(packageName)
+//            devicePolicyManager.clearDeviceOwnerApp(packageName)
             rebootDevice()
         }
     }
@@ -182,47 +179,6 @@ class MainMenuActivity : BaseActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             devicePolicyManager.reboot(componentName)
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.S)
-    fun showBuild() {
-        Log.e(TAG, "TAGS: ${Build.TAGS}")
-        Log.e(TAG, "BOOTLOADER: ${Build.BOOTLOADER}")
-        Log.e(TAG, "TYPE: ${Build.TYPE}")
-        Log.e(TAG, "USER: ${Build.USER}")
-        Log.e(TAG, "SKU: ${Build.SKU}")
-        Log.e(TAG, "ODM_SKU: ${Build.ODM_SKU}")
-        Log.e(TAG, "FINGERPRINT: ${Build.FINGERPRINT}")
-        Log.e(TAG, "MANUFACTURER: ${Build.MANUFACTURER}")
-        Log.e(TAG, "SOC_MANUFACTURER: ${Build.SOC_MANUFACTURER}")
-        Log.e(TAG, "MODEL: ${Build.MODEL}")
-        Log.e(TAG, "SOC_MODEL: ${Build.SOC_MODEL}")
-        Log.e(TAG, "PRODUCT:    ${Build.PRODUCT}")
-        Log.e(TAG, "HOST:    ${Build.HOST}")
-        Log.e(TAG, "HARDWARE:    ${Build.HARDWARE}")
-        Log.e(TAG, "DEVICE:    ${Build.DEVICE}")
-        Log.e(TAG, "BOARD:    ${Build.BOARD}")
-        Log.e(TAG, "BRAND:    ${Build.BRAND}")
-        Log.e(TAG, "DISPLAY:    ${Build.DISPLAY}")
-        Log.e(TAG, "ID:    ${Build.ID}")
-        Log.e(TAG, "CPU_ABI:    ${Build.CPU_ABI}")
-        Log.e(TAG, "CPU_ABI2:    ${Build.CPU_ABI2}")
-        Log.e(TAG, "RADIO:    ${Build.RADIO}")
-        Log.e(TAG, "SERIAL:    ${getSerialNumber()}")
-        Log.e(TAG, "PARTITION_NAME_SYSTEM:    ${Build.Partition.PARTITION_NAME_SYSTEM}")
-
-        Build.SUPPORTED_32_BIT_ABIS.forEach {
-            Log.e(TAG, "SUPPORTED_32_BIT_ABIS:    $it")
-        }
-        Build.SUPPORTED_64_BIT_ABIS.forEach {
-            Log.e(TAG, "SUPPORTED_64_BIT_ABIS:    $it")
-        }
-        Build.SUPPORTED_ABIS.forEach {
-            Log.e(TAG, "SUPPORTED_ABIS:    $it")
-        }
-
-//        Log.e(TAG, "ANDROID_ID:    ${getSecureData(Settings.Secure.ANDROID_ID)}")
-
     }
 
     override fun initViewBinding() {
@@ -288,7 +244,7 @@ class MainMenuActivity : BaseActivity() {
                 try {
                     val response = mainMenuViewModel.themeLiveData.value?.data
 
-                    binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
+//                    binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
                     response?.themeLogoFileName?.let {
 //                    getImageBitmap(it, Constants.HOTEL_LOGO)
                         binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
