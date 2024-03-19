@@ -435,7 +435,6 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 try {
                     status.data?.let {
-                        Log.e(TAG, "handleGuestDetailsResponse: $it")
                         if (it.guestFirstName.isNullOrEmpty()){
                             binding.tvWelcome.toGone()
                             binding.pbLoader.toGone()

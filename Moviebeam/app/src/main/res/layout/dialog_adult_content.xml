@@ -206,7 +206,7 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:visibility="">
+        android:visibility="gone">
 
         <TextView
             android:layout_width="wrap_content"
