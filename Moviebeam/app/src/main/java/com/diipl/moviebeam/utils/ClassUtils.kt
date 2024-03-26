@@ -257,7 +257,8 @@ fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
 }
 
 fun Activity.startInstall(file: String) {
-    val apkFile = "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240315-debug.apk"
+    val apkFile =
+        "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240315-debug.apk"
 
     try {
         val `in` = FileInputStream(apkFile)
@@ -380,7 +381,8 @@ fun Int.toIpAddress(): String {
 
 fun getIPNetmask(): String {
     try {
-        val networkInterfaces: List<NetworkInterface> = Collections.list(NetworkInterface.getNetworkInterfaces())
+        val networkInterfaces: List<NetworkInterface> =
+            Collections.list(NetworkInterface.getNetworkInterfaces())
 
         for (networkInterface in networkInterfaces) {
             if (!networkInterface.isUp) continue
@@ -468,4 +470,12 @@ class Converters {
         val mapType = object : TypeToken<Map<String, String>?>() {}.type
         return Gson().fromJson(value, mapType)
     }
+}
+
+fun readFileToString(fileName: String): String {
+    val str = StringBuilder()
+    File(fileName).forEachLine {
+        str.append(it)
+    }
+    return str.toString()
 }
