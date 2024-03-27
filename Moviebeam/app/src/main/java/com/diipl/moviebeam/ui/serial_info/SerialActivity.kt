@@ -71,7 +71,7 @@ class SerialActivity : BaseActivity() {
 
     private fun fetchSerialNo() {
         Constants.SERIAL_NO =
-            readFileToString("${Environment.getExternalStorageDirectory()}/Documents/test/test.txt")
+            readFileToString("${Environment.getExternalStorageDirectory()}${Constants.SERIAL_NO_PATH_SUFFIX}")
         Constants.UA = "21${Constants.SERIAL_NO}"
         serialViewModel.setDataInDataStore(
             preferenceDataStoreHelper,

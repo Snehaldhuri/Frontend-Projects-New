@@ -76,6 +76,7 @@ object Constants {
     const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
     var EPG_CDN_URL = ""
     const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
+    const val SERIAL_NO_PATH_SUFFIX = "/Documents/system/serialNo.txt"
 
     const val ASSET = "ASSET"
     const val MOVIE_ACCESS = "MOVIE_ACCESS"
