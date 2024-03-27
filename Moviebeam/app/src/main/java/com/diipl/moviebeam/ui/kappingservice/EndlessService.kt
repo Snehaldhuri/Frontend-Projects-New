@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -836,9 +837,14 @@ class EndlessService : Service() {
                     handleSysInfoCmd()
                 }
             }
+
+            KapingConstants.KAP_CMD_REBOOT -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    handleRebootCmd()
+                }
+            }
         }
     }
-
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
         when (kapingResponse.cmdData?.cmd) {
@@ -1213,6 +1219,15 @@ class EndlessService : Service() {
             false,
             kapingResponse.cmdData?.cmdData
         )
+    }
+
+    private fun handleRebootCmd() {
+        val intent = Intent()
+        intent.component =
+            ComponentName(KapingConstants.MDM_PACKAGE_NAME, KapingConstants.RESTART_ACTIVITY_NAME)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
     }
 
     private fun updateGuestSession(

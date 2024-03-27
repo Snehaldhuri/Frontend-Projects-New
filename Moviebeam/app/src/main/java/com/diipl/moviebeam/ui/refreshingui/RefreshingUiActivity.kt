@@ -1,13 +1,8 @@
 package com.diipl.moviebeam.ui.refreshingui
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
-import android.os.PowerManager
 import androidx.activity.viewModels
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.data.Resource
@@ -130,10 +125,6 @@ class RefreshingUiActivity : BaseActivity() {
 
             KapingConstants.KAP_CMD_THEME_CHANGE -> {
                 handleThemeChangeCmd()
-            }
-
-            KapingConstants.KAP_CMD_REBOOT -> {
-//                reboot()
             }
 
             KapingConstants.KAP_CMD_HS_CHANGE -> {
@@ -362,7 +353,8 @@ class RefreshingUiActivity : BaseActivity() {
                 status.data?.let {
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
                     Constants.C_LIST_VERSION = it.version
-                    Constants.MOVIES_COUNT = it.freeContentList.size.plus(it.premiumContentList.size)
+                    Constants.MOVIES_COUNT =
+                        it.freeContentList.size.plus(it.premiumContentList.size)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     LoggingService.sendMessageToWebSocket(
@@ -480,24 +472,6 @@ class RefreshingUiActivity : BaseActivity() {
                     getCurrentPanelNumber()
                 )
             }
-        }
-    }
-
-    private val REQUEST_PERMISSION_PHONE_STATE = 1
-
-    private fun reboot() {
-        val permissionCheck =
-            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.READ_PHONE_STATE),
-                REQUEST_PERMISSION_PHONE_STATE
-            )
-        } else {
-            val pm = getSystemService(POWER_SERVICE) as PowerManager
-            pm.reboot("System update")
         }
     }
 
@@ -732,22 +706,6 @@ class RefreshingUiActivity : BaseActivity() {
     private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
         val currentDate = Date()
         return !(currentDate.before(startDate) or currentDate.after(endDate))
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            REQUEST_PERMISSION_PHONE_STATE -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                val pm = getSystemService(POWER_SERVICE) as PowerManager
-                pm.reboot("System update")
-            }
-
-            else -> {}
-        }
     }
 
     private fun redirectToMainMenuScreen() {
