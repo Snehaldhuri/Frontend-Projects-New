@@ -280,7 +280,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.1"
             android:gravity="center"
-            android:text="@string/enter_pass_code"
+            android:text="@string/enter_new_pass_code"
             android:textAllCaps="true"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_28"

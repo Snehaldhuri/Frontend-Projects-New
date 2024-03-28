@@ -56,6 +56,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setItemFocused
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
@@ -406,12 +407,17 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
-                    mainMenuViewModel.guestDetailsLiveData.value?.data?.let {
-                        Constants.SESSION_ID = it.sessionId.toString()
-                        binding.tvWelcome.text =
-                            "Welcome ${it?.guestFirstName} ${it?.guestLastName}"
-                        binding.tvWelcome.toVisible()
-                        binding.pbLoader.toInvisible()
+                    status.data?.let {
+                        if (it.guestFirstName.isNullOrEmpty()){
+                            binding.tvWelcome.toGone()
+                            binding.pbLoader.toGone()
+                        } else {
+                            Constants.SESSION_ID = it.sessionId.toString()
+                            binding.tvWelcome.text =
+                                "Welcome ${it.guestFirstName} ${it.guestLastName}"
+                            binding.tvWelcome.toVisible()
+                            binding.pbLoader.toInvisible()
+                        }
                     }
                 } catch (e: Exception) {
                     LoggingService.sendMessageToWebSocket(
