@@ -3,7 +3,6 @@ package com.diipl.moviebeam.ui.kaping
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.net.wifi.WifiManager
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
@@ -19,12 +18,9 @@ import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getConnectivityType
-import com.diipl.moviebeam.utils.getIPNetmask
-import com.diipl.moviebeam.utils.intToString
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
-import com.diipl.moviebeam.utils.toIpAddress
 import com.google.android.material.snackbar.Snackbar
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
@@ -46,14 +42,9 @@ class RegisterSTBActivity : BaseActivity() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         registerSTBViewModel.getSerialNoFromDataStore(preferenceDataStoreHelper)
 
-        val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
-        val dhcpInfo = wifiManager.dhcpInfo
-        val ipAddress = dhcpInfo.ipAddress.toIpAddress()
-        val netmask = getIPNetmask()
-        val gateway = dhcpInfo.gateway.intToString()
-        binding.tvIp.text = ipAddress
-        binding.tvNetMask.text = netmask
-        binding.tvGateway.text = gateway
+        binding.tvIp.text = Constants.IP_ADDRESS
+        binding.tvNetMask.text = Constants.IP_NET_MASK
+        binding.tvGateway.text = Constants.IP_GATEWAY
 
         binding.tvSwVersion.text = BuildConfig.VERSION_NAME
         binding.tvConnectivity.text = getConnectivityType(applicationContext)

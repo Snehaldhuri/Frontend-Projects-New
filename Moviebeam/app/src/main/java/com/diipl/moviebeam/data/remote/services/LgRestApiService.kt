@@ -130,4 +130,5 @@ interface LgRestApiService {
         @Query("UA") ua: String
     ): Response<String>
 
+
 }

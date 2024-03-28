@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.mainmenu
 
 import android.annotation.SuppressLint
 import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
@@ -21,7 +20,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.AdminReceiver
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
@@ -52,7 +50,6 @@ import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
-import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -153,32 +150,8 @@ class MainMenuActivity : BaseActivity() {
 
         binding.rvMenuButton.setItemFocused()
 
-        devicePolicyManager = getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
-        val isOwner = devicePolicyManager.isDeviceOwnerApp(packageName)
 
-        if (isOwner) {
-            setPowerOnOff()
-//            devicePolicyManager.clearDeviceOwnerApp(packageName)
-//            this.startInstall("")
-//            showBuild()
-        }
-    }
-
-    private fun setPowerOnOff() {
-        binding.btnPower.toVisible()
-        binding.btnPower.handleFocusChange()
-        binding.btnPower.setOnClickListener {
-//            devicePolicyManager.clearDeviceOwnerApp(packageName)
-            rebootDevice()
-        }
-    }
-
-    private fun rebootDevice() {
-        val componentName = ComponentName(applicationContext, AdminReceiver::class.java)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            devicePolicyManager.reboot(componentName)
-        }
     }
 
     override fun initViewBinding() {
@@ -320,9 +293,9 @@ class MainMenuActivity : BaseActivity() {
                                 response.hotelChannelList.get(0).toJson()
                             )
                             val hotelChannelVideo =
-                                response.httpStreamingHotelvideoUrl + response.hotelChannelList?.get(
+                                response.httpStreamingHotelvideoUrl + response.hotelChannelList.get(
                                     0
-                                )?.fileName
+                                ).fileName
                             bundle.putString("hotelChannelVideo", hotelChannelVideo)
                             bundle.putString(
                                 "themeLogoFileName",

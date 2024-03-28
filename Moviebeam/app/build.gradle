@@ -8,6 +8,7 @@ plugins {
 }
 
 android {
+/*
     signingConfigs {
         debug {
             storeFile file('D:\\Projects\\Moviebeam\\Production\\moviebeam_prod.jks')
@@ -16,6 +17,7 @@ android {
             keyPassword 'diipl@123'
         }
     }
+*/
 
     namespace 'com.diipl.moviebeam'
     compileSdk 33
@@ -25,10 +27,11 @@ android {
         minSdk 21
         targetSdk 33
         versionCode 1
-        versionName "2.2.4"
+        versionName "2.2.5"
 
         def formattedDate = new Date().format('yyyyMMdd')
         def apkName = "Moviebeam_Prod_V(${versionName})_$formattedDate"
+//        def apkName = "Moviebeam_${versionName}"  // Release apk name for software update
 
         setProperty("archivesBaseName", apkName)
 
@@ -59,14 +62,19 @@ android {
 
 dependencies {
 
+    //noinspection GradleCompatible
+//    implementation "com.android.support:support-media-compat:26.0.1"
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
 
     def retrofitVersion = "2.9.0"
     def hiltVersion = "2.44"
     def exoplayerVersion = "1.1.0"
 
+//    implementation(project(path : ':tvlibrary'))
+
 
     implementation 'androidx.core:core-ktx:1.10.0'
-    implementation "androidx.annotation:annotation:1.1.0'"
+    implementation "androidx.annotation:annotation:1.1.0"
     implementation 'androidx.leanback:leanback:1.0.0'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"

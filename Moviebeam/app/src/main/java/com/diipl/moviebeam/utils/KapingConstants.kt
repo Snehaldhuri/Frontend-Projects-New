@@ -34,6 +34,7 @@ object KapingConstants {
     const val KAP_CMD_LAUNDRY_CHANGE = "41"
     const val KAP_CMD_GET_FOOD_DELIVERY_DATA = "42"
     const val KAP_CMD_GET_TICKER_MESSAGES = "43"
+    const val KAP_CMD_SOFTWARE_UPDATE = "28"
 
     //Kaping Commands Execution Response
     const val EXECUTED_SUCCESSFULLY = "00"

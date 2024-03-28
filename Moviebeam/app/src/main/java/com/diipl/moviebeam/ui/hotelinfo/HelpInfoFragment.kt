@@ -4,7 +4,6 @@ import android.content.Context
 import android.media.tv.TvInputManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -12,7 +11,6 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.BuildConfig
@@ -22,11 +20,8 @@ import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getConnectivityType
-import com.diipl.moviebeam.utils.getIPNetmask
 import com.diipl.moviebeam.utils.handleFocusChange
-import com.diipl.moviebeam.utils.intToString
 import com.diipl.moviebeam.utils.toGone
-import com.diipl.moviebeam.utils.toIpAddress
 import com.diipl.moviebeam.utils.toVisible
 
 private const val TAG = "HelpInfoFragment"
@@ -47,12 +42,9 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
             setHotelInfo()
 
-            val wifiManager =
-                requireActivity().applicationContext.getSystemService(AppCompatActivity.WIFI_SERVICE) as WifiManager
-            val dhcpInfo = wifiManager.dhcpInfo
-            val ipAddress = "IP Address: " + dhcpInfo.ipAddress.toIpAddress()
-            val netmask = "Net Mask: " + getIPNetmask()
-            val gateway = "Gateway: " + dhcpInfo.gateway.intToString()
+            val ipAddress = "IP Address: " + Constants.IP_ADDRESS
+            val netmask = "Net Mask: " + Constants.IP_NET_MASK
+            val gateway = "Gateway: " + Constants.IP_GATEWAY
             val connectivity = "Connectivity: " + getConnectivityType(requireContext())
 
             binding.tvIpAddress.text = ipAddress

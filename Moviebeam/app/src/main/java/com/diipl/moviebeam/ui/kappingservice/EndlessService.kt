@@ -6,12 +6,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
 import android.media.AudioManager
-import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -73,9 +73,10 @@ import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
-import com.diipl.moviebeam.utils.intToString
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
+import com.diipl.moviebeam.utils.setIPInfo
+import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toTimestamp
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -197,32 +198,21 @@ class EndlessService : Service() {
         var kapingCMD = KapingConstants.KAP_CMD_DO_NOTHING
         var kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
 
-        val gson = GsonBuilder()
-            .setLenient()
-            .create()
+        val gson = GsonBuilder().setLenient().create()
 
         fun provideOkHttpClient(): OkHttpClient = if (BuildConfig.DEBUG) {
             val loggingInterceptor = HttpLoggingInterceptor()
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-            OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
+            OkHttpClient.Builder().addInterceptor(loggingInterceptor)
                 .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
-                .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
-                .build()
-        } else
-            OkHttpClient
-                .Builder()
-                .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
-                .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
-                .build()
+                .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS).build()
+        } else OkHttpClient.Builder().readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
+            .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS).build()
 
         fun createRetrofitService(): LgRestApiService {
-            val retrofit = Retrofit.Builder()
-                .addConverterFactory(ScalarsConverterFactory.create())
+            val retrofit = Retrofit.Builder().addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
-                .baseUrl(Constants.BASE_URL_ACCOUNT_SETUP)
-                .client(provideOkHttpClient())
-                .build()
+                .baseUrl(Constants.BASE_URL_ACCOUNT_SETUP).client(provideOkHttpClient()).build()
 
             return retrofit.create(LgRestApiService::class.java)
         }
@@ -284,12 +274,9 @@ class EndlessService : Service() {
                                         val url =
                                             "${Constants.BASE_URL_LG_REST}content/netflixAccess/enter?sessionId=$sessionId"
 
-                                        val requestBody =
-                                            createRequestBody(
-                                                Constants.STB_ROOM_NO,
-                                                Constants.UA,
-                                                2
-                                            )
+                                        val requestBody = createRequestBody(
+                                            Constants.STB_ROOM_NO, Constants.UA, 2
+                                        )
 
                                         postRequest(url, requestBody)
                                         Constants.NETFLIX_LAUNCHED = false;
@@ -298,13 +285,11 @@ class EndlessService : Service() {
                                 }
                             }
                             if (activityStack.last() != MainMenuActivity::class.java.simpleName) {
-                                startActivity(
-                                    Intent(
-                                        context,
-                                        MainMenuActivity::class.java
-                                    ).also { i ->
-                                        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    })
+                                startActivity(Intent(
+                                    context, MainMenuActivity::class.java
+                                ).also { i ->
+                                    i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                })
                                 Log.e(TAG, "onReceive: 0")
                                 return
                             } else {
@@ -356,10 +341,8 @@ class EndlessService : Service() {
     private fun postRequest(url: String, requestBody: String) {
         val client = OkHttpClient()
 
-        val request = Request.Builder()
-            .url(url)
-            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody))
-            .build()
+        val request = Request.Builder().url(url)
+            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody)).build()
 
         client.newCall(request).enqueue(object : okhttp3.Callback {
             override fun onFailure(call: okhttp3.Call, e: IOException) {
@@ -398,20 +381,20 @@ class EndlessService : Service() {
         setServiceState(this, ServiceState.STARTED)
 
         // we need this lock so our service gets not affected by Doze Mode
-        wakeLock =
-            (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "EndlessService::lock").apply {
-                    acquire()
-                }
+        wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+            newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "EndlessService::lock").apply {
+                acquire()
             }
+        }
 
         // we're starting a loop in a coroutine
         GlobalScope.launch(Dispatchers.IO) {
             while (isServiceStarted) {
                 launch(Dispatchers.IO) {
+                    setIPInfo()
+
                     UA = preferenceDataStoreHelper.getFirstPreference(
-                        PreferenceDataStoreConstants.UA,
-                        ""
+                        PreferenceDataStoreConstants.UA, ""
                     )
                     _accountSetupLiveData.postValue(accountSetupDataStore.data.first())
                     _themeLiveData.postValue(themeDataStore.data.first())
@@ -421,16 +404,14 @@ class EndlessService : Service() {
                     _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())
                     _channelListLiveData.postValue(channelListDatastore.data.first())
                     isGuestCheckedIn = preferenceDataStoreHelper.getFirstPreference(
-                        PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
-                        false
+                        PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN, false
                     )
                     log("UA -> $UA")
                     if (UA.isNotBlank()) {
                         pingFakeServer()
                         callKapingApi()
 
-                        if (Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null")
-                            roomRepository.removeOverTimeMovies()
+                        if (Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null") roomRepository.removeOverTimeMovies()
 
                         if (Constants.SESSION_ID == "null") {
                             roomRepository.deleteRecentMovies()
@@ -559,14 +540,12 @@ class EndlessService : Service() {
 
         kapingCall.enqueue(object : Callback<String> {
             override fun onResponse(
-                call: Call<String>,
-                response: Response<String>
+                call: Call<String>, response: Response<String>
             ) {
                 if (response.isSuccessful) {
                     val data = response.body()
                     val result = KapingResponseParsing().getResponseAsObject(
-                        data,
-                        KapingResponse::class
+                        data, KapingResponse::class
                     )
                     result?.CMD?.let {
                         result.cmdData = parseCmd(it)
@@ -583,8 +562,7 @@ class EndlessService : Service() {
                         if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                             startActivity(
                                 Intent(
-                                    applicationContext,
-                                    RegisterSTBActivity::class.java
+                                    applicationContext, RegisterSTBActivity::class.java
                                 ).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             )
                         }
@@ -681,15 +659,10 @@ class EndlessService : Service() {
 
         when (kapingResponse?.cmdData?.cmd) {
 
-            KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE,
-            KapingConstants.KAP_CMD_CHECK_IN,
-            KapingConstants.KAP_CMD_CHECK_OUT,
-            KapingConstants.KAP_CMD_THEME_CHANGE -> {
+            KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE, KapingConstants.KAP_CMD_CHECK_IN, KapingConstants.KAP_CMD_CHECK_OUT, KapingConstants.KAP_CMD_THEME_CHANGE -> {
                 removeAdultData()
                 when (activityStack.last()) {
-                    SerialActivity::class.java.simpleName,
-                    STBDetailsActivity::class.java.simpleName,
-                    RegisterSTBActivity::class.java.simpleName -> {
+                    SerialActivity::class.java.simpleName, STBDetailsActivity::class.java.simpleName, RegisterSTBActivity::class.java.simpleName -> {
                         handleCmdInBackground(kapingResponse)
                     }
 
@@ -713,8 +686,7 @@ class EndlessService : Service() {
 
             KapingConstants.KAP_CMD_LA_CHANGE -> {
                 when (activityStack.last()) {
-                    LocalAttractionActivity::class.java.simpleName,
-                    GuestServiceActivity::class.java.simpleName -> {
+                    LocalAttractionActivity::class.java.simpleName, GuestServiceActivity::class.java.simpleName -> {
                         handleCmdInRefreshingUi(kapingResponse)
                     }
 
@@ -726,10 +698,7 @@ class EndlessService : Service() {
 
             KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> {
                 when (activityStack.last()) {
-                    MoviesActivity::class.java.simpleName,
-                    MovieDetailFragment::class.java.simpleName,
-                    AdultContentDialog::class.java.simpleName,
-                    ExoPlayerActivity::class.java.simpleName -> {
+                    MoviesActivity::class.java.simpleName, MovieDetailFragment::class.java.simpleName, AdultContentDialog::class.java.simpleName, ExoPlayerActivity::class.java.simpleName -> {
                         handleCmdInRefreshingUi(kapingResponse)
                     }
 
@@ -741,8 +710,7 @@ class EndlessService : Service() {
 
             KapingConstants.KAP_CMD_FETCH_SHOWTIME_DATA -> {
                 when (activityStack.last()) {
-                    ShowtimeActivity::class.java.simpleName,
-                    ExoPlayerActivity::class.java.simpleName -> {
+                    ShowtimeActivity::class.java.simpleName, ExoPlayerActivity::class.java.simpleName -> {
                         handleCmdInRefreshingUi(kapingResponse)
                     }
 
@@ -754,8 +722,7 @@ class EndlessService : Service() {
 
             KapingConstants.KAP_CMD_GET_CHANNEL_LIST -> {
                 when (activityStack.last()) {
-                    ProgramGuideActivity::class.java.simpleName,
-                    PrgGuidePlayerActivity::class.java.simpleName -> {
+                    ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> {
                         handleCmdInRefreshingUi(kapingResponse)
                     }
 
@@ -767,8 +734,7 @@ class EndlessService : Service() {
 
             KapingConstants.KAP_CMD_GET_EPG_DATA -> {
                 when (activityStack.last()) {
-                    ProgramGuideActivity::class.java.simpleName,
-                    PrgGuidePlayerActivity::class.java.simpleName -> {
+                    ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> {
                         handleCmdInRefreshingUi(kapingResponse)
                     }
 
@@ -835,6 +801,24 @@ class EndlessService : Service() {
                 CoroutineScope(Dispatchers.IO).launch {
                     handleSysInfoCmd()
                 }
+            }
+
+            KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
+                CoroutineScope(Dispatchers.Default).launch {
+                    val response = movieBeamRepository.getSoftwareUpdateDetails()
+                    if (response != null && response.isCurrent) {
+                        val intent = Intent()
+                        intent.component = ComponentName(
+                            "com.hmdm.launcher", "com.hmdm.launcher.ui.SoftwareUpdateActivity"
+                        )
+                        intent.putExtra("softwareData", response.toJson())
+                        intent.putExtra("buildVersion", BuildConfig.VERSION_NAME)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intent)
+                    }
+
+                }
+
             }
         }
     }
@@ -907,13 +891,11 @@ class EndlessService : Service() {
                 Constants.EPG_CDN_URL = response.epgCdnUrl
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "AccountSetup callbackSuccess",
-                    getCurrentPanelNumber()
+                    "AccountSetup callbackSuccess", getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Account Setup callback fail ",
-                    getCurrentPanelNumber()
+                    "In Account Setup callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -927,13 +909,11 @@ class EndlessService : Service() {
                 updateThemeData(themeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "In theme callback success ",
-                    getCurrentPanelNumber()
+                    "In theme callback success ", getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In theme callback fail ",
-                    getCurrentPanelNumber()
+                    "In theme callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -960,13 +940,11 @@ class EndlessService : Service() {
                 updateHotelServices(hotelServicesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "In Hotel Services callback success ",
-                    getCurrentPanelNumber()
+                    "In Hotel Services callback success ", getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Hotel Services callback fail ",
-                    getCurrentPanelNumber()
+                    "In Hotel Services callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -979,14 +957,12 @@ class EndlessService : Service() {
                 updateLocalAttractions(localAttractionsDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "In Local Attractions callback success ",
-                    getCurrentPanelNumber()
+                    "In Local Attractions callback success ", getCurrentPanelNumber()
                 )
 
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Local Attractions callback fail ",
-                    getCurrentPanelNumber()
+                    "In Local Attractions callback fail ", getCurrentPanelNumber()
                 )
 
             }
@@ -1000,14 +976,12 @@ class EndlessService : Service() {
                 setMoviesResponseData(moviesDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "In Releases callback success ",
-                    getCurrentPanelNumber()
+                    "In Releases callback success ", getCurrentPanelNumber()
                 )
 
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Releases callback fail ",
-                    getCurrentPanelNumber()
+                    "In Releases callback fail ", getCurrentPanelNumber()
                 )
 
             }
@@ -1021,14 +995,12 @@ class EndlessService : Service() {
                 updateShowTimeData(showtimeDataStore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "In ShowtimeReleasesCollection callback success ",
-                    getCurrentPanelNumber()
+                    "In ShowtimeReleasesCollection callback success ", getCurrentPanelNumber()
                 )
 
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In ShowtimeReleasesCollection callback fail ",
-                    getCurrentPanelNumber()
+                    "In ShowtimeReleasesCollection callback fail ", getCurrentPanelNumber()
                 )
 
             }
@@ -1043,13 +1015,11 @@ class EndlessService : Service() {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 Constants.CHANNEL_COUNT = response.channelLcnList.size
                 LoggingService.sendMessageToWebSocket(
-                    "In Channel List callback success ",
-                    getCurrentPanelNumber()
+                    "In Channel List callback success ", getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Channel List callback fail ",
-                    getCurrentPanelNumber()
+                    "In Channel List callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -1069,8 +1039,7 @@ class EndlessService : Service() {
                         processEPGData(response)
                         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                         LoggingService.sendMessageToWebSocket(
-                            "In Get EPG Data callback success ",
-                            getCurrentPanelNumber()
+                            "In Get EPG Data callback success ", getCurrentPanelNumber()
                         )
                     } else {
                         if (!isEPGServerApiCalled) {
@@ -1084,8 +1053,7 @@ class EndlessService : Service() {
 
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Get EPG Data callback fail ",
-                    getCurrentPanelNumber()
+                    "In Get EPG Data callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -1098,13 +1066,11 @@ class EndlessService : Service() {
                 processEPGData(response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "In Get EPG Data Server callback success ",
-                    getCurrentPanelNumber()
+                    "In Get EPG Data Server callback success ", getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Get EPG Data Server callback fail ",
-                    getCurrentPanelNumber()
+                    "In Get EPG Data Server callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -1117,13 +1083,11 @@ class EndlessService : Service() {
             if (response != null && response == 0) {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
-                    "In Channel List callback success ",
-                    getCurrentPanelNumber()
+                    "In Channel List callback success ", getCurrentPanelNumber()
                 )
             } else {
                 LoggingService.sendMessageToWebSocket(
-                    "In Channel List callback fail ",
-                    getCurrentPanelNumber()
+                    "In Channel List callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -1132,8 +1096,6 @@ class EndlessService : Service() {
     private fun handleSysInfoCmd() {
         val accountSetupData = accountSetupLiveData.value
         val dateFormatter = SimpleDateFormat("EEE. MMM dd, yyyy hh:mm:ss a", Locale.ENGLISH)
-        val wifiManager = applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
-        val dhcpInfo = wifiManager.dhcpInfo
         val body = SysInfoDTO()
         body.HOTELCODE = Constants.ACCOUNT_ID.toInt()
         body.ROOM = Constants.STB_ROOM_NO.uppercase()
@@ -1145,9 +1107,9 @@ class EndlessService : Service() {
         body.streamingType = accountSetupData?.streamingType
         body.UA = Constants.UA
         body.SRNO = Constants.SERIAL_NO
-        body.stbIp = dhcpInfo.ipAddress.intToString()
-        body.netMask = dhcpInfo.netmask.intToString()
-        body.route = dhcpInfo.gateway.intToString()
+        body.stbIp = Constants.IP_ADDRESS
+        body.netMask = Constants.IP_NET_MASK
+        body.route = Constants.IP_GATEWAY
         body.connectivityType = networkUtils.getConnectivityType()
         body.VOD_MANAGER_IP = accountSetupData?.vodMgrIp
         body.VOD_MANAGER_PORT = accountSetupData?.vodMgrPort
@@ -1198,20 +1160,14 @@ class EndlessService : Service() {
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
         updateGuestSession(
-            preferenceDataStoreHelper,
-            guestDetailsDatastore,
-            true,
-            kapingResponse.cmdData?.cmdData
+            preferenceDataStoreHelper, guestDetailsDatastore, true, kapingResponse.cmdData?.cmdData
         )
 
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
         updateGuestSession(
-            preferenceDataStoreHelper,
-            guestDetailsDatastore,
-            false,
-            kapingResponse.cmdData?.cmdData
+            preferenceDataStoreHelper, guestDetailsDatastore, false, kapingResponse.cmdData?.cmdData
         )
     }
 
@@ -1223,16 +1179,14 @@ class EndlessService : Service() {
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
-                isCheckedIn
+                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN, isCheckedIn
             )
             updateGuestDetails(guestDetailsDatastore, guestDetails)
         }
     }
 
     private fun updateGuestDetails(
-        dataStore: DataStore<CmdDataDto>,
-        data: CmdDataDto?
+        dataStore: DataStore<CmdDataDto>, data: CmdDataDto?
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -1253,8 +1207,7 @@ class EndlessService : Service() {
 
 
     private fun updateAccountSetupData(
-        dataStore: DataStore<AccountSetupResponse>,
-        data: AccountSetupResponse
+        dataStore: DataStore<AccountSetupResponse>, data: AccountSetupResponse
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
@@ -1361,8 +1314,7 @@ class EndlessService : Service() {
     }
 
     private fun updateThemeData(
-        dataStore: DataStore<ThemeResponse>,
-        data: ThemeResponse
+        dataStore: DataStore<ThemeResponse>, data: ThemeResponse
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -1389,8 +1341,7 @@ class EndlessService : Service() {
     }
 
     private fun updateHotelServices(
-        dataStore: DataStore<HotelServiceResponse>,
-        data: HotelServiceResponse
+        dataStore: DataStore<HotelServiceResponse>, data: HotelServiceResponse
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
@@ -1405,8 +1356,7 @@ class EndlessService : Service() {
     }
 
     private fun updateLocalAttractions(
-        dataStore: DataStore<LocalAttractionResponse>,
-        data: LocalAttractionResponse
+        dataStore: DataStore<LocalAttractionResponse>, data: LocalAttractionResponse
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
@@ -1421,8 +1371,7 @@ class EndlessService : Service() {
     }
 
     private fun setMoviesResponseData(
-        dataStore: DataStore<MoviesResponse>,
-        data: MoviesResponse
+        dataStore: DataStore<MoviesResponse>, data: MoviesResponse
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -1446,8 +1395,7 @@ class EndlessService : Service() {
     }
 
     private fun updateShowTimeData(
-        dataStore: DataStore<ShowTimeResponse>,
-        data: ShowTimeResponse
+        dataStore: DataStore<ShowTimeResponse>, data: ShowTimeResponse
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             Constants.SHOWS_COUNT = data.shoContentList.size
@@ -1465,15 +1413,12 @@ class EndlessService : Service() {
     }
 
     private fun updateChannelList(
-        dataStore: DataStore<ChannelListResponse>,
-        data: ChannelListResponse
+        dataStore: DataStore<ChannelListResponse>, data: ChannelListResponse
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
-                    id = data.id,
-                    channelLcnList = data.channelLcnList,
-                    type = data.type
+                    id = data.id, channelLcnList = data.channelLcnList, type = data.type
                 )
             }
         }
@@ -1492,8 +1437,7 @@ class EndlessService : Service() {
                 if (isEpgDataValid(startDate, endDate)) {
                     Constants.EPG_START = it.ST ?: ""
                     Constants.EPG_END = it.ET ?: ""
-                    val channelList =
-                        channelListLiveData.value?.channelLcnList
+                    val channelList = channelListLiveData.value?.channelLcnList
                     val currentKey = fetchCurrentProgramKey()
                     removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
                     for (entries in it.epgListMap?.entries!!) {
@@ -1515,10 +1459,9 @@ class EndlessService : Service() {
                                         channel.CBT = channelApi.CBT
                                         channel.CL = channelApi.CL
                                         channel.CLCloud = channelApi.CLCloud
-                                        if (channelApi.httpStreaming == true)
-                                            channel.VP = channelApi.httpStreamingUrl
-                                        else
-                                            channel.VP = channelApi.VP
+                                        if (channelApi.httpStreaming == true) channel.VP =
+                                            channelApi.httpStreamingUrl
+                                        else channel.VP = channelApi.VP
                                         channel.param1 = channelApi.param1
                                         channel.param2 = channelApi.param2
                                         channel.httpStreamingUrl = channelApi.httpStreamingUrl
@@ -1528,13 +1471,11 @@ class EndlessService : Service() {
                                         channel.channelNameNo =
                                             "${channelApi.CNO}   ${channelApi.CN}"
                                         channel.lastProg = channel.C
-                                        channel.prog1Time =
-                                            "${channel.P1_ST} - ${channel.P1_ET}"
+                                        channel.prog1Time = "${channel.P1_ST} - ${channel.P1_ET}"
 
                                         //Mapping EpgMap with Program Map Api
                                         if (channel.P1_ID != null) {
-                                            val program1 =
-                                                it.programsListMap?.get(channel.P1_ID)
+                                            val program1 = it.programsListMap?.get(channel.P1_ID)
                                             if (program1 != null) {
                                                 channel.P1_PT = program1.PT
                                                 channel.P1_SY = program1.SY
@@ -1544,10 +1485,8 @@ class EndlessService : Service() {
                                                 channel.progInfo1 =
                                                     "${channel.CNO} - ${program1.PT}"
                                             } else {
-                                                channel.P1_PT =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                                channel.P1_SY =
-                                                    Constants.NO_INFORMATION_AVAILABLE
+                                                channel.P1_PT = Constants.NO_INFORMATION_AVAILABLE
+                                                channel.P1_SY = Constants.NO_INFORMATION_AVAILABLE
                                                 channel.progInfo =
                                                     Constants.NO_INFORMATION_AVAILABLE
                                                 channel.progSynopsis =
@@ -1608,12 +1547,11 @@ class EndlessService : Service() {
                                         } else {
                                             //Calculating next Program Time from program1 end Time when Only One Program is Available
                                             val nextProgramTime = Calendar.getInstance()
-                                            nextProgramTime.time =
-                                                channel.P1_DET?.let { it1 ->
-                                                    simpleDateFormatter.parse(
-                                                        it1
-                                                    )
-                                                }!!
+                                            nextProgramTime.time = channel.P1_DET?.let { it1 ->
+                                                simpleDateFormatter.parse(
+                                                    it1
+                                                )
+                                            }!!
                                             val nextProgramKey =
                                                 fetchCurrentProgramKey(nextProgramTime)
                                             val nextProgram: ChannelEpgDTO? =
@@ -1639,14 +1577,11 @@ class EndlessService : Service() {
                                         break
                                     }
                                 }
-                                if (!isFound)
-                                    iterator.remove()
+                                if (!isFound) iterator.remove()
                                 else {
                                     //Removing Duplicate Channels
-                                    if (ciMap[channel.CI] != null)
-                                        iterator.remove()
-                                    else
-                                        ciMap[channel.CI] = true
+                                    if (ciMap[channel.CI] != null) iterator.remove()
+                                    else ciMap[channel.CI] = true
                                 }
                             }
                         }
@@ -1711,8 +1646,7 @@ class EndlessService : Service() {
     ) {
         while (iterator?.hasNext() == true) {
             val entry = iterator.next()
-            if (entry.key == currentKey)
-                break
+            if (entry.key == currentKey) break
             iterator.remove()
         }
     }
@@ -1723,8 +1657,7 @@ class EndlessService : Service() {
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IS_STB_ALLOCATED,
-                isStbAllocated
+                PreferenceDataStoreConstants.IS_STB_ALLOCATED, isStbAllocated
             )
         }
 
@@ -1751,8 +1684,7 @@ class EndlessService : Service() {
                 it.enableLights(true)
                 it.lightColor = Color.RED
                 it.enableVibration(true)
-                it.vibrationPattern =
-                    longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+                it.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
                 it
             }
             notificationManager.createNotificationChannel(channel)
@@ -1770,24 +1702,20 @@ class EndlessService : Service() {
         val pendingIntent: PendingIntent =
             Intent(this, MainMenuActivity::class.java).let { notificationIntent ->
                 PendingIntent.getActivity(
-                    this,
-                    0,
-                    notificationIntent,
-                    PendingIntent.FLAG_IMMUTABLE
+                    this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE
                 )
             }
 
         val builder: Notification.Builder =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                Notification.Builder(this, notificationChannelId) else Notification.Builder(this)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Notification.Builder(
+                this, notificationChannelId
+            ) else Notification.Builder(this)
 
         Log.e("createNotification: ", "Endless")
 
-        return builder
-            .setContentTitle("Endless Service")
+        return builder.setContentTitle("Endless Service")
             .setContentText("This is your favorite endless service working")
-            .setContentIntent(pendingIntent)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentIntent(pendingIntent).setSmallIcon(R.mipmap.ic_launcher)
             .setTicker("Ticker text")
             .setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
             .build()

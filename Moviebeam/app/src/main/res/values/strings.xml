@@ -146,4 +146,7 @@
     <string name="parental_control_desc">Use the arrow key and hit OK button to set passcode. Use stop button to <font color="#FFB81A">CANCEL</font> or <font color="#FFB81A">START</font> again.
         \nDO NOT USE NUMERIC KEYS ON REMOTE to set the passcode
         \nPlease call frontdesk for assistance</string>
+
+    <string name="rich_input_feed_url" translatable="false">http://commondatastorage.googleapis.com/android-tv/rich_tv_input_xmltv_feed.xml</string>
+
 </resources>
