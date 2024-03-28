@@ -48,6 +48,7 @@ object KapingConstants {
     const val EVENT_CHECK_OUT = "31220"
 
     const val MDM_PACKAGE_NAME = "com.hmdm.launcher"
-    const val RESTART_ACTIVITY_NAME = "com.hmdm.launcher.ui.RebootActivity"
+    const val MDM_RESTART_ACTIVITY_NAME = "$MDM_PACKAGE_NAME.ui.RebootActivity"
+    const val MDM_SOFTWARE_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SoftwareUpdateActivity"
 
 }

@@ -68,6 +68,7 @@ import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.DeviceUtils
 import com.diipl.moviebeam.utils.KapingConstants
+import com.diipl.moviebeam.utils.KapingConstants.MDM_SOFTWARE_ACTIVITY
 import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
@@ -813,9 +814,7 @@ class EndlessService : Service() {
                     val response = movieBeamRepository.getSoftwareUpdateDetails()
                     if (response != null && response.isCurrent) {
                         val intent = Intent()
-                        intent.component = ComponentName(
-                            "com.hmdm.launcher", "com.hmdm.launcher.ui.SoftwareUpdateActivity"
-                        )
+                        intent.component = ComponentName(KapingConstants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())
                         intent.putExtra("buildVersion", BuildConfig.VERSION_NAME)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -1178,7 +1177,7 @@ class EndlessService : Service() {
     private fun handleRebootCmd() {
         val intent = Intent()
         intent.component =
-            ComponentName(KapingConstants.MDM_PACKAGE_NAME, KapingConstants.RESTART_ACTIVITY_NAME)
+            ComponentName(KapingConstants.MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY

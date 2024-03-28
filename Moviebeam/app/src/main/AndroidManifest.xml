@@ -157,7 +157,6 @@
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-            android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity
             android:name=".ui.splash.SplashActivity"
             android:exported="true"
