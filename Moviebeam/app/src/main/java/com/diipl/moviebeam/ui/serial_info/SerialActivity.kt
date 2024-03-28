@@ -1,14 +1,15 @@
 package com.diipl.moviebeam.ui.serial_info
 
 
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.os.IBinder
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
@@ -22,7 +23,6 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
-import com.diipl.moviebeam.utils.readFileToString
 
 
 private const val TAG = "SerialActivity"
@@ -70,8 +70,23 @@ class SerialActivity : BaseActivity() {
     }
 
     private fun fetchSerialNo() {
-        Constants.SERIAL_NO =
-            readFileToString("${Environment.getExternalStorageDirectory()}${Constants.SERIAL_NO_PATH_SUFFIX}")
+        val intent = Intent()
+        intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_SERIAL_ACTIVITY)
+        resultLauncher.launch(intent)
+    }
+
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val intent: Intent? = result.data
+                intent?.getStringExtra(Constants.SERIAL_NO_KEY)?.let {
+                    processSerialNo(it)
+                }
+            }
+        }
+
+    private fun processSerialNo(serialNo: String) {
+        Constants.SERIAL_NO = serialNo
         Constants.UA = "21${Constants.SERIAL_NO}"
         serialViewModel.setDataInDataStore(
             preferenceDataStoreHelper,
