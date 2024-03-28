@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="annex_mode_switch">
+        <item>Annex A</item>
+        <item>Annex B</item>
+    </array>
+    <array name="aspect_ratio_list">
+        <item>Auto</item>
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>Full</item>
+    </array>
+    <array name="bandwidth">
+        <item>8MHZ</item>
+        <item>7MHZ</item>
+        <item>6MHZ</item>
+        <item>5MHZ</item>
+        <item>10MHZ</item>
+    </array>
+    <array name="direction_entries">
+        <item>@string/direction_east</item>
+        <item>@string/direction_west</item>
+    </array>
+    <array name="dis_eqc_1_0">
+        <item>@string/title_none</item>
+        <item>1/4</item>
+        <item>2/4</item>
+        <item>3/4</item>
+        <item>4/4</item>
+    </array>
+    <array name="dis_eqc_1_1">
+        <item>@string/title_none</item>
+        <item>1/16</item>
+        <item>2/16</item>
+        <item>3/16</item>
+        <item>4/16</item>
+        <item>5/16</item>
+        <item>6/16</item>
+        <item>7/16</item>
+        <item>8/16</item>
+        <item>9/16</item>
+        <item>10/16</item>
+        <item>11/16</item>
+        <item>12/16</item>
+        <item>13/16</item>
+        <item>14/16</item>
+        <item>15/16</item>
+        <item>16/16</item>
+    </array>
+    <array name="dis_eqc_direction">
+        <item>@string/direction_east</item>
+        <item>@string/direction_center</item>
+        <item>@string/direction_west</item>
+    </array>
+    <array name="dis_eqc_limits_status">
+        <item>@string/off</item>
+        <item>@string/on</item>
+    </array>
+    <array name="dvbc_mode_entries">
+        <item>QAM16</item>
+        <item>QAM32</item>
+        <item>QAM64</item>
+        <item>QAM128</item>
+        <item>QAM256</item>
+        <item>AUTO</item>
+    </array>
+    <array name="dvbt_bandwidth_entries">
+        <item>8</item>
+        <item>7</item>
+        <item>6</item>
+        <item>5</item>
+        <item>10</item>
+    </array>
+    <array name="dvbt_mode_entries">
+        <item>1K</item>
+        <item>2K</item>
+        <item>4K</item>
+        <item>8K</item>
+        <item>16K</item>
+        <item>32K</item>
+    </array>
+    <array name="exo_playback_speeds">
+        <item>0.25x</item>
+        <item>0.5x</item>
+        <item>0.75x</item>
+        <item>@string/exo_controls_playback_speed_normal</item>
+        <item>1.25x</item>
+        <item>1.5x</item>
+        <item>2x</item>
+    </array>
+    <array name="exo_speed_multiplied_by_100">
+        <item>25</item>
+        <item>50</item>
+        <item>75</item>
+        <item>100</item>
+        <item>125</item>
+        <item>150</item>
+        <item>200</item>
+    </array>
+    <array name="fec_mode_entries">
+        <item>auto</item>
+        <item>1/2</item>
+        <item>2/3</item>
+        <item>3/4</item>
+        <item>5/6</item>
+        <item>7/8</item>
+        <item>1/4</item>
+        <item>1/3</item>
+        <item>2/5</item>
+        <item>8/9</item>
+        <item>9/10</item>
+        <item>3/5</item>
+        <item>4/5</item>
+    </array>
+    <array name="fec_mode_entry_values">
+        <item>@null</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+    </array>
+    <array name="genre_labels">
+        <item>All channels</item>
+        <item>Family/Kids</item>
+        <item>Sports</item>
+        <item>Shopping</item>
+        <item>Movies</item>
+        <item>Comedy</item>
+        <item>Travel</item>
+        <item>Drama</item>
+        <item>Education</item>
+        <item>Animal/Wildlife</item>
+        <item>News</item>
+        <item>Gaming</item>
+        <item>Arts</item>
+        <item>Entertainment</item>
+        <item>Lifestyle</item>
+        <item>Music</item>
+        <item>Premier</item>
+        <item>Tech/Science</item>
+    </array>
+    <array name="lcn_switch">
+        <item>@string/off</item>
+        <item>@string/on</item>
+    </array>
+    <array name="lnb_22khz">
+        <item>@string/dish_setup_conf_on</item>
+        <item>@string/dish_setup_conf_off</item>
+        <item>@string/dish_setup_conf_auto</item>
+    </array>
+    <array name="lnb_motor_verion">
+        <item>@string/title_none</item>
+        <item>@string/diseqc12</item>
+    </array>
+    <array name="lnb_power">
+        <item>13V</item>
+        <item>18V</item>
+        <item>off</item>
+        <item>13/18V</item>
+    </array>
+    <array name="lnb_tone_burst">
+        <item>@string/title_none</item>
+        <item>@string/toneburst_a</item>
+        <item>@string/toneburst_b</item>
+    </array>
+    <array name="lnb_type">
+        <item>5150</item>
+        <item>5750</item>
+        <item>9750</item>
+        <item>10600</item>
+        <item>10750</item>
+        <item>11300</item>
+        <item>5150/5750(OCS)</item>
+        <item>5750/5150(OCS)</item>
+        <item>9750/10600</item>
+        <item>9750/10750</item>
+        <item>@string/customize</item>
+    </array>
+    <array name="menu_b_image">
+      <!--  <item>@drawable/menu_1</item>
+        <item>@drawable/menu_2</item>
+        <item>@drawable/menu_3</item>
+        <item>@drawable/menu_4</item>
+        <item>@drawable/menu_5</item>
+        <item>@drawable/menu_6</item>
+        <item>@drawable/menu_7</item>
+        <item>@drawable/menu_8</item>
+        <item>@drawable/menu_9</item>
+        <item>@drawable/menu_10</item>
+        <item>@drawable/menu_11</item>
+        <item>@drawable/menu_12</item>
+        <item>@drawable/menu_13</item>
+        <item>@drawable/menu_14</item>
+        <item>@drawable/menu_15</item>
+        <item>@drawable/menu_16</item>
+        <item>@drawable/menu_17</item>-->
+    </array>
+    <array name="modulation_array">
+        <item>Auto</item>
+        <item>4QAM</item>
+        <item>8QAM</item>
+        <item>16QAM</item>
+        <item>32QAM</item>
+        <item>64QAM</item>
+        <item>128QAM</item>
+        <item>256QAM</item>
+    </array>
+    <array name="modulation_mode_entries">
+        <item>Auto</item>
+        <item>4QAM</item>
+        <item>8QAM</item>
+        <item>16QAM</item>
+        <item>32QAM</item>
+        <item>64QAM</item>
+        <item>128QAM</item>
+        <item>256QAM</item>
+    </array>
+    <array name="modulation_mode_entry_values">
+        <item>@null</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </array>
+    <array name="multi_scan_mode">
+        <item>All TP</item>
+        <item>Blind</item>
+    </array>
+    <array name="multi_scan_mode_unicable">
+        <item>All TP</item>
+    </array>
+    <array name="nit_status">
+        <item>@string/off</item>
+        <item>@string/on</item>
+    </array>
+    <array name="polarity">
+        <item>H</item>
+        <item>V</item>
+    </array>
+    <array name="polarity_entries">
+        <item>H</item>
+        <item>V</item>
+    </array>
+    <array name="polarity_entry_values">
+        <item>@null</item>
+        <item>1</item>
+    </array>
+    <array name="power_switch">
+        <item>@string/off</item>
+        <item>@string/on</item>
+    </array>
+    <array name="public_search_method_entries">
+        <item>Channel Frequency</item>
+        <item>Channel Number</item>
+    </array>
+    <array name="public_search_mode_entries">
+        <item>@string/manual</item>
+        <item>@string/auto</item>
+    </array>
+    <array name="sat_type">
+        <item>Single</item>
+        <item>Multi</item>
+    </array>
+    <array name="sat_type_single">
+        <item>Single</item>
+    </array>
+    <array name="scan_mode">
+        <item>All TP</item>
+        <item>Blind</item>
+        <item>One TP</item>
+        <item>One TP + NIT</item>
+    </array>
+    <array name="scan_mode_unicable">
+        <item>All TP</item>
+        <item>One TP</item>
+        <item>One TP + NIT</item>
+    </array>
+    <array name="scan_type">
+        <item>@string/scan_type_all</item>
+        <item>@string/scan_type_fta</item>
+    </array>
+    <array name="search_mode_entries">
+        <item>blind</item>
+        <item>satellite</item>
+        <item>transponder</item>
+    </array>
+    <array name="search_mode_entry_values">
+        <item>@null</item>
+        <item>1</item>
+        <item>2</item>
+    </array>
+    <array name="service_type">
+        <item>@string/service_type_all</item>
+        <item>@string/service_type_tv</item>
+        <item>@string/service_type_radio</item>
+    </array>
+    <array name="subtitle_switch_list">
+        <item>@string/off</item>
+        <item>@string/on</item>
+    </array>
+    <array name="symbol_switch">
+        <item>6900</item>
+        <item>6875</item>
+        <item>6111</item>
+        <item>@string/customize</item>
+    </array>
+    <array name="timer_month">
+        <item>@string/jan_</item>
+        <item>@string/feb_</item>
+        <item>@string/mar_</item>
+        <item>@string/apr_</item>
+        <item>@string/may_</item>
+        <item>@string/jun_</item>
+        <item>@string/jul_</item>
+        <item>@string/aug_</item>
+        <item>@string/sep_</item>
+        <item>@string/oct_</item>
+        <item>@string/nov_</item>
+        <item>@string/dec_</item>
+    </array>
+    <array name="timer_repeat_list">
+        <item>@string/once</item>
+        <item>@string/daily</item>
+        <item>@string/weekly</item>
+    </array>
+    <array name="unicable_format">
+        <item>Unicable 1</item>
+        <item>Unicable 2</item>
+    </array>
+    <array name="unicable_frequency_1">
+        <item>1284</item>
+        <item>1400</item>
+        <item>1516</item>
+        <item>1632</item>
+        <item>1748</item>
+        <item>1864</item>
+        <item>1980</item>
+        <item>2096</item>
+    </array>
+    <array name="unicable_frequency_2">
+        <item>1210</item>
+        <item>1420</item>
+        <item>1680</item>
+        <item>2040</item>
+        <item>984</item>
+        <item>1020</item>
+        <item>1056</item>
+        <item>1092</item>
+        <item>1128</item>
+        <item>1164</item>
+        <item>1256</item>
+        <item>1292</item>
+        <item>1328</item>
+        <item>1364</item>
+        <item>1458</item>
+        <item>1494</item>
+        <item>1530</item>
+        <item>1566</item>
+        <item>1602</item>
+        <item>1638</item>
+        <item>1716</item>
+        <item>1752</item>
+        <item>1788</item>
+        <item>1824</item>
+        <item>1860</item>
+        <item>1896</item>
+        <item>1932</item>
+        <item>1968</item>
+        <item>2004</item>
+        <item>2076</item>
+        <item>2112</item>
+        <item>2148</item>
+    </array>
+    <array name="unicable_position_1">
+        <item>1</item>
+        <item>2</item>
+    </array>
+    <array name="unicable_position_2">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </array>
+    <array name="unicable_switch">
+        <item>@string/off</item>
+        <item>@string/on</item>
+    </array>
+    <array name="unicable_user_band">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </array>
+</resources>

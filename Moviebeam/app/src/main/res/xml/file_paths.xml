@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-media-path
+   <!-- <external-media-path
         name="files"
         path="." />
+    <external-path
+        name="*"
+        path="Documents"/>
+    <external-files-path
+        name="*"
+        path="."/>-->
+    <external-path name="external_files" path="."/>
+    <external-path name="external_storage_root" path="Documents"/>
+
 </paths>
