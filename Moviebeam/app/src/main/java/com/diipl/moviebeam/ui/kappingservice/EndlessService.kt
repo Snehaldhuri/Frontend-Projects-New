@@ -803,6 +803,11 @@ class EndlessService : Service() {
                 }
             }
 
+            KapingConstants.KAP_CMD_REBOOT -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    handleRebootCmd()
+                }
+            }
             KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
                 CoroutineScope(Dispatchers.Default).launch {
                     val response = movieBeamRepository.getSoftwareUpdateDetails()
@@ -822,7 +827,6 @@ class EndlessService : Service() {
             }
         }
     }
-
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
         when (kapingResponse.cmdData?.cmd) {
@@ -1169,6 +1173,15 @@ class EndlessService : Service() {
         updateGuestSession(
             preferenceDataStoreHelper, guestDetailsDatastore, false, kapingResponse.cmdData?.cmdData
         )
+    }
+
+    private fun handleRebootCmd() {
+        val intent = Intent()
+        intent.component =
+            ComponentName(KapingConstants.MDM_PACKAGE_NAME, KapingConstants.RESTART_ACTIVITY_NAME)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
     }
 
     private fun updateGuestSession(
