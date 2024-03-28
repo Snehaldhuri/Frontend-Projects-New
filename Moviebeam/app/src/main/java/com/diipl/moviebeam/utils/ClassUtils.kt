@@ -378,6 +378,7 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
     // NETWORK DETAILS
     val networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
     val address = networkInterfaces[1].interfaceAddresses[1]
+            Collections.list(NetworkInterface.getNetworkInterfaces())
 
     Constants.IP_ADDRESS = address.address?.hostAddress ?: "0.0.0.0"
     Constants.IP_NET_MASK = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
@@ -487,4 +488,12 @@ class Converters {
         val mapType = object : TypeToken<Map<String, String>?>() {}.type
         return Gson().fromJson(value, mapType)
     }
+}
+
+fun readFileToString(fileName: String): String {
+    val str = StringBuilder()
+    File(fileName).forEachLine {
+        str.append(it)
+    }
+    return str.toString()
 }

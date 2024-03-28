@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.serial_info
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,6 +8,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.IS_SERIAL_NO_TAKEN_KEY
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.SERIAL_NO
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,42 +29,43 @@ class SerialViewModel @Inject constructor() : ViewModel() {
         serialNo: String,
         ua: String
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             preferenceDataStoreHelper.putPreference(SERIAL_NO, serialNo)
-        }
-        viewModelScope.launch {
             preferenceDataStoreHelper.putPreference(IS_SERIAL_NO_TAKEN_KEY, isSerialNoTaken)
             preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.UA, ua)
         }
     }
 
     fun getDataFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
-        viewModelScope.launch {
-            preferenceDataStoreHelper.getPreference(SERIAL_NO, "").collect {
-            }
-        }
-        viewModelScope.launch {
-            preferenceDataStoreHelper.getPreference(IS_SERIAL_NO_TAKEN_KEY, false).collect {
-                _serialNoTakenLiveData.postValue(it)
-            }
+        viewModelScope.launch(Dispatchers.IO) {
+            _serialNoTakenLiveData.postValue(
+                preferenceDataStoreHelper.getFirstPreference(
+                    IS_SERIAL_NO_TAKEN_KEY,
+                    false
+                )
+            )
         }
     }
 
     fun getStbStatusFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
-        viewModelScope.launch {
-            preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.IS_STB_REGISTERED, false)
-                .collect {
-                    _stbStatusLiveData.postValue(it)
-                }
+        viewModelScope.launch(Dispatchers.IO) {
+            _stbStatusLiveData.postValue(
+                preferenceDataStoreHelper.getFirstPreference(
+                    PreferenceDataStoreConstants.IS_STB_REGISTERED,
+                    false
+                )
+            )
         }
     }
 
     fun getStbAllocationStatusFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
-        viewModelScope.launch {
-            _stbAllocationStatusLiveData.postValue(preferenceDataStoreHelper.getFirstPreference(
-                PreferenceDataStoreConstants.IS_STB_ALLOCATED,
-                false
-            ))
+        viewModelScope.launch(Dispatchers.IO) {
+            _stbAllocationStatusLiveData.postValue(
+                preferenceDataStoreHelper.getFirstPreference(
+                    PreferenceDataStoreConstants.IS_STB_ALLOCATED,
+                    false
+                )
+            )
         }
     }
 

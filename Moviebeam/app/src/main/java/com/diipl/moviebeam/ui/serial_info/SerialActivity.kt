@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.serial_info
 
-import android.app.AlertDialog
+
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -8,14 +9,8 @@ import android.content.ServiceConnection
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.text.InputType
-import android.view.KeyEvent
-import android.view.inputmethod.EditorInfo
-import android.widget.EditText
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
-import com.diipl.moviebeam.BuildConfig
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -25,12 +20,12 @@ import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.hideKeyboard
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
-import com.diipl.moviebeam.utils.showKeyboard
-import kotlinx.coroutines.flow.collectIndexed
-import kotlinx.coroutines.launch
+
+
+private const val TAG = "SerialActivity"
 
 class SerialActivity : BaseActivity() {
 
@@ -57,6 +52,7 @@ class SerialActivity : BaseActivity() {
 
 
     override fun observeViewModel() {
+        observe(serialViewModel.serialNoTakenLiveData, ::handleDataStoreResponse)
         observe(serialViewModel.stbStatusLiveData, ::handleStbStatusResponse)
         observe(serialViewModel.stbAllocationStatusLiveData, ::handleStbAllocationStatusResponse)
     }
@@ -71,40 +67,41 @@ class SerialActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
-
     }
 
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch {
-            preferenceDataStoreHelper.getPreference(
-                PreferenceDataStoreConstants.IS_SERIAL_NO_TAKEN_KEY,
-                false
-            ).collectIndexed { index, value ->
-                if (index == 0) {
-                    handleDataStoreResponse(value)
+    private fun fetchSerialNo() {
+        val intent = Intent()
+        intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_SERIAL_ACTIVITY)
+        resultLauncher.launch(intent)
+    }
+
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val intent: Intent? = result.data
+                intent?.getStringExtra(Constants.SERIAL_NO_KEY)?.let {
+                    processSerialNo(it)
                 }
             }
         }
+
+    private fun processSerialNo(serialNo: String) {
+        Constants.SERIAL_NO = serialNo
+        Constants.UA = "21${Constants.SERIAL_NO}"
+        serialViewModel.setDataInDataStore(
+            preferenceDataStoreHelper,
+            true,
+            Constants.SERIAL_NO,
+            Constants.UA
+        )
+        redirectToRegisterStbActivity()
     }
 
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.action == KeyEvent.ACTION_DOWN) {
-            when (event.keyCode) {
-                KeyEvent.KEYCODE_DPAD_CENTER -> {
-                    showSerialNumberDialog()
-                    return true
-                }
-            }
-        }
-        return super.dispatchKeyEvent(event)
-    }
-
-    private fun handleDataStoreResponse(b: Boolean) {
-        if (b) {
+    private fun handleDataStoreResponse(isSerialNoTaken: Boolean) {
+        if (isSerialNoTaken) {
             serialViewModel.getStbStatusFromDataStore(preferenceDataStoreHelper)
         } else {
-            showSerialNumberDialog()
+            fetchSerialNo()
         }
         actionOnService(Actions.START)
     }
@@ -112,74 +109,31 @@ class SerialActivity : BaseActivity() {
     private fun handleStbStatusResponse(isStbRegistered: Boolean) {
         if (isStbRegistered) {
             serialViewModel.getStbAllocationStatusFromDataStore(preferenceDataStoreHelper)
-            LoggingService.sendMessageToWebSocket("In App Loader create ","98")
+            LoggingService.sendMessageToWebSocket("In App Loader create ", getCurrentPanelNumber())
         } else {
             redirectToRegisterStbActivity()
-            LoggingService.sendMessageToWebSocket("Showing Landing Page","99")
+            LoggingService.sendMessageToWebSocket("Showing Landing Page", getCurrentPanelNumber())
         }
     }
 
     private fun handleStbAllocationStatusResponse(isStbAllocated: Boolean) {
-        if(isStbAllocated){
+        if (isStbAllocated) {
             redirectToStbDetailsActivity()
-        }else{
+        } else {
             redirectToRegisterStbActivity()
         }
     }
 
-    private fun redirectToStbDetailsActivity(){
+    private fun redirectToStbDetailsActivity() {
         startActivity(Intent(this, STBDetailsActivity::class.java))
         finish()
     }
 
-    private fun redirectToRegisterStbActivity(){
+    private fun redirectToRegisterStbActivity() {
         startActivity(Intent(this, RegisterSTBActivity::class.java))
         finish()
     }
 
-    private fun showSerialNumberDialog() {
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Enter Serial Number")
-
-        val input = EditText(this)
-        var serialNo: String
-        input.inputType = InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
-        input.imeOptions = EditorInfo.IME_ACTION_DONE
-        input.setOnFocusChangeListener { view, isFocused ->
-            if (!isFocused) {
-                view.hideKeyboard()
-            } else {
-                view.showKeyboard()
-            }
-        }
-        builder.setView(input)
-//          29221HFGN30WG1	Suite	LABGEN4	No	Living Room	Inactive
-//         Serial No :- 29221HFGN30WLA, P-> 26271HFGN11NHH, C-> 14/507KKWK1C017  -- 29221HFGN30WG1
-/*        if (BuildConfig.DEBUG) {
-            input.setText("26271HFGN11NHH")
-            input.clearFocus()
-        }*/
-
-        builder.setPositiveButton("OK") { dialog, which ->
-            serialNo = input.text.toString().uppercase()
-            Constants.SERIAL_NO = serialNo
-            Constants.UA = "21$serialNo"
-            serialViewModel.setDataInDataStore(
-                preferenceDataStoreHelper,
-                true,
-                serialNo,
-                Constants.UA
-            )
-            startActivity(Intent(this, RegisterSTBActivity::class.java))
-            finish()
-        }
-        builder.setNegativeButton(
-            "Cancel"
-        ) { dialog, which ->
-        }
-
-        builder.show()
-    }
     private fun bindLoggingService() {
         val serviceIntent = Intent(this, LoggingService::class.java)
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
@@ -191,11 +145,12 @@ class SerialActivity : BaseActivity() {
             isServiceBound = false
         }
     }
+
     override fun onStart() {
         super.onStart()
         bindLoggingService()
         // Start LoggingService if not already running
-        startService(Intent(this, LoggingService::class.java))
+//        startService(Intent(this, LoggingService::class.java))
     }
 
     override fun onStop() {

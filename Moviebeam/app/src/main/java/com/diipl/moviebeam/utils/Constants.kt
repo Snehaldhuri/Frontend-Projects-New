@@ -80,6 +80,11 @@ object Constants {
     const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
     var EPG_CDN_URL = ""
     const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
+    const val SERIAL_NO_PATH_SUFFIX = "/Documents/system/serialNo.txt"
+
+    const val MDM_PACKAGE_NAME = "com.hmdm.launcher"
+    const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
+    const val SERIAL_NO_KEY = "SERIAL_NO_KEY"
 
     const val ASSET = "ASSET"
     const val MOVIE_ACCESS = "MOVIE_ACCESS"
