@@ -20,6 +20,7 @@ import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
+import com.diipl.moviebeam.data.dto.sysInfo.SoftwareResponseDTO
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -132,6 +133,10 @@ class MovieBeamRepository @Inject constructor(
 
     suspend fun sendSysInfo(ua: String, body: SysInfoDTO): Int? {
         return remoteDataSource.sendSysInfo(ua, body)
+    }
+
+    suspend fun getSoftwareUpdateDetails(): SoftwareResponseDTO? {
+        return remoteDataSource.getSoftwareUpdateDetails()
     }
 
 }

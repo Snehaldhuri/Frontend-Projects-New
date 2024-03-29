@@ -7,6 +7,7 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.utils.setIPInfo
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
@@ -31,6 +32,7 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onResume()
 
         currentActivity = this
+        setIPInfo()
 
         activityStack.add(this::class.java.simpleName)
         if (this::class.java.simpleName == MainMenuActivity::class.java.simpleName) {

@@ -18,6 +18,7 @@ import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.setIPInfo
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -46,6 +47,8 @@ class WeatherDateTimeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = ViewWeatherTimeDateRowBinding.inflate(inflater, container, false)
+
+        setIPInfo()
 
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)

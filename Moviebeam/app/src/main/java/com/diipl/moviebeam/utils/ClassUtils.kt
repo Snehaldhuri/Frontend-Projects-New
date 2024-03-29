@@ -1,20 +1,27 @@
 package com.diipl.moviebeam.utils
 
+import android.Manifest
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
+import android.content.Context.WIFI_SERVICE
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
+import android.net.LinkProperties
 import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
@@ -22,6 +29,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
@@ -208,6 +216,15 @@ fun Long.toDateFormat(): String {
     return dateFormat.format(date)
 }
 
+fun Long.toSimpleTimeFormat(): String {
+    val seconds = this / 1000
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    val secondsRemaining = seconds % 60
+
+    return "%02d:%02d:%02d".format(hours, minutes, secondsRemaining)
+}
+
 fun Long.toTimeFormat(): String {
     var time = ""
     var minute = ""
@@ -222,8 +239,7 @@ fun Long.toTimeFormat(): String {
 
 fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
     try {
-        val fileURL =
-            "https://testmdm.movie-beam.com/files/files-by-google-1-2729-610141523-0-release.apk"
+        val fileURL = "https://testmdm.movie-beam.com/files/files-by-google-1-2729-610141523-0-release.apk"
         val url = URL(fileURL)
         withContext(Dispatchers.IO) {
             val connection = url.openConnection() as HttpURLConnection
@@ -243,7 +259,7 @@ fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
                 inputStream.close()
                 outputStream.close()
                 Log.e("startDownload:", " Completed  --->  ${file.absolutePath}")
-                startInstall(file.absolutePath)
+//                startInstall(file.absolutePath)
             } else {
                 // Handle the error or show a message if download fails
                 Log.e("startDownload:", "Failed")
@@ -257,7 +273,8 @@ fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
 }
 
 fun Activity.startInstall(file: String) {
-    val apkFile = "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240315-debug.apk"
+    val apkFile =
+        "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240315-debug.apk"
 
     try {
         val `in` = FileInputStream(apkFile)
@@ -350,62 +367,56 @@ fun getCurrentPanelNumber(): String {
     return PanelConstants.MAIN_MENU
 }
 
-fun Int.intToString(): String {
-    val ip = this
-    val b1 = (ip and 0xff).toByte()
-    val b2 = ((ip shr 8) and 0xff).toByte()
-    val b3 = ((ip shr 16) and 0xff).toByte()
-    val b4 = ((ip shr 24) and 0xff).toByte()
+fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
 
-    // Convert bytes to a string in dot-decimal notation
-    return "$b1.$b2.$b3.$b4"
-}
+    // NETWORK DETAILS
+    val networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
+    val address = networkInterfaces[1].interfaceAddresses[1]
+            Collections.list(NetworkInterface.getNetworkInterfaces())
 
-fun Int.toIpAddress(): String {
-    val ipAddress = this
-    val addressParts = ByteArray(4)
-    ipAddress.toByte().let { addressParts[0] = it }
-    (ipAddress shr 8).toByte().let { addressParts[1] = it }
-    (ipAddress shr 16).toByte().let { addressParts[2] = it }
-    (ipAddress shr 24).toByte().let { addressParts[3] = it }
-    val formatter = StringBuilder()
-    for (i in 0..3) {
-        formatter.append(addressParts[i].toInt() and 0xFF)
-        if (i < 3) {
-            formatter.append(".")
+    Constants.IP_ADDRESS = address.address?.hostAddress ?: "0.0.0.0"
+    Constants.IP_NET_MASK = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
+
+    currentActivity?.let {
+        val connectivityManager = it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val wifiManager = it.applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+
+        connectivityManager.activeNetwork?.let { network ->
+            // Get the LinkProperties for the active network
+            val linkProperties: LinkProperties? = connectivityManager.getLinkProperties(network)
+            // Get the default gateway from the LinkProperties
+            val defaultGateway = linkProperties?.routes?.get(2)?.gateway?.hostAddress.toString()
+            Constants.IP_GATEWAY = defaultGateway
         }
-    }
-    return formatter.toString()
-}
 
-fun getIPNetmask(): String {
-    try {
-        val networkInterfaces: List<NetworkInterface> = Collections.list(NetworkInterface.getNetworkInterfaces())
-
-        for (networkInterface in networkInterfaces) {
-            if (!networkInterface.isUp) continue
-
-            val addresses: ArrayList<InetAddress> = Collections.list(networkInterface.inetAddresses)
-
-            for (address in addresses) {
-                if (!address.isLoopbackAddress) {
-                    val prefixLength =
-                        networkInterface.interfaceAddresses.firstOrNull { it.address == address }?.networkPrefixLength
-
-                    if (prefixLength != null) {
-                        val netmask = (0xFFFFFFFF shl (32 - prefixLength)).inv()
-                        return (netmask shr 24 and 0xFF).toString() +
-                                "." + (netmask shr 16 and 0xFF).toString() +
-                                "." + (netmask shr 8 and 0xFF).toString() +
-                                "." + (netmask shr 0xFF).toString()
-                    }
-                }
+        // WIFI DETAILS
+        if (ContextCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (wifiManager.isWifiEnabled) {
+                val connectionInfo = wifiManager.connectionInfo
+                val strength = WifiManager.calculateSignalLevel(connectionInfo.rssi, 5)
             }
         }
-    } catch (e: Exception) {
-        e.printStackTrace()
+
+        // DEVICE UPTIME
+        val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
+        val uptime = System.currentTimeMillis() - uptimeMillis
+
     }
-    return ""
+}
+
+private fun getNetmaskFromPrefixLength(prefixLength: Int): String {
+    var length = prefixLength
+    require(!(length < 0 || length > 32)) { "255.255.255.255" }
+
+    // Calculate the netmask bytes based on the prefix length
+    val netmaskBytes = ByteArray(4)
+    for (i in 0..3) {
+        val bits = length.coerceAtMost(8)
+        netmaskBytes[i] = (0xFF shl 8 - bits).toByte()
+        length -= bits
+    }
+    val netmaskAddress = InetAddress.getByAddress(netmaskBytes)
+    return netmaskAddress.hostAddress ?: "255.255.255.255"
 }
 
 fun getConnectivityType(context: Context): String {
@@ -468,4 +479,12 @@ class Converters {
         val mapType = object : TypeToken<Map<String, String>?>() {}.type
         return Gson().fromJson(value, mapType)
     }
+}
+
+fun readFileToString(fileName: String): String {
+    val str = StringBuilder()
+    File(fileName).forEachLine {
+        str.append(it)
+    }
+    return str.toString()
 }

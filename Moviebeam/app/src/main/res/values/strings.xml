@@ -142,8 +142,12 @@
     <string name="enter_parental_code">Enter Parental Code</string>
     <string name="mature_content_disabled_note">Some of the Movies and Shows available to you may be inappropriate for younger audiences. To prevent inappropriate access, the hotel has enabled Parental Controls for your Convenience. Please disable Parental Controls to access the Content.
         \n\nNo Charge will be posted on your folio for any of the free movies.</string>
-    <string name="enter_pass_code">Enter Passcode</string>
+    <string name="enter_old_pass_code">Enter Old Passcode</string>
+    <string name="enter_new_pass_code">Enter New Passcode</string>
     <string name="parental_control_desc">Use the arrow key and hit OK button to set passcode. Use stop button to <font color="#FFB81A">CANCEL</font> or <font color="#FFB81A">START</font> again.
         \nDO NOT USE NUMERIC KEYS ON REMOTE to set the passcode
         \nPlease call frontdesk for assistance</string>
+
+    <string name="rich_input_feed_url" translatable="false">http://commondatastorage.googleapis.com/android-tv/rich_tv_input_xmltv_feed.xml</string>
+
 </resources>

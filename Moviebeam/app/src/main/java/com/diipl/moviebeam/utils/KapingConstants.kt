@@ -34,6 +34,7 @@ object KapingConstants {
     const val KAP_CMD_LAUNDRY_CHANGE = "41"
     const val KAP_CMD_GET_FOOD_DELIVERY_DATA = "42"
     const val KAP_CMD_GET_TICKER_MESSAGES = "43"
+    const val KAP_CMD_SOFTWARE_UPDATE = "28"
 
     //Kaping Commands Execution Response
     const val EXECUTED_SUCCESSFULLY = "00"
@@ -45,5 +46,9 @@ object KapingConstants {
 
     const val EVENT_CHECK_IN = "31221"
     const val EVENT_CHECK_OUT = "31220"
+
+    const val MDM_PACKAGE_NAME = "com.hmdm.launcher"
+    const val MDM_RESTART_ACTIVITY_NAME = "$MDM_PACKAGE_NAME.ui.RebootActivity"
+    const val MDM_SOFTWARE_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SoftwareUpdateActivity"
 
 }

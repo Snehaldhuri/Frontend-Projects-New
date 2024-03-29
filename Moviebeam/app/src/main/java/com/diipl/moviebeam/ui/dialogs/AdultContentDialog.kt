@@ -332,6 +332,7 @@ class AdultContentDialog(
         binding.etPass2.setText("")
         binding.etPass3.setText("")
         binding.etPass4.setText("")
+        length = 0
     }
 
     private fun showToast(msg: String) {
