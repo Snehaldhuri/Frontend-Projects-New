@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission
@@ -11,19 +13,10 @@
         tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-        android:name="android.permission.ACCESS_WIFI_STATE"
-    <uses-permission
-        android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
-        android:name="android.permission.REBOOT"
-        tools:ignore="ProtectedPermissions" />
+
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-        android:name="android.permission.INSTALL_PACKAGES"
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
-    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
-    <uses-permission
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.READ" />
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.WRITE" />
@@ -53,25 +46,25 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
-<!--
-        <activity
-            android:name=".dtv.RichTvInputSetupActivity"
-            android:exported="true" />
--->
+        <!--
+                <activity
+                    android:name=".dtv.RichTvInputSetupActivity"
+                    android:exported="true" />
+        -->
 
-<!--
-        <service
-            android:name=".dtv.RichTvInputService"
-            android:exported="true"
-            android:permission="android.permission.BIND_TV_INPUT">
-            <intent-filter>
-                <action android:name="android.media.tv.TvInputService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.media.tv.input"
-                android:resource="@xml/richtvinputservice" />
-        </service>
--->
+        <!--
+                <service
+                    android:name=".dtv.RichTvInputService"
+                    android:exported="true"
+                    android:permission="android.permission.BIND_TV_INPUT">
+                    <intent-filter>
+                        <action android:name="android.media.tv.TvInputService" />
+                    </intent-filter>
+                    <meta-data
+                        android:name="android.media.tv.input"
+                        android:resource="@xml/richtvinputservice" />
+                </service>
+        -->
 
         <activity
             android:name=".ui.serial_info.SerialActivity"
@@ -83,14 +76,14 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustPan|adjustNothing">
-            <!--TODO Uncomment this for release
+            <!--TODO Uncomment this for release-->
             <intent-filter>
                 <category android:name="android.intent.category.HOME" />
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
                 <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
             </intent-filter>
--->
+
         </activity>
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
@@ -101,12 +94,14 @@
             android:logo="@mipmap/ic_launcher"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
+<!--
             <intent-filter>
                 <category android:name="android.intent.category.HOME" />
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
                 <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
             </intent-filter>
+-->
         </activity>
 
         <activity
@@ -257,8 +252,8 @@
         <!-- dpm remove-active-admin com.diipl.moviebeam/.AdminReceiver -->
         <receiver
             android:name=".AdminReceiver"
-            android:exported="true"
             android:enabled="false"
+            android:exported="true"
             android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"
