@@ -73,10 +73,10 @@ class SerialActivity : BaseActivity() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        /*if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                 this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 10)
-        }
+        }*/
 
     }
 
