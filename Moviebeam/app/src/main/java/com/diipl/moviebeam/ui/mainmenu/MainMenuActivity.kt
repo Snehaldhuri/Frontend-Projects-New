@@ -89,10 +89,10 @@ class MainMenuActivity : BaseActivity() {
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
-    lateinit var tickerDatastore: DataStore<TickerResponse>
+    lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
     @Inject
-    lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
+    lateinit var tickerDatastore : DataStore<TickerResponse>
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
@@ -185,6 +185,7 @@ class MainMenuActivity : BaseActivity() {
             }
         }
     }
+
 
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {

@@ -6,7 +6,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
-import android.content.Context.WIFI_SERVICE
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
@@ -32,7 +31,6 @@ import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.TickerMsgReceiver
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
@@ -373,38 +371,47 @@ fun getCurrentPanelNumber(): String {
 fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
 
     // NETWORK DETAILS
-    val networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
-    val address = networkInterfaces[1].interfaceAddresses[1]
-            Collections.list(NetworkInterface.getNetworkInterfaces())
+    try {
+        val networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
+        val address = networkInterfaces[1].interfaceAddresses[1]
 
-    Constants.IP_ADDRESS = address.address?.hostAddress ?: "0.0.0.0"
-    Constants.IP_NET_MASK = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
+        Constants.IP_ADDRESS = address.address?.hostAddress ?: "0.0.0.0"
+        Constants.IP_NET_MASK = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
 
-    currentActivity?.let {
-        val connectivityManager = it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val wifiManager = it.applicationContext.getSystemService(WIFI_SERVICE) as WifiManager
+        BaseActivity.currentActivity?.let {
+            val connectivityManager =
+                it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+            val wifiManager =
+                it.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
-        connectivityManager.activeNetwork?.let { network ->
-            // Get the LinkProperties for the active network
-            val linkProperties: LinkProperties? = connectivityManager.getLinkProperties(network)
-            // Get the default gateway from the LinkProperties
-            val defaultGateway = linkProperties?.routes?.get(2)?.gateway?.hostAddress.toString()
-            Constants.IP_GATEWAY = defaultGateway
-        }
+            connectivityManager.activeNetwork?.let { network ->
+                // Get the LinkProperties for the active network
+                val linkProperties: LinkProperties? = connectivityManager.getLinkProperties(network)
+                // Get the default gateway from the LinkProperties
+                val defaultGateway = linkProperties?.routes?.get(2)?.gateway?.hostAddress.toString()
+                Constants.IP_GATEWAY = defaultGateway
+            }
 
-        // WIFI DETAILS
-        if (ContextCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            if (wifiManager.isWifiEnabled) {
-                val connectionInfo = wifiManager.connectionInfo
-                val strength = WifiManager.calculateSignalLevel(connectionInfo.rssi, 5)
+            // WIFI DETAILS
+            if (ContextCompat.checkSelfPermission(
+                    it,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                if (wifiManager.isWifiEnabled) {
+                    val connectionInfo = wifiManager.connectionInfo
+                    val strength = WifiManager.calculateSignalLevel(connectionInfo.rssi, 5)
+                }
             }
         }
-
-        // DEVICE UPTIME
-        val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
-        val uptime = System.currentTimeMillis() - uptimeMillis
-
+    } catch (e: Exception) {
+        Log.e("setIPInfo: ", "Exception :  ${e.localizedMessage}")
     }
+
+    // DEVICE UPTIME
+    val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
+    val uptime = System.currentTimeMillis() - uptimeMillis
+
 }
 
 private fun getNetmaskFromPrefixLength(prefixLength: Int): String {

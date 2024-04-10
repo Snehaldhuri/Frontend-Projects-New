@@ -1,21 +1,17 @@
 package com.diipl.moviebeam.ui.serial_info
 
 
-import android.Manifest
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -40,6 +36,7 @@ class SerialActivity : BaseActivity() {
     private lateinit var loggingService: LoggingService
 
     private var isServiceBound = false
+    private val serialNo = "28301HFGN2CBDU"
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -72,11 +69,6 @@ class SerialActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
-
-        /*if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 10)
-        }*/
 
     }
 
@@ -114,6 +106,7 @@ class SerialActivity : BaseActivity() {
             serialViewModel.getStbStatusFromDataStore(preferenceDataStoreHelper)
         } else {
             fetchSerialNo()
+//            processSerialNo(serialNo)
         }
         actionOnService(Actions.START)
     }

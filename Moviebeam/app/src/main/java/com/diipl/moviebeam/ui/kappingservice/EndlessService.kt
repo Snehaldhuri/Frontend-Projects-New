@@ -68,6 +68,7 @@ import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.MDM_PACKAGE_NAME
 import com.diipl.moviebeam.utils.DeviceUtils
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.KapingConstants.MDM_SOFTWARE_ACTIVITY
@@ -822,7 +823,7 @@ class EndlessService : Service() {
                     if (response != null && response.isCurrent) {
                         val intent = Intent()
                         intent.component =
-                            ComponentName(KapingConstants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
+                            ComponentName(MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())
                         intent.putExtra("buildVersion", BuildConfig.VERSION_NAME)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -1227,7 +1228,7 @@ class EndlessService : Service() {
         val intent = Intent()
         intent.component =
             ComponentName(
-                KapingConstants.MDM_PACKAGE_NAME,
+                MDM_PACKAGE_NAME,
                 KapingConstants.MDM_RESTART_ACTIVITY_NAME
             )
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

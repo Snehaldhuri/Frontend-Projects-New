@@ -4,8 +4,6 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission
@@ -16,6 +14,7 @@
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.REBOOT" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.READ" />
@@ -47,27 +46,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Moviebeam"
-        android:usesCleartextTraffic="true"
-        tools:targetApi="m">
-        <!--
-                <activity
-                    android:name=".dtv.RichTvInputSetupActivity"
-                    android:exported="true" />
-        -->
-
-        <!--
-                <service
-                    android:name=".dtv.RichTvInputService"
-                    android:exported="true"
-                    android:permission="android.permission.BIND_TV_INPUT">
-                    <intent-filter>
-                        <action android:name="android.media.tv.TvInputService" />
-                    </intent-filter>
-                    <meta-data
-                        android:name="android.media.tv.input"
-                        android:resource="@xml/richtvinputservice" />
-                </service>
-        -->
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name="com.diipl.moviebeam.ui.exoplayer.PlayerActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
 
         <activity
             android:name=".ui.serial_info.SerialActivity"
@@ -83,8 +66,8 @@
             <intent-filter>
                 <category android:name="android.intent.category.HOME" />
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-                <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
@@ -97,14 +80,12 @@
             android:logo="@mipmap/ic_launcher"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
-<!--
-            <intent-filter>
-                <category android:name="android.intent.category.HOME" />
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-                <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
-            </intent-filter>
--->
+            <!--  <intent-filter>
+                  <category android:name="android.intent.category.HOME" />
+                  <action android:name="android.intent.action.MAIN" />
+                  <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                  <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
+              </intent-filter>-->
         </activity>
 
         <activity
@@ -220,11 +201,12 @@
 
         <receiver
             android:name=".ui.kappingservice.StartReceiver"
-            android:enabled="true"
+            android:directBootAware="true"
             android:exported="false"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.REBOOT" />
             </intent-filter>
         </receiver>
 
@@ -240,34 +222,22 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <receiver
-            android:name="android.app.admin.DeviceAdminReceiver"
-            android:exported="false"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
-            <meta-data
-                android:name="android.app.device_admin"
-                android:resource="@xml/device_admin_receiver" />
+        <!--  <receiver
+              android:name="android.app.admin.DeviceAdminReceiver"
+              android:exported="false"
+              android:permission="android.permission.BIND_DEVICE_ADMIN">
+              <meta-data
+                  android:name="android.app.device_admin"
+                  android:resource="@xml/device_admin_receiver" />
 
-            <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-            </intent-filter>
-        </receiver>
+              <intent-filter>
+                  <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+              </intent-filter>
+          </receiver>-->
 
         <!-- dpm set-device-owner com.diipl.moviebeam/.AdminReceiver -->
         <!-- dpm remove-active-admin com.diipl.moviebeam/.AdminReceiver -->
-        <receiver
-            android:name=".AdminReceiver"
-            android:enabled="false"
-            android:exported="true"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
-            <meta-data
-                android:name="android.app.device_admin"
-                android:resource="@xml/device_admin" />
-            <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
-            </intent-filter>
-        </receiver>
+
     </application>
 
 </manifest>
