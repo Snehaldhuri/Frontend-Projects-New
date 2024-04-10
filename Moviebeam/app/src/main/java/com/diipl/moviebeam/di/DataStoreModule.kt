@@ -14,6 +14,7 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import dagger.Module
@@ -42,7 +43,7 @@ private const val MOVIES__DATA_STORE_FILE_NAME = "movies_prefs.pb"
 private const val SHOWTIME__DATA_STORE_FILE_NAME = "showtime_prefs.pb"
 private const val GUEST_DETAILS_DATA_STORE_FILE_NAME = "guests_details.pb"
 private const val CHANNEL_LIST_DATA_STORE_FILE_NAME = "channel_list.pb"
-private const val EPG_DATA_STORE_FILE_NAME = "epg.pb"
+private const val TICKER_DATA_STORE_FILE_NAME = "ticker_prefs.pb"
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -67,8 +68,7 @@ object DataStoreModule {
             serializer = AccountSetupSerializer(),
             produceFile = { appContext.dataStoreFile(ACCOUNT_SETUP_DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
-            migrations = listOf(
-            ),
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
@@ -92,8 +92,7 @@ object DataStoreModule {
             serializer = DateTimeSerializer(),
             produceFile = { appContext.dataStoreFile(DATE_TIME_DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
-            migrations = listOf(
-            ),
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
@@ -105,8 +104,7 @@ object DataStoreModule {
             serializer = HotelServiceSerializer(),
             produceFile = { appContext.dataStoreFile(HOTEL_SERVICE_DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
-            migrations = listOf(
-            ),
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
@@ -118,8 +116,7 @@ object DataStoreModule {
             serializer = LocalAttractionSerializer(),
             produceFile = { appContext.dataStoreFile(LOCAL_ATTRACTION_DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
-            migrations = listOf(
-            ),
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
@@ -143,8 +140,7 @@ object DataStoreModule {
             serializer = ShowTimeSerializer(),
             produceFile = { appContext.dataStoreFile(SHOWTIME__DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
-            migrations = listOf(
-            ),
+            migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
     }
@@ -167,6 +163,18 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = ChannelListSerializer(),
             produceFile = { appContext.dataStoreFile(CHANNEL_LIST_DATA_STORE_FILE_NAME) },
+            corruptionHandler = null,
+            migrations = listOf(),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideTickerDataStore(@ApplicationContext appContext: Context): DataStore<TickerResponse> {
+        return DataStoreFactory.create(
+            serializer = TickerSerializer(),
+            produceFile = { appContext.dataStoreFile(TICKER_DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -403,3 +411,25 @@ class ChannelListSerializer @Inject constructor() : Serializer<ChannelListRespon
     }
 }
 
+@Singleton
+class TickerSerializer @Inject constructor() : Serializer<TickerResponse> {
+    override val defaultValue: TickerResponse
+        get() = TickerResponse()
+
+    override suspend fun readFrom(input: InputStream): TickerResponse =
+        try {
+            Json.decodeFromString(
+                TickerResponse.serializer(),
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read Settings", serialization)
+        }
+
+    override suspend fun writeTo(t: TickerResponse, output: OutputStream) {
+        output.write(
+            Json.encodeToString(TickerResponse.serializer(), t)
+                .encodeToByteArray()
+        )
+    }
+}

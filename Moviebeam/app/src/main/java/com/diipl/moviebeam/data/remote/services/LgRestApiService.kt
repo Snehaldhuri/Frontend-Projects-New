@@ -130,5 +130,9 @@ interface LgRestApiService {
         @Query("UA") ua: String
     ): Response<String>
 
+    @GET("content/tvTickerInfo")
+    suspend fun getTvTickerMessages(
+        @Query("UA") ua: String
+    ): Response<String>
 
 }

@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.stbdetail
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
@@ -17,6 +18,8 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
+import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
@@ -26,6 +29,7 @@ import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.google.android.material.snackbar.Snackbar
@@ -67,6 +71,9 @@ class STBDetailsActivity : BaseActivity() {
     lateinit var channelListDataStore: DataStore<ChannelListResponse>
 
     @Inject
+    lateinit var tickerDataStore: DataStore<TickerResponse>
+
+    @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
 
     @Inject
@@ -98,6 +105,7 @@ class STBDetailsActivity : BaseActivity() {
         observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
         observe(stbDetailViewModel.channelListLiveData, ::handleChannelListResponse)
         observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
+        observe(stbDetailViewModel.tickerLiveData, ::handleTickerResponse)
         observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
         observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(stbDetailViewModel.epgLiveData, ::handleEpgResponse)
@@ -412,7 +420,6 @@ class STBDetailsActivity : BaseActivity() {
                     }
                 }
 
-
             }
 
             else -> {
@@ -505,6 +512,37 @@ class STBDetailsActivity : BaseActivity() {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
+            }
+        }
+    }
+
+    private fun handleTickerResponse(status: Resource<TickerResponse>) {
+        when (status) {
+            is Resource.Success -> {
+                status.data?.let {
+                    val sdf = SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        it.tvTickerList?.removeIf { msg->
+                            (msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(msg.etStr).before(Date())
+                        }
+                    }else{
+                        val iterator = it.tvTickerList?.iterator()
+                        while (iterator!!.hasNext()) {
+                            val msg: TvTickerDTO = iterator.next()
+                            if((msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(msg.etStr).before(Date())){
+                                iterator.remove()
+                            }
+                        }
+                    }
+                    stbDetailViewModel.setTickerResponseData(tickerDataStore, it)
+                    it.tvTickerList?.forEach { msg->
+                        applicationContext.scheduleMsgEndTask(msg)
+                    }
+                }
+            }
+            else -> {
+                status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
             }
         }
     }

@@ -23,6 +23,7 @@ import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SoftwareResponseDTO
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.datasource.RemoteDataSource
 import javax.inject.Inject
@@ -137,6 +138,10 @@ class MovieBeamRepository @Inject constructor(
 
     suspend fun getSoftwareUpdateDetails(): SoftwareResponseDTO? {
         return remoteDataSource.getSoftwareUpdateDetails()
+    }
+
+    suspend fun getTvTickerMessages(ua: String): TickerResponse? {
+        return remoteDataSource.getTvTickerMessages(ua)
     }
 
 }

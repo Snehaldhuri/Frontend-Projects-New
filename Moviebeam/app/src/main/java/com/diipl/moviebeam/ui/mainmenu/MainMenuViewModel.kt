@@ -10,6 +10,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
@@ -37,6 +38,9 @@ class MainMenuViewModel @Inject constructor(
 
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
+
+    private val _tickerLiveData = MutableLiveData<Resource<TickerResponse>>()
+    val tickerLiveData: LiveData<Resource<TickerResponse>> get() = _tickerLiveData
 
     private val _guestDetailsLiveData = MutableLiveData<Resource<CmdDataDto>>()
     val guestDetailsLiveData: LiveData<Resource<CmdDataDto>> get() = _guestDetailsLiveData
@@ -155,6 +159,17 @@ class MainMenuViewModel @Inject constructor(
                 _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             }.collect {
                 _accountSetupLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun getTickerResponseData(dataStore: DataStore<TickerResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _tickerLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _tickerLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _tickerLiveData.postValue(Resource.Success(it))
             }
         }
     }

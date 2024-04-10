@@ -26,6 +26,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.8" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_horizontal_90"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.9" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -66,11 +73,11 @@
 
     <ImageView
         android:id="@+id/btn_power"
-        android:visibility="gone"
         android:layout_width="48dp"
         android:layout_height="@dimen/dp_48"
         android:background="@color/semiOpaqueBlackColor"
         android:src="@android:drawable/ic_lock_power_off"
+        android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
         app:layout_constraintTop_toBottomOf="@+id/gl_horizontal_10"
         app:layout_constraintWidth_percent=".17"
@@ -145,9 +152,9 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_200"
         android:layout_margin="@dimen/dp_8"
+        app:cardBackgroundColor="@color/menu_list_bg"
         app:cardCornerRadius="@dimen/dp_18"
         app:cardElevation="@dimen/dp_0"
-        app:cardBackgroundColor="@color/menu_list_bg"
         app:layout_constraintBottom_toBottomOf="@+id/gl_horizontal_95"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
@@ -160,5 +167,27 @@
             android:padding="@dimen/dp_8" />
     </androidx.cardview.widget.CardView>
 
+    <View
+        android:id="@+id/view"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:background="@color/transparentBlack_45"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView" />
+
+    <TextView
+        android:id="@+id/tv_ticker_message"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/dp_10"
+        android:ellipsize="marquee"
+        android:fontFamily="@font/manrope_semibold_600"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:singleLine="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_95"
+        app:layout_constraintStart_toStartOf="@+id/gl_vertical_5" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

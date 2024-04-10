@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.mainmenu
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
@@ -24,6 +23,7 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
@@ -89,11 +89,12 @@ class MainMenuActivity : BaseActivity() {
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
+    lateinit var tickerDatastore: DataStore<TickerResponse>
+
+    @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-
-    private lateinit var devicePolicyManager: DevicePolicyManager
 
     @Inject
     lateinit var preference: SharedPreference
@@ -101,7 +102,7 @@ class MainMenuActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-
+        observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
 
@@ -119,6 +120,7 @@ class MainMenuActivity : BaseActivity() {
         // call below function to get data from datastore
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        mainMenuViewModel.getTickerResponseData(tickerDatastore)
 
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
 
@@ -152,7 +154,6 @@ class MainMenuActivity : BaseActivity() {
         binding.rvMenuButton.setItemFocused()
 
 
-
     }
 
     override fun initViewBinding() {
@@ -184,7 +185,6 @@ class MainMenuActivity : BaseActivity() {
             }
         }
     }
-
 
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
@@ -242,6 +242,41 @@ class MainMenuActivity : BaseActivity() {
                         getCurrentPanelNumber()
                     )
                 }
+            }
+
+            else -> {
+                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
+            }
+        }
+    }
+
+    private fun handleTickerResponse(status: Resource<TickerResponse>) {
+        when (status) {
+            is Resource.Loading -> binding.pbLoader.toVisible()
+            is Resource.Success -> {
+                try {
+                    status.data?.let { response ->
+                        if (!response.tvTickerList.isNullOrEmpty()) {
+                            val message = StringBuilder()
+                            response.tvTickerList?.forEach {
+                                message.append(it.msg).append(" ")
+                            }
+                            binding.tvTickerMessage.text = message.toString()
+                            binding.tvTickerMessage.isSelected = true
+                        } else {
+                            binding.tvTickerMessage.text = ""
+                            binding.tvTickerMessage.isSelected = false
+                        }
+                    }
+                } catch (e: Exception) {
+                    LoggingService.sendMessageToWebSocket(
+                        "handleThemeResponse Exception in MainMenu activity ${e.message}",
+                        getCurrentPanelNumber()
+                    )
+                }
+                binding.pbLoader.toInvisible()
+
             }
 
             else -> {
@@ -408,7 +443,7 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 try {
                     status.data?.let {
-                        if (it.guestFirstName.isNullOrEmpty()){
+                        if (it.guestFirstName.isNullOrEmpty()) {
                             binding.tvWelcome.toGone()
                             binding.pbLoader.toGone()
                         } else {

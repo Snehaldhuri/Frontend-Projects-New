@@ -23,6 +23,7 @@ import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SoftwareResponseDTO
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
@@ -38,6 +39,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 private const val TAG = "RemoteDataSource"
+
 class RemoteDataSource @Inject constructor(
     networkUtils: NetworkUtils,
     private val lgRestApiService: LgRestApiService,
@@ -202,4 +204,10 @@ class RemoteDataSource @Inject constructor(
         val result = safeAPiCall { epgApiService.getSoftwareUpdateDetails() }
         return result.data
     }
+
+    suspend fun getTvTickerMessages(ua: String): TickerResponse? {
+        val result = safeAPiCall { lgRestApiService.getTvTickerMessages(ua) }
+        return ApiResponseParsing().getResponseAsObject(result.data, TickerResponse::class)
+    }
+
 }

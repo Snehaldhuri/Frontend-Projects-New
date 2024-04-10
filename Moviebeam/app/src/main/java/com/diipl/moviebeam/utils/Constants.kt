@@ -377,6 +377,8 @@ object Constants {
     var NEXT_BUTTON_STATE = 0
 
     var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
+    const val TICKER_DTO_PARAM = "TICKER_DTO"
+    const val TICKER_MESSAGE_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
 
 }
 

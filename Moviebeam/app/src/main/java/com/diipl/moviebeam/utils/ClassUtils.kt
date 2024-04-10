@@ -2,6 +2,7 @@ package com.diipl.moviebeam.utils
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
@@ -26,7 +27,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.service.TickerMsgReceiver
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
@@ -444,29 +447,6 @@ fun getConnectivityType(context: Context): String {
     }
 }
 
-fun getSerialNumber(): String? {
-    var serialNumber: String? = null
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        try {
-            return Build.getSerial()
-        } catch (e: SecurityException) {
-            Log.e("getSerialNumber", "Failed to get serial number from Build.getSerial()")
-        }
-    }
-    try {
-        val c = Class.forName("android.os.SystemProperties")
-        val get = c.getMethod("get", String::class.java)
-        serialNumber = get.invoke(c, "ril.serialnumber") as String
-    } catch (e: java.lang.Exception) {
-        Log.e("getSerialNumber", "Failed to get serial number from ril.serialnumber")
-    }
-    if (serialNumber != null && serialNumber != "") {
-        return serialNumber
-    }
-    return Build.SERIAL
-}
-
-
 class Converters {
     @TypeConverter
     fun fromMap(value: Map<String, String>?): String? {
@@ -487,4 +467,24 @@ fun readFileToString(fileName: String): String {
         str.append(it)
     }
     return str.toString()
+}
+
+fun Context.scheduleMsgEndTask(tickerDTO: TvTickerDTO) {
+    val sdf = SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
+    val endTime = sdf.parse(tickerDTO.etStr!!)!!.time
+    val alarmManager = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val intent = Intent(this, TickerMsgReceiver::class.java)
+    intent.putExtra(Constants.TICKER_DTO_PARAM, tickerDTO)
+//    intent.putExtra("START_TIME", startTimeStr)
+//    intent.putExtra("END_TIME", endTimeStr)
+    val pendingIntent =
+        PendingIntent.getBroadcast(this, generateUniqueRequestCode(endTime), intent, PendingIntent.FLAG_IMMUTABLE)
+
+    // Set the alarm to trigger at the specified time
+    alarmManager.setExact(AlarmManager.RTC, endTime, pendingIntent)
+}
+
+private fun generateUniqueRequestCode(endTime: Long): Int {
+    // Generate a unique requestCode, for example based on current time
+    return endTime.toInt()
 }

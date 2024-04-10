@@ -35,6 +35,8 @@ import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
+import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.kaping.CmdDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
@@ -76,6 +78,7 @@ import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
+import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toTimestamp
@@ -186,6 +189,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var channelListDatastore: DataStore<ChannelListResponse>
+
+    @Inject
+    lateinit var tickerDatastore: DataStore<TickerResponse>
 
     @Inject
     lateinit var roomRepository: RoomRepository
@@ -809,20 +815,27 @@ class EndlessService : Service() {
                     handleRebootCmd()
                 }
             }
+
             KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
                 CoroutineScope(Dispatchers.Default).launch {
                     val response = movieBeamRepository.getSoftwareUpdateDetails()
                     if (response != null && response.isCurrent) {
                         val intent = Intent()
-                        intent.component = ComponentName(KapingConstants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
+                        intent.component =
+                            ComponentName(KapingConstants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())
                         intent.putExtra("buildVersion", BuildConfig.VERSION_NAME)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         startActivity(intent)
                     }
-
                 }
 
+            }
+
+            KapingConstants.KAP_CMD_GET_TICKER_MESSAGES -> {
+                CoroutineScope(Dispatchers.IO).launch {
+                    handleTickerMsgCmd(UA)
+                }
             }
         }
     }
@@ -922,6 +935,42 @@ class EndlessService : Service() {
         }
     }
 
+    private fun fetchTickerMessage(ua: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = movieBeamRepository.getTvTickerMessages(ua)
+            if (response != null) {
+                val sdf = SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    response.tvTickerList?.removeIf { msg ->
+                        (msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true)
+                                || sdf.parse(msg.etStr!!)!!.before(Date())
+                    }
+                } else {
+                    val iterator = response.tvTickerList?.iterator()
+                    while (iterator!!.hasNext()) {
+                        val msg: TvTickerDTO = iterator.next()
+                        if ((msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true)
+                            || sdf.parse(msg.etStr!!)!!.before(Date())
+                        ) {
+                            iterator.remove()
+                        }
+                    }
+                }
+                updateTickerMessage(tickerDatastore, response)
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                response.tvTickerList?.forEach {
+                    applicationContext.scheduleMsgEndTask(it)
+                }
+                LoggingService.sendMessageToWebSocket(
+                    "In ticker message callback success ", getCurrentPanelNumber()
+                )
+            } else {
+                LoggingService.sendMessageToWebSocket(
+                    "In ticker message callback fail ", getCurrentPanelNumber()
+                )
+            }
+        }
+    }
 
     private fun updateAdultContent(enabled: Boolean) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -1177,10 +1226,17 @@ class EndlessService : Service() {
     private fun handleRebootCmd() {
         val intent = Intent()
         intent.component =
-            ComponentName(KapingConstants.MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
+            ComponentName(
+                KapingConstants.MDM_PACKAGE_NAME,
+                KapingConstants.MDM_RESTART_ACTIVITY_NAME
+            )
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+    }
+
+    private fun handleTickerMsgCmd(ua: String) {
+        fetchTickerMessage(ua)
     }
 
     private fun updateGuestSession(
@@ -1431,6 +1487,22 @@ class EndlessService : Service() {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     id = data.id, channelLcnList = data.channelLcnList, type = data.type
+                )
+            }
+        }
+    }
+
+    private fun updateTickerMessage(
+        dataStore: DataStore<TickerResponse>,
+        data: TickerResponse
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    tvTickerList = data.tvTickerList,
+                    type = data.type,
+                    version = data.version
                 )
             }
         }

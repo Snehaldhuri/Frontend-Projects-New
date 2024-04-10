@@ -18,6 +18,7 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
@@ -54,6 +55,9 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
 
     private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
     val moviesLiveData: LiveData<Resource<MoviesResponse>> get() = _moviesLiveData
+
+    private val _tickerLiveData = MutableLiveData<Resource<TickerResponse>>()
+    val tickerLiveData: LiveData<Resource<TickerResponse>> get() = _tickerLiveData
 
     private val _showtimeLiveData = MutableLiveData<Resource<ShowTimeResponse>>()
     val showtimeLiveData: LiveData<Resource<ShowTimeResponse>> get() = _showtimeLiveData
@@ -136,11 +140,11 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
 
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
             val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
-            val accountSetupApiResponse =
-                async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
+            val accountSetupApiResponse = async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
             val localAttractionResponse = async { movieBeamRepository.getLocalAttractionInfo(ua) }
             val channelListResponse = async { movieBeamRepository.getChannelList(ua) }
             val releasesMoviesMoreResponse = async { movieBeamRepository.getMoviesInfo(ua) }
+            val tickerResponse = async { movieBeamRepository.getTvTickerMessages(ua) }
             val showTimeResponse = async { movieBeamRepository.getShowtimeInfo(ua) }
 
             val result = awaitAll(
@@ -150,6 +154,7 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                 localAttractionResponse,
                 channelListResponse,
                 releasesMoviesMoreResponse,
+                tickerResponse,
                 showTimeResponse
             )
 
@@ -190,9 +195,15 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
             }
 
             if (result[6] == null) {
+                _tickerLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Ticker Api"))
+            } else {
+                _tickerLiveData.postValue(Resource.Success(result[6] as TickerResponse))
+            }
+
+            if (result[7] == null) {
                 _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in ShowTime Api"))
             } else {
-                _showtimeLiveData.postValue(Resource.Success(result[6] as ShowTimeResponse))
+                _showtimeLiveData.postValue(Resource.Success(result[7] as ShowTimeResponse))
             }
         }
     }
@@ -447,6 +458,22 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                     premiumContentList = data.premiumContentList,
                     premiumGenreList = data.premiumGenreList,
                     id = data.id,
+                    type = data.type,
+                    version = data.version
+                )
+            }
+        }
+    }
+
+    fun setTickerResponseData(
+        dataStore: DataStore<TickerResponse>,
+        data: TickerResponse
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    tvTickerList = data.tvTickerList,
                     type = data.type,
                     version = data.version
                 )
