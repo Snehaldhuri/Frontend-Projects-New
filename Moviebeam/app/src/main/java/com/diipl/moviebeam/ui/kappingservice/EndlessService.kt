@@ -822,7 +822,7 @@ class EndlessService : Service() {
                     if (response != null && response.isCurrent) {
                         val intent = Intent()
                         intent.component =
-                            ComponentName(KapingConstants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
+                            ComponentName(Constants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())
                         intent.putExtra("buildVersion", BuildConfig.VERSION_NAME)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -1227,7 +1227,7 @@ class EndlessService : Service() {
         val intent = Intent()
         intent.component =
             ComponentName(
-                KapingConstants.MDM_PACKAGE_NAME,
+                Constants.MDM_PACKAGE_NAME,
                 KapingConstants.MDM_RESTART_ACTIVITY_NAME
             )
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
