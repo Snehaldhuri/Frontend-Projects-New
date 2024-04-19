@@ -22,12 +22,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassSync
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalSyncResponse
@@ -157,6 +159,12 @@ class EndlessService : Service() {
     private val _channelListLiveData = MutableLiveData<ChannelListResponse>()
     val channelListLiveData: LiveData<ChannelListResponse> get() = _channelListLiveData
 
+    private val _guestDetailsLiveData = MutableLiveData<Resource<CmdDataDto>>()
+    val guestDetailsLiveData: LiveData<Resource<CmdDataDto>> get() = _guestDetailsLiveData
+
+    private var _isGuestCheckedInLiveData = MutableLiveData<Boolean>()
+    val isGuestCheckedInLiveData: LiveData<Boolean> get() = _isGuestCheckedInLiveData
+
     @Inject
     lateinit var networkUtils: NetworkUtils
 
@@ -192,6 +200,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var tickerDatastore: DataStore<TickerResponse>
+
+    @Inject
+    lateinit var messageDatastore: DataStore<MessageResponse>
 
     @Inject
     lateinit var roomRepository: RoomRepository
@@ -837,6 +848,18 @@ class EndlessService : Service() {
                     handleTickerMsgCmd(UA)
                 }
             }
+
+            KapingConstants.KAP_CMD_GET_GUEST_MESSAGES -> {
+                when (activityStack.last()) {
+                    SerialActivity::class.java.simpleName, STBDetailsActivity::class.java.simpleName, RegisterSTBActivity::class.java.simpleName -> {
+                        handleGuestMsgCmd()
+                    }
+
+                    else -> {
+                        handleCmdInRefreshingUi(kapingResponse)
+                    }
+                }
+            }
         }
     }
 
@@ -967,6 +990,22 @@ class EndlessService : Service() {
             } else {
                 LoggingService.sendMessageToWebSocket(
                     "In ticker message callback fail ", getCurrentPanelNumber()
+                )
+            }
+        }
+    }
+
+    private fun fetchGuestMessage(ua: String, guestSessionId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = movieBeamRepository.getGuestMessages(ua, guestSessionId)
+            if (response != null) {
+                updateGuestMessage(messageDatastore, response)
+                LoggingService.sendMessageToWebSocket(
+                    "In guest message callback success ", getCurrentPanelNumber()
+                )
+            } else {
+                LoggingService.sendMessageToWebSocket(
+                    "In guest message callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -1214,7 +1253,6 @@ class EndlessService : Service() {
         updateGuestSession(
             preferenceDataStoreHelper, guestDetailsDatastore, true, kapingResponse.cmdData?.cmdData
         )
-
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
@@ -1237,6 +1275,32 @@ class EndlessService : Service() {
 
     private fun handleTickerMsgCmd(ua: String) {
         fetchTickerMessage(ua)
+    }
+
+    private fun handleGuestMsgCmd() {
+        getGuestMessages(preferenceDataStoreHelper)
+    }
+
+    private fun getGuestMessages(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (preferenceDataStoreHelper.getFirstPreference(
+                    PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                    false
+                )
+            ) {
+                getGuestDetails(guestDetailsDatastore)
+            }
+        }
+    }
+
+    private fun getGuestDetails(dataStore: DataStore<CmdDataDto>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.data.collect {
+                it.sessionId?.let {
+                    fetchGuestMessage(Constants.UA, it)
+                }
+            }
+        }
     }
 
     private fun updateGuestSession(
@@ -1503,6 +1567,21 @@ class EndlessService : Service() {
                     tvTickerList = data.tvTickerList,
                     type = data.type,
                     version = data.version
+                )
+            }
+        }
+    }
+
+    private fun updateGuestMessage(
+        dataStore: DataStore<MessageResponse>,
+        data: MessageResponse
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    messagesList = data.messagesList,
+                    type = data.type,
                 )
             }
         }

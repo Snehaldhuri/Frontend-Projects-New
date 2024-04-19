@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.utils
 
+import android.graphics.drawable.GradientDrawable
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
@@ -35,6 +36,7 @@ object Constants {
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
     const val C_TYPE_TRAILER: String = "TRAILER"
+    var IS_CHECKED_IN: Boolean = false
     var SESSION_ID: String = ""
     var RENTAL_ID: String = ""
     var RENTAL_TIME: Long = 1707840000000
@@ -60,6 +62,10 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
+    var GRADIENT: GradientDrawable? = null
+    var TITLE: String? = null
+    var LOGO_IMAGE: String? = null
+    var BG_IMAGE: String? = null
     var HOTEL_VIDEO_LOOP_COUNT = 3
     var HOTEL_VIDEO_DURATION = 0L
     var HOTEL_VIDEO_URL = ""
@@ -234,7 +240,7 @@ object Constants {
     const val EXPRESS_CHECKOUT = "Express Checkout"
     const val MESSAGE = "Messages"
 
-
+    val MESSAGE_MODEL = GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black)
     val GUEST_SERVICE_BUTTON_LIST = listOf(
         GsBtnModel(WEATHER_ID, WEATHER, R.drawable.weather, R.drawable.weather_black),
         GsBtnModel(
@@ -259,7 +265,7 @@ object Constants {
             R.drawable.guest_feedback,
             R.drawable.guest_feedback_black
         ),
-        GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black),
+        MESSAGE_MODEL,
         GsBtnModel(CONCIERGE_ID, CONCIERGE, R.drawable.concierge, R.drawable.concierge_black),
         GsBtnModel(
             FOOD_DELIVERY_ID,

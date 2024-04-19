@@ -16,6 +16,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
 import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setIPInfo
@@ -36,8 +37,10 @@ class WeatherDateTimeFragment : Fragment() {
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
+
     @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
+
     @Inject
     lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
 
@@ -100,6 +103,8 @@ class WeatherDateTimeFragment : Fragment() {
                 status.data?.let {
                     Constants.GRADIENT_COLOR_END = it.spotLightColor
                     Constants.GRADIENT_COLOR_START = it.gradientColor
+                    Constants.GRADIENT = null
+                    Constants.GRADIENT = getGradientColor()
                 }
             }
 
@@ -116,6 +121,7 @@ class WeatherDateTimeFragment : Fragment() {
                     Constants.C_LIST_VERSION = response.version
                 }
             }
+
             else -> {}
         }
     }
@@ -127,6 +133,7 @@ class WeatherDateTimeFragment : Fragment() {
                     Constants.SHOWS_COUNT = response.shoContentList.size
                 }
             }
+
             else -> {}
         }
     }

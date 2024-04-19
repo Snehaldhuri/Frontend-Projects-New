@@ -1,7 +1,5 @@
 package com.diipl.moviebeam.ui.guestservice.localAttraction
 
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -27,9 +25,6 @@ import javax.inject.Inject
 class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : BaseFragment() {
 
     private lateinit var binding: FragmentLocalattractionBinding
-    private var gradientStartColor: String? = null
-    private var gradientEndColor: String? = null
-
     private val localAttractionViewModel: LocalAttractionGsViewModel by viewModels()
 
     @Inject
@@ -71,13 +66,6 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 val response = localAttractionViewModel.localAttractionLiveData.value?.data
-
-                localAttractionViewModel.themeLiveData.value?.data?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                localAttractionViewModel.themeLiveData.value?.data?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
                 val adapter = LocalAttractionGsAdapter(onItemClicked = { view, it ->
                     val cardAdapter = LaCardAdapterGs { v ->
                         lastView = v
@@ -86,11 +74,6 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
                         }
                     }
                     cardAdapter.setList(it.serviceList)
-                    cardAdapter.setGradientDrawable(
-                        getGradient(
-
-                        )
-                    )
                     binding.laCardCarousel.adapter = cardAdapter
                     binding.laCardCarousel.post {
                         binding.laCardCarousel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
@@ -100,17 +83,18 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
                         onItemClicked(view)
                     else
                         view.setOnKeyListener { v, i, _ ->
-                        if (i == KeyEvent.KEYCODE_DPAD_LEFT) {
-                            onItemClicked(v)
+                            if (i == KeyEvent.KEYCODE_DPAD_LEFT) {
+                                onItemClicked(v)
+                            }
+                            false
                         }
-                        false
-                    }
-                }, onRightKeyClicked = {v->
+                }, onRightKeyClicked = { v ->
                     v.setOnKeyListener { _, i, _ ->
                         if (lastView != null && i == KeyEvent.KEYCODE_DPAD_RIGHT) {
                             binding.laCardCarousel.post {
                                 lastView?.let {
-                                    binding.laCardCarousel.findContainingItemView(it)?.requestFocus()
+                                    binding.laCardCarousel.findContainingItemView(it)
+                                        ?.requestFocus()
                                 }
                             }
                         }
@@ -120,7 +104,6 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
                 )
 
                 adapter.setItemList(response?.servicesList!!)
-                adapter.setGradientDrawable(getGradient())
                 binding.recyclerView.adapter = adapter
                 binding.loaderView.toInvisible()
                 binding.recyclerView.post {
@@ -136,23 +119,5 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
             }
         }
     }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        gradientStartColor = startColor
-        gradientEndColor = endColor
-    }
-
-    private fun getGradient(): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
-        )
-        gradientDrawable.cornerRadius = 16f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
-    }
-
 
 }

@@ -8,6 +8,7 @@ import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
 import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
@@ -208,6 +209,11 @@ class RemoteDataSource @Inject constructor(
     suspend fun getTvTickerMessages(ua: String): TickerResponse? {
         val result = safeAPiCall { lgRestApiService.getTvTickerMessages(ua) }
         return ApiResponseParsing().getResponseAsObject(result.data, TickerResponse::class)
+    }
+
+    suspend fun getGuestMessages(ua: String, guestSessionId: String): MessageResponse? {
+        val result = safeAPiCall { lgRestApiService.getGuestMessages(ua, guestSessionId) }
+        return ApiResponseParsing().getResponseAsObject(result.data, MessageResponse::class)
     }
 
 }

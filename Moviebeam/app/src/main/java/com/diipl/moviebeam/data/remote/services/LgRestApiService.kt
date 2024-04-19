@@ -135,4 +135,10 @@ interface LgRestApiService {
         @Query("UA") ua: String
     ): Response<String>
 
+    @GET("hotel/message")
+    suspend fun getGuestMessages(
+        @Query("UA") ua: String,
+        @Query("guestSessionId") guestSessionId: String
+    ): Response<String>
+
 }

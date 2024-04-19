@@ -26,9 +26,6 @@ class LocalAttractionGsViewModel @Inject constructor() : ViewModel() {
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
 
-    private val _themeLiveData = MutableLiveData<Resource<ThemeResponse>>()
-    val themeLiveData: LiveData<Resource<ThemeResponse>> get() = _themeLiveData
-
     fun getLocalAttractionResponseData(dataStore: DataStore<LocalAttractionResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
             _localAttractionLiveData.postValue(Resource.Loading())

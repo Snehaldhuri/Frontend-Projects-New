@@ -1,8 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,13 +11,11 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
+import com.diipl.moviebeam.utils.getGradientColor
 
 class ConciergeAdapter(
     private var onMenuItemClicked: (View, ConciergeBtnModel) -> Unit
 ) : RecyclerView.Adapter<ConciergeAdapter.MyViewHolder>() {
-
-    private var startColor = ""
-    private var endColor = ""
 
     private var conPosition = 0
 
@@ -59,8 +55,8 @@ class ConciergeAdapter(
 
         holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                setFocus(holder.container)
-                if(itemList.size < 8) {
+                holder.container.background = getGradientColor()
+                if (itemList.size < 8) {
                     if (position <= 3) {
                         view.nextFocusUpId = view.id
                     } else if (position <= 7 && position >= 3) {
@@ -81,18 +77,6 @@ class ConciergeAdapter(
         }
     }
 
-    private fun setFocus(cardView: ConstraintLayout) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
-
     private fun getHeightInPercent(context: Context, percent: Int): Int {
         val width = context.resources.displayMetrics.heightPixels ?: 0
         return (width * percent) / 100
@@ -102,12 +86,8 @@ class ConciergeAdapter(
         itemList = btnList
     }
 
-    fun setGradientColor(startColor: String, endColor: String) {
-        this.startColor = startColor
-        this.endColor = endColor
-    }
-
     fun getFocus(conPosition: Int) {
         this.conPosition = conPosition
     }
+
 }

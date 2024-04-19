@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="@dimen/dp_2"
-    app:cardCornerRadius="@dimen/dp_5">
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    app:cardCornerRadius="@dimen/dp_10">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_card"
@@ -18,13 +20,13 @@
             android:id="@+id/tv_news"
             android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/dp_8"
             android:ellipsize="marquee"
             android:fontFamily="@font/manrope_semibold_600"
             android:singleLine="true"
             android:text="World News"
             android:textColor="@color/white"
             android:textSize="@dimen/sp_15"
-            android:layout_marginEnd="@dimen/dp_8"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/iv_chevron_right"
             app:layout_constraintHorizontal_bias="0.0"

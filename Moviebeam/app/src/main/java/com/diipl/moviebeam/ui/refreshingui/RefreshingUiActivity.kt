@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.lifecycleScope
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
@@ -12,6 +13,7 @@ import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -22,13 +24,17 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,8 +48,6 @@ private const val TAG = "RefreshingUiActivity"
 
 @AndroidEntryPoint
 class RefreshingUiActivity : BaseActivity() {
-
-    private val TAG = this::class.java.simpleName
 
     private var kapingResponse: KapingResponse? = null
 
@@ -81,6 +85,9 @@ class RefreshingUiActivity : BaseActivity() {
     lateinit var channelListDataStore: DataStore<ChannelListResponse>
 
     @Inject
+    lateinit var guestMessageDataStore: DataStore<MessageResponse>
+
+    @Inject
     lateinit var roomRepository: RoomRepository
 
     override fun observeViewModel() {
@@ -92,6 +99,7 @@ class RefreshingUiActivity : BaseActivity() {
         observe(refreshingUiViewModel.showtimeLiveData, ::handleShowtimeResponse)
         observe(refreshingUiViewModel.channelListLiveData, ::handleChannelListResponse)
         observe(refreshingUiViewModel.epgLiveData, ::handleEPGDataResponse)
+        observe(refreshingUiViewModel.guestMessageLiveData, ::handleGuestMessageResponse)
     }
 
     override fun initViewBinding() {
@@ -103,6 +111,12 @@ class RefreshingUiActivity : BaseActivity() {
             intent.getParcelableExtra("response", KapingResponse::class.java)
         } else {
             intent.getParcelableExtra("response")
+        }
+        binding.btnOk.handleFocusChange()
+        binding.btnOk.setOnClickListener {
+            val intent = Intent(this, GuestServiceActivity::class.java)
+            intent.putExtra("btnId", Constants.MESSAGE_ID)
+            startActivity(intent)
         }
         binding.root.postDelayed({
             this.handleKaping(kapingResponse)
@@ -150,6 +164,10 @@ class RefreshingUiActivity : BaseActivity() {
             KapingConstants.KAP_CMD_GET_EPG_DATA -> {
                 handleGetEPGDataCmd()
             }
+
+            KapingConstants.KAP_CMD_GET_GUEST_MESSAGES -> {
+                handleGuestMessageCmd()
+            }
         }
 
     }
@@ -159,6 +177,10 @@ class RefreshingUiActivity : BaseActivity() {
             "Signal for check out command",
             getCurrentPanelNumber()
         )
+        refreshingUiViewModel.updateGuestMessage(
+            guestMessageDataStore,
+            MessageResponse()
+        )
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -167,7 +189,6 @@ class RefreshingUiActivity : BaseActivity() {
         )
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
-
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
@@ -223,13 +244,18 @@ class RefreshingUiActivity : BaseActivity() {
         refreshingUiViewModel.handleFetchChannelListCmd(Constants.UA)
     }
 
+    private fun handleGuestMessageCmd() {
+        if (Constants.IS_CHECKED_IN) {
+            refreshingUiViewModel.fetchGuestMessage(Constants.UA, Constants.SESSION_ID)
+        }
+    }
+
     private fun handleGetEPGDataCmd() {
         LoggingService.sendMessageToWebSocket(
-            "Signal for check out command",
+            "Signal for get EPG Data Cmd",
             getCurrentPanelNumber()
         )
         refreshingUiViewModel.getChannelList(channelListDataStore)
-
     }
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
@@ -273,7 +299,6 @@ class RefreshingUiActivity : BaseActivity() {
                         "In Theme callback Success",
                         getCurrentPanelNumber()
                     )
-
                 }
             }
 
@@ -284,8 +309,6 @@ class RefreshingUiActivity : BaseActivity() {
                     "In Theme Callback fail",
                     getCurrentPanelNumber()
                 )
-
-
             }
         }
     }
@@ -331,7 +354,6 @@ class RefreshingUiActivity : BaseActivity() {
                         "In Local Attractions callback Success ",
                         getCurrentPanelNumber()
                     )
-
                 }
             }
 
@@ -342,7 +364,6 @@ class RefreshingUiActivity : BaseActivity() {
                     "In Local Attractions callback fail ",
                     getCurrentPanelNumber()
                 )
-
             }
         }
     }
@@ -361,7 +382,6 @@ class RefreshingUiActivity : BaseActivity() {
                         "In MoviesReleasesCollection callback Success ",
                         getCurrentPanelNumber()
                     )
-
                 }
             }
 
@@ -469,6 +489,38 @@ class RefreshingUiActivity : BaseActivity() {
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
                 LoggingService.sendMessageToWebSocket(
                     "In Get EPG data callback fail ",
+                    getCurrentPanelNumber()
+                )
+            }
+        }
+    }
+
+    private fun handleGuestMessageResponse(status: Resource<MessageResponse>) {
+        when (status) {
+            is Resource.Success -> {
+                status.data?.let {
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
+                    refreshingUiViewModel.updateGuestMessage(guestMessageDataStore, it)
+                    binding.tvInfo.text = getString(R.string.you_have_a_new_message)
+                    binding.tvMsg.text = it.messagesList?.find {
+                        it.isRead == 0
+                    }?.messageSubject
+                    binding.tvTxt.toGone()
+                    binding.btnOk.toVisible()
+                    binding.btnOk.requestFocus()
+                    LoggingService.sendMessageToWebSocket(
+                        "In Get Guest Message callback success ",
+                        getCurrentPanelNumber()
+                    )
+                }
+            }
+
+            else -> {
+                status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
+                LoggingService.sendMessageToWebSocket(
+                    "In Get Guest Message callback fail ",
                     getCurrentPanelNumber()
                 )
             }

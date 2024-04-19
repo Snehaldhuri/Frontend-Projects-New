@@ -149,5 +149,9 @@
         \nPlease call frontdesk for assistance</string>
 
     <string name="rich_input_feed_url" translatable="false">http://commondatastorage.googleapis.com/android-tv/rich_tv_input_xmltv_feed.xml</string>
+    <string name="refreshing_ui">Refreshing UI...</string>
+    <string name="new_session_requested">New Session Requested</string>
+    <string name="information">INFORMATION</string>
+    <string name="you_have_a_new_message">You have a new message.</string>
 
 </resources>

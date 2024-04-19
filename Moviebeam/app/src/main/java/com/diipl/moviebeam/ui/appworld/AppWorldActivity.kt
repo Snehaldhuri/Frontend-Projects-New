@@ -6,17 +6,12 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.GridLayoutManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
@@ -26,6 +21,8 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
@@ -49,7 +46,6 @@ class AppWorldActivity : BaseActivity() {
     private lateinit var binding: ActivityAppWorldBinding
     private val appWorldViewModel: AppWorldViewModel by viewModels()
 
-    private var gradient: GradientDrawable? = null
     private var isCheckedIn = false
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
@@ -77,14 +73,7 @@ class AppWorldActivity : BaseActivity() {
             fetchDetails()
             binding.rvApps.layoutManager = GridLayoutManager(this, 4)
             binding.btnBack.setOnClickListener { finish() }
-            binding.btnBack.setOnFocusChangeListener { view, isFocused ->
-                if (isFocused) {
-                    view.background = gradient
-                } else {
-                    view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
-            }
-            Log.d("checked in ", "checked in $isCheckedIn")
+            binding.btnBack.handleFocusChange()
             LoggingService.sendMessageToWebSocket(
                 "In AppWorldMain activity",
                 getCurrentPanelNumber()
@@ -192,7 +181,6 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-
     private fun launchAppSecured(packageName: String?) {
         try {
             val intent = Intent()
@@ -220,7 +208,6 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
@@ -238,32 +225,6 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
-    }
-
-    private fun getGradient(startColor: String?, endColor: String?): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TR_BL,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
-    }
-
     private fun filterSystemApps(apps: List<ApplicationInfo>): List<ApplicationInfo> {
         return apps.filter {
             !isSystemApp(it)
@@ -274,17 +235,10 @@ class AppWorldActivity : BaseActivity() {
         return applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
     }
 
-
     private fun fetchDetails() {
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
-        gradient = getGradient(
-            intent.extras?.getString("gradientStartColor"),
-            intent.extras?.getString("gradientEndColor")
-        )
-        intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        loadBg(intent.extras?.getString("themeBackgroundFileName"))
+        binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(Constants.LOGO_IMAGE)
+        binding.root.loadBg()
     }
 
 }
