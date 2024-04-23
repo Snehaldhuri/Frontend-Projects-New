@@ -82,6 +82,7 @@ import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
+import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toTimestamp
 import com.google.gson.GsonBuilder
@@ -630,7 +631,7 @@ class EndlessService : Service() {
                         passCode = null
                         adultLocked = false
                     } else {
-                        passCode.toInt()
+                        passCode.toInteger()
                         adultLocked = true
                     }
                 } catch (e: Exception) {
@@ -1188,11 +1189,11 @@ class EndlessService : Service() {
         val accountSetupData = accountSetupLiveData.value
         val dateFormatter = SimpleDateFormat("EEE. MMM dd, yyyy hh:mm:ss a", Locale.ENGLISH)
         val body = SysInfoDTO()
-        body.HOTELCODE = Constants.ACCOUNT_ID.toInt()
+        body.HOTELCODE = Constants.ACCOUNT_ID.toInteger()
         body.ROOM = Constants.STB_ROOM_NO.uppercase()
         body.STBTIME = dateFormatter.format(Date())
         body.LASTCALLBACK = dateFormatter.format(Date())
-        body.HOTELMODEL = accountSetupData?.hotelModel?.toInt()
+        body.HOTELMODEL = accountSetupData?.hotelModel?.toInteger()
         body.HOTELPLAN = accountSetupData?.hotelPlan
         body.tvBroadcastType = accountSetupData?.tvBroadcastType
         body.streamingType = accountSetupData?.streamingType
@@ -1659,7 +1660,7 @@ class EndlessService : Service() {
                                             }
                                         }
                                         // for live tv and full screen (Next)
-                                        if (channel.C?.toInt()!! > 1) {
+                                        if (channel.C?.toInteger()!! > 1) {
                                             if (channel.P2_ID != null) {
                                                 val program2 =
                                                     it.programsListMap?.get(channel.P2_ID)
@@ -1749,7 +1750,7 @@ class EndlessService : Service() {
                             }
                         }
                         //Sorting Channels by Channel No
-                        entries.value.sortBy { it.CNO?.toInt() }
+                        entries.value.sortBy { it.CNO?.toInteger() }
                         //Adding Channels to RoomDB.
                         roomRepository.insertChannels(entries.value)
                     }

@@ -34,6 +34,7 @@ import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -604,7 +605,7 @@ class RefreshingUiActivity : BaseActivity() {
                                             }
                                         }
                                         // for live tv and full screen (Next)
-                                        if (channel.C?.toInt()!! > 1) {
+                                        if (channel.C?.toInteger()!! > 1) {
                                             if (channel.P2_ID != null) {
                                                 val program2 =
                                                     it.programsListMap?.get(channel.P2_ID)
@@ -694,7 +695,7 @@ class RefreshingUiActivity : BaseActivity() {
                             }
                         }
                         //Sorting Channels by Channel No
-                        entries.value.sortBy { it.CNO?.toInt() }
+                        entries.value.sortBy { it.CNO?.toInteger() }
                         //Adding Channels to RoomDB.
                         roomRepository.insertChannels(entries.value)
                     }

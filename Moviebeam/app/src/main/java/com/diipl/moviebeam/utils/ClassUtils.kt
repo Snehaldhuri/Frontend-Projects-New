@@ -522,3 +522,11 @@ fun View.loadBg() {
             override fun onLoadCleared(placeholder: Drawable?) {}
         })
 }
+
+fun String.toInteger(): Int? {
+    var result: Int? = null
+    if (this.isNotEmpty()) {
+        result = this.toInt()
+    }
+    return result
+}
