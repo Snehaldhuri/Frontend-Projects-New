@@ -186,6 +186,7 @@
         android:fontFamily="@font/manrope_semibold_600"
         android:marqueeRepeatLimit="marquee_forever"
         android:singleLine="true"
+        android:textColor="@color/home_page_greeting_text_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5" />

@@ -22,12 +22,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassSync
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalSyncResponse
@@ -81,6 +83,7 @@ import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
+import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toTimestamp
 import com.google.gson.GsonBuilder
@@ -158,6 +161,12 @@ class EndlessService : Service() {
     private val _channelListLiveData = MutableLiveData<ChannelListResponse>()
     val channelListLiveData: LiveData<ChannelListResponse> get() = _channelListLiveData
 
+    private val _guestDetailsLiveData = MutableLiveData<Resource<CmdDataDto>>()
+    val guestDetailsLiveData: LiveData<Resource<CmdDataDto>> get() = _guestDetailsLiveData
+
+    private var _isGuestCheckedInLiveData = MutableLiveData<Boolean>()
+    val isGuestCheckedInLiveData: LiveData<Boolean> get() = _isGuestCheckedInLiveData
+
     @Inject
     lateinit var networkUtils: NetworkUtils
 
@@ -193,6 +202,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var tickerDatastore: DataStore<TickerResponse>
+
+    @Inject
+    lateinit var messageDatastore: DataStore<MessageResponse>
 
     @Inject
     lateinit var roomRepository: RoomRepository
@@ -620,7 +632,7 @@ class EndlessService : Service() {
                         passCode = null
                         adultLocked = false
                     } else {
-                        passCode.toInt()
+                        passCode.toInteger()
                         adultLocked = true
                     }
                 } catch (e: Exception) {
@@ -823,7 +835,7 @@ class EndlessService : Service() {
                     if (response != null && response.isCurrent) {
                         val intent = Intent()
                         intent.component =
-                            ComponentName(MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
+                            ComponentName(Constants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())
                         intent.putExtra("buildVersion", BuildConfig.VERSION_NAME)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -836,6 +848,18 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_GET_TICKER_MESSAGES -> {
                 CoroutineScope(Dispatchers.IO).launch {
                     handleTickerMsgCmd(UA)
+                }
+            }
+
+            KapingConstants.KAP_CMD_GET_GUEST_MESSAGES -> {
+                when (activityStack.last()) {
+                    SerialActivity::class.java.simpleName, STBDetailsActivity::class.java.simpleName, RegisterSTBActivity::class.java.simpleName -> {
+                        handleGuestMsgCmd()
+                    }
+
+                    else -> {
+                        handleCmdInRefreshingUi(kapingResponse)
+                    }
                 }
             }
         }
@@ -968,6 +992,22 @@ class EndlessService : Service() {
             } else {
                 LoggingService.sendMessageToWebSocket(
                     "In ticker message callback fail ", getCurrentPanelNumber()
+                )
+            }
+        }
+    }
+
+    private fun fetchGuestMessage(ua: String, guestSessionId: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = movieBeamRepository.getGuestMessages(ua, guestSessionId)
+            if (response != null) {
+                updateGuestMessage(messageDatastore, response)
+                LoggingService.sendMessageToWebSocket(
+                    "In guest message callback success ", getCurrentPanelNumber()
+                )
+            } else {
+                LoggingService.sendMessageToWebSocket(
+                    "In guest message callback fail ", getCurrentPanelNumber()
                 )
             }
         }
@@ -1150,11 +1190,11 @@ class EndlessService : Service() {
         val accountSetupData = accountSetupLiveData.value
         val dateFormatter = SimpleDateFormat("EEE. MMM dd, yyyy hh:mm:ss a", Locale.ENGLISH)
         val body = SysInfoDTO()
-        body.HOTELCODE = Constants.ACCOUNT_ID.toInt()
+        body.HOTELCODE = Constants.ACCOUNT_ID.toInteger()
         body.ROOM = Constants.STB_ROOM_NO.uppercase()
         body.STBTIME = dateFormatter.format(Date())
         body.LASTCALLBACK = dateFormatter.format(Date())
-        body.HOTELMODEL = accountSetupData?.hotelModel?.toInt()
+        body.HOTELMODEL = accountSetupData?.hotelModel?.toInteger()
         body.HOTELPLAN = accountSetupData?.hotelPlan
         body.tvBroadcastType = accountSetupData?.tvBroadcastType
         body.streamingType = accountSetupData?.streamingType
@@ -1215,7 +1255,6 @@ class EndlessService : Service() {
         updateGuestSession(
             preferenceDataStoreHelper, guestDetailsDatastore, true, kapingResponse.cmdData?.cmdData
         )
-
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
@@ -1238,6 +1277,32 @@ class EndlessService : Service() {
 
     private fun handleTickerMsgCmd(ua: String) {
         fetchTickerMessage(ua)
+    }
+
+    private fun handleGuestMsgCmd() {
+        getGuestMessages(preferenceDataStoreHelper)
+    }
+
+    private fun getGuestMessages(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (preferenceDataStoreHelper.getFirstPreference(
+                    PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                    false
+                )
+            ) {
+                getGuestDetails(guestDetailsDatastore)
+            }
+        }
+    }
+
+    private fun getGuestDetails(dataStore: DataStore<CmdDataDto>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.data.collect {
+                it.sessionId?.let {
+                    fetchGuestMessage(Constants.UA, it)
+                }
+            }
+        }
     }
 
     private fun updateGuestSession(
@@ -1509,6 +1574,21 @@ class EndlessService : Service() {
         }
     }
 
+    private fun updateGuestMessage(
+        dataStore: DataStore<MessageResponse>,
+        data: MessageResponse
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    messagesList = data.messagesList,
+                    type = data.type,
+                )
+            }
+        }
+    }
+
     private fun processEPGData(epgResponse: EPGResponse) {
 
         //Removing all Epg Channels From RoomDB.
@@ -1581,7 +1661,7 @@ class EndlessService : Service() {
                                             }
                                         }
                                         // for live tv and full screen (Next)
-                                        if (channel.C?.toInt()!! > 1) {
+                                        if (channel.C?.toInteger()!! > 1) {
                                             if (channel.P2_ID != null) {
                                                 val program2 =
                                                     it.programsListMap?.get(channel.P2_ID)
@@ -1671,7 +1751,7 @@ class EndlessService : Service() {
                             }
                         }
                         //Sorting Channels by Channel No
-                        entries.value.sortBy { it.CNO?.toInt() }
+                        entries.value.sortBy { it.CNO?.toInteger() }
                         //Adding Channels to RoomDB.
                         roomRepository.insertChannels(entries.value)
                     }

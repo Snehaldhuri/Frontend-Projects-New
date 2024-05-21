@@ -1,63 +1,43 @@
 package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryCategory
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
-import com.diipl.moviebeam.data.dto.laundryResponce.LaundrySubCategory
 import com.diipl.moviebeam.databinding.FragmentLaundryBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
-import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestAdapter
-import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestErrorFragment
-import com.diipl.moviebeam.ui.guestservice.concierge.ToiletryRequestSummaryFragment
+import com.diipl.moviebeam.utils.handleFocusChange
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
-class LaundryFragment (
+class LaundryFragment(
     private var onOkClicked: () -> Unit
 ) : BaseFragment() {
 
-    private val laundryViewModel: LaundryViewModel by viewModels()
-
     lateinit var laundry_adapter: LaundryAdapter
     private lateinit var customAdapterLaundry: CustomAdapterLaundry
-//    lateinit var laundry_list: List<LaundryCategory>
-    private var gradientStartColor = ""
-    private var gradientEndColor = ""
     private lateinit var binding: FragmentLaundryBinding
     private var laundryHeaderPosition: Int = 0
-    private var laundrySubCategoryPosition: Int = 0
-    private var selectedItems: List<LaundrySubCategory> = mutableListOf()
     private lateinit var laundryDetailResponse: LaundryDataResponse
 
-    override fun observeViewModel() {
-//        observe(laundryViewModel.laundryMasterLiveData, ::handleLaundryMasterResponse)
-    }
+    override fun observeViewModel() {}
 
-    override fun initViewBinding() {
-    }
+    override fun initViewBinding() {}
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         binding = FragmentLaundryBinding.inflate(inflater, container, false)
 
@@ -76,20 +56,8 @@ class LaundryFragment (
         cardRecyclerView.layoutManager = LinearLayoutManager(context)
 
 
-        binding.btnLaundryCancel.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                setFocus(binding.btnLaundryCancel)
-            } else {
-                binding.btnLaundryCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
-        binding.btnLaundrySendRequest.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                setFocus(binding.btnLaundrySendRequest)
-            } else {
-                binding.btnLaundrySendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
+        binding.btnLaundryCancel.handleFocusChange()
+        binding.btnLaundrySendRequest.handleFocusChange()
         binding.btnLaundryCancel.setOnClickListener {
             onOkClicked()
         }
@@ -108,42 +76,11 @@ class LaundryFragment (
         return binding.root
     }
 
-    private fun setFocus(cardView: Button) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        gradientStartColor = startColor
-        gradientEndColor = endColor
-    }
-
-    private fun getGradient(
-    ): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
-        )
-        gradientDrawable.cornerRadius = 10f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
-    }
-
     fun setLaundryData(laundryData: LaundryDataResponse) {
         this.laundryDetailResponse = laundryData
     }
-    private fun setLaundryDetailData() {
-//        laundry_list = laundryDetailResponse.laundryDataList
 
+    private fun setLaundryDetailData() {
         // Check if _binding is initialized
         lifecycleScope.launch {
             delay(100)
@@ -165,37 +102,30 @@ class LaundryFragment (
                     )
                     binding.lvLaundry.adapter = customAdapterLaundry
                     customAdapterLaundry.setNewsList(it.subCategoryList)
-                    customAdapterLaundry.setGradientColor(gradientStartColor!!, gradientEndColor!!)
-                    customAdapterLaundry.setGradient(getGradient())
                 },
                 onLeftKeyPressed = {},
                 onRightKeyPressed = {
                     binding.rvLaundry.clearFocus()
                     binding.lvLaundry.requestFocus()
-                    binding.lvLaundry.getChildAdapterPosition(binding.lvLaundry.getFocusedChild())
+                    binding.lvLaundry.getChildAdapterPosition(binding.lvLaundry.focusedChild)
                 }
             )
             laundryDetailResponse.laundryDataList.let {
                 laundry_adapter.setLaundryList(it)
             }
-            laundry_adapter.setGradient(getGradient())
             binding.rvLaundry.adapter = laundry_adapter
 
 
         }
     }
+
     private fun updateSelectedItems() {
         val selectedItems = (binding.lvLaundry.adapter as? CustomAdapterLaundry)?.getSelectedItems()
-        Log.d("selecteditemslaundry2","$selectedItems")
         if (!selectedItems.isNullOrEmpty()) {
             val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
             val summaryFragment = LaundryRequestSummaryFragment {
                 onOkClicked()
             }
-            val mBundle = Bundle()
-            mBundle.putString("gradientStartColor", gradientStartColor)
-            mBundle.putString("gradientEndColor", gradientEndColor)
-            summaryFragment.arguments = mBundle
             summaryFragment.setItemList(selectedItems)
 
             fragmentTransaction.replace(
@@ -205,20 +135,13 @@ class LaundryFragment (
 
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
-        }
-        else{
+        } else {
             val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
             val summaryFragment = LaundryRequestErrorFragment()
-            val mBundle = Bundle()
-            mBundle.putString("gradientStartColor", gradientStartColor)
-            mBundle.putString("gradientEndColor", gradientEndColor)
-            summaryFragment.arguments = mBundle
-
             fragmentTransaction.replace(
                 R.id.fv_tab_content,
                 summaryFragment
             )
-
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
         }

@@ -12,6 +12,7 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.LinkProperties
@@ -21,10 +22,14 @@ import android.os.Build
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.room.models.RentalMovieModel
@@ -171,16 +176,29 @@ fun ExoPlayer?.getLastSeek(): Long {
 }
 
 fun getGradientColor(): GradientDrawable {
+    if(Constants.GRADIENT != null)
+        return Constants.GRADIENT!!
     val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
     val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
     val gradientDrawable = GradientDrawable(
-        GradientDrawable.Orientation.TOP_BOTTOM,
+        GradientDrawable.Orientation.TR_BL,
         intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
     )
     gradientDrawable.cornerRadius = 20f
     gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-    gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
 
+    gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+    return gradientDrawable
+}
+
+fun getGradientColorForTable(): GradientDrawable {
+    val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+    val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+    val gradientDrawable = GradientDrawable(
+        GradientDrawable.Orientation.TR_BL,
+        intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+    )
+    gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
     gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
     return gradientDrawable
 }
@@ -494,4 +512,28 @@ fun Context.scheduleMsgEndTask(tickerDTO: TvTickerDTO) {
 private fun generateUniqueRequestCode(endTime: Long): Int {
     // Generate a unique requestCode, for example based on current time
     return endTime.toInt()
+}
+
+fun View.loadBg() {
+    Glide.with(this).load(Constants.BACKGROUND_IMAGE)
+        .into(object : CustomTarget<Drawable?>() {
+            override fun onResourceReady(
+                resource: Drawable,
+                transition: Transition<in Drawable?>?
+            ) {
+                resource.alpha = 120
+                val root = this as ViewGroup
+                root.background = resource
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {}
+        })
+}
+
+fun String.toInteger(): Int? {
+    var result: Int? = null
+    if (this.isNotEmpty()) {
+        result = this.toInt()
+    }
+    return result
 }

@@ -32,6 +32,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toInteger
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -313,7 +314,7 @@ class STBDetailsActivity : BaseActivity() {
                                                 }
                                             }
                                             // for live tv and full screen (Next)
-                                            if (channel.C?.toInt()!! > 1) {
+                                            if (channel.C?.toInteger()!! > 1) {
                                                 if (channel.P2_ID != null) {
                                                     val program2 =
                                                         it.programsListMap?.get(channel.P2_ID)
@@ -403,7 +404,7 @@ class STBDetailsActivity : BaseActivity() {
                                 }
                             }
                             //Sorting Channels by Channel No
-                            entries.value.sortBy { it.CNO?.toInt() }
+                            entries.value.sortBy { it.CNO?.toInteger() }
                             //Adding Channels to RoomDB.
                             lifecycleScope.launch(Dispatchers.IO) {
                                 roomRepository.insertChannels(entries.value)

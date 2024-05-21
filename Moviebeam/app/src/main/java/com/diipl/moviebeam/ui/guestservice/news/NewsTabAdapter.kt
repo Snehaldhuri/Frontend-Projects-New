@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.guestservice.news
 
-import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.news.News
 import com.diipl.moviebeam.databinding.CardNewsBinding
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
 
 class NewsTabAdapter(
     private var onMenuItemFocused: (News) -> Unit,
@@ -16,7 +17,6 @@ class NewsTabAdapter(
 ) : RecyclerView.Adapter<NewsTabAdapter.MyViewHolder>() {
 
     private var newsList: List<News> = emptyList()
-    private var gradient: GradientDrawable? = null
 
     inner class MyViewHolder(val binding: CardNewsBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -27,7 +27,7 @@ class NewsTabAdapter(
         binding.root.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                 when (keycode) {
-                    KeyEvent.KEYCODE_DPAD_LEFT ->{
+                    KeyEvent.KEYCODE_DPAD_LEFT -> {
                         onLeftKeyPressed()
                     }
                 }
@@ -44,22 +44,22 @@ class NewsTabAdapter(
         holder.binding.tvNews.text = item.title
 
         holder.itemView.post {
-            if (position == 0){
+            if (position == 0) {
                 holder.itemView.requestFocus()
             }
         }
 
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
             onMenuItemFocused(item)
-            if(isFocused){
+            if (isFocused) {
                 if (position == 0) {
                     view.nextFocusUpId = view.id
                 }
                 if (position == newsList.size.minus(1)) {
                     view.nextFocusDownId = view.id
                 }
-                holder.binding.clCard.background = gradient
-            }else{
+                holder.binding.clCard.background = getGradientColor()
+            } else {
                 if (position == 0) {
                     view.nextFocusUpId = View.NO_ID
                 }
@@ -71,12 +71,8 @@ class NewsTabAdapter(
         }
     }
 
-    fun setNewsList(newsList: List<News>){
+    fun setNewsList(newsList: List<News>) {
         this.newsList = newsList
-    }
-
-    fun setGradient(gradient: GradientDrawable){
-        this.gradient = gradient
     }
 
 }

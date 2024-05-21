@@ -11,6 +11,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -59,6 +60,9 @@ class RefreshingUiViewModel @Inject constructor(
 
     private val _epgLiveData = MutableLiveData<Resource<EPGResponse>>()
     val epgLiveData: LiveData<Resource<EPGResponse>> get() = _epgLiveData
+
+    private val _guestMessageLiveData = MutableLiveData<Resource<MessageResponse>>()
+    val guestMessageLiveData: LiveData<Resource<MessageResponse>> get() = _guestMessageLiveData
 
     fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -164,6 +168,18 @@ class RefreshingUiViewModel @Inject constructor(
                 _epgLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
                 _epgLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
+    fun fetchGuestMessage(ua: String, guestSessionId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _guestMessageLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getGuestMessages(ua, guestSessionId)
+            if (response == null) {
+                _guestMessageLiveData.postValue(Resource.DataError(code = R.string.server_error))
+            } else {
+                _guestMessageLiveData.postValue(Resource.Success(response))
             }
         }
     }
@@ -419,7 +435,7 @@ class RefreshingUiViewModel @Inject constructor(
         dataStore: DataStore<ChannelListResponse>,
         data: ChannelListResponse
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     id = data.id,
@@ -437,6 +453,21 @@ class RefreshingUiViewModel @Inject constructor(
                 _channelListLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             }.collect {
                 _channelListLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun updateGuestMessage(
+        dataStore: DataStore<MessageResponse>,
+        data: MessageResponse
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    messagesList = data.messagesList,
+                    type = data.type,
+                )
             }
         }
     }

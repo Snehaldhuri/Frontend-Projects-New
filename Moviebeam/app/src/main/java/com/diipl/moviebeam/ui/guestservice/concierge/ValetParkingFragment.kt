@@ -1,18 +1,16 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentValetParkingBinding
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.toGone
@@ -26,8 +24,6 @@ class ValetParkingFragment(
 
     private var _binding: FragmentValetParkingBinding? = null
     val binding get() = _binding!!
-    private var startColor = ""
-    private var endColor = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,7 +57,7 @@ class ValetParkingFragment(
         }
         binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                setFocus(binding.btnOk)
+                view.handleFocusChange()
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
@@ -78,17 +74,11 @@ class ValetParkingFragment(
                 binding.btnOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-        binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                setFocus(binding.btnCancel)
-            } else {
-                binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
+        binding.btnCancel.handleFocusChange()
         binding.btnCancel.setOnClickListener {
             onOkClicked()
         }
-        binding.btnOk.setOnClickListener{
+        binding.btnOk.setOnClickListener {
             binding.layoutVelvetParkingNumber.toGone()
             binding.layoutConfirmation.toVisible()
 
@@ -96,13 +86,7 @@ class ValetParkingFragment(
                 binding.btnPopOk.requestFocus()
             }, 1)
 
-            binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-                    setFocus(binding.btnPopOk)
-                } else {
-                    binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
-            }
+            binding.btnPopOk.handleFocusChange()
             binding.tvMessage.text =
                 "Thank you.your request has been sent.\nPlease proceed with valet desk to retrive your vehicle."
 
@@ -138,21 +122,4 @@ class ValetParkingFragment(
         builder.show()
     }
 
-    private fun setFocus(cardView: Button) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
-
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        this.startColor = startColor
-        this.endColor = endColor
-    }
 }

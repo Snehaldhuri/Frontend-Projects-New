@@ -166,7 +166,7 @@ fun ImageView.loadImagesWithGlideExt(url: String) {
     }
 }
 
-fun ImageView.loadImagesWithGlideExtLogo(url: String) {
+fun ImageView.loadImagesWithGlideExtLogo(url: String?) {
     if (url != null) {
         Glide.with(this)
             .load(url)

@@ -50,6 +50,7 @@ import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -77,8 +78,6 @@ class MainMenuActivity : BaseActivity() {
 
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private lateinit var binding: ActivityMainMenuBinding
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
 
@@ -153,7 +152,6 @@ class MainMenuActivity : BaseActivity() {
 
         binding.rvMenuButton.setItemFocused()
 
-
     }
 
     override fun initViewBinding() {
@@ -204,7 +202,6 @@ class MainMenuActivity : BaseActivity() {
             super.onMediaItemTransition(mediaItem, reason)
             HOTEL_VIDEO_LOOP_COUNT--
         }
-
     }
 
     private fun releaseVideoPlayer() {
@@ -217,7 +214,7 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
-                    val response = mainMenuViewModel.themeLiveData.value?.data
+                    val response = status.data
 
 //                    binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
                     response?.themeLogoFileName?.let {
@@ -225,13 +222,14 @@ class MainMenuActivity : BaseActivity() {
                         binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                     }
                     response?.gradientColor?.let {
-                        gradientStartColor = it
                         Constants.GRADIENT_COLOR_START = it
                     }
                     response?.spotLightColor?.let {
-                        gradientEndColor = it
                         Constants.GRADIENT_COLOR_END = it
                     }
+                    Constants.GRADIENT = getGradientColor()
+                    Constants.LOGO_IMAGE = response?.themeLogoFileName
+                    Constants.BG_IMAGE = response?.themeBackgroundFileName
                     response?.themeBackgroundFileName?.let {
 //                    getImageBitmap(it, Constants.BACKGROUND_IMAGE)
                         loadBg(it)
@@ -325,6 +323,7 @@ class MainMenuActivity : BaseActivity() {
                                 response.hotelChannelList.get(0).toJson()
                             )
                             bundle.putString("title", btn.title)
+                            Constants.TITLE = btn.title
                             bundle.putString(
                                 "hotelChannel",
                                 response.hotelChannelList.get(0).toJson()
@@ -344,11 +343,11 @@ class MainMenuActivity : BaseActivity() {
                             )
                             bundle.putString(
                                 "gradientStartColor",
-                                mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                                Constants.GRADIENT_COLOR_START
                             )
                             bundle.putString(
                                 "gradientEndColor",
-                                mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                                Constants.GRADIENT_COLOR_END
                             )
                             var intent: Intent? = null
                             when (btn.btnId) {
@@ -402,9 +401,6 @@ class MainMenuActivity : BaseActivity() {
                             }
                         }
                         adapter.itemList = sortedBtnModelList
-                        if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
-                            adapter.setGradientColor(gradientStartColor, gradientEndColor)
-                        }
                         binding.rvMenuButton.adapter = adapter
 
                         binding.pbLoader.toInvisible()
@@ -427,7 +423,9 @@ class MainMenuActivity : BaseActivity() {
         try {
             if (status) {
                 mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
-            }
+                Constants.IS_CHECKED_IN = true
+            }else
+                Constants.IS_CHECKED_IN = false
             Constants.SESSION_ID = "null"
             binding.pbLoader.toInvisible()
         } catch (e: Exception) {
@@ -551,6 +549,5 @@ class MainMenuActivity : BaseActivity() {
         }
         return false
     }
-
 
 }

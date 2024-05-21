@@ -1,7 +1,5 @@
 package com.diipl.moviebeam.ui.guestservice.flightstatus
 
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -13,12 +11,14 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.databinding.FragmentFlightStatusBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.getGradientColorForTable
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -38,9 +38,6 @@ class FlightStatusFragment(
     private var isDep = true
     private var callType = Constants.DEPARTURE
     private var apCode = ""
-
-    private var gradientButton: GradientDrawable? = null
-    private var gradientTable: GradientDrawable? = null
 
     interface OnFlightStatusChangedListener {
         fun onFlightStatusChanged(isDeparture: Boolean)
@@ -79,7 +76,7 @@ class FlightStatusFragment(
 
         binding.btnArrDep.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
-                view.background = gradientButton
+                view.background = getGradientColor()
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
@@ -109,7 +106,7 @@ class FlightStatusFragment(
         dropdown.onItemSelectedListener = this
         dropdown.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
-                view.background = gradientButton
+                view.background = getGradientColor()
                 view.findViewById<TextView>(R.id.tv_title)?.let {
                     it.isSelected = true
                 }
@@ -120,6 +117,7 @@ class FlightStatusFragment(
                                 view.nextFocusUpId = View.NO_ID
                                 return@setOnKeyListener true
                             }
+
                             KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
                         }
                     }
@@ -187,32 +185,10 @@ class FlightStatusFragment(
 
     private fun handleFlightStatusFocus(view: View, isFocused: Boolean) {
         if (isFocused) {
-            view.background = gradientTable
+            view.background = getGradientColorForTable()
         } else {
             view.setBackgroundResource(R.color.transparent)
         }
-    }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        gradientButton = getGradient(startColor, endColor)
-        gradientTable = getGradient(startColor, endColor, true)
-    }
-
-    private fun getGradient(
-        startColor: String,
-        endColor: String,
-        isTable: Boolean = false
-    ): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        if (!isTable)
-            gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
     }
 
 }

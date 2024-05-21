@@ -33,6 +33,7 @@ import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -55,7 +56,6 @@ class ProgramGuideActivity : BaseActivity() {
     private lateinit var binding: ActivityProgramGuideBinding
     private val programGuideViewModel: ProgramGuideViewModel by viewModels()
 
-    private var gradient: GradientDrawable? = null
     private var channelContent: List<String?>? = null
     private var channelList: List<ChannelEpgDTO>? = null
     private var channelListNext: List<ChannelEpgDTO>? = null
@@ -80,8 +80,8 @@ class ProgramGuideActivity : BaseActivity() {
         this.getChannelsFromRoomDB()
         fetchDetails()
         setContentView(binding.root)
-        binding.btnBack.setOnFocusChangeListener(::handleBtnFocus)
-        binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
+        binding.btnBack.handleFocusChange()
+        binding.btnSearch.handleFocusChange()
         binding.btnBack.setOnClickListener { finish() }
         binding.pbLoader.toVisible()
     }
@@ -240,11 +240,6 @@ class ProgramGuideActivity : BaseActivity() {
         }
         intent.extras?.let {
             binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
-            gradient =
-                getGradient(
-                    it.getString(Constants.GRADIENT_START_COLOR_PARAM),
-                    it.getString(Constants.GRADIENT_END_COLOR_PARAM)
-                )
             loadBg(it.getString("themeBackgroundFileName"))
         }
     }
@@ -280,14 +275,6 @@ class ProgramGuideActivity : BaseActivity() {
 
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
-    }
-
-    private fun handleBtnFocus(view: View, focus: Boolean) {
-        if (focus) {
-            view.background = gradient
-        } else {
-            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        }
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {

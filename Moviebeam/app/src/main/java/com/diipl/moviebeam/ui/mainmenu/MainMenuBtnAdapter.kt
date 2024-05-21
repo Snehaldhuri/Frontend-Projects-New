@@ -1,7 +1,5 @@
 package com.diipl.moviebeam.ui.mainmenu
 
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -13,16 +11,14 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
-import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.handleFocusChange
 
 private const val TAG = "MainMenuBtnAdapter"
+
 class MainMenuBtnAdapter(
     private var onMenuItemClicked: (BtnModel) -> Unit
 ) :
     RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
-
-    private var startColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var endColor = Constants.DEFAULTGRADIENTENDCOLOR
     var itemList: List<BtnModel> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -44,54 +40,34 @@ class MainMenuBtnAdapter(
         holder.imageView.setImageResource(item.imageResId)
         holder.textView.text = item.title
 
-/*
-        holder.card.postDelayed(
-            {
-                if (holder.absoluteAdapterPosition == 0) {
-                    holder.card.requestFocus()
-                }
-            },200
-        )
-*/
+        /*
+                holder.card.postDelayed(
+                    {
+                        if (holder.absoluteAdapterPosition == 0) {
+                            holder.card.requestFocus()
+                        }
+                    },200
+                )
+        */
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
-        holder.card.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                fetchGradientColorsFromApi(holder.card)
-            } else {
-                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
+        holder.card.handleFocusChange()
         holder.card.setOnClickListener {
             onMenuItemClicked(item)
         }
 
         holder.itemView.setOnKeyListener { view, i, keyEvent ->
             if (i == KeyEvent.KEYCODE_TV_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_TV_INPUT")
-            if (i == KeyEvent.KEYCODE_NAVIGATE_IN) Log.e(TAG, "onBindViewHolder: KEYCODE_NAVIGATE_IN")
+            if (i == KeyEvent.KEYCODE_NAVIGATE_IN) Log.e(
+                TAG,
+                "onBindViewHolder: KEYCODE_NAVIGATE_IN"
+            )
             if (i == KeyEvent.KEYCODE_AVR_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_AVR_INPUT")
             if (i == KeyEvent.KEYCODE_STB_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_STB_INPUT")
             Log.e(TAG, "onBindViewHolder: $i")
             false
         }
 
-    }
-
-    private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        this.startColor = startColor
-        this.endColor = endColor
     }
 
 }

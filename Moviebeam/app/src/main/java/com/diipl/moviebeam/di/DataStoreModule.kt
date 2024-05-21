@@ -10,6 +10,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -44,6 +45,7 @@ private const val SHOWTIME__DATA_STORE_FILE_NAME = "showtime_prefs.pb"
 private const val GUEST_DETAILS_DATA_STORE_FILE_NAME = "guests_details.pb"
 private const val CHANNEL_LIST_DATA_STORE_FILE_NAME = "channel_list.pb"
 private const val TICKER_DATA_STORE_FILE_NAME = "ticker_prefs.pb"
+private const val MESSAGE_DATA_STORE_FILE_NAME = "message_prefs.pb"
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -175,6 +177,18 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = TickerSerializer(),
             produceFile = { appContext.dataStoreFile(TICKER_DATA_STORE_FILE_NAME) },
+            corruptionHandler = null,
+            migrations = listOf(),
+            scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun provideMessageDataStore(@ApplicationContext appContext: Context): DataStore<MessageResponse> {
+        return DataStoreFactory.create(
+            serializer = GuestMessageSerializer(),
+            produceFile = { appContext.dataStoreFile(MESSAGE_DATA_STORE_FILE_NAME) },
             corruptionHandler = null,
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -429,6 +443,29 @@ class TickerSerializer @Inject constructor() : Serializer<TickerResponse> {
     override suspend fun writeTo(t: TickerResponse, output: OutputStream) {
         output.write(
             Json.encodeToString(TickerResponse.serializer(), t)
+                .encodeToByteArray()
+        )
+    }
+}
+
+@Singleton
+class GuestMessageSerializer @Inject constructor() : Serializer<MessageResponse> {
+    override val defaultValue: MessageResponse
+        get() = MessageResponse()
+
+    override suspend fun readFrom(input: InputStream): MessageResponse =
+        try {
+            Json.decodeFromString(
+                MessageResponse.serializer(),
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read Settings", serialization)
+        }
+
+    override suspend fun writeTo(t: MessageResponse, output: OutputStream) {
+        output.write(
+            Json.encodeToString(MessageResponse.serializer(), t)
                 .encodeToByteArray()
         )
     }

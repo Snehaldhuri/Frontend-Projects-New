@@ -1,9 +1,7 @@
 package com.diipl.moviebeam.ui.guestservice
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -24,6 +22,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryDataResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.ActivityGuestServiceBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -39,12 +38,15 @@ import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackFragment
 import com.diipl.moviebeam.ui.guestservice.flightstatus.FlightStatusFragment
 import com.diipl.moviebeam.ui.guestservice.inroomdininggs.InRoomDiningGsFragment
 import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFragment
+import com.diipl.moviebeam.ui.guestservice.message.MessageFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -57,23 +59,20 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChangeListener{
+class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChangeListener {
 
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
     private lateinit var binding: ActivityGuestServiceBinding
     private var conciergeIndex = 0
-    private var conciergePosition = 0
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
-    private var gradient: GradientDrawable? = null
+
+    @Inject
+    lateinit var guestMessageDataStore: DataStore<MessageResponse>
     private var btnId: String = ""
     private var adapterView: View? = null
     private var focusView: View? = null
@@ -85,10 +84,11 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
 
     override fun observeViewModel() {
         observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+        observe(guestServiceViewModel.guestMessageLiveData, ::handleGuestMessageResponse)
         observeSnackBarMessages(guestServiceViewModel.showSnackBar)
         observeToast(guestServiceViewModel.showToast)
 
-        guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
+//        guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
 
     }
 
@@ -96,9 +96,9 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
         super.onCreate(savedInstanceState)
         try {
             fetchDetails()
-
+            guestServiceViewModel.getGuestMessageResponseData(guestMessageDataStore)
             btnId = intent.getStringExtra("btnId").toString()
-            if (btnId == ALL_SERVICES) {
+            if (btnId == ALL_SERVICES || btnId == Constants.MESSAGE_ID) {
                 binding.rvTabLayout.layoutManager =
                     LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
                 binding.rvTabLayout.toVisible()
@@ -112,22 +112,30 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
             binding.btnBack.toDelayVisible()
             binding.btnBack.setOnFocusChangeListener(::handleBackClick)
             binding.btnBack.setOnClickListener { finish() }
-            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity","08")
+            LoggingService.sendMessageToWebSocket(
+                "In GuestServicesMain activity",
+                getCurrentPanelNumber()
+            )
 
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity onCreate:${e.message}","08")
+            LoggingService.sendMessageToWebSocket(
+                "In GuestServicesMain activity onCreate:${e.message}",
+                getCurrentPanelNumber()
+            )
         }
     }
 
 
     private fun readLaundryJson(): LaundryDataResponse? {
         return try {
-        val gson = Gson()
-        val inputStream = this.assets.open("LaundryData.json")
-        val br = BufferedReader(InputStreamReader(inputStream))
-        gson.fromJson(br, LaundryDataResponse::class.java)
+            val gson = Gson()
+            val br = this.assets.open("LaundryData.json").bufferedReader()
+            gson.fromJson(br, LaundryDataResponse::class.java)
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity readLaundryJson:${e.message}","08")
+            LoggingService.sendMessageToWebSocket(
+                "In GuestServicesMain activity readLaundryJson:${e.message}",
+                getCurrentPanelNumber()
+            )
             null
         }
     }
@@ -135,17 +143,18 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
     private fun readToiletryJson(): ToiletryResponse {
         return try {
             val gson = Gson()
-            val inputStream = this.assets.open("ToiletryData.json")
-            val br = BufferedReader(InputStreamReader(inputStream))
+            val br = this.assets.open("ToiletryData.json").bufferedReader()
             val stringBuilder = StringBuilder()
             for (str in br.readLines()) {
                 stringBuilder.append(str)
             }
             val data = JSONObject(stringBuilder.toString())
             gson.fromJson(data.toString(), ToiletryResponse::class.java)
-        }
-        catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("In GuestServicesMain activity readToiletryJson:${e.message}","08")
+        } catch (e: Exception) {
+            LoggingService.sendMessageToWebSocket(
+                "In GuestServicesMain activity readToiletryJson:${e.message}",
+                getCurrentPanelNumber()
+            )
             ToiletryResponse()
         }
     }
@@ -160,19 +169,25 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
 
             is Resource.Success -> {
                 try {
+                    val guestMessages: Int =
+                        guestServiceViewModel.guestMessageLiveData.value?.data?.messagesList?.size
+                            ?: 0
                     val gsBtnListFromApi: List<String>? = guestServiceViewModel.accountSetupLiveData
                         .value?.data?.gsButtonsList?.map { it.buttonName }
-                    val gsBtnModelList: List<GsBtnModel> =
+                    val gsBtnModelList =
                         Constants.GUEST_SERVICE_BUTTON_LIST.filter {
                             gsBtnListFromApi?.contains(it.btnId) == true
-                        }
+                        }.toMutableList()
+                    //Removing Message Tab if there are no Messages.
+                    if (guestMessages == 0)
+                        gsBtnModelList.remove(Constants.MESSAGE_MODEL)
                     val sortedGsBtnModelList: List<GsBtnModel> = gsBtnModelList.sortedBy {
                         gsBtnListFromApi?.indexOf(it.btnId) ?: Int.MAX_VALUE
                     }
                     val adapter = GuestServiceTabAdapter(onMenuItemClicked = { view, service ->
-                        if(service.btnId == "flightStatus"){
-                            binding.tvServiceTitle.text ="Departures"
-                        }else{
+                        if (service.btnId == "flightStatus") {
+                            binding.tvServiceTitle.text = "Departures"
+                        } else {
                             binding.tvServiceTitle.text = service.categoryName
                         }
                         adapterView = view
@@ -182,20 +197,50 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                     },
                         onFocusChangeListener = this // Provide the onFocusChangeListener here
                     )
-                    if(btnId != Constants.LA_ID) {
+                    if (btnId != Constants.LA_ID && btnId != Constants.MESSAGE_ID) {
                         val transaction = supportFragmentManager.beginTransaction()
                         val fragment = WeatherFragment()
                         transaction.replace(R.id.fv_tab_content, fragment)
                         transaction.commit()
+                        binding.tvServiceTitle.text = "Weather"
                     }
                     adapter.setButtonList(ArrayList(sortedGsBtnModelList.map { it.copy() }))
-                    adapter.setGradientColor(gradientStartColor, gradientEndColor)
 
                     binding.rvTabLayout.adapter = adapter
+                    //todo Opening messages.
+                    if (btnId == Constants.MESSAGE_ID)
+                        openMessages()
 
                     binding.loaderView.toInvisible()
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket("handleAccountSetupResponse Exception in GuestServicesMain activity: ${e.message}","08")
+                    LoggingService.sendMessageToWebSocket(
+                        "handleAccountSetupResponse Exception in GuestServicesMain activity: ${e.message}",
+                        getCurrentPanelNumber()
+                    )
+                }
+            }
+
+            else -> {
+                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun handleGuestMessageResponse(status: Resource<MessageResponse>) {
+        when (status) {
+            is Resource.Loading -> {
+                binding.loaderView.toVisible()
+            }
+
+            is Resource.Success -> {
+                try {
+                    guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
+                    binding.loaderView.toInvisible()
+                } catch (e: Exception) {
+                    LoggingService.sendMessageToWebSocket(
+                        "handleGuestMessageResponse Exception in GuestServicesMainActivity: ${e.message}",
+                        getCurrentPanelNumber()
+                    )
                 }
             }
 
@@ -240,11 +285,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
 
                             changeFragment(fragment)
 
-                            fragment.setGradientColor(
-                                gradientStartColor,
-                                gradientEndColor
-                            )
-
                         }
 
                         2 -> {
@@ -253,12 +293,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                                 handleBackRemoteClick()
                             }
 
-
                             changeFragment(fragment)
-                            fragment.setGradientColor(
-                                gradientStartColor,
-                                gradientEndColor
-                            )
                         }
 
                         4 -> {
@@ -268,10 +303,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                                 requestFocus()
                                 handleBackRemoteClick()
                             }
-                            val mBundle = Bundle()
-                            mBundle.putString("gradientStartColor", gradientStartColor)
-                            mBundle.putString("gradientEndColor", gradientEndColor)
-                            fragment.arguments = mBundle
                             val toiletryData = readToiletryJson()
                             fragment.setToiletryData(toiletryData)
                             changeFragment(fragment)
@@ -295,11 +326,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                             }
                             changeFragment(fragment)
 
-                            fragment.setGradientColor(
-                                gradientStartColor,
-                                gradientEndColor
-                            )
-
                         }
 
                         3 -> {
@@ -307,12 +333,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                                 requestFocus()
                                 handleBackRemoteClick()
                             }
-
-
-                            fragment.setGradientColor(
-                                gradientStartColor,
-                                gradientEndColor
-                            )
                             val laundryData = readLaundryJson()
                             if (laundryData != null) {
                                 fragment.setLaundryData(laundryData)
@@ -333,8 +353,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
 
                 concierge.setAdapter(
                     conciergeModelList,
-                    gradientStartColor,
-                    gradientEndColor,
                     focusView
                 )
             }
@@ -347,7 +365,8 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 val fragment = FlightStatusFragment(
                     onLeftKeyPressed = {
                     },
-                    flightStatusChangedListener = object : FlightStatusFragment.OnFlightStatusChangedListener {
+                    flightStatusChangedListener = object :
+                        FlightStatusFragment.OnFlightStatusChangedListener {
                         override fun onFlightStatusChanged(isDeparture: Boolean) {
                             if (isDeparture) {
                                 binding.tvServiceTitle.text = "Departures"
@@ -361,7 +380,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 guestServiceViewModel.accountSetupLiveData.value?.data?.airportCode?.let { airports ->
                     fragment.setAirportList(airports)
                 }
-                fragment.setGradientColor(gradientStartColor, gradientEndColor)
                 changeFragment(fragment)
 
             }
@@ -378,7 +396,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 val fragment = NewsFragment {
                     requestFocus()
                 }
-                fragment.setGradientColor(gradientStartColor, gradientEndColor)
                 changeFragment(fragment)
 
             }
@@ -389,7 +406,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 val fragment = FeedbackFragment {
                     requestFocus()
                 }
-                fragment.setGradientColor(gradientStartColor, gradientEndColor)
                 changeFragment(fragment)
 
             }
@@ -401,7 +417,6 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                     focusView = v
                     requestFocus()
                 }
-                fragment.setGradientColor(gradientStartColor, gradientEndColor)
                 changeFragment(fragment)
 
             }
@@ -411,6 +426,29 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                 focusView = null
                 changeFragment(InRoomDiningGsFragment())
             }
+
+            Constants.MESSAGE_ID -> {
+                conciergeIndex = 0
+                focusView = null
+                changeFragment(MessageFragment())
+            }
+        }
+    }
+
+    private fun openMessages() {
+        val adapter = binding.rvTabLayout.adapter as GuestServiceTabAdapter
+        val messageIndex = adapter.itemList.indexOf(Constants.MESSAGE_MODEL)
+        if (messageIndex != -1) {
+            binding.rvTabLayout.post {
+                binding.rvTabLayout.scrollToPosition(messageIndex)
+                binding.rvTabLayout.post {
+                    val viewHolder =
+                        binding.rvTabLayout.findViewHolderForAdapterPosition(messageIndex)
+                    viewHolder?.itemView?.requestFocus()
+                    viewHolder?.itemView?.performClick()
+                }
+            }
+
         }
     }
 
@@ -427,6 +465,7 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
                     binding.root.background = resource
 //                    binding.root.setBackgroundColor(Color.argb(0.6f, 0f, 0f, 0f))
                 }
+
                 override fun onLoadCleared(placeholder: Drawable?) {}
             })
     }
@@ -439,39 +478,32 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    private fun getGradient(): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
-    }
-
     private fun handleBackClick(view: View, focus: Boolean) {
         if (focus) {
-            view.background = gradient
+            view.background = getGradientColor()
         } else {
             view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         }
     }
 
     private fun fetchDetails() {
-        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
-        intent.extras?.getString("gradientStartColor")?.let {
-            gradientStartColor = it
-        }
-        intent.extras?.getString("gradientEndColor")?.let {
-            gradientEndColor = it
-        }
-        gradient = getGradient()
-        intent.extras?.getString("themeLogoFileName")?.let {
+//        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
+//        intent.extras?.getString("gradientStartColor")?.let {
+//            gradientStartColor = it
+//        }
+//        intent.extras?.getString("gradientEndColor")?.let {
+//            gradientEndColor = it
+//        }
+//        gradient = getGradient()
+//        intent.extras?.getString("themeLogoFileName")?.let {
+//            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
+//        }
+//        loadBg(intent.extras?.getString("themeBackgroundFileName"))
+        binding.layoutHeader.tvTitle.text = Constants.TITLE
+        Constants.LOGO_IMAGE?.let {
             binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
         }
-        loadBg(intent.extras?.getString("themeBackgroundFileName"))
+        loadBg(Constants.BG_IMAGE)
     }
 
     private fun handleBackRemoteClick() {
@@ -498,17 +530,15 @@ class GuestServiceActivity : BaseActivity() ,GuestServiceTabAdapter.OnFocusChang
         return false
     }
 
-    override fun onItemFocused(position:Int, itemList: List<GsBtnModel>) {
+    override fun onItemFocused(position: Int, itemList: List<GsBtnModel>) {
         if (position == 0) {
             binding.gsUp.visibility = View.GONE
-        }
-        else{
+        } else {
             binding.gsUp.visibility = View.VISIBLE
         }
-        if(position == itemList.size - 1){
+        if (position == itemList.size - 1) {
             binding.gsDown.visibility = View.GONE
-        }
-        else {
+        } else {
             binding.gsDown.visibility = View.VISIBLE
         }
     }

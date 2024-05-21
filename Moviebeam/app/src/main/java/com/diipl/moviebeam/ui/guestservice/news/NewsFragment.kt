@@ -1,7 +1,5 @@
 package com.diipl.moviebeam.ui.guestservice.news
 
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -24,9 +22,6 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
     val binding get() = _binding!!
     private val newsViewModel: NewsViewModel by activityViewModels()
 
-    private var gradientStartColor: String? = null
-    private var gradientEndColor: String? = null
-
     private var selectedHeaderItemPosition = 0
     private val selectedMenuItemPosition = 0
 
@@ -38,9 +33,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
         observe(newsViewModel.newsLiveData, ::handleNewsDetailsResponse)
     }
 
-    override fun initViewBinding() {
-
-    }
+    override fun initViewBinding() {}
 
     private fun handleNewsHeaderResponse(status: Resource<NewsHeaderResponse>) {
         when (status) {
@@ -76,7 +69,6 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                 newsHeaderDetails?.newsHeaderList?.let {
                     adapter.setNewsHeaderList(it)
                 }
-                adapter.setGradient(getGradient())
                 binding.rvNewsHeader.adapter = adapter
                 newsHeaderDetails?.newsHeaderList?.get(0)?.id?.let {
                     newsViewModel.fetchNewsDetails(it)
@@ -104,7 +96,6 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                     binding.tvDescription.text = it.description
                     binding.tvPublishDate.text = it.publishDate
                 }, onLeftKeyPressed = {
-//                    binding.rvNews.findViewHolderForAdapterPosition(selectedHeaderItemPosition)?.itemView?.requestFocus()
                     headerView?.let {
                         binding.rvNewsHeader.post {
                             binding.rvNewsHeader.findContainingItemView(it)?.requestFocus()
@@ -114,7 +105,6 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                 newsDetails?.newsList?.let {
                     adapter.setNewsList(it)
                 }
-                adapter.setGradient(getGradient())
                 binding.rvNews.adapter = adapter
                 newsDetails?.newsList?.get(0)?.let {
                     binding.tvTitle.text = it.title
@@ -136,23 +126,6 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
     ): View {
         _binding = FragmentNewsBinding.inflate(inflater, container, false)
         return binding.root
-    }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        gradientStartColor = startColor
-        gradientEndColor = endColor
-    }
-
-    private fun getGradient(): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
-        )
-        gradientDrawable.cornerRadius = 10f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
     }
 
 }
