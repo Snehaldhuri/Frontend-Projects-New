@@ -1270,6 +1270,7 @@ class EndlessService : Service() {
                 MDM_PACKAGE_NAME,
                 KapingConstants.MDM_RESTART_ACTIVITY_NAME
             )
+            ComponentName(MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
