@@ -45,6 +45,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_CONTENT_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_FINISH_TIME
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.NETWORK_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
@@ -275,8 +276,24 @@ class EndlessService : Service() {
         filter.addAction(Intent.ACTION_SCREEN_ON)
         registerReceiver(homePressReceiver, filter)
 
+        // TODO
+        var isSwitched = false
+        CoroutineScope(Dispatchers.IO).launch {
+            while (true){
+                preferenceDataStoreHelper.putPreference(NETWORK_STATUS, networkUtils.isNetworkAvailable())
+                if (!networkUtils.isNetworkAvailable() && !isSwitched){
+                    isSwitched = true
+                   startMainMenu()
+                }
+                if (networkUtils.isNetworkAvailable() && isSwitched)
+                    isSwitched = false
+                delay(1000)
+            }
+        }
+
         val notification = createNotification()
         startForeground(1, notification)
+
     }
 
     private val homePressReceiver = object : BroadcastReceiver() {
@@ -305,11 +322,7 @@ class EndlessService : Service() {
                                 }
                             }
                             if (activityStack.last() != MainMenuActivity::class.java.simpleName) {
-                                startActivity(Intent(
-                                    context, MainMenuActivity::class.java
-                                ).also { i ->
-                                    i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                })
+                                startMainMenu()
                                 Log.e(TAG, "onReceive: 0")
                                 return
                             } else {
@@ -329,10 +342,7 @@ class EndlessService : Service() {
                     Intent.ACTION_SCREEN_ON -> {
                         CoroutineScope(Dispatchers.Default).launch {
                             delay(10000)
-                            startActivity(Intent(context, MainMenuActivity::class.java).also { i ->
-                                i.flags =
-                                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            })
+                            startMainMenu()
                         }
                     }
 
@@ -346,6 +356,13 @@ class EndlessService : Service() {
                 }
             }
         }
+    }
+
+    private fun startMainMenu() {
+        startActivity(Intent(applicationContext, MainMenuActivity::class.java).also { i ->
+            i.flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        })
     }
 
 
@@ -1265,12 +1282,7 @@ class EndlessService : Service() {
 
     private fun handleRebootCmd() {
         val intent = Intent()
-        intent.component =
-            ComponentName(
-                MDM_PACKAGE_NAME,
-                KapingConstants.MDM_RESTART_ACTIVITY_NAME
-            )
-            ComponentName(MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
+        intent.component = ComponentName(MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(intent)
         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY

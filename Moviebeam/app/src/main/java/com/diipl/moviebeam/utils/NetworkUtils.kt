@@ -3,7 +3,6 @@ package com.diipl.moviebeam.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.wifi.WifiManager
 import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -11,18 +10,35 @@ import javax.inject.Inject
 class NetworkUtils @Inject constructor(
     @ApplicationContext val context : Context
 ) {
-    private val connectivityManager: ConnectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)  as ConnectivityManager
 
-    val isNetworkConnected : Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-        connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            .isNetworkCapabilitiesValid()
-    }else {
-        connectivityManager.activeNetworkInfo?.isConnected ?: false
+    private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)  as ConnectivityManager
+
+    fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val nw = connectivityManager.activeNetwork ?: return false
+            val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+            return when {
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                //for other device how are able to connect with Ethernet
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                //for check internet over Bluetooth
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+                else -> false
+            }
+        } else {
+            return connectivityManager.activeNetworkInfo?.isConnected ?: false
+        }
     }
 
+    val isNetworkConnected =
+        connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            ?.isNetworkCapabilitiesValid() == true
 
-    private fun NetworkCapabilities?.isNetworkCapabilitiesValid(): Boolean = when {
-        this == null -> false
+
+    private fun NetworkCapabilities.isNetworkCapabilitiesValid(): Boolean = when {
         hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
                 hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
                 (hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
@@ -56,12 +72,6 @@ class NetworkUtils @Inject constructor(
                 else -> "UNKNOWN NETWORK"
             }
         }
-    }
-
-    fun getWifiMac(): String {
-        val manager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val info = manager.connectionInfo
-        return info.macAddress.uppercase()
     }
 
 }

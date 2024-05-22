@@ -66,6 +66,7 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.URL
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Collections
 import java.util.Date
 import java.util.Locale
@@ -536,4 +537,48 @@ fun String.toInteger(): Int? {
         result = this.toInt()
     }
     return result
+}
+
+fun Context.clearCache(){
+    cacheDir.delete()
+    cacheDir.deleteRecursively()
+    codeCacheDir.delete()
+    codeCacheDir.deleteRecursively()
+}
+
+fun fetchCurrentProgramKey(cal: Calendar = Calendar.getInstance()): String {
+    val date = cal.get(Calendar.DATE)
+    val month = cal.get(Calendar.MONTH) + 1
+    val year = cal.get(Calendar.YEAR)
+    var hour = cal.get(Calendar.HOUR)
+    val minutes = cal.get(Calendar.MINUTE)
+    val amPm = cal.get(Calendar.AM_PM)
+    val time = StringBuilder()
+
+    if (date < 10) time.append(appendZeros(date))
+    else time.append(date)
+
+    if (month < 10) time.append(appendZeros(month))
+    else time.append(month)
+
+    time.append(year)
+
+    if (hour == 0) hour = 12
+
+    if (hour < 10) time.append(appendZeros(hour))
+    else time.append(hour.toString())
+
+    if (minutes < 30) time.append("00")
+    else time.append("30")
+
+    if (amPm == 0) time.append("AM")
+    else time.append("PM")
+
+    return time.toString()
+}
+
+private fun appendZeros(value: Int): String {
+    val str = StringBuffer(value.toString()).reverse()
+    str.append("0")
+    return str.reverse().toString()
 }

@@ -9,6 +9,9 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.diipl.moviebeam.data.dto.remote.FrequencyModel;
+import com.google.gson.Gson;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -680,4 +683,11 @@ public class SharedPreference {
         putBoolean("rebooted", rebooted);
     }
 
+    public void setIRFrequencyModel(FrequencyModel model){
+        putString("IRFrequencyModel", new Gson().toJson(model));
+    }
+    public FrequencyModel getIRFrequencyModel(){
+        String obj = getString("IRFrequencyModel");
+        return new Gson().fromJson(obj, FrequencyModel.class);
+    }
 }

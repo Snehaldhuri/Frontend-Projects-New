@@ -102,10 +102,6 @@ dependencies {
     // hilt
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     kapt("com.google.dagger:hilt-android-compiler:$hiltVersion")
-//    implementation "androidx.work:work-runtime-ktx:2.6.0"
-//    implementation 'androidx.hilt:hilt-work:1.0.0'
-//    implementation 'androidx.hilt:hilt-common:1.0.0'
-//    kapt("androidx.hilt:hilt-compiler:1.0.0")
 
     implementation "androidx.fragment:fragment-ktx:1.6.2"
 
@@ -129,11 +125,6 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer-dash:$exoplayerVersion"
     implementation "androidx.media3:media3-ui:$exoplayerVersion"
     implementation "androidx.media3:media3-exoplayer-hls:$exoplayerVersion"
-//    implementation("androidx.media3:media3-exoplayer-rtsp:$exoplayerVersion")
-//    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
-//    implementation 'nl.bravobit:android-ffmpeg:1.1.7'
-//    implementation 'com.arthenica:ffmpeg-kit-full:6.0'
-//    implementation 'org.videolan.android:libvlc-all:3.4.4'
 
     implementation("com.google.zxing:core:3.5.3")
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.21"

@@ -69,7 +69,6 @@ class SerialActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
-
     }
 
     private fun fetchSerialNo() {

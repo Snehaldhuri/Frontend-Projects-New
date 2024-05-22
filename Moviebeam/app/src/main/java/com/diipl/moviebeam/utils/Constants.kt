@@ -386,5 +386,9 @@ object Constants {
     const val TICKER_DTO_PARAM = "TICKER_DTO"
     const val TICKER_MESSAGE_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
 
+    const val BUILD_TYPE_CHROMECAST = "CHROMECAST"
+    const val BUILD_TYPE_STB = "STB"
+    const val BUILD_TYPE_MINI_BOX = "MINI_BOX"
+
 }
 

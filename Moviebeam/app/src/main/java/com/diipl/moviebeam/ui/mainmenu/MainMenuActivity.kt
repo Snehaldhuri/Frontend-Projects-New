@@ -104,9 +104,15 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
+        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
+
+    }
+
+    private fun handleNetworkResponse(b: Boolean) {
+        mainMenuViewModel.showToastMessage("Network: $b")
     }
 
 
@@ -122,6 +128,7 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getTickerResponseData(tickerDatastore)
 
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
+        mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
         // start the endless service
         if (!isServiceStarted) {
