@@ -45,6 +45,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_CONTENT_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_FINISH_TIME
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.NETWORK_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
@@ -70,6 +71,7 @@ import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.MDM_PACKAGE_NAME
 import com.diipl.moviebeam.utils.DeviceUtils
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.KapingConstants.MDM_SOFTWARE_ACTIVITY

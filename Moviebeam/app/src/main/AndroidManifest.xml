@@ -234,22 +234,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!--  <receiver
-              android:name="android.app.admin.DeviceAdminReceiver"
-              android:exported="false"
-              android:permission="android.permission.BIND_DEVICE_ADMIN">
-              <meta-data
-                  android:name="android.app.device_admin"
-                  android:resource="@xml/device_admin_receiver" />
-
-              <intent-filter>
-                  <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-              </intent-filter>
-          </receiver>-->
-
-        <!-- dpm set-device-owner com.diipl.moviebeam/.AdminReceiver -->
-        <!-- dpm remove-active-admin com.diipl.moviebeam/.AdminReceiver -->
-
     </application>
 
 </manifest>
