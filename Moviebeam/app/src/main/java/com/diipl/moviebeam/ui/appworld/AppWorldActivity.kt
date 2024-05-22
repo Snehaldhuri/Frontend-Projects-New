@@ -5,8 +5,6 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
@@ -48,7 +46,7 @@ class AppWorldActivity : BaseActivity() {
 
     private var isCheckedIn = false
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-
+    private lateinit var appList: ArrayList<String>
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -74,6 +72,8 @@ class AppWorldActivity : BaseActivity() {
             binding.rvApps.layoutManager = GridLayoutManager(this, 4)
             binding.btnBack.setOnClickListener { finish() }
             binding.btnBack.handleFocusChange()
+            binding.btnClearCredentials.handleFocusChange()
+            binding.btnClearCredentials.setOnClickListener { clearCredentials() }
             LoggingService.sendMessageToWebSocket(
                 "In AppWorldMain activity",
                 getCurrentPanelNumber()
@@ -87,6 +87,15 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
+    private fun clearCredentials() {
+        // Send broadcast to start the ClearCredentialsWorker in the target application
+        val intent = Intent()
+        intent.action = Constants.MDM_CLEAR_CREDENTIALS_ACTION
+        intent.setPackage(Constants.MDM_PACKAGE_NAME)
+        intent.putStringArrayListExtra(Constants.APP_LIST_PARAM, appList)
+        sendBroadcast(intent)
+    }
+
     private fun handleValidateSessionResponse(status: Boolean) {
         this.isCheckedIn = status
     }
@@ -94,13 +103,15 @@ class AppWorldActivity : BaseActivity() {
     private fun getInstalledApps(apiAppList: List<SelectedApps>) {
         try {
             val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-            val installedApps = filterSystemApps(allApps)
-            val selectedApps = mutableListOf<ApplicationInfo>()
-            apiAppList.forEach { selectedApp ->
-                installedApps.forEach { installedApp ->
-                    if (selectedApp.forAndroid and (selectedApp.value == installedApp.packageName))
-                        selectedApps.add(installedApp)
-                }
+//            val selectedApps = mutableListOf<ApplicationInfo>()
+//            apiAppList.forEach { selectedApp ->
+//                allApps.forEach { installedApp ->
+//                    if (selectedApp.forAndroid and (selectedApp.value == installedApp.packageName))
+//                        selectedApps.add(installedApp)
+//                }
+//            }
+            val selectedApps = allApps.filter { installedApp ->
+                apiAppList.any { it.forAndroid && it.value == installedApp.packageName }
             }
             val adapter = AppAdapter {
                 if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
@@ -111,6 +122,7 @@ class AppWorldActivity : BaseActivity() {
             }
             adapter.setAppList(selectedApps)
             binding.rvApps.adapter = adapter
+            appList = ArrayList(selectedApps.map { it.packageName })
         } catch (e: Exception) {
             LoggingService.sendMessageToWebSocket(
                 "getInstalledApps Exception in AppWorldMain activity ${e.message}",
@@ -119,10 +131,10 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-    private fun createRequestBody(roomNo: String, UA: String, accessType: Int): String {
+    private fun createRequestBody(roomNo: String, ua: String, accessType: Int): String {
         val netflixDetails = JSONObject().apply {
             put("stbRoomNo", roomNo)
-            put("ua", UA)
+            put("ua", ua)
             put("accessType", accessType)
         }
         return netflixDetails.toString()

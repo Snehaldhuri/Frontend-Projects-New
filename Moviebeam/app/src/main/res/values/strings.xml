@@ -153,5 +153,6 @@
     <string name="new_session_requested">New Session Requested</string>
     <string name="information">INFORMATION</string>
     <string name="you_have_a_new_message">You have a new message.</string>
+    <string name="clear_credentials">Clear Credentials</string>
 
 </resources>
