@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/dp_8"
     tools:context=".ui.appworld.AppWorldActivity">
 
     <androidx.constraintlayout.widget.Guideline
@@ -20,7 +19,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.66" />
-
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_5"
@@ -44,11 +42,17 @@
         app:layout_constraintGuide_percent="0.1685" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_horizontal_95"
+        android:id="@+id/gl_horizontal_93"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.95" />
+        app:layout_constraintGuide_percent="0.93" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.35"
+        android:background="@color/black" />
 
     <include
         android:id="@+id/layout_header"
@@ -70,12 +74,22 @@
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
+    <Button
+        android:id="@+id/btn_clear_credentials"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_bg_gradient_default"
+        android:paddingHorizontal="@dimen/dp_5"
+        android:text="@string/clear_credentials"
+        app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
+        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_apps"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
         android:layout_margin="@dimen/dp_20"
-        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_95"
+        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_93"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/btn_back" />
