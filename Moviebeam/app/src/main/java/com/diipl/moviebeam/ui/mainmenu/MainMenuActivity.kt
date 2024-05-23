@@ -7,7 +7,9 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
+import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.core.view.updateLayoutParams
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +21,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
@@ -40,6 +43,7 @@ import com.diipl.moviebeam.ui.kappingservice.ServiceState
 import com.diipl.moviebeam.ui.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.Constants
@@ -51,6 +55,7 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -80,6 +85,7 @@ class MainMenuActivity : BaseActivity() {
     private lateinit var binding: ActivityMainMenuBinding
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
+    private var latestAccountSetupResponse: AccountSetupResponse? = null
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -158,6 +164,25 @@ class MainMenuActivity : BaseActivity() {
         binding = ActivityMainMenuBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        binding.btnDisconnected.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                view.handleFocusChange()
+                view.setOnKeyListener { _, keyCode, event ->
+                    if (event.action == KeyEvent.ACTION_DOWN) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_ENTER ,KeyEvent.KEYCODE_DPAD_CENTER -> {
+                                disconnectedMode()
+                                return@setOnKeyListener true
+                            }
+
+                        }
+                    }
+                    false
+                }
+            } else {
+                binding.btnDisconnected.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
     }
 
     override fun onPause() {
@@ -284,36 +309,63 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
+    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>?) {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
+                        latestAccountSetupResponse = response // Store the latest response data
 
                         Constants.ACCOUNT_ID = response.accountId
                         Constants.STB_ROOM_NO = response.roomNo
 
-                        if (response.contentDetailFlag) {
-                            HOTEL_VIDEO_URL =
-                                response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
-                            initializePlayer()
+                        if(Constants.DISCONNECTED_MODE){
+                            releaseVideoPlayer()
+                            loadBg(Constants.BG_IMAGE)
+                        }else{
+                            if (response.contentDetailFlag) {
+                                HOTEL_VIDEO_URL =
+                                    response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                                initializePlayer()
+                            }
                         }
 
                         binding.tvGreeting.text = response.hotelInfo
-                        val btnListFromApi: List<String> = response.buttonsList.map {
-                            it.buttonName
+
+                        val btnListFromApi: List<String> = if (Constants.DISCONNECTED_MODE) {
+                            response.buttonsList.filter { it.forDisconnectedMode }.map { it.buttonName }
+                        } else {
+                            response.buttonsList.map { it.buttonName }
                         }
-                        val btnModelList: List<BtnModel> =
-                            Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
-                                btnListFromApi.contains(it.btnId)
-                            }
+
+                        val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
+                            btnListFromApi.contains(it.btnId)
+                        }
 
                         val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
                             btnListFromApi.indexOf(it.btnId) ?: Int.MAX_VALUE
                         }
+                        val height = if (sortedBtnModelList.size < 5) {
+                            resources.getDimensionPixelSize(R.dimen.dp_110)
+                        } else {
+                            resources.getDimensionPixelSize(R.dimen.dp_200)
+                        }
+
+                        val marginTop = if (sortedBtnModelList.size < 5) {
+                            resources.getDimensionPixelSize(R.dimen.dp_70)
+                        } else {
+                            resources.getDimensionPixelSize(R.dimen.dp_1)
+                        }
+
+                        binding.cardView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                            this.height = height
+                            this.topMargin = marginTop
+                        }
 
                         binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
+
+
                         val adapter = MainMenuBtnAdapter { btn ->
                             releaseVideoPlayer()
                             val bundle = Bundle()
@@ -381,7 +433,11 @@ class MainMenuActivity : BaseActivity() {
                                 }
 
                                 Constants.PRG_GUIDE_ID -> {
-                                    intent = Intent(this, ProgramGuideActivity::class.java)
+                                    if(Constants.DISCONNECTED_MODE){
+                                        intent = Intent(this, DisconnectedPrgActivity::class.java)
+                                    }else {
+                                        intent = Intent(this, ProgramGuideActivity::class.java)
+                                    }
                                 }
 
                                 Constants.IN_ROOM_DINING_ID -> {
@@ -411,10 +467,23 @@ class MainMenuActivity : BaseActivity() {
                     )
                 }
             }
-
             else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status?.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
+        }
+    }
+
+    private fun disconnectedMode() {
+        if(Constants.DISCONNECTED_MODE){
+            Constants.DISCONNECTED_MODE = false
+            binding.btnDisconnected.text="Disconnected Mode"
+        }
+        else{
+            Constants.DISCONNECTED_MODE = true
+            binding.btnDisconnected.text="Connected Mode"
+        }
+        latestAccountSetupResponse?.let { response ->
+            handleAccountSetupResponse(Resource.Success(response))
         }
     }
 

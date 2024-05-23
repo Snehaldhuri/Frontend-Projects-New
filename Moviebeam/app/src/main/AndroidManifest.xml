@@ -13,14 +13,12 @@
         tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.READ" />
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.WRITE" />
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
@@ -49,12 +47,12 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
+
         <!--
                 <activity
                     android:name=".dtv.RichTvInputSetupActivity"
                     android:exported="true" />
         -->
-
         <!--
                 <service
                     android:name=".dtv.RichTvInputService"
@@ -68,7 +66,6 @@
                         android:resource="@xml/richtvinputservice" />
                 </service>
         -->
-
         <activity
             android:name=".ui.serial_info.SerialActivity"
             android:banner="@mipmap/ic_banner"
@@ -79,14 +76,17 @@
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustPan|adjustNothing">
-            <!--TODO Uncomment this for release-->
+
+            <!-- TODO Uncomment this for release -->
             <intent-filter>
                 <category android:name="android.intent.category.HOME" />
+
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+
                 <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
             </intent-filter>
-
         </activity>
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
@@ -97,16 +97,16 @@
             android:logo="@mipmap/ic_launcher"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
-<!--
+
+            <!--
             <intent-filter>
                 <category android:name="android.intent.category.HOME" />
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
                 <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
             </intent-filter>
--->
+            -->
         </activity>
-
         <activity
             android:name=".ui.movies.ConfirmRentalActivity"
             android:exported="false"
@@ -145,6 +145,11 @@
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustNothing|adjustPan" />
+        <activity
+            android:name=".ui.programguide.DisconnectedPrgActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:windowSoftInputMode="adjustNothing|adjustPan"/>
         <activity
             android:name=".ui.stbdetail.STBDetailsActivity"
             android:exported="true"
@@ -227,7 +232,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
         <receiver android:name=".service.TickerMsgReceiver" />
 
         <provider
@@ -251,9 +255,7 @@
             <intent-filter>
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
-        </receiver>
-
-        <!-- dpm set-device-owner com.diipl.moviebeam/.AdminReceiver -->
+        </receiver> <!-- dpm set-device-owner com.diipl.moviebeam/.AdminReceiver -->
         <!-- dpm remove-active-admin com.diipl.moviebeam/.AdminReceiver -->
         <receiver
             android:name=".AdminReceiver"
@@ -263,6 +265,7 @@
             <meta-data
                 android:name="android.app.device_admin"
                 android:resource="@xml/device_admin" />
+
             <intent-filter>
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
                 <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />

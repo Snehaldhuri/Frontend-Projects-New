@@ -25,6 +25,8 @@ object Constants {
     const val ADULT_LOCKED = 5
     const val PARENTAL_CONTROL = 6
 
+    var DISCONNECTED_MODE = false
+
     // Content Count
     var MOVIES_COUNT = 0
     var SHOWS_COUNT = 0
