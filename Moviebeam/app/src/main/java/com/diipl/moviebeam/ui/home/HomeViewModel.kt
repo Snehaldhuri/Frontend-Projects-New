@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.home
 
+import android.content.Context
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
@@ -15,7 +16,9 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.saveImageCloud
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -24,6 +27,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val movieBeamRepository: MovieBeamRepository,
 ) : ViewModel() {
 
@@ -185,11 +189,11 @@ class HomeViewModel @Inject constructor(
                     sunset = data.sunset,
                     tempCondition = data.tempCondition,
                     tempConditionUrl = data.tempConditionUrl,
-                    tempConditionUrlCloud = data.tempConditionUrlCloud,
+                    tempConditionUrlCloud = context.saveImageCloud(data.tempConditionUrlCloud),
                     type = data.type,
                     visibility = data.visibility,
                     weatherProviderImage = data.weatherProviderImage,
-                    weatherProviderImageCloud = data.weatherProviderImageCloud,
+                    weatherProviderImageCloud = context.saveImageCloud(data.weatherProviderImageCloud),
                     windSpeed = data.windSpeed
                 )
 

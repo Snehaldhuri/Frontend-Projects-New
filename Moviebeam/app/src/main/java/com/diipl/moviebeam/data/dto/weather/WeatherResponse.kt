@@ -17,11 +17,11 @@ data class WeatherResponse(
     val sunrise: String = "",
     val sunset: String = "",
     val tempCondition: String = "",
-    val tempConditionUrl: String = "",
-    val tempConditionUrlCloud: String = "",
+    val tempConditionUrl: String? = null,
+    val tempConditionUrlCloud: String? = null,
     val type: String = "",
     val visibility: String = "",
-    val weatherProviderImage: String = "",
-    val weatherProviderImageCloud: String = "",
+    val weatherProviderImage: String? = null,
+    val weatherProviderImageCloud: String? = null,
     val windSpeed: String = ""
 )
