@@ -18,6 +18,7 @@ import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.LinkProperties
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.SystemClock
@@ -63,6 +64,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -178,7 +180,7 @@ fun ExoPlayer?.getLastSeek(): Long {
 }
 
 fun getGradientColor(): GradientDrawable {
-    if(Constants.GRADIENT != null)
+    if (Constants.GRADIENT != null)
         return Constants.GRADIENT!!
     val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
     val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
@@ -260,7 +262,8 @@ fun Long.toTimeFormat(): String {
 
 fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
     try {
-        val fileURL = "https://testmdm.movie-beam.com/files/files-by-google-1-2729-610141523-0-release.apk"
+        val fileURL =
+            "https://testmdm.movie-beam.com/files/files-by-google-1-2729-610141523-0-release.apk"
         val url = URL(fileURL)
         withContext(Dispatchers.IO) {
             val connection = url.openConnection() as HttpURLConnection
@@ -393,7 +396,7 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
     // NETWORK DETAILS
     val networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
     val address = networkInterfaces[1].interfaceAddresses[1]
-            Collections.list(NetworkInterface.getNetworkInterfaces())
+    Collections.list(NetworkInterface.getNetworkInterfaces())
 
     Constants.IP_ADDRESS = address.address?.hostAddress ?: "0.0.0.0"
     Constants.IP_NET_MASK = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
@@ -411,7 +414,11 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
         }
 
         // WIFI DETAILS
-        if (ContextCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                it,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             if (wifiManager.isWifiEnabled) {
                 val connectionInfo = wifiManager.connectionInfo
                 val strength = WifiManager.calculateSignalLevel(connectionInfo.rssi, 5)
@@ -496,7 +503,12 @@ fun Context.scheduleMsgEndTask(tickerDTO: TvTickerDTO) {
 //    intent.putExtra("START_TIME", startTimeStr)
 //    intent.putExtra("END_TIME", endTimeStr)
     val pendingIntent =
-        PendingIntent.getBroadcast(this, generateUniqueRequestCode(endTime), intent, PendingIntent.FLAG_IMMUTABLE)
+        PendingIntent.getBroadcast(
+            this,
+            generateUniqueRequestCode(endTime),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
     // Set the alarm to trigger at the specified time
     alarmManager.setExact(AlarmManager.RTC, endTime, pendingIntent)
@@ -529,4 +541,55 @@ fun String.toInteger(): Int? {
         result = this.toInt()
     }
     return result
+}
+
+suspend fun Context.saveImageCloud(imgUrl: String?): String? {
+    var path: String? = null
+    try {
+        val url = URL(imgUrl)
+        val imageData = withContext(Dispatchers.IO) { url.readBytes() }
+
+        path = "${applicationInfo.dataDir}/${url.path}"
+        Log.e("TAG", "saveImage: $path")
+        writeByteArrayToFile(path, imageData)
+    } catch (e: Exception) {
+        Log.e("TAG", "Failed to save image: ${e.message}")
+    }
+    return path
+}
+
+suspend fun Context.saveImage(imgUrl: String?): String? {
+    var path: String? = null
+    try {
+        val uri = Uri.parse(imgUrl)
+        val imageName = uri.getQueryParameter("imageName")
+        val imageType = uri.getQueryParameter("imageType")
+
+        val url = uri.toURL()
+        val imageData = withContext(Dispatchers.IO) { url.readBytes() }
+
+        path = "${applicationInfo.dataDir}/$imageType/$imageName"
+        Log.e("TAG", "saveImage: $path")
+        writeByteArrayToFile(path, imageData)
+    } catch (e: Exception) {
+        Log.e("TAG", "Failed to save image: ${e.message}")
+    }
+    return path
+}
+
+private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
+    try {
+        val file = File(filePath)
+        val parentDir = file.parentFile
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs()
+        }
+        file.writeBytes(byteArray)
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+}
+
+fun Uri.toURL(): URL {
+    return URL(this.toString())
 }

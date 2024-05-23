@@ -25,7 +25,10 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.saveImage
+import com.diipl.moviebeam.utils.saveImageCloud
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -34,8 +37,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "STBDetailViewModel"
+
 @HiltViewModel
-class STBDetailViewModel @Inject constructor(private val movieBeamRepository: MovieBeamRepository) :
+class STBDetailViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val movieBeamRepository: MovieBeamRepository
+) :
     ViewModel() {
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
@@ -140,7 +147,8 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
 
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
             val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
-            val accountSetupApiResponse = async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
+            val accountSetupApiResponse =
+                async { movieBeamRepository.getAccountSetupDetails(cmd, ua, mode) }
             val localAttractionResponse = async { movieBeamRepository.getLocalAttractionInfo(ua) }
             val channelListResponse = async { movieBeamRepository.getChannelList(ua) }
             val releasesMoviesMoreResponse = async { movieBeamRepository.getMoviesInfo(ua) }
@@ -278,11 +286,11 @@ class STBDetailViewModel @Inject constructor(private val movieBeamRepository: Mo
                     sunset = data.sunset,
                     tempCondition = data.tempCondition,
                     tempConditionUrl = data.tempConditionUrl,
-                    tempConditionUrlCloud = data.tempConditionUrlCloud,
+                    tempConditionUrlCloud = context.saveImageCloud(data.tempConditionUrlCloud),
                     type = data.type,
                     visibility = data.visibility,
                     weatherProviderImage = data.weatherProviderImage,
-                    weatherProviderImageCloud = data.weatherProviderImageCloud,
+                    weatherProviderImageCloud = context.saveImageCloud(data.weatherProviderImageCloud),
                     windSpeed = data.windSpeed
                 )
             }

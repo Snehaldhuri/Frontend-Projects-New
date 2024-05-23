@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.stbdetail
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -29,14 +30,22 @@ import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.saveImage
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInteger
+import com.diipl.moviebeam.utils.toURL
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.IOException
+import java.net.URI
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -247,8 +256,8 @@ class STBDetailsActivity : BaseActivity() {
                     val startDate = simpleDateFormatter.parse(it.ST ?: "")
                     val endDate = simpleDateFormatter.parse(it.ET ?: "")
                     if (isEpgDataValid(startDate, endDate)) {
-                        Constants.EPG_START = it.ST?:""
-                        Constants.EPG_END = it.ET?:""
+                        Constants.EPG_START = it.ST ?: ""
+                        Constants.EPG_END = it.ET ?: ""
                         val channelList =
                             stbDetailViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()
@@ -503,7 +512,8 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.moviesLiveData.value?.data?.let {
-                    Constants.MOVIES_COUNT = it.freeContentList.size.plus(it.premiumContentList.size)
+                    Constants.MOVIES_COUNT =
+                        it.freeContentList.size.plus(it.premiumContentList.size)
                     Constants.C_LIST_VERSION = it.version
                     stbDetailViewModel.setMoviesResponseData(moviesDataStore, it)
                 }
@@ -523,24 +533,30 @@ class STBDetailsActivity : BaseActivity() {
                 status.data?.let {
                     val sdf = SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        it.tvTickerList?.removeIf { msg->
-                            (msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(msg.etStr).before(Date())
+                        it.tvTickerList?.removeIf { msg ->
+                            (msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(
+                                msg.etStr
+                            ).before(Date())
                         }
-                    }else{
+                    } else {
                         val iterator = it.tvTickerList?.iterator()
                         while (iterator!!.hasNext()) {
                             val msg: TvTickerDTO = iterator.next()
-                            if((msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(msg.etStr).before(Date())){
+                            if ((msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(
+                                    msg.etStr
+                                ).before(Date())
+                            ) {
                                 iterator.remove()
                             }
                         }
                     }
                     stbDetailViewModel.setTickerResponseData(tickerDataStore, it)
-                    it.tvTickerList?.forEach { msg->
+                    it.tvTickerList?.forEach { msg ->
                         applicationContext.scheduleMsgEndTask(msg)
                     }
                 }
             }
+
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
