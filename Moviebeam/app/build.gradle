@@ -29,7 +29,7 @@ android {
         minSdk 24
         targetSdk 33
         versionCode 1
-        versionName "2.4.0"
+        versionName "2.5.0"
 
         def formattedDate = new Date().format('yyyyMMdd')
         def apkName = "Moviebeam_Prod_V(${versionName})_$formattedDate"

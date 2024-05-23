@@ -13,6 +13,7 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
 import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
@@ -20,6 +21,8 @@ import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setIPInfo
+import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -43,6 +46,7 @@ class WeatherDateTimeFragment : Fragment() {
 
     @Inject
     lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
+    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,6 +55,8 @@ class WeatherDateTimeFragment : Fragment() {
     ): View {
         binding = ViewWeatherTimeDateRowBinding.inflate(inflater, container, false)
 
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
+
         setIPInfo()
 
         mainMenuViewModel.getThemeResponseData(themeDataStore)
@@ -58,15 +64,28 @@ class WeatherDateTimeFragment : Fragment() {
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getMoviesInfoResponseData(moviesDataStore)
         mainMenuViewModel.getShowtimeResponseData(showtimeDataStore)
+        mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(mainMenuViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.moviesLiveData, ::handleMoviesServiceResponse)
         observe(mainMenuViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
+        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
 
         return binding.root
     }
+
+    private fun handleNetworkResponse(b: Boolean) {
+        if (b){
+            binding.ivWeather.toVisible()
+            binding.txtTemperature.toVisible()
+        } else {
+            binding.ivWeather.toGone()
+            binding.txtTemperature.toGone()
+        }
+    }
+
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -137,5 +156,6 @@ class WeatherDateTimeFragment : Fragment() {
             else -> {}
         }
     }
+
 
 }

@@ -8,28 +8,30 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class NetworkUtils @Inject constructor(
-    @ApplicationContext val context : Context
+    @ApplicationContext val context: Context
 ) {
 
-    private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)  as ConnectivityManager
+    private val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     fun isNetworkAvailable(): Boolean {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val nw = connectivityManager.activeNetwork ?: return false
-            val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
-            return when {
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                //for other device how are able to connect with Ethernet
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-                //for check internet over Bluetooth
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
-                else -> false
-            }
-        } else {
-            return connectivityManager.activeNetworkInfo?.isConnected ?: false
+        val nw = connectivityManager.activeNetwork ?: return false
+        val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+        return when {
+            /*//            actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) -> true
+                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true*/
+            actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
+                    (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                            actNw.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ||
+                            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) -> true
+            else -> false
         }
     }
 
@@ -45,6 +47,7 @@ class NetworkUtils @Inject constructor(
                         hasTransport(NetworkCapabilities.TRANSPORT_VPN) ||
                         hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
                         hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) -> true
+
         else -> false
     }
 

@@ -91,7 +91,7 @@ class MainMenuActivity : BaseActivity() {
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
     @Inject
-    lateinit var tickerDatastore : DataStore<TickerResponse>
+    lateinit var tickerDatastore: DataStore<TickerResponse>
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
@@ -136,7 +136,10 @@ class MainMenuActivity : BaseActivity() {
         }
         LoggingService.sendMessageToWebSocket("In MainMenu activity", getCurrentPanelNumber())
 
+
+
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -431,7 +434,7 @@ class MainMenuActivity : BaseActivity() {
             if (status) {
                 mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
                 Constants.IS_CHECKED_IN = true
-            }else
+            } else
                 Constants.IS_CHECKED_IN = false
             Constants.SESSION_ID = "null"
             binding.pbLoader.toInvisible()
