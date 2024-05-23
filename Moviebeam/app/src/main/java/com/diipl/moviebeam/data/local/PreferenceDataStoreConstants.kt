@@ -15,6 +15,7 @@ object PreferenceDataStoreConstants {
     val SERIAL_NO_KEY = stringPreferencesKey("SERIAL_NO_KEY")
     val SERIAL_NO = stringPreferencesKey("SerialNo")
     val ADULT_CONTENT_STATUS = booleanPreferencesKey("adultContentStatus")
+    val NETWORK_STATUS = booleanPreferencesKey("NETWORK_STATUS")
     val ADULT_DAY_PASS_STATUS = booleanPreferencesKey("adultDayPassStatus")
     val ADULT_DAY_PASS_FINISH_TIME = longPreferencesKey("adultDayPassFinishTime")
     val UA = stringPreferencesKey("UA")

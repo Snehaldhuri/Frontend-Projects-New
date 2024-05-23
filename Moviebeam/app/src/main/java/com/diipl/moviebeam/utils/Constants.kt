@@ -44,7 +44,7 @@ object Constants {
     var RENTAL_TIME: Long = 1707840000000
     var MOVIE_SELECTED_POSITION: Int = -1
     var MOVIE_PARENT_POSITION: Int = -1
-//    var isUserCheckedIn = false
+    //    var isUserCheckedIn = false
 //    var isUserCheckedIn = true
     const val SPLASH_DELAY = 3000
     var timer = ""
@@ -92,6 +92,7 @@ object Constants {
 
     const val MDM_PACKAGE_NAME = "com.diipl.mdm"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
+    const val MDM_CLEAR_CREDENTIALS_ACTION = "$MDM_PACKAGE_NAME.services.START_CLEAR_CREDENTIALS_RECEIVER"
     const val SERIAL_NO_KEY = "SERIAL_NO_KEY"
 
     const val ASSET = "ASSET"
@@ -167,6 +168,7 @@ object Constants {
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
+    const val APP_LIST_PARAM = "APP_LIST"
 
     // Static Movies URl
 
@@ -328,7 +330,7 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
-//        "Prime Video",
+    //        "Prime Video",
 //        "Crackle",
 //        "Spotify",
 //        "Plex",
@@ -387,6 +389,10 @@ object Constants {
     var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
     const val TICKER_DTO_PARAM = "TICKER_DTO"
     const val TICKER_MESSAGE_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
+
+    const val BUILD_TYPE_CHROMECAST = "CHROMECAST"
+    const val BUILD_TYPE_STB = "STB"
+    const val BUILD_TYPE_MINI_BOX = "MINI_BOX"
 
 }
 

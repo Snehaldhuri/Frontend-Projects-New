@@ -94,10 +94,10 @@ class MainMenuActivity : BaseActivity() {
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
-    lateinit var tickerDatastore: DataStore<TickerResponse>
+    lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
     @Inject
-    lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
+    lateinit var tickerDatastore: DataStore<TickerResponse>
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
@@ -110,9 +110,15 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
+        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
+
+    }
+
+    private fun handleNetworkResponse(b: Boolean) {
+        mainMenuViewModel.showToastMessage("Network: $b")
     }
 
 
@@ -128,6 +134,7 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getTickerResponseData(tickerDatastore)
 
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
+        mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
         // start the endless service
         if (!isServiceStarted) {
@@ -135,7 +142,10 @@ class MainMenuActivity : BaseActivity() {
         }
         LoggingService.sendMessageToWebSocket("In MainMenu activity", getCurrentPanelNumber())
 
+
+
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -208,6 +218,7 @@ class MainMenuActivity : BaseActivity() {
             }
         }
     }
+
 
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
@@ -492,7 +503,7 @@ class MainMenuActivity : BaseActivity() {
             if (status) {
                 mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
                 Constants.IS_CHECKED_IN = true
-            }else
+            } else
                 Constants.IS_CHECKED_IN = false
             Constants.SESSION_ID = "null"
             binding.pbLoader.toInvisible()

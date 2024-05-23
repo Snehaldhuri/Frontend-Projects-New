@@ -19,17 +19,25 @@ import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.IRUtils
+import com.diipl.moviebeam.utils.SharedPreference
+import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 private const val TAG = "HelpInfoFragment"
 
+@AndroidEntryPoint
 class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     private var _binding: FragmentHelpInfoBinding? = null
     private val binding get() = _binding!!
+    @Inject
+    lateinit var preferences : SharedPreference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,6 +91,31 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         }
 
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (preferences.irFrequencyModel == null)
+            preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
+
+        if (preferences.irFrequencyModel.tvBrandName == IRUtils.SAMSUNG){
+            binding.rbSamsung.isChecked = true
+        } else {
+            binding.rbLg.isChecked = true
+        }
+
+        binding.rgBrand.setOnCheckedChangeListener { group, checkedId ->
+            when(checkedId){
+                binding.rbLg.id -> {
+                    preferences.irFrequencyModel = IRUtils.lgModel
+                }
+                binding.rbSamsung.id -> {
+                    preferences.irFrequencyModel = IRUtils.samsungModel
+                }
+            }
+            requireActivity().clearCache()
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

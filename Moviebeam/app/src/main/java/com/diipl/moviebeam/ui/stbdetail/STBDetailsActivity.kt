@@ -27,7 +27,10 @@ import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.IRUtils
+import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -83,11 +86,19 @@ class STBDetailsActivity : BaseActivity() {
     @Inject
     lateinit var roomRepository: RoomRepository
 
+    @Inject
+    lateinit var preferences : SharedPreference
+
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (preferences.irFrequencyModel == null)
+            preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
+        clearCache()
+
         if (!Constants.IS_API_CALLED) {
             preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
             stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
