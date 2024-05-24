@@ -86,6 +86,7 @@ class MainMenuActivity : BaseActivity() {
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
     private var latestAccountSetupResponse: AccountSetupResponse? = null
+    private var isNetworkConnected: Boolean = false
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -105,22 +106,31 @@ class MainMenuActivity : BaseActivity() {
     lateinit var preference: SharedPreference
 
     override fun observeViewModel() {
+        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
-        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
 
     }
 
-    private fun handleNetworkResponse(b: Boolean) {
-        mainMenuViewModel.showToastMessage("Network: $b")
-    }
 
+    private fun handleNetworkResponse(isConnected: Boolean) {
+        isNetworkConnected = isConnected
+        if (isConnected){
+            mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
+            initializePlayer()
+        } else {
+            releaseVideoPlayer()
+            binding.root.post {
+                loadBg(Constants.BG_IMAGE)
+            }
+        }
+    }
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,12 +139,13 @@ class MainMenuActivity : BaseActivity() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
         // call below function to get data from datastore
+        mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
+
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getTickerResponseData(tickerDatastore)
 
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
-        mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
         // start the endless service
         if (!isServiceStarted) {
@@ -174,30 +185,11 @@ class MainMenuActivity : BaseActivity() {
         binding = ActivityMainMenuBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        binding.btnDisconnected.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                view.handleFocusChange()
-                view.setOnKeyListener { _, keyCode, event ->
-                    if (event.action == KeyEvent.ACTION_DOWN) {
-                        when (keyCode) {
-                            KeyEvent.KEYCODE_ENTER ,KeyEvent.KEYCODE_DPAD_CENTER -> {
-                                disconnectedMode()
-                                return@setOnKeyListener true
-                            }
-
-                        }
-                    }
-                    false
-                }
-            } else {
-                binding.btnDisconnected.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
     }
 
     override fun onPause() {
         super.onPause()
-        player.release()
+        releaseVideoPlayer()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
@@ -331,20 +323,15 @@ class MainMenuActivity : BaseActivity() {
                         Constants.ACCOUNT_ID = response.accountId
                         Constants.STB_ROOM_NO = response.roomNo
 
-                        if(Constants.DISCONNECTED_MODE){
-                            releaseVideoPlayer()
-                            loadBg(Constants.BG_IMAGE)
-                        }else{
                             if (response.contentDetailFlag) {
                                 HOTEL_VIDEO_URL =
                                     response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
                                 initializePlayer()
                             }
-                        }
 
                         binding.tvGreeting.text = response.hotelInfo
 
-                        val btnListFromApi: List<String> = if (Constants.DISCONNECTED_MODE) {
+                        val btnListFromApi: List<String> = if (!isNetworkConnected) {
                             response.buttonsList.filter { it.forDisconnectedMode }.map { it.buttonName }
                         } else {
                             response.buttonsList.map { it.buttonName }
@@ -444,13 +431,12 @@ class MainMenuActivity : BaseActivity() {
                                 }
 
                                 Constants.PRG_GUIDE_ID -> {
-                                    if(Constants.DISCONNECTED_MODE){
+                                    if(!isNetworkConnected){
                                         intent = Intent(this, DisconnectedPrgActivity::class.java)
                                     }else {
                                         intent = Intent(this, ProgramGuideActivity::class.java)
                                     }
                                 }
-
                                 Constants.IN_ROOM_DINING_ID -> {
                                     intent = Intent(this, InRoomDiningActivity::class.java)
 //                            intent = Intent(this, GuestServiceActivity::class.java)
@@ -484,19 +470,6 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-    private fun disconnectedMode() {
-        if(Constants.DISCONNECTED_MODE){
-            Constants.DISCONNECTED_MODE = false
-            binding.btnDisconnected.text="Disconnected Mode"
-        }
-        else{
-            Constants.DISCONNECTED_MODE = true
-            binding.btnDisconnected.text="Connected Mode"
-        }
-        latestAccountSetupResponse?.let { response ->
-            handleAccountSetupResponse(Resource.Success(response))
-        }
-    }
 
     private fun handleValidateSessionResponse(status: Boolean) {
         try {

@@ -1,24 +1,17 @@
 package com.diipl.moviebeam.ui.programguide
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.KeyEvent
-import android.view.LayoutInflater
-import android.view.inputmethod.EditorInfo
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.DefaultRenderersFactory
@@ -30,34 +23,35 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.databinding.ActivityDisconnectedPrgBinding
-import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
-import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
+import com.diipl.moviebeam.service.IIrService
+import com.diipl.moviebeam.service.UsbIrService
+import com.diipl.moviebeam.service.isCompatibleDevice
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.IRUtils
+import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.handleFocusChange
-import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.setupSnackbar
-import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import com.diipl.moviebeam.utils.handleFocusChange
-import com.diipl.moviebeam.utils.hideKeyboard
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
-import com.diipl.moviebeam.utils.setupSnackbar
-import com.diipl.moviebeam.utils.showKeyboard
-import com.diipl.moviebeam.utils.showToast
-import com.diipl.moviebeam.utils.toInvisible
-import com.diipl.moviebeam.utils.toVisible
+import javax.inject.Inject
+
 private const val TAG = "DisconnectedPrgActivity"
 
 
@@ -81,6 +75,36 @@ class DisconnectedPrgActivity : BaseActivity() {
     private var currentPrograms: List<ChannelEpgDTO>? = null
     private var nextPrograms: List<ChannelEpgDTO>? = null
 
+    @Inject
+    lateinit var preferences : SharedPreference
+    private var irService: IIrService? = null
+
+    private val usbManager: UsbManager by lazy { getSystemService(USB_SERVICE) as UsbManager }
+    private lateinit var usbDevice: UsbDevice
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        initSet()
+
+    }
+
+    private fun initSet() {
+        usbManager.deviceList.values.forEach {
+            if (isCompatibleDevice(it)) {
+                usbDevice = it
+                val isOk = usbManager.hasPermission(usbDevice)
+                if (isOk) {
+                    irService = UsbIrService.getInstance(usbManager, usbDevice)
+                } else {
+                    val i = Intent(this, BlankActivity::class.java)
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    startActivity(i)
+                }
+            }
+        }
+    }
+
     override fun observeViewModel() {
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
@@ -95,7 +119,7 @@ class DisconnectedPrgActivity : BaseActivity() {
         binding.btnBack.setOnClickListener { finish()
 
         }
-        binding.pbLoader.toVisible()
+//        binding.pbLoader.toVisible()
     }
     private fun getChannelsFromRoomDB() {
         programGuideViewModel.getAllChannels(key).observe(this) { data ->
@@ -115,7 +139,7 @@ class DisconnectedPrgActivity : BaseActivity() {
                 programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
             }
         }
-        binding.pbLoader.toInvisible()
+//        binding.pbLoader.toInvisible()
     }
 
     override fun onResume() {
@@ -220,8 +244,8 @@ class DisconnectedPrgActivity : BaseActivity() {
             binding.layoutVideo.videoView.player?.play()
         } else {
             if (this.cNo != program.CNO) {
-                initializePlayer(program)
-                binding.layoutVideo.root.toVisible()
+//                initializePlayer(program)
+//                binding.layoutVideo.root.toVisible()
                 this.cNo = program.CNO
                 if (channelListNext != null) {
                     channelIndex = channelListNext?.indexOf(program) ?: 0
@@ -270,7 +294,8 @@ class DisconnectedPrgActivity : BaseActivity() {
     }
 
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
-        binding.layoutVideo.videoView.player?.pause()
+        switchToTV(program)
+       /* binding.layoutVideo.videoView.player?.pause()
         val bundle = Bundle()
         bundle.putStringArrayList(
             Constants.CONTENT_LIST_PARAM,
@@ -292,9 +317,79 @@ class DisconnectedPrgActivity : BaseActivity() {
         val intent = Intent(this, PrgGuidePlayerActivity::class.java)
         intent.putExtras(bundle)
         startActivity(intent)
-        this.isFScreenExit = true
+        this.isFScreenExit = true*/
     }
 
+    private fun switchToTV(program: ChannelEpgDTO?) {
+        clearCache()
+        lifecycleScope.launch {
+            var model = preferences.irFrequencyModel
+            if (model == null){
+                preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
+                model = preferences.irFrequencyModel
+            }
+            irService?.let { service->
+                val num = program?.CNO/*.plus(100)*/.toString().toCharArray().asList()
+                if (model.tvBrandName != IRUtils.LG) {
+                    service.transmit(model.frequency, model.TV)
+                    delay(model.delayMs)
+                }
+                when (num.size) {
+                    4 -> {
+                        async {
+                            num[num.size - 4].sendPacket(model)
+                            num[num.size - 3].sendPacket(model)
+                            num[num.size - 2].sendPacket(model)
+                            num[num.size - 1].sendPacket(model)
+                            delay(240)
+                            service.transmit(model.frequency, model.OK)
+                        }
+                    }
+
+                    3 -> {
+                        async {
+                            num[num.size - 3].sendPacket(model)
+                            num[num.size - 2].sendPacket(model)
+                            num[num.size - 1].sendPacket(model)
+                            delay(240)
+                            service.transmit(model.frequency, model.OK)
+                        }
+                    }
+
+                    2 -> {
+                        async {
+                            num[num.size - 2].sendPacket(model)
+                            num[num.size - 1].sendPacket(model)
+                            delay(240)
+                            service.transmit(model.frequency, model.OK)
+                        }
+                    }
+
+                    1 -> {
+                        num[num.size - 1].sendPacket(model)
+                        service.transmit(model.frequency, model.OK)
+                    }
+                }
+            }
+
+        }
+    }
+
+    private fun Char.sendPacket(model: FrequencyModel) {
+        val nValue = when (this) {
+            '1' -> model.tv1
+            '2' -> model.tv2
+            '3' -> model.tv3
+            '4' -> model.tv4
+            '5' -> model.tv5
+            '6' -> model.tv6
+            '7' -> model.tv7
+            '8' -> model.tv8
+            '9' -> model.tv9
+            else -> model.tv0
+        }
+        irService?.transmit(model.frequency, nValue)
+    }
     override fun onDestroy() {
         super.onDestroy()
         binding.layoutVideo.videoView.player?.release()
