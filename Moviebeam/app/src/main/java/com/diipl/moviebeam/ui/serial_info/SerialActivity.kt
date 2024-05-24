@@ -104,8 +104,8 @@ class SerialActivity : BaseActivity() {
         if (isSerialNoTaken) {
             serialViewModel.getStbStatusFromDataStore(preferenceDataStoreHelper)
         } else {
-//            fetchSerialNo()
-            processSerialNo(serialNo)
+            fetchSerialNo()
+//            processSerialNo(serialNo)
         }
         actionOnService(Actions.START)
     }

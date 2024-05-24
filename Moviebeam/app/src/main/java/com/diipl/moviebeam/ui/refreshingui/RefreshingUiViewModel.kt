@@ -20,10 +20,10 @@ import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.ui.base.UpdateDataStore
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
@@ -33,6 +33,7 @@ private const val TAG = "RefreshingUiViewModel"
 
 @HiltViewModel
 class RefreshingUiViewModel @Inject constructor(
+    private val updateDataStore: UpdateDataStore,
     private val movieBeamRepository: MovieBeamRepository
 //    private val workManager: WorkManager
 ) : ViewModel() {
@@ -357,38 +358,20 @@ class RefreshingUiViewModel @Inject constructor(
     }
 
     fun setHotelServicesResponseData(
-        dataStore: DataStore<HotelServiceResponse>,
         data: HotelServiceResponse
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-
-            }
+            updateDataStore.updateHSData(data)
         }
     }
 
     fun setLocalAttractionResponseData(
-        dataStore: DataStore<LocalAttractionResponse>,
         data: LocalAttractionResponse
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-
-            }
+            updateDataStore.updateLAData(data)
         }
     }
 

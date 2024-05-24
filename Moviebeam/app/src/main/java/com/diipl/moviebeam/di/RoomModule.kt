@@ -16,6 +16,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object RoomModule {
 
+
     @Singleton
     @Provides
     fun provideDatabase(@ApplicationContext context: Context): MoviesDatabase {

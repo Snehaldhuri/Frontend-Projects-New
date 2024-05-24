@@ -1,9 +1,6 @@
 package com.diipl.moviebeam.ui.stbdetail
 
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -23,12 +20,11 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.ui.base.UpdateDataStore
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.saveImage
-import com.diipl.moviebeam.utils.saveImageCloud
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -40,7 +36,8 @@ private const val TAG = "STBDetailViewModel"
 
 @HiltViewModel
 class STBDetailViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    private val updateDataStore: UpdateDataStore,
+    private val networkUtils: NetworkUtils,
     private val movieBeamRepository: MovieBeamRepository
 ) :
     ViewModel() {
@@ -83,26 +80,6 @@ class STBDetailViewModel @Inject constructor(
 
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
-
-    private fun isNetworkAvailable(context: Context): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val nw = connectivityManager.activeNetwork ?: return false
-            val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
-            return when {
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                //for other device how are able to connect with Ethernet
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-                //for check internet over Bluetooth
-                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
-                else -> false
-            }
-        } else {
-            return connectivityManager.activeNetworkInfo?.isConnected ?: false
-        }
-    }
 
     fun fetchHotelService() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -266,34 +243,10 @@ class STBDetailViewModel @Inject constructor(
     }
 
     fun setWeatherResponseData(
-        dataStore: DataStore<WeatherResponse>,
         data: WeatherResponse
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    accountId = data.accountId,
-                    dewPoint = data.dewPoint,
-                    durationMin = data.durationMin,
-                    high = data.high,
-                    highForLingual = data.highForLingual,
-                    humidity = data.humidity,
-                    id = data.id,
-                    location = data.location,
-                    low = data.low,
-                    lowForLingual = data.lowForLingual,
-                    sunrise = data.sunrise,
-                    sunset = data.sunset,
-                    tempCondition = data.tempCondition,
-                    tempConditionUrl = data.tempConditionUrl,
-                    tempConditionUrlCloud = context.saveImageCloud(data.tempConditionUrlCloud),
-                    type = data.type,
-                    visibility = data.visibility,
-                    weatherProviderImage = data.weatherProviderImage,
-                    weatherProviderImageCloud = context.saveImageCloud(data.weatherProviderImageCloud),
-                    windSpeed = data.windSpeed
-                )
-            }
+            updateDataStore.updateWeatherData(data)
         }
     }
 
@@ -406,34 +359,18 @@ class STBDetailViewModel @Inject constructor(
     }
 
     fun setHotelServicesResponseData(
-        dataStore: DataStore<HotelServiceResponse>,
         data: HotelServiceResponse
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-            }
+            updateDataStore.updateHSData(data)
         }
     }
 
     fun setLocalAttractionResponseData(
-        dataStore: DataStore<LocalAttractionResponse>,
         data: LocalAttractionResponse
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-            }
+            updateDataStore.updateLAData(data)
         }
     }
 
@@ -514,7 +451,7 @@ class STBDetailViewModel @Inject constructor(
     fun fetchApis(context: Context, preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch {
             delay(5000)
-            if (isNetworkAvailable(context)) {
+            if (networkUtils.isNetworkAvailable()) {
                 fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE, Constants.ACCOUNT_ID)
             } else {
                 delay(5000)

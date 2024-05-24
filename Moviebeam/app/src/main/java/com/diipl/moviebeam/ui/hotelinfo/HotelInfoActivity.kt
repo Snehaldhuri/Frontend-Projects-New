@@ -1,9 +1,7 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 
-import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
@@ -165,7 +163,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 status.data?.let {
-                    hotelInfoViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
+//                    hotelInfoViewModel.setHotelServicesResponseData(it)
                     val tabMap = mutableMapOf<String, TabListObj>()
                     val tabs = mutableListOf<String>()
                     val response = it

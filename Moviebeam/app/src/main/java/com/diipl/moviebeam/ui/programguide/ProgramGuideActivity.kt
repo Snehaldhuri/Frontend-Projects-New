@@ -57,7 +57,6 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -464,7 +463,7 @@ class ProgramGuideActivity : BaseActivity() {
                 }
                 when (num.size) {
                     4 -> {
-                        async {
+                        launch {
                             num[num.size - 4].sendPacket(model)
                             num[num.size - 3].sendPacket(model)
                             num[num.size - 2].sendPacket(model)
@@ -475,7 +474,7 @@ class ProgramGuideActivity : BaseActivity() {
                     }
 
                     3 -> {
-                        async {
+                        launch {
                             num[num.size - 3].sendPacket(model)
                             num[num.size - 2].sendPacket(model)
                             num[num.size - 1].sendPacket(model)
@@ -485,7 +484,7 @@ class ProgramGuideActivity : BaseActivity() {
                     }
 
                     2 -> {
-                        async {
+                        launch {
                             num[num.size - 2].sendPacket(model)
                             num[num.size - 1].sendPacket(model)
                             delay(240)

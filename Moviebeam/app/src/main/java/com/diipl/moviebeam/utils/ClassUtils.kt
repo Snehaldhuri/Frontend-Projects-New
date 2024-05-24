@@ -6,7 +6,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
-import android.content.Context.WIFI_SERVICE
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
@@ -402,7 +401,7 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
         Constants.IP_ADDRESS = address.address?.hostAddress ?: "0.0.0.0"
         Constants.IP_NET_MASK = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
 
-        BaseActivity.currentActivity?.let {
+        currentActivity?.let {
             val connectivityManager =
                 it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
             val wifiManager =
@@ -416,18 +415,23 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
                 Constants.IP_GATEWAY = defaultGateway
             }
 
-        // WIFI DETAILS
-        if (ContextCompat.checkSelfPermission(it, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            if (wifiManager.isWifiEnabled) {
-                val connectionInfo = wifiManager.connectionInfo
-                val strength = WifiManager.calculateSignalLevel(connectionInfo.rssi, 5)
+            // WIFI DETAILS
+            if (ContextCompat.checkSelfPermission(
+                    it,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                if (wifiManager.isWifiEnabled) {
+                    val connectionInfo = wifiManager.connectionInfo
+                    val strength = WifiManager.calculateSignalLevel(connectionInfo.rssi, 5)
+                }
             }
         }
     } catch (e: Exception) {
         Log.e("setIPInfo: ", "Exception :  ${e.localizedMessage}")
     }
 
-    // DEVICE UPTIME
+// DEVICE UPTIME
     val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
     val uptime = System.currentTimeMillis() - uptimeMillis
 
@@ -504,7 +508,12 @@ fun Context.scheduleMsgEndTask(tickerDTO: TvTickerDTO) {
 //    intent.putExtra("START_TIME", startTimeStr)
 //    intent.putExtra("END_TIME", endTimeStr)
     val pendingIntent =
-        PendingIntent.getBroadcast(this, generateUniqueRequestCode(endTime), intent, PendingIntent.FLAG_IMMUTABLE)
+        PendingIntent.getBroadcast(
+            this,
+            generateUniqueRequestCode(endTime),
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
 
     // Set the alarm to trigger at the specified time
     alarmManager.setExact(AlarmManager.RTC, endTime, pendingIntent)
@@ -539,7 +548,7 @@ fun String.toInteger(): Int? {
     return result
 }
 
-fun Context.clearCache(){
+fun Context.clearCache() {
     cacheDir.delete()
     cacheDir.deleteRecursively()
     codeCacheDir.delete()
@@ -583,53 +592,67 @@ private fun appendZeros(value: Int): String {
     return str.reverse().toString()
 }
 
-    suspend fun Context.saveImageCloud(imgUrl: String?): String? {
-        var path: String? = null
-        try {
-            val url = URL(imgUrl)
-            val imageData = withContext(Dispatchers.IO) { url.readBytes() }
+val HS_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/HS/"
+val LA_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/LA/"
+val WEATHER_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/WEATHER/"
 
-            path = "${applicationInfo.dataDir}/${url.path}"
-            Log.e("TAG", "saveImage: $path")
-            writeByteArrayToFile(path, imageData)
-        } catch (e: Exception) {
-            Log.e("TAG", "Failed to save image: ${e.message}")
+suspend fun saveHSImage(imgUrl: String): String {
+    var path: String
+    try {
+        val url = URL(imgUrl)
+        val imageData = withContext(Dispatchers.IO) { url.readBytes() }
+
+        path = "$HS_FILE_PATH${System.currentTimeMillis()}.jpg"
+        writeByteArrayToFile(path, imageData)
+    } catch (e: Exception) {
+        Log.e("saveHSImage", "Exception: ${e.message}")
+        path = imgUrl
+    }
+    return path
+}
+
+suspend fun saveLAImage(imgUrl: String): String {
+    var path: String
+    try {
+        val url = URL(imgUrl)
+        val imageData = withContext(Dispatchers.IO) { url.readBytes() }
+
+        path = "$LA_FILE_PATH${System.currentTimeMillis()}.jpg"
+        writeByteArrayToFile(path, imageData)
+    } catch (e: Exception) {
+        Log.e("saveLAImage", "Exception: ${e.message}")
+        path = imgUrl
+    }
+    return path
+}
+
+fun deleteHSFolder(){
+    val file = File(HS_FILE_PATH)
+    if (file.exists())
+        file.delete()
+}
+
+fun deleteLAFolder(){
+    val file = File(LA_FILE_PATH)
+    if (file.exists())
+        file.delete()
+}
+
+
+private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
+    try {
+        val file = File(filePath)
+        val parentDir = file.parentFile
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs()
         }
-        return path
+        file.writeBytes(byteArray)
+    } catch (e: IOException) {
+        Log.e("writeByteArrayToFile", "IOException: ${e.message}")
+        e.printStackTrace()
     }
+}
 
-    suspend fun Context.saveImage(imgUrl: String?): String? {
-        var path: String? = null
-        try {
-            val uri = Uri.parse(imgUrl)
-            val imageName = uri.getQueryParameter("imageName")
-            val imageType = uri.getQueryParameter("imageType")
-
-            val url = uri.toURL()
-            val imageData = withContext(Dispatchers.IO) { url.readBytes() }
-
-            path = "${applicationInfo.dataDir}/$imageType/$imageName"
-            Log.e("TAG", "saveImage: $path")
-            writeByteArrayToFile(path, imageData)
-        } catch (e: Exception) {
-            Log.e("TAG", "Failed to save image: ${e.message}")
-        }
-        return path
-    }
-
-    private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
-        try {
-            val file = File(filePath)
-            val parentDir = file.parentFile
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs()
-            }
-            file.writeBytes(byteArray)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    fun Uri.toURL(): URL {
-        return URL(this.toString())
-    }
+fun Uri.toURL(): URL {
+    return URL(this.toString())
+}

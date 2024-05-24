@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.stbdetail
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -33,22 +32,15 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.observe
-import com.diipl.moviebeam.utils.saveImage
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInteger
-import com.diipl.moviebeam.utils.toURL
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.IOException
-import java.net.URI
-import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -70,9 +62,6 @@ class STBDetailsActivity : BaseActivity() {
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
-
-    @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
 
     @Inject
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
@@ -99,10 +88,12 @@ class STBDetailsActivity : BaseActivity() {
     lateinit var preferences : SharedPreference
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-
+    private var startMs : Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        startMs = System.currentTimeMillis()
 
         if (preferences.irFrequencyModel == null)
             preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
@@ -147,7 +138,6 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.weatherLiveData.value?.data?.let {
                     stbDetailViewModel.setWeatherResponseData(
-                        weatherDataStore,
                         it.copy(tempCondition = replaceDegreeSymbol(it.tempCondition))
                     )
                     Log.d("DataStoreResponse", "handleWeatherResponse: $it")
@@ -206,8 +196,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 status.data?.let {
-                    stbDetailViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
-                    Log.d("DataStoreResponse", "handleHotelServiceResponse: $it")
+                    stbDetailViewModel.setHotelServicesResponseData(it)
                 }
             }
 
@@ -224,8 +213,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.localAttractionLiveData.value?.data?.let {
-                    stbDetailViewModel.setLocalAttractionResponseData(localAttractionDataStore, it)
-                    Log.d("DataStoreResponse", "handleLAServiceResponse: $it")
+                    stbDetailViewModel.setLocalAttractionResponseData(it)
                 }
             }
 
@@ -452,14 +440,21 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun redirectToMainMenuPage() {
-        val bundle = Bundle()
-        bundle.putString("UA", UA)
-        val intent = Intent(this, MainMenuActivity::class.java)
-        intent.let {
-            it.putExtras(bundle)
-            startActivity(it)
+        lifecycleScope.launch {
+            while (true){
+                if (System.currentTimeMillis() >= startMs.plus(1000*60)) {
+                    val bundle = Bundle()
+                    bundle.putString("UA", UA)
+                    val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
+                    intent.let { i ->
+                        i.putExtras(bundle)
+                        startActivity(i)
+                    }
+                    finish()
+                }
+                delay(2000)
+            }
         }
-        finish()
     }
 
     //  Removes Data Before Current Time.

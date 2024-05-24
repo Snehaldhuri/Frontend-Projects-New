@@ -318,7 +318,7 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.hotelServiceLiveData.value?.data?.let {
-                    refreshingUiViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
+                    refreshingUiViewModel.setHotelServicesResponseData(it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
@@ -345,7 +345,6 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.localAttractionLiveData.value?.data?.let {
                     refreshingUiViewModel.setLocalAttractionResponseData(
-                        localAttractionDataStore,
                         it
                     )
                     EndlessService.kapingCmdExecutionResponse =

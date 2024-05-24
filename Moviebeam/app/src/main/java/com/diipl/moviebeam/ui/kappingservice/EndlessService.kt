@@ -54,6 +54,7 @@ import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
+import com.diipl.moviebeam.ui.base.UpdateDataStore
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
@@ -212,6 +213,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var sharedPreference: SharedPreference
+
+    @Inject
+    lateinit var updateDataStore: UpdateDataStore
 
     companion object {
         var isServiceStarted = false
@@ -1047,7 +1051,7 @@ class EndlessService : Service() {
         CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getHotelServiceInfo(accountId)
             if (response != null) {
-                updateHotelServices(hotelServicesDataStore, response)
+                updateHotelServices(response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
                     "In Hotel Services callback success ", getCurrentPanelNumber()
@@ -1064,7 +1068,7 @@ class EndlessService : Service() {
         CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getLocalAttractionInfo(ua)
             if (response != null) {
-                updateLocalAttractions(localAttractionsDataStore, response)
+                updateLocalAttractions(response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
                     "In Local Attractions callback success ", getCurrentPanelNumber()
@@ -1487,33 +1491,15 @@ class EndlessService : Service() {
         }
     }
 
-    private fun updateHotelServices(
-        dataStore: DataStore<HotelServiceResponse>, data: HotelServiceResponse
-    ) {
+    private fun updateHotelServices(data: HotelServiceResponse) {
         CoroutineScope(Dispatchers.IO).launch {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-            }
+            updateDataStore.updateHSData(data)
         }
     }
 
-    private fun updateLocalAttractions(
-        dataStore: DataStore<LocalAttractionResponse>, data: LocalAttractionResponse
-    ) {
+    private fun updateLocalAttractions( data: LocalAttractionResponse) {
         CoroutineScope(Dispatchers.IO).launch {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-            }
+            updateDataStore.updateLAData(data)
         }
     }
 

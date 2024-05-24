@@ -6,13 +6,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.ui.base.UpdateDataStore
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.isNetworkAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HotelInfoViewModel @Inject constructor(
+    private val updateDataStore: UpdateDataStore,
     private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
 
@@ -150,19 +152,10 @@ class HotelInfoViewModel @Inject constructor(
     }
 
     fun setHotelServicesResponseData(
-        dataStore: DataStore<HotelServiceResponse>,
         data: HotelServiceResponse
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-
-            }
+           updateDataStore.updateHSData(data)
         }
     }
 

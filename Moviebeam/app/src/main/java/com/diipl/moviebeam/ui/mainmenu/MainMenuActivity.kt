@@ -55,7 +55,6 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
-import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -112,6 +111,7 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
+        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
@@ -152,7 +152,6 @@ class MainMenuActivity : BaseActivity() {
             actionOnService(Actions.START)
         }
         LoggingService.sendMessageToWebSocket("In MainMenu activity", getCurrentPanelNumber())
-
 
 
     }
@@ -318,16 +317,14 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
-                        latestAccountSetupResponse = response // Store the latest response data
-
                         Constants.ACCOUNT_ID = response.accountId
                         Constants.STB_ROOM_NO = response.roomNo
 
-                            if (response.contentDetailFlag) {
-                                HOTEL_VIDEO_URL =
-                                    response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
-                                initializePlayer()
-                            }
+                        if (response.contentDetailFlag) {
+                            HOTEL_VIDEO_URL =
+                                response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                            initializePlayer()
+                        }
 
                         binding.tvGreeting.text = response.hotelInfo
 
