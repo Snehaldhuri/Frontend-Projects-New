@@ -7,7 +7,9 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
+import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.core.view.updateLayoutParams
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +21,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
@@ -40,6 +43,7 @@ import com.diipl.moviebeam.ui.kappingservice.ServiceState
 import com.diipl.moviebeam.ui.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.Constants
@@ -51,6 +55,7 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -80,6 +85,8 @@ class MainMenuActivity : BaseActivity() {
     private lateinit var binding: ActivityMainMenuBinding
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
+    private var latestAccountSetupResponse: AccountSetupResponse? = null
+    private var isNetworkConnected: Boolean = false
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -99,22 +106,31 @@ class MainMenuActivity : BaseActivity() {
     lateinit var preference: SharedPreference
 
     override fun observeViewModel() {
+        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
-        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
 
     }
 
-    private fun handleNetworkResponse(b: Boolean) {
-        mainMenuViewModel.showToastMessage("Network: $b")
-    }
 
+    private fun handleNetworkResponse(isConnected: Boolean) {
+        isNetworkConnected = isConnected
+        if (isConnected){
+            mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
+            initializePlayer()
+        } else {
+            releaseVideoPlayer()
+            binding.root.post {
+                loadBg(Constants.BG_IMAGE)
+            }
+        }
+    }
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,12 +139,13 @@ class MainMenuActivity : BaseActivity() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
         // call below function to get data from datastore
+        mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
+
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
         mainMenuViewModel.getTickerResponseData(tickerDatastore)
 
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
-        mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
         // start the endless service
         if (!isServiceStarted) {
@@ -172,7 +189,7 @@ class MainMenuActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        player.release()
+        releaseVideoPlayer()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
@@ -295,36 +312,58 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
+    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>?) {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
+                        latestAccountSetupResponse = response // Store the latest response data
 
                         Constants.ACCOUNT_ID = response.accountId
                         Constants.STB_ROOM_NO = response.roomNo
 
-                        if (response.contentDetailFlag) {
-                            HOTEL_VIDEO_URL =
-                                response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
-                            initializePlayer()
-                        }
+                            if (response.contentDetailFlag) {
+                                HOTEL_VIDEO_URL =
+                                    response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                                initializePlayer()
+                            }
 
                         binding.tvGreeting.text = response.hotelInfo
-                        val btnListFromApi: List<String> = response.buttonsList.map {
-                            it.buttonName
+
+                        val btnListFromApi: List<String> = if (!isNetworkConnected) {
+                            response.buttonsList.filter { it.forDisconnectedMode }.map { it.buttonName }
+                        } else {
+                            response.buttonsList.map { it.buttonName }
                         }
-                        val btnModelList: List<BtnModel> =
-                            Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
-                                btnListFromApi.contains(it.btnId)
-                            }
+
+                        val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
+                            btnListFromApi.contains(it.btnId)
+                        }
 
                         val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
                             btnListFromApi.indexOf(it.btnId) ?: Int.MAX_VALUE
                         }
+                        val height = if (sortedBtnModelList.size < 5) {
+                            resources.getDimensionPixelSize(R.dimen.dp_110)
+                        } else {
+                            resources.getDimensionPixelSize(R.dimen.dp_200)
+                        }
+
+                        val marginTop = if (sortedBtnModelList.size < 5) {
+                            resources.getDimensionPixelSize(R.dimen.dp_70)
+                        } else {
+                            resources.getDimensionPixelSize(R.dimen.dp_1)
+                        }
+
+                        binding.cardView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                            this.height = height
+                            this.topMargin = marginTop
+                        }
 
                         binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
+
+
                         val adapter = MainMenuBtnAdapter { btn ->
                             releaseVideoPlayer()
                             val bundle = Bundle()
@@ -392,9 +431,12 @@ class MainMenuActivity : BaseActivity() {
                                 }
 
                                 Constants.PRG_GUIDE_ID -> {
-                                    intent = Intent(this, ProgramGuideActivity::class.java)
+                                    if(!isNetworkConnected){
+                                        intent = Intent(this, DisconnectedPrgActivity::class.java)
+                                    }else {
+                                        intent = Intent(this, ProgramGuideActivity::class.java)
+                                    }
                                 }
-
                                 Constants.IN_ROOM_DINING_ID -> {
                                     intent = Intent(this, InRoomDiningActivity::class.java)
 //                            intent = Intent(this, GuestServiceActivity::class.java)
@@ -422,12 +464,12 @@ class MainMenuActivity : BaseActivity() {
                     )
                 }
             }
-
             else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status?.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
         }
     }
+
 
     private fun handleValidateSessionResponse(status: Boolean) {
         try {

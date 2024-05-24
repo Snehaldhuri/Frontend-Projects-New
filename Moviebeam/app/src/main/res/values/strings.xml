@@ -154,5 +154,7 @@
     <string name="information">INFORMATION</string>
     <string name="you_have_a_new_message">You have a new message.</string>
     <string name="clear_credentials">Clear Credentials</string>
+    <string name="disconnected_mode">Disconnected Mode</string>
+    <string name="connected_mode">Connected Mode</string>
 
 </resources>
