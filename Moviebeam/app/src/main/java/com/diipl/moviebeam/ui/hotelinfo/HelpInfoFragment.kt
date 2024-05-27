@@ -22,7 +22,6 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.clearCache
-import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
@@ -53,7 +52,7 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
             val ipAddress = "IP Address: " + Constants.IP_ADDRESS
             val netmask = "Net Mask: " + Constants.IP_NET_MASK
             val gateway = "Gateway: " + Constants.IP_GATEWAY
-            val connectivity = "Connectivity: " + getConnectivityType(requireContext())
+            val connectivity = "Connectivity: " + Constants.CONNECTIVITY
 
             binding.tvIpAddress.text = ipAddress
             binding.tvNetMask.text = netmask

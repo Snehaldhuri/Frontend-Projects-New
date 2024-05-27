@@ -115,8 +115,7 @@ fun View.setupSnackbar(
                     showSnackbar(this.context.getString(it), timeLength)
                 }
 
-                else -> {
-                }
+                else -> {}
             }
 
         }

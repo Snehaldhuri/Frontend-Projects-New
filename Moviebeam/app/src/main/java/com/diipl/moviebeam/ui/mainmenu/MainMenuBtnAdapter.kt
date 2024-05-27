@@ -58,13 +58,9 @@ class MainMenuBtnAdapter(
 
         holder.itemView.setOnKeyListener { view, i, keyEvent ->
             if (i == KeyEvent.KEYCODE_TV_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_TV_INPUT")
-            if (i == KeyEvent.KEYCODE_NAVIGATE_IN) Log.e(
-                TAG,
-                "onBindViewHolder: KEYCODE_NAVIGATE_IN"
-            )
+            if (i == KeyEvent.KEYCODE_NAVIGATE_IN) Log.e(TAG, "onBindViewHolder: KEYCODE_NAVIGATE_IN")
             if (i == KeyEvent.KEYCODE_AVR_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_AVR_INPUT")
             if (i == KeyEvent.KEYCODE_STB_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_STB_INPUT")
-            Log.e(TAG, "onBindViewHolder: $i")
             false
         }
 

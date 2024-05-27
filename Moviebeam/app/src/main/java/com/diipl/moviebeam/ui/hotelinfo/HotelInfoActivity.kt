@@ -89,10 +89,6 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
             hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
 
-            // check hotel logo image available from local storage
-            //   checkHotelLogoImageAvailableLocally()
-
-
             binding.btnBack.handleFocusChange()
 
             binding.btnBack.setOnClickListener {

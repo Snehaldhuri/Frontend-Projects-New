@@ -463,7 +463,7 @@ fun getConnectivityType(context: Context): String {
             actNw?.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) == true -> "LAN"
             actNw?.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) == true -> "BLUETOOTH"
             actNw?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true -> "VPN"
-            else -> "UNKNOWN NETWORK"
+            else -> "NO NETWORK"
         }
     } else {
         return when (connectivityManager.activeNetworkInfo?.type) {
@@ -472,7 +472,7 @@ fun getConnectivityType(context: Context): String {
             ConnectivityManager.TYPE_ETHERNET -> "LAN"
             ConnectivityManager.TYPE_BLUETOOTH -> "BLUETOOTH"
             ConnectivityManager.TYPE_VPN -> "VPN"
-            else -> "UNKNOWN NETWORK"
+            else -> "NO NETWORK"
         }
     }
 }

@@ -449,13 +449,12 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun redirectToMainMenuPage() {
-        Log.e(TAG, "redirectToMainMenuPage: START WORK")
         val request = OneTimeWorkRequestBuilder<UpdateDataWorker>().build()
         workManager.enqueue(request)
 
         lifecycleScope.launch {
             while (true){
-                if (System.currentTimeMillis() >= startMs.plus(1000*30)) {
+                if (System.currentTimeMillis() >= startMs.plus(1000*45)) {
                     val bundle = Bundle()
                     bundle.putString("UA", UA)
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)

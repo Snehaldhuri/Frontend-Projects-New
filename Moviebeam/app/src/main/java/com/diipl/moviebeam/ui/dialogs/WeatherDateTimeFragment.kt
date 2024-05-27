@@ -17,6 +17,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
 import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
@@ -57,8 +58,6 @@ class WeatherDateTimeFragment : Fragment() {
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
 
-        setIPInfo()
-
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
@@ -80,9 +79,15 @@ class WeatherDateTimeFragment : Fragment() {
         if (b){
             binding.ivWeather.toVisible()
             binding.txtTemperature.toVisible()
+            setIPInfo()
+            Constants.CONNECTIVITY = getConnectivityType(requireContext())
         } else {
             binding.ivWeather.toGone()
             binding.txtTemperature.toGone()
+            Constants.IP_ADDRESS = "0.0.0.0"
+            Constants.IP_NET_MASK = "0.0.0.0"
+            Constants.IP_GATEWAY = "0.0.0.0"
+            Constants.CONNECTIVITY = "NO INTERNET"
         }
     }
 

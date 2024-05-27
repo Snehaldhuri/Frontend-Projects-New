@@ -17,6 +17,7 @@ object Constants {
     var IP_ADDRESS: String = "0.0.0.0"
     var IP_GATEWAY: String = "0.0.0.0"
     lateinit var IP_NET_MASK: String
+    var CONNECTIVITY = "NO INTERNET"
 
     const val SHOWTIME_RELEASE_TYPE_ID = 1
     const val ENABLE = "ENABLE"

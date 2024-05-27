@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.mainmenu
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -69,9 +68,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import javax.inject.Inject
 
 
@@ -121,7 +117,7 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
-        if (isConnected){
+        if (isConnected) {
             mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
             initializePlayer()
         } else {
@@ -242,9 +238,7 @@ class MainMenuActivity : BaseActivity() {
                 try {
                     val response = status.data
 
-//                    binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
                     response?.themeLogoFileName?.let {
-//                    getImageBitmap(it, Constants.HOTEL_LOGO)
                         binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                     }
                     response?.gradientColor?.let {
@@ -257,7 +251,6 @@ class MainMenuActivity : BaseActivity() {
                     Constants.LOGO_IMAGE = response?.themeLogoFileName
                     Constants.BG_IMAGE = response?.themeBackgroundFileName
                     response?.themeBackgroundFileName?.let {
-//                    getImageBitmap(it, Constants.BACKGROUND_IMAGE)
                         loadBg(it)
                     }
                     binding.pbLoader.toInvisible()
@@ -329,17 +322,19 @@ class MainMenuActivity : BaseActivity() {
                         binding.tvGreeting.text = response.hotelInfo
 
                         val btnListFromApi: List<String> = if (!isNetworkConnected) {
-                            response.buttonsList.filter { it.forDisconnectedMode }.map { it.buttonName }
+                            response.buttonsList.filter { it.forDisconnectedMode }
+                                .map { it.buttonName }
                         } else {
                             response.buttonsList.map { it.buttonName }
                         }
 
-                        val btnModelList: List<BtnModel> = Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
-                            btnListFromApi.contains(it.btnId)
-                        }
+                        val btnModelList: List<BtnModel> =
+                            Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
+                                btnListFromApi.contains(it.btnId)
+                            }
 
                         val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
-                            btnListFromApi.indexOf(it.btnId) ?: Int.MAX_VALUE
+                            btnListFromApi.indexOf(it.btnId)
                         }
                         val height = if (sortedBtnModelList.size < 5) {
                             resources.getDimensionPixelSize(R.dimen.dp_110)
@@ -359,7 +354,6 @@ class MainMenuActivity : BaseActivity() {
                         }
 
                         binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
-
 
                         val adapter = MainMenuBtnAdapter { btn ->
                             releaseVideoPlayer()
@@ -428,12 +422,13 @@ class MainMenuActivity : BaseActivity() {
                                 }
 
                                 Constants.PRG_GUIDE_ID -> {
-                                    if(!isNetworkConnected){
+                                    if (!isNetworkConnected) {
                                         intent = Intent(this, DisconnectedPrgActivity::class.java)
-                                    }else {
+                                    } else {
                                         intent = Intent(this, ProgramGuideActivity::class.java)
                                     }
                                 }
+
                                 Constants.IN_ROOM_DINING_ID -> {
                                     intent = Intent(this, InRoomDiningActivity::class.java)
 //                            intent = Intent(this, GuestServiceActivity::class.java)
@@ -461,6 +456,7 @@ class MainMenuActivity : BaseActivity() {
                     )
                 }
             }
+
             else -> {
                 status?.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
@@ -534,43 +530,6 @@ class MainMenuActivity : BaseActivity() {
 
             override fun onLoadCleared(placeholder: Drawable?) {}
         })
-    }
-
-    private fun getImageBitmap(imageUrl: String, filename: String) {
-        Glide.with(this).asBitmap().load(imageUrl).into(object : CustomTarget<Bitmap>() {
-            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                // The 'resource' parameter contains the Bitmap loaded from the imageUrl
-                // Now you can use the bitmap as needed, for example, save it locally
-                saveImageLocally(resource, filename)
-
-            }
-
-            override fun onLoadCleared(placeholder: Drawable?) {
-
-            }
-        })
-    }
-
-    // Save the image locally
-    fun saveImageLocally(bitmap: Bitmap, filename: String) {
-        val directory = File(getExternalFilesDir(null), Constants.THEME_DIRECTORY)
-
-        if (!directory.exists()) {
-            directory.mkdirs()
-        }
-
-        val file = File(directory, filename)
-
-        try {
-            if (!file.exists()) {
-                val out = FileOutputStream(file)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                out.flush()
-                out.close()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
     }
 
     private fun actionOnService(action: Actions) {
