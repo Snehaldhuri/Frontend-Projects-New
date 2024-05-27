@@ -22,10 +22,10 @@ data class Service(
     val layout: Int = 0,
     val secServiceImageList: List<String> = emptyList(),
     val serviceId: Int = 0,
-    val serviceImageList: List<String> = emptyList(),
-    val serviceImageListNew: List<String> = emptyList(),
+    val serviceImageListCloud: List<String> = emptyList(),
+    val serviceImageListNewCloud: List<String> = emptyList(),
     val spotlightImage: ImageDTO = ImageDTO(),
     val title: String = "",
     val versionNo: Int = 0,
-    val videoAvailable: Boolean = false,
+    val videoAvailable: Boolean = false
 )

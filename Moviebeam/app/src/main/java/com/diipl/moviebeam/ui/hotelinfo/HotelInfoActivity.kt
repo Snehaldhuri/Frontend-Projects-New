@@ -153,7 +153,6 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -207,9 +206,11 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                         tabMap[it]?.serviceList?.get(0)?.title
                                     val carousel = CarouselListFragment(onItemFocused = { title ->
                                         binding.tvHeaderTitle.text = title
-                                    }, onLeftKeyPressed =  { title ->
+                                    }, onLeftKeyPressed = { title ->
                                         binding.rvHotelInfoHeader.post {
-                                            binding.rvHotelInfoHeader.findContainingItemView(focusedView!!)?.requestFocus()
+                                            binding.rvHotelInfoHeader.findContainingItemView(
+                                                focusedView!!
+                                            )?.requestFocus()
                                         }
                                         if (tabMap[it]?.serviceList?.get(0)?.title == title) {
                                             view.requestFocus()
@@ -226,7 +227,9 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     tabMap[it]?.service?.description?.let { desc ->
                                         bundle.putString("desc", desc)
                                     }
-                                    val list = tabMap[it]?.service?.serviceImageList
+                                    var list = tabMap[it]?.service?.serviceImageListNewCloud
+                                    if (list?.isEmpty() == true)
+                                        list = tabMap[it]?.service?.serviceImageListCloud
                                     var imgUrl = "null"
                                     if (list!!.isNotEmpty()) {
                                         imgUrl = list[0]

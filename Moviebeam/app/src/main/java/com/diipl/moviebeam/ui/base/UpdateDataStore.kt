@@ -21,9 +21,9 @@ import okhttp3.internal.toImmutableList
 import javax.inject.Inject
 
 class UpdateDataStore @Inject constructor(
-    val weatherDataStore: DataStore<WeatherResponse>,
-    val localAttractionDataStore: DataStore<LocalAttractionResponse>,
-    val hotelServiceDataStore: DataStore<HotelServiceResponse>
+    private val weatherDataStore: DataStore<WeatherResponse>,
+    private val localAttractionDataStore: DataStore<LocalAttractionResponse>,
+    private val hotelServiceDataStore: DataStore<HotelServiceResponse>
 ) {
 
     private val TAG = "UpdateDataStore"
@@ -52,7 +52,6 @@ class UpdateDataStore @Inject constructor(
                 weatherProviderImageCloud = data.weatherProviderImageCloud,
                 windSpeed = data.windSpeed
             )
-
         }
     }
 
@@ -66,7 +65,7 @@ class UpdateDataStore @Inject constructor(
                     val list = mutableListOf<String>()
                     val newList = mutableListOf<String>()
 
-                    val deferredImages = service.serviceImageList.map { imageUrl ->
+                    val deferredImages = service.serviceImageListCloud.map { imageUrl ->
                         async(Dispatchers.IO) {
                             try {
                                 saveHSImage(imageUrl)
@@ -79,7 +78,7 @@ class UpdateDataStore @Inject constructor(
 
                     list.addAll(deferredImages.awaitAll().filterNotNull())
 
-                    val newImages = service.serviceImageListNew.map { imageUrl ->
+                    val newImages = service.serviceImageListNewCloud.map { imageUrl ->
                         async(Dispatchers.IO) {
                             try {
                                 saveHSImage(imageUrl)
@@ -93,8 +92,8 @@ class UpdateDataStore @Inject constructor(
                     newList.addAll(newImages.awaitAll().filterNotNull())
 
                     val updatedService = service.copy(
-                        serviceImageList = list.toImmutableList(),
-                        serviceImageListNew = newList.toImmutableList()
+                        serviceImageListCloud = list.toImmutableList(),
+                        serviceImageListNewCloud = newList.toImmutableList()
                     )
                     serv.add(updatedService)
                 }
@@ -103,12 +102,11 @@ class UpdateDataStore @Inject constructor(
                 )
                 servicesList.add(updatedServices)
             }
-
         }
 
         val res = awaitAll(resp)
 
-        if (res.isNotEmpty()){
+        if (res.isNotEmpty()) {
             try {
                 hotelServiceDataStore.updateData { currentPreferences ->
                     currentPreferences.copy(
@@ -122,19 +120,18 @@ class UpdateDataStore @Inject constructor(
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
         }
-
     }
 
     suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
         deleteLAFolder()
         val servicesList = mutableListOf<LAServices>()
         val resp = async(Dispatchers.IO) {
-            data.servicesList.forEach {services ->
+            data.servicesList.forEach { services ->
                 val serv = mutableListOf<LAService>()
                 services.serviceList.forEach { service ->
                     val list = mutableListOf<String>()
                     val newList = mutableListOf<String>()
-                    val deferredImages = service.serviceImageList.map { imageUrl ->
+                    val deferredImages = service.serviceImageListCloud.map { imageUrl ->
                         async(Dispatchers.IO) {
                             try {
                                 saveLAImage(imageUrl)
@@ -147,7 +144,7 @@ class UpdateDataStore @Inject constructor(
 
                     list.addAll(deferredImages.awaitAll().filterNotNull())
 
-                    val newImages = service.serviceImageListNew.map { imageUrl ->
+                    val newImages = service.serviceImageListNewCloud.map { imageUrl ->
                         async(Dispatchers.IO) {
                             try {
                                 saveHSImage(imageUrl)
@@ -161,11 +158,11 @@ class UpdateDataStore @Inject constructor(
                     newList.addAll(newImages.awaitAll().filterNotNull())
 
                     val updatedService = service.copy(
-                        imagePathPoster = saveLAImage(service.imagePathPoster),
-                        imagePathPosterNew = saveLAImage(service.imagePathPosterNew),
-                        imagePathSushi = saveLAImage(service.imagePathSushi),
-                        serviceImageListNew = newList.toImmutableList(),
-                        serviceImageList = list.toImmutableList(),
+                        imagePathPosterCloud = saveLAImage(service.imagePathPosterCloud),
+                        imagePathPosterNewCloud = saveLAImage(service.imagePathPosterNewCloud),
+                        imagePathSushiCloud = saveLAImage(service.imagePathSushiCloud),
+                        serviceImageListNewCloud = newList.toImmutableList(),
+                        serviceImageListCloud = list.toImmutableList(),
                     )
                     serv.add(updatedService)
                 }
@@ -178,7 +175,7 @@ class UpdateDataStore @Inject constructor(
 
         val res = awaitAll(resp)
         Log.e(TAG, "updateLAData: ${res.isNotEmpty()}")
-        if (res.isNotEmpty()){
+        if (res.isNotEmpty()) {
             try {
                 localAttractionDataStore.updateData { currentPreferences ->
                     currentPreferences.copy(
@@ -192,6 +189,5 @@ class UpdateDataStore @Inject constructor(
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
         }
-
     }
 }

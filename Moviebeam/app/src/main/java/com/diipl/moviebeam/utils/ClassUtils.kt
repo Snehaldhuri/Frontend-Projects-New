@@ -611,8 +611,8 @@ suspend fun saveHSImage(imgUrl: String): String {
     return path
 }
 
-suspend fun saveLAImage(imgUrl: String): String {
-    var path: String
+suspend fun saveLAImage(imgUrl: String?): String? {
+    var path: String?
     try {
         val url = URL(imgUrl)
         val imageData = withContext(Dispatchers.IO) { url.readBytes() }
@@ -626,18 +626,17 @@ suspend fun saveLAImage(imgUrl: String): String {
     return path
 }
 
-fun deleteHSFolder(){
+fun deleteHSFolder() {
     val file = File(HS_FILE_PATH)
     if (file.exists())
         file.delete()
 }
 
-fun deleteLAFolder(){
+fun deleteLAFolder() {
     val file = File(LA_FILE_PATH)
     if (file.exists())
         file.delete()
 }
-
 
 private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
     try {

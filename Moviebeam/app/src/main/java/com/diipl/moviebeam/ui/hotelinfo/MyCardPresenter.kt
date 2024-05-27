@@ -2,13 +2,13 @@ package com.diipl.moviebeam.ui.hotelinfo
 
 
 import android.graphics.Color
-import android.text.Html
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.core.text.HtmlCompat
 import androidx.leanback.widget.Presenter
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.hotelservice.Service
@@ -17,6 +17,7 @@ import com.diipl.moviebeam.utils.getWidthInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtHsCard
 
 private const val TAG = "MyCardPresenter"
+
 class MyCardPresenter(
     private val onItemFocused: ((String)) -> Unit, private val onLeftKeyPressed: (String) -> Unit
 ) : Presenter() {
@@ -63,17 +64,16 @@ class MyCardPresenter(
             val service: Service = item
             val description = viewHolder.view.findViewById<TextView>(R.id.tv_card_content)
             val title = viewHolder.view.findViewById<TextView>(R.id.tv_card_title)
-            val imageview = viewHolder.view.findViewById<TextView>(R.id.iv_card_image) as ImageView
+            val imageview = viewHolder.view.findViewById<ImageView>(R.id.iv_card_image)
 
             // Set card content
-//            if (service.description.contains("<br>") or service.description.contains("<br/>")) {
-                description.text = Html.fromHtml(service.description)
-//            } else description.text = service.description
-//            cardView.text = service.description.replace("<br>", "", true)
+            description.text =
+                HtmlCompat.fromHtml(service.description, HtmlCompat.FROM_HTML_MODE_LEGACY)
             title.text = service.title
-            if (service.serviceImageList.isNotEmpty()){
-                imageview.loadImagesWithGlideExtHsCard(service.serviceImageList[0])
-            }
+            if (service.serviceImageListNewCloud.isNotEmpty())
+                imageview.loadImagesWithGlideExtHsCard(service.serviceImageListNewCloud[0])
+            else if (service.serviceImageListCloud.isNotEmpty())
+                imageview.loadImagesWithGlideExtHsCard(service.serviceImageListCloud[0])
 
             viewHolder.view.setOnKeyListener { _, keycode, keyEvent ->
                 if (keyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -85,8 +85,9 @@ class MyCardPresenter(
                                 onLeftKeyPressed(service.title)
                             }
                         }
+
                         KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                            if (focusedPosition < rowLength-1){
+                            if (focusedPosition < rowLength - 1) {
                                 focusedPosition++
                             }
                         }

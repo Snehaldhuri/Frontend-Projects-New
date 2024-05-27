@@ -58,7 +58,11 @@ class LaCardAdapterGs(
     override fun onBindViewHolder(holder: LaCardAdapterGs.MyViewHolder, position: Int) {
 
         val item = itemList[position]
-        holder.imageView.loadImagesWithGlideExtLA(item.imagePathPoster)
+        if (!item.imagePathPosterNewCloud.isNullOrBlank())
+            holder.imageView.loadImagesWithGlideExtLA(item.imagePathPosterNewCloud)
+        else if (!item.imagePathPosterCloud.isNullOrBlank())
+            holder.imageView.loadImagesWithGlideExtLA(item.imagePathPosterCloud)
+
         holder.textView.text = item.title
         holder.description.text = item.description.replace("<br/>", "")
 
