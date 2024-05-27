@@ -27,6 +27,7 @@ data class AccountSetupResponse(
     val conciergeList: List<Concierge> = emptyList(),
     val contactNo: String = "",
     val contentDetailFlag: Boolean = false,
+    val checkOutTime: String? = null,
     val customerCareNo: String = "",
     val defaultLanguage: DefaultLanguage = DefaultLanguage(),
     val email: String = "",

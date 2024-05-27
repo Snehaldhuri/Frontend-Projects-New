@@ -35,6 +35,7 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -90,7 +91,7 @@ class STBDetailsActivity : BaseActivity() {
     lateinit var roomRepository: RoomRepository
 
     @Inject
-    lateinit var preferences : SharedPreference
+    lateinit var preferences: SharedPreference
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private var startMs : Long = 0
@@ -186,6 +187,7 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
                     Constants.EPG_CDN_URL = it.epgCdnUrl
+                    scheduleClearCredentialsTask(it.checkOutTime)
                     stbDetailViewModel.fetchHotelService()
                 }
             }

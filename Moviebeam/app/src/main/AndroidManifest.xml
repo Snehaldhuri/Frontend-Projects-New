@@ -244,6 +244,8 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".service.ClearCredentialsReceiver" />
+
         <receiver android:name=".service.TickerMsgReceiver" />
 
         <provider

@@ -18,6 +18,7 @@ import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadBg
@@ -46,7 +47,6 @@ class AppWorldActivity : BaseActivity() {
 
     private var isCheckedIn = false
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-    private lateinit var appList: ArrayList<String>
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -75,25 +75,16 @@ class AppWorldActivity : BaseActivity() {
             binding.btnClearCredentials.handleFocusChange()
             binding.btnClearCredentials.setOnClickListener { clearCredentials() }
             LoggingService.sendMessageToWebSocket(
-                "In AppWorldMain activity",
+                "In App World activity",
                 getCurrentPanelNumber()
             )
         } catch (e: Exception) {
             e.printStackTrace()
             LoggingService.sendMessageToWebSocket(
-                "launchApp Exception in AppWorldMain activity ${e.message}",
+                "launchApp Exception in App World activity ${e.message}",
                 getCurrentPanelNumber()
             )
         }
-    }
-
-    private fun clearCredentials() {
-        // Send broadcast to start the ClearCredentialsWorker in the target application
-        val intent = Intent()
-        intent.action = Constants.MDM_CLEAR_CREDENTIALS_ACTION
-        intent.setPackage(Constants.MDM_PACKAGE_NAME)
-        intent.putStringArrayListExtra(Constants.APP_LIST_PARAM, appList)
-        sendBroadcast(intent)
     }
 
     private fun handleValidateSessionResponse(status: Boolean) {
@@ -122,7 +113,7 @@ class AppWorldActivity : BaseActivity() {
             }
             adapter.setAppList(selectedApps)
             binding.rvApps.adapter = adapter
-            appList = ArrayList(selectedApps.map { it.packageName })
+            Constants.APP_LIST = ArrayList(selectedApps.map { it.packageName })
         } catch (e: Exception) {
             LoggingService.sendMessageToWebSocket(
                 "getInstalledApps Exception in AppWorldMain activity ${e.message}",
