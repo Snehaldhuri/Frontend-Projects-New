@@ -30,9 +30,11 @@ import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
+import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toVisible
@@ -188,6 +190,7 @@ class RefreshingUiActivity : BaseActivity() {
             false,
             kapingResponse.cmdData?.cmdData
         )
+        clearCredentials()
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
     }
@@ -218,7 +221,6 @@ class RefreshingUiActivity : BaseActivity() {
             Constants.UA,
             Constants.MODE
         )
-
     }
 
     private fun handleThemeChangeCmd() {
@@ -267,6 +269,7 @@ class RefreshingUiActivity : BaseActivity() {
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
                     Constants.EPG_CDN_URL = it.epgCdnUrl
+                    scheduleClearCredentialsTask(it.checkOutTime)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()

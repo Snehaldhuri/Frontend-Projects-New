@@ -32,6 +32,7 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -85,10 +86,10 @@ class STBDetailsActivity : BaseActivity() {
     lateinit var roomRepository: RoomRepository
 
     @Inject
-    lateinit var preferences : SharedPreference
+    lateinit var preferences: SharedPreference
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-    private var startMs : Long = 0
+    private var startMs: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -179,6 +180,7 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
                     Constants.EPG_CDN_URL = it.epgCdnUrl
+                    scheduleClearCredentialsTask(it.checkOutTime)
                     stbDetailViewModel.fetchHotelService()
                 }
             }
@@ -441,8 +443,8 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun redirectToMainMenuPage() {
         lifecycleScope.launch {
-            while (true){
-                if (System.currentTimeMillis() >= startMs.plus(1000*60)) {
+            while (true) {
+                if (System.currentTimeMillis() >= startMs.plus(1000 * 60)) {
                     val bundle = Bundle()
                     bundle.putString("UA", UA)
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)

@@ -166,7 +166,9 @@ object Constants {
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
+    var APP_LIST: ArrayList<String> = ArrayList()
     const val APP_LIST_PARAM = "APP_LIST"
+    const val CLEAR_CREDENTIALS_REQUEST_CODE = 10
 
     // Static Movies URl
 
@@ -387,6 +389,7 @@ object Constants {
     var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
     const val TICKER_DTO_PARAM = "TICKER_DTO"
     const val TICKER_MESSAGE_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
+    const val CHECK_OUT_TIME_DATE_FORMAT = "hh:mm a"
 
     const val BUILD_TYPE_CHROMECAST = "CHROMECAST"
     const val BUILD_TYPE_STB = "STB"

@@ -17,7 +17,6 @@ import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.LinkProperties
 import android.net.NetworkCapabilities
-import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.SystemClock
@@ -34,6 +33,7 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.service.ClearCredentialsReceiver
 import com.diipl.moviebeam.service.TickerMsgReceiver
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -652,6 +652,47 @@ private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
     }
 }
 
-fun Uri.toURL(): URL {
-    return URL(this.toString())
+fun Context.clearCredentials() {
+    // Send broadcast to start the ClearCredentialsWorker in the target application
+    val intent = Intent()
+    intent.action = Constants.MDM_CLEAR_CREDENTIALS_ACTION
+    intent.setPackage(Constants.MDM_PACKAGE_NAME)
+    intent.putStringArrayListExtra(Constants.APP_LIST_PARAM, Constants.APP_LIST)
+    sendBroadcast(intent)
+}
+
+fun Context.scheduleClearCredentialsTask(checkOutTime: String?) {
+    checkOutTime?.let {
+        val sdf = SimpleDateFormat(Constants.CHECK_OUT_TIME_DATE_FORMAT, Locale.ENGLISH)
+        val endTime = sdf.parse(it)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, ClearCredentialsReceiver::class.java)
+        val pendingIntent =
+            PendingIntent.getBroadcast(
+                this,
+                Constants.CLEAR_CREDENTIALS_REQUEST_CODE,
+                intent,
+                PendingIntent.FLAG_MUTABLE
+            )
+
+        val calendar: Calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, endTime.hours)
+            set(Calendar.MINUTE, endTime.minutes)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+
+            // If the time is before now, add one day to ensure it triggers tomorrow
+            if (before(Calendar.getInstance())) {
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
+        }
+
+        // Set the repeating alarm to go off at 11 AM every day
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            AlarmManager.INTERVAL_DAY,
+            pendingIntent
+        )
+    }
 }
