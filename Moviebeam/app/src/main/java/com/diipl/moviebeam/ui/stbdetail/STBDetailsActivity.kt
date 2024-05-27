@@ -8,6 +8,8 @@ import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
@@ -26,6 +28,7 @@ import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.ui.refreshingui.UpdateDataWorker
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
@@ -50,6 +53,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class STBDetailsActivity : BaseActivity() {
+
+    private val TAG = "STBDetailsActivity"
 
     private val stbDetailViewModel: STBDetailViewModel by viewModels()
     private lateinit var binding: ActivityStbdetailsBinding
@@ -89,6 +94,8 @@ class STBDetailsActivity : BaseActivity() {
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private var startMs : Long = 0
+    private val workManager : WorkManager by lazy { WorkManager.getInstance(applicationContext) }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -440,9 +447,13 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun redirectToMainMenuPage() {
+        Log.e(TAG, "redirectToMainMenuPage: START WORK")
+        val request = OneTimeWorkRequestBuilder<UpdateDataWorker>().build()
+        workManager.enqueue(request)
+
         lifecycleScope.launch {
             while (true){
-                if (System.currentTimeMillis() >= startMs.plus(1000*60)) {
+                if (System.currentTimeMillis() >= startMs.plus(1000*30)) {
                     val bundle = Bundle()
                     bundle.putString("UA", UA)
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)

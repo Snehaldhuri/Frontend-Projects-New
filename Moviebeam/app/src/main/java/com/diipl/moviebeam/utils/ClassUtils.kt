@@ -596,8 +596,8 @@ val HS_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/
 val LA_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/LA/"
 val WEATHER_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/WEATHER/"
 
-suspend fun saveHSImage(imgUrl: String): String {
-    var path: String
+suspend fun saveHSImage(imgUrl: String?): String? {
+    var path: String?
     try {
         val url = URL(imgUrl)
         val imageData = withContext(Dispatchers.IO) { url.readBytes() }
@@ -620,7 +620,7 @@ suspend fun saveLAImage(imgUrl: String?): String? {
         path = "$LA_FILE_PATH${System.currentTimeMillis()}.jpg"
         writeByteArrayToFile(path, imageData)
     } catch (e: Exception) {
-        Log.e("saveLAImage", "Exception: ${e.message}")
+        Log.e("saveLAImage", "Exception: ${e.localizedMessage} ")
         path = imgUrl
     }
     return path

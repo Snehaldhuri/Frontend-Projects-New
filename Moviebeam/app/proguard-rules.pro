@@ -25,6 +25,10 @@
 
 -keepnames class com.google.common.** { *; }
 
+-keepclassmembers class * extends androidx.work.Worker {
+    public <init>(android.content.Context,androidx.work.WorkerParameters);
+}
+
 #-dontwarn okio.**
 #-dontwarn okhttp3.**
 #-dontwarn retrofit2.**

@@ -11,6 +11,8 @@ class NetworkUtils @Inject constructor(
     @ApplicationContext val context: Context
 ) {
 
+    private val TAG = "NetworkUtils"
+
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -19,6 +21,10 @@ class NetworkUtils @Inject constructor(
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val nw = connectivityManager.activeNetwork ?: return false
         val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+        val isInternet = actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+
+//        Log.e(TAG, "isNetworkAvailable: $isInternet")
+
         return when {
             /*//            actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) -> true
                         actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
@@ -26,10 +32,11 @@ class NetworkUtils @Inject constructor(
                         actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
                         actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true*/
             actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                    actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
+                    isInternet &&
                     (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
                             actNw.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ||
                             actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE) ||
                             actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) -> true
             else -> false
         }

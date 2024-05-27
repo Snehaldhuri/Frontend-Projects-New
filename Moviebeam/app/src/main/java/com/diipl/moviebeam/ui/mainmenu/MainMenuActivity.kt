@@ -188,7 +188,7 @@ class MainMenuActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        releaseVideoPlayer()
+        player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 

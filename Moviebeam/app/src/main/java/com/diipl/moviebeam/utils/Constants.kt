@@ -9,6 +9,11 @@ import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 
 object Constants {
 
+    // WorkManager
+    val DATA_TYPE = "dataType"
+    val DATA_JSON = "dataJSON"
+
+    // IP Details
     var IP_ADDRESS: String = "0.0.0.0"
     var IP_GATEWAY: String = "0.0.0.0"
     lateinit var IP_NET_MASK: String
