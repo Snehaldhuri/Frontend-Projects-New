@@ -83,7 +83,6 @@ import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
-import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
 import com.diipl.moviebeam.utils.toInteger
@@ -283,16 +282,23 @@ class EndlessService : Service() {
 
         // TODO
         var isSwitched = false
+        var count = 0
         CoroutineScope(Dispatchers.IO).launch {
             while (true){
                 preferenceDataStoreHelper.putPreference(NETWORK_STATUS, networkUtils.isNetworkAvailable())
                 if (!networkUtils.isNetworkAvailable() && !isSwitched){
                     isSwitched = true
-                   startMainMenu()
+                    startMainMenu()
+                    count = 0
                 }
-                if (networkUtils.isNetworkAvailable() && isSwitched)
+                if (networkUtils.isNetworkAvailable() && isSwitched) {
                     isSwitched = false
-                delay(1000)
+                    if (count == 0) {
+                        startMainMenu()
+                        count++
+                    }
+                    delay(1000)
+                }
             }
         }
 
