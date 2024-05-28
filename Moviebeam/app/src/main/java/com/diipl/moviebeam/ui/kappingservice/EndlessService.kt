@@ -83,7 +83,6 @@ import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
-import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
 import com.diipl.moviebeam.utils.toInteger
@@ -283,16 +282,23 @@ class EndlessService : Service() {
 
         // TODO
         var isSwitched = false
+        var count = 0
         CoroutineScope(Dispatchers.IO).launch {
             while (true){
                 preferenceDataStoreHelper.putPreference(NETWORK_STATUS, networkUtils.isNetworkAvailable())
                 if (!networkUtils.isNetworkAvailable() && !isSwitched){
                     isSwitched = true
-                   startMainMenu()
+                    startMainMenu()
+                    count = 0
                 }
-                if (networkUtils.isNetworkAvailable() && isSwitched)
+                if (networkUtils.isNetworkAvailable() && isSwitched) {
                     isSwitched = false
-                delay(1000)
+                    if (count == 0) {
+                        startMainMenu()
+                        count++
+                    }
+                    delay(1000)
+                }
             }
         }
 
@@ -326,7 +332,7 @@ class EndlessService : Service() {
                                     }
                                 }
                             }
-                           if (activityStack.last() != MainMenuActivity::class.java.simpleName && activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                            if (activityStack.last() != MainMenuActivity::class.java.simpleName && activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                                 startMainMenu()
                                 Log.e(TAG, "onReceive: 0")
                                 return
@@ -855,14 +861,13 @@ class EndlessService : Service() {
                 CoroutineScope(Dispatchers.Default).launch {
                     val response = movieBeamRepository.getSoftwareUpdateDetails()
                     if (response != null && response.isCurrent) {
-                        val isUpgradeable = compareVersions(BuildConfig.VERSION_NAME, response.softwareVersion)
-                        Log.e(TAG, "handleKaping: $isUpgradeable   ${BuildConfig.VERSION_NAME}  ${response.softwareVersion}")
                         val intent = Intent()
-                        intent.component = ComponentName(MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
+                        intent.component =
+                            ComponentName(Constants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())
+                        intent.putExtra("buildVersion", BuildConfig.VERSION_NAME)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        if (isUpgradeable)
-                            startActivity(intent)
+                        startActivity(intent)
                     }
                 }
 
@@ -886,12 +891,6 @@ class EndlessService : Service() {
                 }
             }
         }
-    }
-
-    private fun compareVersions(buildVersion: String, apkVersion: String): Boolean {
-        val a = apkVersion.replace(".", "").toInt()
-        val b = buildVersion.replace(".", "").toInt()
-        return a > b
     }
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
@@ -959,7 +958,6 @@ class EndlessService : Service() {
                 Constants.ACCOUNT_ID = response.accountId
                 Constants.STB_ROOM_NO = response.roomNo
                 Constants.EPG_CDN_URL = response.epgCdnUrl
-                scheduleClearCredentialsTask(response.checkOutTime)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
                     "AccountSetup callbackSuccess", getCurrentPanelNumber()
