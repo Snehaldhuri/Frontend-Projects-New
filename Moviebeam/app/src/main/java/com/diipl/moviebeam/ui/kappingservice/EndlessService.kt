@@ -856,7 +856,6 @@ class EndlessService : Service() {
                     val response = movieBeamRepository.getSoftwareUpdateDetails()
                     if (response != null && response.isCurrent) {
                         val isUpgradeable = compareVersions(BuildConfig.VERSION_NAME, response.softwareVersion)
-                        Log.e(TAG, "handleKaping: $isUpgradeable   ${BuildConfig.VERSION_NAME}  ${response.softwareVersion}")
                         val intent = Intent()
                         intent.component = ComponentName(MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())

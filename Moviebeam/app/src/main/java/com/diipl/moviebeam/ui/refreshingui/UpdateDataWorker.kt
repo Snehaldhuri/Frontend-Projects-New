@@ -51,10 +51,8 @@ class UpdateDataWorker @AssistedInject constructor(
 
             val la = localAttractionDataStore.data.first()
             updateLAData(la)
-            Log.e(TAG, "doWork: LA Done")
             val hs = hotelServiceDataStore.data.first()
             updateHSData(hs)
-            Log.e(TAG, "doWork: HS Done")
 
 
             Result.success()

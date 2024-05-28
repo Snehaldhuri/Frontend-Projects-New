@@ -4,10 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.IntentSender
+import android.content.ServiceConnection
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams
 import android.content.pm.PackageManager
@@ -19,6 +21,7 @@ import android.net.LinkProperties
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
@@ -44,6 +47,7 @@ import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
@@ -695,4 +699,22 @@ fun Context.scheduleClearCredentialsTask(checkOutTime: String?) {
             pendingIntent
         )
     }
+}
+
+fun Activity.launchLogger(){
+    lateinit var loggingService: LoggingService
+
+    val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as LoggingService.LoggingServiceBinder
+            loggingService = binder.getService()
+            loggingService.startWebSocket()
+        }
+
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+        }
+    }
+    val serviceIntent = Intent(this, LoggingService::class.java)
+    bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
 }

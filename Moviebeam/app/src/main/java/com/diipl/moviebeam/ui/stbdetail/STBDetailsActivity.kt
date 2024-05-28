@@ -454,7 +454,7 @@ class STBDetailsActivity : BaseActivity() {
 
         lifecycleScope.launch {
             while (true){
-                if (System.currentTimeMillis() >= startMs.plus(1000*45)) {
+                if (System.currentTimeMillis() >= startMs.plus(1000*30)) {
                     val bundle = Bundle()
                     bundle.putString("UA", UA)
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
