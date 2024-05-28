@@ -855,13 +855,14 @@ class EndlessService : Service() {
                 CoroutineScope(Dispatchers.Default).launch {
                     val response = movieBeamRepository.getSoftwareUpdateDetails()
                     if (response != null && response.isCurrent) {
+                        val isUpgradeable = compareVersions(BuildConfig.VERSION_NAME, response.softwareVersion)
+                        Log.e(TAG, "handleKaping: $isUpgradeable   ${BuildConfig.VERSION_NAME}  ${response.softwareVersion}")
                         val intent = Intent()
-                        intent.component =
-                            ComponentName(Constants.MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
+                        intent.component = ComponentName(MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())
-                        intent.putExtra("buildVersion", BuildConfig.VERSION_NAME)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(intent)
+                        if (isUpgradeable)
+                            startActivity(intent)
                     }
                 }
 
@@ -885,6 +886,12 @@ class EndlessService : Service() {
                 }
             }
         }
+    }
+
+    private fun compareVersions(buildVersion: String, apkVersion: String): Boolean {
+        val a = apkVersion.replace(".", "").toInt()
+        val b = buildVersion.replace(".", "").toInt()
+        return a > b
     }
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
