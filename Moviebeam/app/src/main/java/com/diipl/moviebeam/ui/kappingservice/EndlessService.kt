@@ -283,16 +283,23 @@ class EndlessService : Service() {
 
         // TODO
         var isSwitched = false
+        var count = 0
         CoroutineScope(Dispatchers.IO).launch {
             while (true){
                 preferenceDataStoreHelper.putPreference(NETWORK_STATUS, networkUtils.isNetworkAvailable())
                 if (!networkUtils.isNetworkAvailable() && !isSwitched){
                     isSwitched = true
-                   startMainMenu()
+                    startMainMenu()
+                    count = 0
                 }
-                if (networkUtils.isNetworkAvailable() && isSwitched)
+                if (networkUtils.isNetworkAvailable() && isSwitched) {
                     isSwitched = false
-                delay(1000)
+                    if (count == 0) {
+                        startMainMenu()
+                        count++
+                    }
+                    delay(1000)
+                }
             }
         }
 
@@ -326,7 +333,7 @@ class EndlessService : Service() {
                                     }
                                 }
                             }
-                           if (activityStack.last() != MainMenuActivity::class.java.simpleName && activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                            if (activityStack.last() != MainMenuActivity::class.java.simpleName && activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                                 startMainMenu()
                                 Log.e(TAG, "onReceive: 0")
                                 return

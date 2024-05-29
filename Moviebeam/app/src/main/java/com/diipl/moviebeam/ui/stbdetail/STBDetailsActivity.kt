@@ -30,6 +30,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.refreshingui.UpdateDataWorker
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_URL
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
@@ -96,7 +97,7 @@ class STBDetailsActivity : BaseActivity() {
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private var startMs : Long = 0
     private val workManager : WorkManager by lazy { WorkManager.getInstance(applicationContext) }
-
+    private var isNetworkConnected: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -118,17 +119,20 @@ class STBDetailsActivity : BaseActivity() {
 
     //observe class
     override fun observeViewModel() {
-        observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
-        observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
-        observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
-        observe(stbDetailViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-        observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
-        observe(stbDetailViewModel.channelListLiveData, ::handleChannelListResponse)
-        observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
-        observe(stbDetailViewModel.tickerLiveData, ::handleTickerResponse)
-        observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
-        observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
-        observe(stbDetailViewModel.epgLiveData, ::handleEpgResponse)
+        observe(stbDetailViewModel.networkStatus, ::handleNetworkResponse)
+//        if (isNetworkConnected){
+            observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
+            observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
+            observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
+            observe(stbDetailViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+            observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
+            observe(stbDetailViewModel.channelListLiveData, ::handleChannelListResponse)
+            observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
+            observe(stbDetailViewModel.tickerLiveData, ::handleTickerResponse)
+            observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
+            observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
+            observe(stbDetailViewModel.epgLiveData, ::handleEpgResponse)
+//        }
 
         observeSnackBarMessages(stbDetailViewModel.showSnackBar)
         observeToast(stbDetailViewModel.showToast)
@@ -138,6 +142,15 @@ class STBDetailsActivity : BaseActivity() {
         binding = ActivityStbdetailsBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+    }
+
+    private fun handleNetworkResponse(isConnected: Boolean) {
+        isNetworkConnected = isConnected
+        if (isConnected) {
+
+        } else {
+
+        }
     }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {

@@ -18,6 +18,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.NETWORK_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.ui.base.UpdateDataStore
@@ -80,6 +81,17 @@ class STBDetailViewModel @Inject constructor(
 
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
+
+    private val _networkStatus = MutableLiveData<Boolean>()
+    val networkStatus : LiveData<Boolean> get() = _networkStatus
+
+    fun getNetworkStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper){
+        viewModelScope.launch(Dispatchers.IO) {
+            preferenceDataStoreHelper.getPreference(NETWORK_STATUS, false).collect{
+                _networkStatus.postValue(it)
+            }
+        }
+    }
 
     fun fetchHotelService() {
         viewModelScope.launch(Dispatchers.IO) {
