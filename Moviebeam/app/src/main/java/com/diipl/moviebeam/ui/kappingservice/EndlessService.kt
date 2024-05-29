@@ -83,6 +83,7 @@ import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
+import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
 import com.diipl.moviebeam.utils.toInteger

@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.diipl.moviebeam.data.Resource
@@ -30,7 +31,6 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.refreshingui.UpdateDataWorker
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_URL
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
@@ -95,8 +95,8 @@ class STBDetailsActivity : BaseActivity() {
     lateinit var preferences: SharedPreference
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-    private var startMs : Long = 0
-    private val workManager : WorkManager by lazy { WorkManager.getInstance(applicationContext) }
+    private var startMs: Long = 0
+    private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
     private var isNetworkConnected: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -121,17 +121,17 @@ class STBDetailsActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(stbDetailViewModel.networkStatus, ::handleNetworkResponse)
 //        if (isNetworkConnected){
-            observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
-            observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
-            observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
-            observe(stbDetailViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-            observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
-            observe(stbDetailViewModel.channelListLiveData, ::handleChannelListResponse)
-            observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
-            observe(stbDetailViewModel.tickerLiveData, ::handleTickerResponse)
-            observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
-            observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
-            observe(stbDetailViewModel.epgLiveData, ::handleEpgResponse)
+        observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
+        observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
+        observe(stbDetailViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+        observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
+        observe(stbDetailViewModel.channelListLiveData, ::handleChannelListResponse)
+        observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
+        observe(stbDetailViewModel.tickerLiveData, ::handleTickerResponse)
+        observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
+        observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
+        observe(stbDetailViewModel.epgLiveData, ::handleEpgResponse)
 //        }
 
         observeSnackBarMessages(stbDetailViewModel.showSnackBar)
@@ -463,11 +463,11 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun redirectToMainMenuPage() {
         val request = OneTimeWorkRequestBuilder<UpdateDataWorker>().build()
-        workManager.enqueue(request)
+        workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
 
         lifecycleScope.launch {
-            while (true){
-                if (System.currentTimeMillis() >= startMs.plus(1000*30)) {
+            while (true) {
+                if (System.currentTimeMillis() >= startMs.plus(1000 * 30)) {
                     val bundle = Bundle()
                     bundle.putString("UA", UA)
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)

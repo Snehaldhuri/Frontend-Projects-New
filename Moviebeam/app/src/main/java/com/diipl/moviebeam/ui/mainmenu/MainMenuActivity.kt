@@ -244,7 +244,7 @@ class MainMenuActivity : BaseActivity() {
     }
 
     private fun releaseVideoPlayer() {
-        binding.videoView.toInvisible()
+        binding.videoView.toGone()
         player.release()
     }
 
