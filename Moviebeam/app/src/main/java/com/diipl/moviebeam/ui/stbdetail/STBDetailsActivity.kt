@@ -102,11 +102,17 @@ class STBDetailsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+
+        stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
+
         startMs = System.currentTimeMillis()
 
         if (preferences.irFrequencyModel == null)
             preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
         clearCache()
+
+
 
         if (!Constants.IS_API_CALLED) {
             preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
@@ -120,19 +126,17 @@ class STBDetailsActivity : BaseActivity() {
     //observe class
     override fun observeViewModel() {
         observe(stbDetailViewModel.networkStatus, ::handleNetworkResponse)
-//        if (isNetworkConnected){
-            observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
-            observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
-            observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
-            observe(stbDetailViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-            observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
-            observe(stbDetailViewModel.channelListLiveData, ::handleChannelListResponse)
-            observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
-            observe(stbDetailViewModel.tickerLiveData, ::handleTickerResponse)
-            observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
-            observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
-            observe(stbDetailViewModel.epgLiveData, ::handleEpgResponse)
-//        }
+        observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
+        observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
+        observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
+        observe(stbDetailViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+        observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
+        observe(stbDetailViewModel.channelListLiveData, ::handleChannelListResponse)
+        observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
+        observe(stbDetailViewModel.tickerLiveData, ::handleTickerResponse)
+        observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
+        observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
+        observe(stbDetailViewModel.epgLiveData, ::handleEpgResponse)
 
         observeSnackBarMessages(stbDetailViewModel.showSnackBar)
         observeToast(stbDetailViewModel.showToast)
@@ -149,11 +153,13 @@ class STBDetailsActivity : BaseActivity() {
         if (isConnected) {
 
         } else {
-
+//            stbDetailViewModel.showToastMessage("Network disconnected")
         }
     }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -174,6 +180,8 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -193,6 +201,8 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Success -> {
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {
@@ -214,6 +224,8 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleHotelServiceResponse(status: Resource<HotelServiceResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -231,6 +243,8 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleLAServiceResponse(status: Resource<LocalAttractionResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -248,6 +262,8 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleChannelListResponse(status: Resource<ChannelListResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Success -> {
                 stbDetailViewModel.channelListLiveData.value?.data?.let {
@@ -265,6 +281,8 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleEpgResponse(status: Resource<EPGResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Success -> {
                 //Removing all Epg Channels From RoomDB.
@@ -496,6 +514,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun fetchCurrentProgramKey(cal: Calendar = Calendar.getInstance()): String {
+
         val date = cal.get(Calendar.DATE)
         val month = cal.get(Calendar.MONTH) + 1
         val year = cal.get(Calendar.YEAR)
@@ -534,11 +553,14 @@ class STBDetailsActivity : BaseActivity() {
 
     // Validates Cloud EPG data.
     private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
+
         val currentDate = Date()
         return !(currentDate.before(startDate) or currentDate.after(endDate))
     }
 
     private fun handleMoviesResponse(status: Resource<MoviesResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -559,6 +581,8 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleTickerResponse(status: Resource<TickerResponse>) {
+        if (!isNetworkConnected) return
+
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
@@ -596,6 +620,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
+        if (!isNetworkConnected) return
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -617,6 +642,8 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
+        if (!isNetworkConnected) return
+
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo
         // TODO edit
@@ -635,6 +662,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun replaceDegreeSymbol(temp: String?): String {
+
         var temperature = ""
         temp?.let {
             temperature = if (it.contains("&deg C")) {

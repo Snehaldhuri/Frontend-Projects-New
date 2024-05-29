@@ -107,7 +107,6 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
-        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
