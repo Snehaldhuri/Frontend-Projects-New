@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -102,14 +103,16 @@ class STBDetailsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         startMs = System.currentTimeMillis()
 
         if (preferences.irFrequencyModel == null)
             preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
         clearCache()
 
+        stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
+
         if (!Constants.IS_API_CALLED) {
-            preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
             stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
             Constants.IS_API_CALLED = true
         } else {
@@ -146,11 +149,15 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
-        if (isConnected) {
-
-        } else {
-
+        if (!isConnected) {
+            launchMain()
         }
+    }
+
+    private fun launchMain(){
+        val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
@@ -166,9 +173,9 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -185,6 +192,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -206,6 +214,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -223,6 +232,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -240,6 +250,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -257,6 +268,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -456,7 +468,7 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                launchMain()
             }
         }
     }
@@ -474,13 +486,8 @@ class STBDetailsActivity : BaseActivity() {
         lifecycleScope.launch {
             while (true) {
                 if (System.currentTimeMillis() >= startMs.plus(1000 * 30)) {
-                    val bundle = Bundle()
-                    bundle.putString("UA", UA)
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
-                    intent.let { i ->
-                        i.putExtras(bundle)
-                        startActivity(i)
-                    }
+                    startActivity(intent)
                     finish()
                 }
                 delay(2000)
@@ -560,7 +567,7 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                launchMain()
             }
         }
     }
@@ -596,6 +603,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
             }
@@ -603,7 +611,10 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
-        if (!isNetworkConnected) return
+        if (!isNetworkConnected) {
+            launchMain()
+            return
+        }
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -619,13 +630,16 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                launchMain()
             }
         }
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
-        if (!isNetworkConnected) return
+        if (!isNetworkConnected){
+            launchMain()
+            return
+        }
 
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo

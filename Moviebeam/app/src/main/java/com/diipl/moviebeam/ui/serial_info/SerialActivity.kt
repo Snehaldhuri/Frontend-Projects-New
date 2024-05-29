@@ -117,6 +117,11 @@ class SerialActivity : BaseActivity() {
         finish()
     }
 
+    override fun onStop() {
+        super.onStop()
+        finish()
+    }
+
     private fun actionOnService(action: Actions) {
         if (!EndlessService.isServiceStarted) {
             Intent(this, EndlessService::class.java).also {

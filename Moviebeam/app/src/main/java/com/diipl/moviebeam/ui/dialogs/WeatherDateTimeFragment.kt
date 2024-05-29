@@ -7,12 +7,14 @@ import android.view.ViewGroup
 import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
 import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
@@ -26,6 +28,7 @@ import com.diipl.moviebeam.utils.setIPInfo
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -76,6 +79,20 @@ class WeatherDateTimeFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        lifecycleScope.launch {
+            val ua = preferenceDataStoreHelper.getFirstPreference(
+                PreferenceDataStoreConstants.SERIAL_NO,
+                ""
+            )
+            Constants.SERIAL_NO = ua
+            Constants.UA = "21$ua"
+        }
+
+    }
+
     private fun handleNetworkResponse(b: Boolean) {
         if (b){
             binding.ivWeather.toVisible()
@@ -116,6 +133,11 @@ class WeatherDateTimeFragment : Fragment() {
                 status.data?.let { response ->
                     Constants.ACCOUNT_ID = response.accountId
                     Constants.STB_ROOM_NO = response.roomNo
+
+                    if (response.contentDetailFlag) {
+                        Constants.HOTEL_VIDEO_URL =
+                            response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                    }
                 }
             }
 
@@ -131,6 +153,9 @@ class WeatherDateTimeFragment : Fragment() {
                     Constants.GRADIENT_COLOR_START = it.gradientColor
                     Constants.GRADIENT = null
                     Constants.GRADIENT = getGradientColor()
+                    it.themeBackgroundFileName?.let {
+                        Constants.BACKGROUND_IMAGE = it
+                    }
                 }
             }
 
