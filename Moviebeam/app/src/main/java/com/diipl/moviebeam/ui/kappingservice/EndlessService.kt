@@ -333,7 +333,7 @@ class EndlessService : Service() {
                                     }
                                 }
                             }
-                            if (activityStack.last() != MainMenuActivity::class.java.simpleName && activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                           if (activityStack.last() != MainMenuActivity::class.java.simpleName && activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                                 startMainMenu()
                                 Log.e(TAG, "onReceive: 0")
                                 return
