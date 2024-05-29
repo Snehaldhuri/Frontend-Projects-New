@@ -4,10 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.IntentSender
+import android.content.ServiceConnection
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams
 import android.content.pm.PackageManager
@@ -17,8 +19,10 @@ import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.LinkProperties
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
@@ -44,6 +48,7 @@ import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
+import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
@@ -592,51 +597,59 @@ private fun appendZeros(value: Int): String {
     return str.reverse().toString()
 }
 
-val HS_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/HS/"
-val LA_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/LA/"
-val WEATHER_FILE_PATH = "${currentActivity?.externalMediaDirs?.get(0)?.absolutePath}/WEATHER/"
+val BASE_FILE_PATH = currentActivity?.externalMediaDirs?.get(0)?.absolutePath
 
-suspend fun saveHSImage(imgUrl: String?): String? {
+val HS_FILE_PATH = "$BASE_FILE_PATH/HS/"
+val LA_FILE_PATH = "$BASE_FILE_PATH/LA/"
+val THEME_FILE_PATH = "$BASE_FILE_PATH/THEME/"
+
+suspend fun saveImageServer(imgUrl: String?, filePath: String): String? {
+    var path: String? = null
+    try {
+        val uri = Uri.parse(imgUrl)
+        val imageName = uri.getQueryParameter("imageName")
+        val url = uri.toURL()
+        val imageData = withContext(Dispatchers.IO) { url.readBytes() }
+
+        path = "$filePath${imageName}"
+        writeByteArrayToFile(path, imageData)
+    } catch (e: Exception) {
+        Log.e("TAG", "Failed to save image: ${e.message}")
+    }
+    return path
+}
+
+suspend fun saveImage(imgUrl: String?, filePath: String): String? {
     var path: String?
     try {
         val url = URL(imgUrl)
         val imageData = withContext(Dispatchers.IO) { url.readBytes() }
-
-        path = "$HS_FILE_PATH${System.currentTimeMillis()}.jpg"
+        val extension = "." + url.path.substringAfterLast(".").lowercase()
+        path = "$filePath${System.currentTimeMillis()}$extension"
         writeByteArrayToFile(path, imageData)
     } catch (e: Exception) {
-        Log.e("saveHSImage", "Exception: ${e.message}")
+        Log.e("saveImage", "Exception: ${e.localizedMessage}")
         path = imgUrl
     }
     return path
 }
 
-suspend fun saveLAImage(imgUrl: String?): String? {
-    var path: String?
-    try {
-        val url = URL(imgUrl)
-        val imageData = withContext(Dispatchers.IO) { url.readBytes() }
+suspend fun saveHSImage(imgUrl: String?) = saveImage(imgUrl, HS_FILE_PATH)
+suspend fun saveLAImage(imgUrl: String?) = saveImage(imgUrl, LA_FILE_PATH)
+suspend fun saveThemeImage(imgUrl: String?) = saveImage(imgUrl, THEME_FILE_PATH)
 
-        path = "$LA_FILE_PATH${System.currentTimeMillis()}.jpg"
-        writeByteArrayToFile(path, imageData)
-    } catch (e: Exception) {
-        Log.e("saveLAImage", "Exception: ${e.localizedMessage} ")
-        path = imgUrl
+suspend fun saveThemeImageServer(imgUrl: String?) = saveImageServer(imgUrl, THEME_FILE_PATH)
+
+fun deleteFolder(filePath: String) {
+    val file = File(filePath)
+    if (file.exists()) {
+        file.deleteRecursively()
     }
-    return path
 }
 
-fun deleteHSFolder() {
-    val file = File(HS_FILE_PATH)
-    if (file.exists())
-        file.delete()
-}
-
-fun deleteLAFolder() {
-    val file = File(LA_FILE_PATH)
-    if (file.exists())
-        file.delete()
-}
+fun deleteHSFolder() = deleteFolder(HS_FILE_PATH)
+fun deleteLAFolder() = deleteFolder(LA_FILE_PATH)
+fun deleteThemeFolder() = deleteFolder(THEME_FILE_PATH)
 
 private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
     try {
@@ -652,13 +665,18 @@ private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
     }
 }
 
+fun Uri.toURL(): URL {
+    return URL(this.toString())
+}
+
 fun Context.clearCredentials() {
-    // Send broadcast to start the ClearCredentialsWorker in the target application
-    val intent = Intent()
-    intent.action = Constants.MDM_CLEAR_CREDENTIALS_ACTION
-    intent.setPackage(Constants.MDM_PACKAGE_NAME)
-    intent.putStringArrayListExtra(Constants.APP_LIST_PARAM, Constants.APP_LIST)
-    sendBroadcast(intent)
+    if (Constants.APP_LIST.isNotEmpty()) {
+        val intent = Intent()
+        intent.action = Constants.MDM_CLEAR_CREDENTIALS_ACTION
+        intent.setPackage(Constants.MDM_PACKAGE_NAME)
+        intent.putStringArrayListExtra(Constants.APP_LIST_PARAM, Constants.APP_LIST)
+        sendBroadcast(intent)
+    }
 }
 
 fun Context.scheduleClearCredentialsTask(checkOutTime: String?) {
@@ -695,4 +713,21 @@ fun Context.scheduleClearCredentialsTask(checkOutTime: String?) {
             pendingIntent
         )
     }
+}
+
+fun Activity.launchLogger() {
+    lateinit var loggingService: LoggingService
+
+    val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as LoggingService.LoggingServiceBinder
+            loggingService = binder.getService()
+            loggingService.startWebSocket()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+        }
+    }
+    val serviceIntent = Intent(this, LoggingService::class.java)
+    bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
 }

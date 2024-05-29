@@ -19,6 +19,7 @@ import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setIPInfo
@@ -81,6 +82,7 @@ class WeatherDateTimeFragment : Fragment() {
             binding.txtTemperature.toVisible()
             setIPInfo()
             Constants.CONNECTIVITY = getConnectivityType(requireContext())
+            requireActivity().launchLogger()
         } else {
             binding.ivWeather.toGone()
             binding.txtTemperature.toGone()

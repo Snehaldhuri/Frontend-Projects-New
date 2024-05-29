@@ -9,13 +9,13 @@ data class ThemeResponse(
     val gradientColor: String = "",
     val id: Int = 0,
     val spotLightColor: String = "",
-    val themeBackgroundFileName: String = "",
-    val themeBackgroundFileNameCloud: String = "",
+    val themeBackgroundFileName: String? = null,
+    val themeBackgroundFileNameCloud: String? = null,
     val themeBgFileName: String = "",
     val themeBgFileNameCloud: String = "",
     val themeCss: String = "",
-    val themeLogoFileName: String = "",
-    val themeLogoFileNameCloud: String = "",
+    val themeLogoFileName: String? = null,
+    val themeLogoFileNameCloud: String? = null,
     val type: String = "",
     val version: String = ""
 )

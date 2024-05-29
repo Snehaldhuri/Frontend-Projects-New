@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.ViewGroup
 import androidx.activity.viewModels
@@ -117,8 +118,9 @@ class MainMenuActivity : BaseActivity() {
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
         if (isConnected) {
+            binding.videoView.toVisible()
             mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
-            initializePlayer()
+//            initializePlayer()
         } else {
             releaseVideoPlayer()
             binding.root.post {
@@ -130,6 +132,8 @@ class MainMenuActivity : BaseActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        initializePlayer()
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
@@ -151,15 +155,18 @@ class MainMenuActivity : BaseActivity() {
 
     }
 
+    private fun init() {
+        player = ExoPlayer.Builder(this).build()
+        player.trackSelectionParameters = player.trackSelectionParameters
+            .buildUpon()
+            .setMaxVideoSize(1920, 1080)
+            .build()
+    }
+
 
     override fun onResume() {
         super.onResume()
 
-        player = ExoPlayer.Builder(this).build()
-        player.trackSelectionParameters = player.trackSelectionParameters
-            .buildUpon()
-            .setMaxVideoSizeSd()
-            .build()
         initializePlayer()
 
         lifecycleScope.launch {
@@ -181,22 +188,30 @@ class MainMenuActivity : BaseActivity() {
         setContentView(view)
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
         player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
     private fun initializePlayer() {
+        Log.e(
+            TAG,
+            "initializePlayer: ${::player.isInitialized} $HOTEL_VIDEO_URL  $HOTEL_VIDEO_LOOP_COUNT"
+        )
+
+        if (!::player.isInitialized) {
+            init()
+        }
+
         if (HOTEL_VIDEO_URL.isNotEmpty()) {
             binding.videoView.toVisible()
             binding.videoView.player = player
             player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
             player.repeatMode = Player.REPEAT_MODE_ALL
-            player.playWhenReady = true
             player.addListener(playerListener)
+            player.playWhenReady = true
             player.prepare()
-            player.play()
         } else {
             lifecycleScope.launch {
                 delay(2000)
@@ -209,6 +224,8 @@ class MainMenuActivity : BaseActivity() {
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
+            Log.e(TAG, "onPlayerError: ${error.message}")
+
             releaseVideoPlayer()
         }
 
@@ -221,12 +238,13 @@ class MainMenuActivity : BaseActivity() {
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
-            HOTEL_VIDEO_LOOP_COUNT--
+            if (reason == 0) HOTEL_VIDEO_LOOP_COUNT--
+            Log.e(TAG, "onMediaItemTransition: $HOTEL_VIDEO_LOOP_COUNT $reason")
         }
     }
 
     private fun releaseVideoPlayer() {
-        binding.videoView.toInvisible()
+        binding.videoView.toGone()
         player.release()
     }
 

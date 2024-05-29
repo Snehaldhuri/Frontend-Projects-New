@@ -14,12 +14,16 @@ import com.diipl.moviebeam.data.dto.localattraction.LAServices
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
+import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.deleteHSFolder
 import com.diipl.moviebeam.utils.deleteLAFolder
+import com.diipl.moviebeam.utils.deleteThemeFolder
 import com.diipl.moviebeam.utils.saveHSImage
 import com.diipl.moviebeam.utils.saveLAImage
+import com.diipl.moviebeam.utils.saveThemeImage
+import com.diipl.moviebeam.utils.saveThemeImageServer
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +40,7 @@ class UpdateDataWorker @AssistedInject constructor(
     private val weatherDataStore: DataStore<WeatherResponse>,
     private val localAttractionDataStore: DataStore<LocalAttractionResponse>,
     private val hotelServiceDataStore: DataStore<HotelServiceResponse>,
+    private val themeDataStore: DataStore<ThemeResponse>,
     private val movieBeamRepository: MovieBeamRepository,
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters
@@ -48,13 +53,14 @@ class UpdateDataWorker @AssistedInject constructor(
         Log.e(TAG, "doWork: START")
 
         return try {
+            updateThemeData()
+            Log.e(TAG, "doWork: Theme Done")
 
             val la = localAttractionDataStore.data.first()
             updateLAData(la)
-            Log.e(TAG, "doWork: LA Done")
             val hs = hotelServiceDataStore.data.first()
             updateHSData(hs)
-            Log.e(TAG, "doWork: HS Done")
+
 
 
             Result.success()
@@ -206,6 +212,37 @@ class UpdateDataWorker @AssistedInject constructor(
             }
         }
 
+    }
+
+    private suspend fun updateThemeData() = coroutineScope {
+        try {
+            deleteThemeFolder()
+            themeDataStore.updateData { currentPreferences ->
+                val themeBackgroundFileName = getThemeFileName(
+                    currentPreferences.themeBackgroundFileNameCloud,
+                    currentPreferences.themeBackgroundFileName
+                )
+                val themeLogoFileName = getThemeFileName(
+                    currentPreferences.themeLogoFileNameCloud,
+                    currentPreferences.themeLogoFileName
+                )
+
+                currentPreferences.copy(
+                    themeBackgroundFileName = themeBackgroundFileName,
+                    themeLogoFileName = themeLogoFileName
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update DataStore: ${e.message}")
+        }
+    }
+
+    private suspend fun getThemeFileName(cloudFileName: String?, localFileName: String?): String? {
+        return if (cloudFileName != null) {
+            saveThemeImage(cloudFileName)
+        } else {
+            saveThemeImageServer(localFileName)
+        }
     }
 
 }

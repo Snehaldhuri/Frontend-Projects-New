@@ -24,9 +24,9 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         initViewBinding()
         observeViewModel()
+        currentActivity = this
 //        CustomThreadExecutor()
     }
-
 
     override fun onResume() {
         super.onResume()
@@ -80,7 +80,6 @@ abstract class BaseActivity : AppCompatActivity() {
             //Start Scheduler as required
             startScheduler()
         }
-
 
         fun startScheduler() {
             scheduledExecutorService = Executors.newScheduledThreadPool(2)

@@ -26,18 +26,18 @@ class NetworkUtils @Inject constructor(
 //        Log.e(TAG, "isNetworkAvailable: $isInternet")
 
         return when {
-            /*//            actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) -> true
-                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-                        actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true*/
-            actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                    isInternet &&
-                    (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                            actNw.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ||
-                            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE) ||
-                            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) -> true
+            isInternet -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+            /* actNw.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                     isInternet &&
+                     (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                             actNw.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ||
+                             actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                             actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI_AWARE) ||
+                             actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) -> true*/
             else -> false
         }
     }
