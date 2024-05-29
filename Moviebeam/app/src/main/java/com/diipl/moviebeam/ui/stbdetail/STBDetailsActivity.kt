@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -462,7 +463,13 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun redirectToMainMenuPage() {
-        val request = OneTimeWorkRequestBuilder<UpdateDataWorker>().build()
+        val inputData = Data.Builder()
+            .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
+            .build()
+
+        val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
+            .setInputData(inputData)
+            .build()
         workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
 
         lifecycleScope.launch {
