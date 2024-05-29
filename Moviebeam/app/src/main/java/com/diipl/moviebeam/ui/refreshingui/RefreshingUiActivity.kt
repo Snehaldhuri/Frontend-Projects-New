@@ -5,6 +5,10 @@ import android.os.Build
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.lifecycleScope
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -57,6 +61,7 @@ class RefreshingUiActivity : BaseActivity() {
     private lateinit var binding: ActivityRefreshingUiBinding
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private val refreshingUiViewModel: RefreshingUiViewModel by viewModels()
+    private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
 
     private var isEPGServerApiCalled = false
 
@@ -298,6 +303,7 @@ class RefreshingUiActivity : BaseActivity() {
                     refreshingUiViewModel.setThemeResponseData(themeDataStore, it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
+                    startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
                     redirectToMainMenuScreen()
                     LoggingService.sendMessageToWebSocket(
                         "In Theme callback Success",
@@ -324,6 +330,7 @@ class RefreshingUiActivity : BaseActivity() {
                     refreshingUiViewModel.setHotelServicesResponseData(it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
+                    startUpdateDataWorker(UpdateDataWorker.ACTION_HS)
                     redirectToMainMenuScreen()
                     LoggingService.sendMessageToWebSocket(
                         "In Hotel Services callback Success",
@@ -352,6 +359,7 @@ class RefreshingUiActivity : BaseActivity() {
                     )
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
+                    startUpdateDataWorker(UpdateDataWorker.ACTION_LA)
                     redirectToMainMenuScreen()
                     LoggingService.sendMessageToWebSocket(
                         "In Local Attractions callback Success ",
@@ -761,6 +769,18 @@ class RefreshingUiActivity : BaseActivity() {
     private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
         val currentDate = Date()
         return !(currentDate.before(startDate) or currentDate.after(endDate))
+    }
+
+    private fun startUpdateDataWorker(action: String) {
+        val inputData = Data.Builder()
+            .putString(UpdateDataWorker.ACTION, action)
+            .build()
+
+        val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
+            .setInputData(inputData)
+            .build()
+
+        workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
     }
 
     private fun redirectToMainMenuScreen() {
