@@ -401,5 +401,11 @@ object Constants {
     const val BUILD_TYPE_STB = "STB"
     const val BUILD_TYPE_MINI_BOX = "MINI_BOX"
 
+    const val DESCRIPTION_PARAM = "desc"
+    const val SERVICE_TYPE_CAROUSEL = 1
+    const val SERVICE_TYPE_SERVICE_INFO = 2
+    const val SERVICE_TYPE_HELP_INFO = 3
+
+    const val SERVICE_IMAGE_LIST_PARAM = "SERVICE_IMAGE_LIST"
 }
 

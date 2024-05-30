@@ -168,24 +168,30 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                 var helpInfoAdded = false
                                 service.serviceList.forEach { s ->
                                     if (s.title == "Help & Info") {
-                                        tabMap[s.title] = TabListObj(2, s, null)
+                                        tabMap[s.title] =
+                                            TabListObj(Constants.SERVICE_TYPE_HELP_INFO, s, null)
                                         tabs.add(s.title)
                                         helpInfoAdded = true
                                     } else {
-                                        tabMap[s.title] = TabListObj(2, s, null)
+                                        tabMap[s.title] =
+                                            TabListObj(Constants.SERVICE_TYPE_SERVICE_INFO, s, null)
                                         tabs.add(s.title)
                                     }
                                 }
 
                                 if (!helpInfoAdded && service.contentTypeId == 15) {
                                     tabs.add(Constants.HELP_INFO)
-                                    tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
+                                    tabMap[Constants.HELP_INFO] =
+                                        TabListObj(Constants.SERVICE_TYPE_HELP_INFO, null, null)
                                 }
                             }
 
                             else -> {
-                                tabMap[service.categoryName] =
-                                    TabListObj(1, null, service.serviceList)
+                                tabMap[service.categoryName] = TabListObj(
+                                    Constants.SERVICE_TYPE_CAROUSEL,
+                                    null,
+                                    service.serviceList
+                                )
                                 tabs.add(service.categoryName)
                             }
                         }
@@ -197,7 +203,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                             focusedView = view
                             val transaction = supportFragmentManager.beginTransaction()
                             when (tabMap[it]?.serviceType) {
-                                1 -> {
+                                Constants.SERVICE_TYPE_CAROUSEL -> {
                                     binding.tvHeaderTitle.text =
                                         tabMap[it]?.serviceList?.get(0)?.title
                                     val carousel = CarouselListFragment(onItemFocused = { title ->
@@ -216,27 +222,34 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     transaction.replace(R.id.fragment_container_carousel, carousel)
                                 }
 
-                                2 -> {
+                                Constants.SERVICE_TYPE_SERVICE_INFO -> {
                                     binding.tvHeaderTitle.text = it
                                     val bundle = Bundle()
                                     bundle.putString("title", it)
                                     tabMap[it]?.service?.description?.let { desc ->
                                         bundle.putString("desc", desc)
                                     }
-                                    var list = tabMap[it]?.service?.serviceImageListNewCloud
-                                    if (list?.isEmpty() == true)
-                                        list = tabMap[it]?.service?.serviceImageListCloud
+                                    val list =
+                                        if (tabMap[it]?.service?.serviceImageList?.isNotEmpty() == true)
+                                            tabMap[it]?.service?.serviceImageList
+                                        else
+                                            tabMap[it]?.service?.serviceImageListNew
+
                                     var imgUrl = "null"
                                     if (list!!.isNotEmpty()) {
                                         imgUrl = list[0]
                                     }
+                                    bundle.putStringArrayList(
+                                        Constants.SERVICE_IMAGE_LIST_PARAM,
+                                        ArrayList(list)
+                                    )
                                     bundle.putString("imgUrl", imgUrl)
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
                                 }
 
-                                3 -> {
+                                Constants.SERVICE_TYPE_HELP_INFO -> {
                                     binding.tvHeaderTitle.text = it
                                     val bundle = Bundle()
                                     bundle.putString("title", it)

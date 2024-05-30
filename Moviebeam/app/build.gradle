@@ -136,6 +136,9 @@ dependencies {
     implementation "androidx.room:room-ktx:2.2.4"
     kapt "androidx.room:room-compiler:2.2.4"
 
+    //carousel
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+
 }
 
 kapt {
