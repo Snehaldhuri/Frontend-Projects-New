@@ -46,30 +46,39 @@ class UpdateDataWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
+    companion object {
+        const val ACTION = "ACTION"
+        const val ACTION_ALL = "ACTION_ALL"
+        const val ACTION_HS = "ACTION_HS"
+        const val ACTION_LA = "ACTION_LA"
+        const val ACTION_THEME = "ACTION_THEME"
+    }
+
     private val TAG = "UpdateDataWorker"
 
     override suspend fun doWork(): Result {
-
         Log.e(TAG, "doWork: START")
-
         return try {
-            updateThemeData()
-            Log.e(TAG, "doWork: Theme Done")
+            val action = inputData.getString(ACTION)
+            when (action) {
+                ACTION_ALL -> {
+                    updateThemeData()
+                    updateLAData(localAttractionDataStore.data.first())
+                    updateHSData(hotelServiceDataStore.data.first())
+                }
 
-            val la = localAttractionDataStore.data.first()
-            updateLAData(la)
-            val hs = hotelServiceDataStore.data.first()
-            updateHSData(hs)
-
-
-
+                ACTION_HS -> updateHSData(hotelServiceDataStore.data.first())
+                ACTION_LA -> updateLAData(localAttractionDataStore.data.first())
+                ACTION_THEME -> updateThemeData()
+                else -> Log.e(TAG, "doWork: Unknown Work action: $action")
+            }
             Result.success()
         } catch (e: Exception) {
-
+            Log.e(TAG, "doWork: Failed with exception: ${e.message}", e)
             Result.failure()
         }
-
     }
+
 
     private suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
         deleteHSFolder()
