@@ -60,7 +60,6 @@ class RoomRepository @Inject constructor(
     }
 
     suspend fun removeOverTimeMovies() {
-        Log.e(TAG, "removeOverTimeMovies: ${System.currentTimeMillis()}")
         database.movieDao().deleteMovieOverTime(System.currentTimeMillis())
     }
 

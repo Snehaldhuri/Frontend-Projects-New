@@ -220,6 +220,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     })
                                     carousel.bindData(tabMap[it]?.serviceList)
                                     transaction.replace(R.id.fragment_container_carousel, carousel)
+                                    transaction.commit()
                                 }
 
                                 Constants.SERVICE_TYPE_SERVICE_INFO -> {
@@ -247,6 +248,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
+                                    transaction.commit()
                                 }
 
                                 Constants.SERVICE_TYPE_HELP_INFO -> {
@@ -261,6 +263,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
+                                    transaction.commit()
                                 }
 
                                 else -> {
@@ -275,9 +278,9 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
+                                    transaction.commit()
                                 }
                             }
-                            transaction.commit()
                         },
                         onHelpInfoTabClick = { it, pos, view ->
                             val fragment = HelpInfoFragment {

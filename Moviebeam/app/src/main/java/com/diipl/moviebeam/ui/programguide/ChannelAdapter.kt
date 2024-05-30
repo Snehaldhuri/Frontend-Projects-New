@@ -5,10 +5,11 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ChannelCardBinding
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.setSafeOnClickListener
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -54,9 +55,10 @@ class ChannelAdapter(
                 holder.binding.tvChannelName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
             }
         }
-        holder.binding.root.setOnClickListener {
+        holder.binding.root.setSafeOnClickListener {
             onChannelClicked(item)
         }
+
         if (item?.CL != null) {
             holder.binding.ivChannelLogo.loadImagesWithGlideExt(item.CL!!)
         } else {

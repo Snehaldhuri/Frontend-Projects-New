@@ -9,7 +9,6 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.diipl.moviebeam.data.Resource
@@ -147,6 +146,9 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
+        if (!isConnected) {
+            launchMain()
+        }
     }
 
     private fun launchMain(){
@@ -187,7 +189,6 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
-                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -209,7 +210,6 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
-                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -227,7 +227,6 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
-                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -245,7 +244,6 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
-                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -263,7 +261,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
-                launchMain()
+
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -463,7 +461,7 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-                launchMain()
+
             }
         }
     }
@@ -476,7 +474,7 @@ class STBDetailsActivity : BaseActivity() {
         val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
             .setInputData(inputData)
             .build()
-        workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
+        workManager.enqueue(request)
 
         lifecycleScope.launch {
             while (true) {
@@ -562,7 +560,7 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-                launchMain()
+
             }
         }
     }
@@ -598,7 +596,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
-                launchMain()
+
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
             }
@@ -606,10 +604,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
-        if (!isNetworkConnected) {
-            launchMain()
-            return
-        }
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -625,7 +619,6 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-                launchMain()
             }
         }
     }
@@ -638,7 +631,6 @@ class STBDetailsActivity : BaseActivity() {
 
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo
-        // TODO edit
         UA = "21$serialNumber"
         Constants.UA = UA
         stbDetailViewModel.fetchApis(applicationContext, preferenceDataStoreHelper)

@@ -5,7 +5,9 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.launchLogger
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -84,10 +86,17 @@ class LoggingService : Service() {
         private val sdf = SimpleDateFormat("EEE. MMM d, yyyy hh:mm:ss a", Locale.ENGLISH)
         private val formattedDate = sdf.format(Date())
 
+        fun isWebSocketAlive() : Boolean {
+            return webSocket != null
+        }
+
         fun sendMessageToWebSocket(message: String, panel:String) {
             if (webSocket != null){
                 val isSent = webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"${formattedDate}\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
                 Log.e(TAG, "sendMessageToWebSocket: $isSent  ${webSocket!!.queueSize()}")
+                if (isSent == false) {
+                    BaseActivity.currentActivity?.launchLogger()
+                }
             }
             else {
                 Log.e(TAG, "Websocket3 Failed to send message: WebSocket is not initialized or sending failed")

@@ -227,20 +227,32 @@ class UpdateDataWorker @AssistedInject constructor(
     private suspend fun updateThemeData() = coroutineScope {
         try {
             deleteThemeFolder()
-            themeDataStore.updateData { currentPreferences ->
-                val themeBackgroundFileName = getThemeFileName(
-                    currentPreferences.themeBackgroundFileNameCloud,
-                    currentPreferences.themeBackgroundFileName
+            val data = themeDataStore.data.first()
+            val themeBackgroundFileName = async {
+                getThemeFileName(
+                    data.themeBackgroundFileNameCloud,
+                    data.themeBackgroundFileName
                 )
-                val themeLogoFileName = getThemeFileName(
-                    currentPreferences.themeLogoFileNameCloud,
-                    currentPreferences.themeLogoFileName
+            }
+            val themeLogoFileName = async {
+                getThemeFileName(
+                    data.themeLogoFileNameCloud,
+                    data.themeLogoFileName
                 )
+            }
 
-                currentPreferences.copy(
-                    themeBackgroundFileName = themeBackgroundFileName,
-                    themeLogoFileName = themeLogoFileName
-                )
+            val result = awaitAll(
+                themeBackgroundFileName, themeLogoFileName
+            )
+            if (result[0] != null && result[1] != null){
+                themeDataStore.updateData { currentPreferences ->
+                    currentPreferences.copy(
+                        themeBackgroundFileName = result[0],
+                        themeLogoFileName = result[1]
+                    )
+                }
+            } else {
+
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to update DataStore: ${e.message}")

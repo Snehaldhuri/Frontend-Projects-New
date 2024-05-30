@@ -154,7 +154,7 @@ class WeatherDateTimeFragment : Fragment() {
                     Constants.GRADIENT = null
                     Constants.GRADIENT = getGradientColor()
                     it.themeBackgroundFileName?.let {
-                        Constants.BACKGROUND_IMAGE = it
+                        Constants.BG_IMAGE = it
                     }
                 }
             }

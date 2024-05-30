@@ -81,7 +81,6 @@ class MainMenuActivity : BaseActivity() {
     private lateinit var binding: ActivityMainMenuBinding
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
-    private var latestAccountSetupResponse: AccountSetupResponse? = null
     private var isNetworkConnected: Boolean = false
 
     @Inject
@@ -117,6 +116,7 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
+//        mainMenuViewModel.showToastMessage("Network is $isConnected")
         if (isNetworkConnected) {
             mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
             binding.videoView.toVisible()
@@ -174,9 +174,10 @@ class MainMenuActivity : BaseActivity() {
         lifecycleScope.launch {
             while (!player.isPlaying){
                 if (HOTEL_VIDEO_URL.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0){
-                    Log.e(TAG, "onResume:  lifecycleScope")
+                    Log.e(TAG, "onResume: lifecycleScope")
                     binding.videoView.toGone()
                 } else {
+                    Log.e(TAG, "onResume: initializePlayer")
                     initializePlayer()
                 }
                 delay(5000)
@@ -235,6 +236,7 @@ class MainMenuActivity : BaseActivity() {
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
+            Log.e(TAG, "onMediaItemTransition: $reason")
             if (reason == 0) HOTEL_VIDEO_LOOP_COUNT--
         }
     }
@@ -265,7 +267,6 @@ class MainMenuActivity : BaseActivity() {
                     Constants.BG_IMAGE = response?.themeBackgroundFileName
                     response?.themeBackgroundFileName?.let {
                         loadBg(it)
-                        Constants.BACKGROUND_IMAGE = it
                     }
                     binding.pbLoader.toInvisible()
                 } catch (e: Exception) {

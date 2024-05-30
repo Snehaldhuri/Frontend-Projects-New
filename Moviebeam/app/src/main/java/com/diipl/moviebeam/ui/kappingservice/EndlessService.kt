@@ -880,9 +880,11 @@ class EndlessService : Service() {
                         val intent = Intent()
                         intent.component = ComponentName(MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
                         intent.putExtra("softwareData", response.toJson())
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        if (isUpgradeable)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK /*or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP*/
+                        if (isUpgradeable){
                             startActivity(intent)
+//                            BaseActivity.currentActivity?.finishAffinity()
+                        }
                         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                     }
                 }
