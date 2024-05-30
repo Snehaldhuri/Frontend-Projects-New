@@ -22,9 +22,9 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        currentActivity = this
         initViewBinding()
         observeViewModel()
-        currentActivity = this
 //        CustomThreadExecutor()
     }
 

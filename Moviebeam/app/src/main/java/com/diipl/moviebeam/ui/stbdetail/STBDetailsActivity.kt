@@ -104,19 +104,15 @@ class STBDetailsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-
-        stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
-
         startMs = System.currentTimeMillis()
 
         if (preferences.irFrequencyModel == null)
             preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
         clearCache()
 
-
+        stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
         if (!Constants.IS_API_CALLED) {
-            preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
             stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
             Constants.IS_API_CALLED = true
         } else {
@@ -151,16 +147,18 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
-        if (isConnected) {
-
-        } else {
-//            stbDetailViewModel.showToastMessage("Network disconnected")
+        if (!isConnected) {
+            launchMain()
         }
     }
 
-    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
-        if (!isNetworkConnected) return
+    private fun launchMain(){
+        val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
 
+    private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -173,16 +171,14 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
             }
         }
     }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        if (!isNetworkConnected) return
-
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -194,6 +190,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -202,8 +199,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
-        if (!isNetworkConnected) return
-
         when (status) {
             is Resource.Success -> {
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {
@@ -217,6 +212,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -225,8 +221,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleHotelServiceResponse(status: Resource<HotelServiceResponse>) {
-        if (!isNetworkConnected) return
-
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -236,6 +230,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -244,8 +239,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleLAServiceResponse(status: Resource<LocalAttractionResponse>) {
-        if (!isNetworkConnected) return
-
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -255,6 +248,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -263,8 +257,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleChannelListResponse(status: Resource<ChannelListResponse>) {
-        if (!isNetworkConnected) return
-
         when (status) {
             is Resource.Success -> {
                 stbDetailViewModel.channelListLiveData.value?.data?.let {
@@ -274,6 +266,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -282,8 +275,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleEpgResponse(status: Resource<EPGResponse>) {
-        if (!isNetworkConnected) return
-
         when (status) {
             is Resource.Success -> {
                 //Removing all Epg Channels From RoomDB.
@@ -475,7 +466,7 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                launchMain()
             }
         }
     }
@@ -493,13 +484,8 @@ class STBDetailsActivity : BaseActivity() {
         lifecycleScope.launch {
             while (true) {
                 if (System.currentTimeMillis() >= startMs.plus(1000 * 30)) {
-                    val bundle = Bundle()
-                    bundle.putString("UA", UA)
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
-                    intent.let { i ->
-                        i.putExtras(bundle)
-                        startActivity(i)
-                    }
+                    startActivity(intent)
                     finish()
                 }
                 delay(2000)
@@ -560,14 +546,11 @@ class STBDetailsActivity : BaseActivity() {
 
     // Validates Cloud EPG data.
     private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
-
         val currentDate = Date()
         return !(currentDate.before(startDate) or currentDate.after(endDate))
     }
 
     private fun handleMoviesResponse(status: Resource<MoviesResponse>) {
-        if (!isNetworkConnected) return
-
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -582,14 +565,12 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                launchMain()
             }
         }
     }
 
     private fun handleTickerResponse(status: Resource<TickerResponse>) {
-        if (!isNetworkConnected) return
-
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
@@ -620,6 +601,7 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
+                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
             }
@@ -627,7 +609,10 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
-        if (!isNetworkConnected) return
+        if (!isNetworkConnected) {
+            launchMain()
+            return
+        }
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
@@ -643,13 +628,16 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                launchMain()
             }
         }
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
-        if (!isNetworkConnected) return
+        if (!isNetworkConnected){
+            launchMain()
+            return
+        }
 
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo

@@ -418,9 +418,12 @@ class ProgramGuideActivity : BaseActivity() {
         }
     }
 
+    var isClicked = false
+
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
 //        if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_CHROMECAST, true)) {
-            switchToTV(program)
+            if (!isClicked)
+                switchToTV(program)
             /* } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_MINI_BOX, true)) {
                  binding.layoutVideo.videoView.player?.pause()
                  val bundle = Bundle()
@@ -470,6 +473,7 @@ class ProgramGuideActivity : BaseActivity() {
                             num[num.size - 1].sendPacket(model)
                             delay(240)
                             service.transmit(model.frequency, model.OK)
+                            isClicked = true
                         }
                     }
 
@@ -480,6 +484,7 @@ class ProgramGuideActivity : BaseActivity() {
                             num[num.size - 1].sendPacket(model)
                             delay(240)
                             service.transmit(model.frequency, model.OK)
+                            isClicked = true
                         }
                     }
 
@@ -489,12 +494,14 @@ class ProgramGuideActivity : BaseActivity() {
                             num[num.size - 1].sendPacket(model)
                             delay(240)
                             service.transmit(model.frequency, model.OK)
+                            isClicked = true
                         }
                     }
 
                     1 -> {
                         num[num.size - 1].sendPacket(model)
                         service.transmit(model.frequency, model.OK)
+                        isClicked = true
                     }
                 }
             }

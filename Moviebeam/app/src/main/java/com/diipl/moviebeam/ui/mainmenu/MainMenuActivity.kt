@@ -28,7 +28,6 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
@@ -55,6 +54,7 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -117,14 +117,13 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
-        if (isConnected) {
-            binding.videoView.toVisible()
+        if (isNetworkConnected) {
             mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
-//            initializePlayer()
+            binding.videoView.toVisible()
         } else {
             releaseVideoPlayer()
             binding.root.post {
-                loadBg(Constants.BG_IMAGE)
+                binding.root.loadBg()
             }
         }
     }
@@ -133,7 +132,7 @@ class MainMenuActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        initializePlayer()
+        Log.e(TAG, "onCreate: ")
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
@@ -161,24 +160,28 @@ class MainMenuActivity : BaseActivity() {
             .buildUpon()
             .setMaxVideoSize(1920, 1080)
             .build()
+        binding.videoView.player = player
     }
-
 
     override fun onResume() {
         super.onResume()
+        Log.e(TAG, "onResume: ")
 
         initializePlayer()
+        binding.root.loadBg()
+        binding.rvMenuButton.setItemFocused()
 
         lifecycleScope.launch {
-            val ua = preferenceDataStoreHelper.getFirstPreference(
-                PreferenceDataStoreConstants.SERIAL_NO,
-                ""
-            )
-            Constants.SERIAL_NO = ua
-            Constants.UA = "21$ua"
+            while (!player.isPlaying){
+                if (HOTEL_VIDEO_URL.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0){
+                    Log.e(TAG, "onResume:  lifecycleScope")
+                    binding.videoView.toGone()
+                } else {
+                    initializePlayer()
+                }
+                delay(5000)
+            }
         }
-
-        binding.rvMenuButton.setItemFocused()
 
     }
 
@@ -188,17 +191,14 @@ class MainMenuActivity : BaseActivity() {
         setContentView(view)
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
+        player.stop()
         player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
     private fun initializePlayer() {
-        Log.e(
-            TAG,
-            "initializePlayer: ${::player.isInitialized} $HOTEL_VIDEO_URL  $HOTEL_VIDEO_LOOP_COUNT"
-        )
 
         if (!::player.isInitialized) {
             init()
@@ -206,7 +206,6 @@ class MainMenuActivity : BaseActivity() {
 
         if (HOTEL_VIDEO_URL.isNotEmpty()) {
             binding.videoView.toVisible()
-            binding.videoView.player = player
             player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
             player.repeatMode = Player.REPEAT_MODE_ALL
             player.addListener(playerListener)
@@ -224,8 +223,6 @@ class MainMenuActivity : BaseActivity() {
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
-            Log.e(TAG, "onPlayerError: ${error.message}")
-
             releaseVideoPlayer()
         }
 
@@ -239,7 +236,6 @@ class MainMenuActivity : BaseActivity() {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
             if (reason == 0) HOTEL_VIDEO_LOOP_COUNT--
-            Log.e(TAG, "onMediaItemTransition: $HOTEL_VIDEO_LOOP_COUNT $reason")
         }
     }
 
@@ -269,6 +265,7 @@ class MainMenuActivity : BaseActivity() {
                     Constants.BG_IMAGE = response?.themeBackgroundFileName
                     response?.themeBackgroundFileName?.let {
                         loadBg(it)
+                        Constants.BACKGROUND_IMAGE = it
                     }
                     binding.pbLoader.toInvisible()
                 } catch (e: Exception) {
@@ -329,12 +326,6 @@ class MainMenuActivity : BaseActivity() {
                     status.data?.let { response ->
                         Constants.ACCOUNT_ID = response.accountId
                         Constants.STB_ROOM_NO = response.roomNo
-
-                        if (response.contentDetailFlag) {
-                            HOTEL_VIDEO_URL =
-                                response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
-                            initializePlayer()
-                        }
 
                         binding.tvGreeting.text = response.hotelInfo
 
@@ -439,10 +430,10 @@ class MainMenuActivity : BaseActivity() {
                                 }
 
                                 Constants.PRG_GUIDE_ID -> {
-                                    if (!isNetworkConnected) {
-                                        intent = Intent(this, DisconnectedPrgActivity::class.java)
+                                    intent = if (!isNetworkConnected) {
+                                        Intent(this, DisconnectedPrgActivity::class.java)
                                     } else {
-                                        intent = Intent(this, ProgramGuideActivity::class.java)
+                                        Intent(this, ProgramGuideActivity::class.java)
                                     }
                                 }
 

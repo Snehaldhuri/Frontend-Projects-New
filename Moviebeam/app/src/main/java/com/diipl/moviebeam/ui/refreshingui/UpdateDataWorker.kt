@@ -77,6 +77,7 @@ class UpdateDataWorker @AssistedInject constructor(
             Log.e(TAG, "doWork: Failed with exception: ${e.message}", e)
             Result.failure()
         }
+
     }
 
 

@@ -26,7 +26,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
@@ -529,16 +529,17 @@ private fun generateUniqueRequestCode(endTime: Long): Int {
     return endTime.toInt()
 }
 
-fun View.loadBg() {
-    Glide.with(this).load(Constants.BACKGROUND_IMAGE)
+fun ConstraintLayout.loadBg() {
+    val url = Constants.BG_IMAGE
+    Log.e("TAG", "loadBg: $url")
+    if (!url.isNullOrEmpty())
+        Glide.with(this).load(url)
         .into(object : CustomTarget<Drawable?>() {
             override fun onResourceReady(
                 resource: Drawable,
                 transition: Transition<in Drawable?>?
             ) {
-                resource.alpha = 120
-                val root = this as ViewGroup
-                root.background = resource
+                background = resource
             }
 
             override fun onLoadCleared(placeholder: Drawable?) {}

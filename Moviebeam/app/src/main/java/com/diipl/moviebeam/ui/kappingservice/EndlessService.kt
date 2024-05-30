@@ -880,6 +880,7 @@ class EndlessService : Service() {
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                         if (isUpgradeable)
                             startActivity(intent)
+                        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                     }
                 }
 
@@ -908,7 +909,7 @@ class EndlessService : Service() {
     private fun compareVersions(buildVersion: String, apkVersion: String): Boolean {
         val a = apkVersion.replace(".", "").toInt()
         val b = buildVersion.replace(".", "").toInt()
-        return a > b
+        return a != b
     }
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
