@@ -98,7 +98,7 @@ class STBDetailsActivity : BaseActivity() {
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private var startMs: Long = 0
     private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
-    private var isNetworkConnected: Boolean = false
+    private var isNetworkConnected: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,9 +147,6 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
-        if (!isConnected) {
-            launchMain()
-        }
     }
 
     private fun launchMain(){

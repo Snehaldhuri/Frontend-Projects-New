@@ -148,6 +148,7 @@ class EndlessService : Service() {
     private var epochTime = ""
     private var transactionId = ""
     private var isEPGServerApiCalled = false
+    private var isNetworkAvailable = true
     private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
 
     private val _accountSetupLiveData = MutableLiveData<AccountSetupResponse>()
@@ -295,20 +296,20 @@ class EndlessService : Service() {
             while (true) {
                 preferenceDataStoreHelper.putPreference(
                     NETWORK_STATUS,
-                    networkUtils.isNetworkAvailable()
+                    isNetworkAvailable
                 )
-                if (!networkUtils.isNetworkAvailable() && !isSwitched) {
+                if (!isNetworkAvailable && !isSwitched) {
                     isSwitched = true
                     startMainMenu()
                     count = 0
                 }
-                if (networkUtils.isNetworkAvailable() && isSwitched) {
+                if (isNetworkAvailable && isSwitched) {
                     isSwitched = false
                     if (count == 0) {
                         startMainMenu()
                         count++
                     }
-                    delay(1000)
+                    delay(1000 * 2)
                 }
             }
         }
@@ -602,6 +603,7 @@ class EndlessService : Service() {
                 call: Call<String>, response: Response<String>
             ) {
                 if (response.isSuccessful) {
+                    isNetworkAvailable = true
                     val data = response.body()
                     val result = KapingResponseParsing().getResponseAsObject(
                         data, KapingResponse::class
@@ -636,6 +638,7 @@ class EndlessService : Service() {
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
+                isNetworkAvailable = false
                 log(t.toString())
             }
 
