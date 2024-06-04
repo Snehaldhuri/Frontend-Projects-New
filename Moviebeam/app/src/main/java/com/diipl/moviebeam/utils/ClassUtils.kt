@@ -534,16 +534,16 @@ fun ConstraintLayout.loadBg() {
     Log.e("TAG", "loadBg: $url")
     if (!url.isNullOrEmpty())
         Glide.with(this).load(url)
-        .into(object : CustomTarget<Drawable?>() {
-            override fun onResourceReady(
-                resource: Drawable,
-                transition: Transition<in Drawable?>?
-            ) {
-                background = resource
-            }
+            .into(object : CustomTarget<Drawable?>() {
+                override fun onResourceReady(
+                    resource: Drawable,
+                    transition: Transition<in Drawable?>?
+                ) {
+                    background = resource
+                }
 
-            override fun onLoadCleared(placeholder: Drawable?) {}
-        })
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
 }
 
 fun String.toInteger(): Int? {
@@ -671,13 +671,27 @@ fun Uri.toURL(): URL {
 }
 
 fun Context.clearCredentials() {
-    if (Constants.APP_LIST.isNotEmpty()) {
-        val intent = Intent()
-        intent.action = Constants.MDM_CLEAR_CREDENTIALS_ACTION
-        intent.setPackage(Constants.MDM_PACKAGE_NAME)
-        intent.putStringArrayListExtra(Constants.APP_LIST_PARAM, Constants.APP_LIST)
-        sendBroadcast(intent)
+    LoggingService.sendMessageToWebSocket(
+        "Clearing Application credentials.",
+        getCurrentPanelNumber()
+    )
+    if (Constants.APP_LIST.isEmpty()) {
+        LoggingService.sendMessageToWebSocket(
+            "App List is empty.",
+            getCurrentPanelNumber()
+        )
+        return
     }
+    val intent = Intent(Constants.MDM_CLEAR_CREDENTIALS_ACTION).apply {
+        setPackage(Constants.MDM_PACKAGE_NAME)
+        putStringArrayListExtra(Constants.APP_LIST_PARAM, Constants.APP_LIST)
+    }
+    sendBroadcast(intent)
+
+    LoggingService.sendMessageToWebSocket(
+        "Clearing Application credentials done.",
+        getCurrentPanelNumber()
+    )
 }
 
 fun Context.scheduleClearCredentialsTask(checkOutTime: String?) {

@@ -147,6 +147,7 @@
     <string name="parental_control_desc">Use the arrow key and hit OK button to set passcode. Use stop button to <font color="#FFB81A">CANCEL</font> or <font color="#FFB81A">START</font> again.
         \nDO NOT USE NUMERIC KEYS ON REMOTE to set the passcode
         \nPlease call frontdesk for assistance</string>
+    <string name="app_world_clear_credentials_message">Your credentials have been successfully cleared. Please login again to access your application.</string>
 
     <string name="rich_input_feed_url" translatable="false">http://commondatastorage.googleapis.com/android-tv/rich_tv_input_xmltv_feed.xml</string>
     <string name="refreshing_ui">Refreshing UI...</string>
@@ -156,5 +157,7 @@
     <string name="clear_credentials">Clear Credentials</string>
     <string name="disconnected_mode">Disconnected Mode</string>
     <string name="connected_mode">Connected Mode</string>
+    <string name="home_icon">Home Icon</string>
+    <string name="press">Press</string>
 
 </resources>

@@ -5,21 +5,30 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.PopupWindow
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.recyclerview.widget.GridLayoutManager
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
+import com.diipl.moviebeam.databinding.PopupLayoutBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -73,7 +82,10 @@ class AppWorldActivity : BaseActivity() {
             binding.btnBack.setOnClickListener { finish() }
             binding.btnBack.handleFocusChange()
             binding.btnClearCredentials.handleFocusChange()
-            binding.btnClearCredentials.setOnClickListener { clearCredentials() }
+            binding.btnClearCredentials.setOnClickListener {
+                clearCredentials()
+                showPopup()
+            }
             LoggingService.sendMessageToWebSocket(
                 "In App World activity",
                 getCurrentPanelNumber()
@@ -242,6 +254,35 @@ class AppWorldActivity : BaseActivity() {
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
         binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(Constants.LOGO_IMAGE)
         binding.root.loadBg()
+    }
+
+    private fun showPopup() {
+        val popupBinding = PopupLayoutBinding.inflate(layoutInflater)
+        val popupWindow = PopupWindow(
+            popupBinding.root,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+        popupBinding.btnOk.requestFocus()
+        popupBinding.btnOk.background = getGradientColor()
+        val blurView = View(this)
+        blurView.setBackgroundColor(Color.parseColor("#80000000"))
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT
+        )
+        window.addContentView(blurView, params)
+
+        popupWindow.showAtLocation(popupBinding.root, Gravity.CENTER, 0, 0)
+
+        popupBinding.btnOk.setOnClickListener {
+            popupWindow.dismiss()
+            (blurView.parent as? ViewGroup)?.removeView(blurView)
+        }
+
+        popupBinding.tvPopupText.text = getString(R.string.app_world_clear_credentials_message)
     }
 
 }
