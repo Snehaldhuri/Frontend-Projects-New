@@ -60,6 +60,7 @@ class UpdateDataWorker @AssistedInject constructor(
         Log.e(TAG, "doWork: START")
         return try {
             val action = inputData.getString(ACTION)
+            Log.e(TAG, "doWork: $action")
             when (action) {
                 ACTION_ALL -> {
                     updateThemeData()
@@ -80,8 +81,8 @@ class UpdateDataWorker @AssistedInject constructor(
 
     }
 
-
     private suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
+        Log.e(TAG, "updateHSData: Downloading HS Images", )
         deleteHSFolder()
         val servicesList = mutableListOf<Services>()
         val resp = async(Dispatchers.IO) {
@@ -147,10 +148,11 @@ class UpdateDataWorker @AssistedInject constructor(
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
         }
-
+        Log.e(TAG, "updateHSData: Downloading HS Images Done", )
     }
 
     private suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
+        Log.e(TAG, "updateLAData: Downloading LA Images", )
         deleteLAFolder()
         val servicesList = mutableListOf<LAServices>()
         val resp = async(Dispatchers.IO) {
@@ -221,10 +223,11 @@ class UpdateDataWorker @AssistedInject constructor(
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
         }
-
+        Log.e(TAG, "updateLAData: Downloading LA Images Done", )
     }
 
     private suspend fun updateThemeData() = coroutineScope {
+        Log.e(TAG, "updateThemeData: Downloading Theme Images", )
         try {
             deleteThemeFolder()
             val data = themeDataStore.data.first()
@@ -244,7 +247,7 @@ class UpdateDataWorker @AssistedInject constructor(
             val result = awaitAll(
                 themeBackgroundFileName, themeLogoFileName
             )
-            if (result[0] != null && result[1] != null){
+            if (result[0] != null && result[1] != null) {
                 themeDataStore.updateData { currentPreferences ->
                     currentPreferences.copy(
                         themeBackgroundFileName = result[0],
@@ -257,6 +260,7 @@ class UpdateDataWorker @AssistedInject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Failed to update DataStore: ${e.message}")
         }
+        Log.e(TAG, "updateThemeData: Downloading Theme Images Done", )
     }
 
     private suspend fun getThemeFileName(cloudFileName: String?, localFileName: String?): String? {

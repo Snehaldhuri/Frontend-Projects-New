@@ -9,7 +9,10 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.ListenableWorker.Result
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -38,6 +41,7 @@ import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
+import com.diipl.moviebeam.utils.setSafeOnClickListener
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInteger
@@ -151,7 +155,7 @@ class STBDetailsActivity : BaseActivity() {
         }
     }
 
-    private fun launchMain(){
+    private fun launchMain() {
         val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
         startActivity(intent)
         finish()
@@ -467,23 +471,25 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun redirectToMainMenuPage() {
-        val inputData = Data.Builder()
-            .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
-            .build()
+        binding.root.post { binding.root.performClick() }
+        binding.root.setSafeOnClickListener {
+            val inputData = Data.Builder()
+                .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
+                .build()
 
-        val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
-            .setInputData(inputData)
-            .build()
-        workManager.enqueue(request)
-
-        lifecycleScope.launch {
-            while (true) {
-                if (System.currentTimeMillis() >= startMs.plus(1000 * 30)) {
+            val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
+                .setInputData(inputData)
+                .build()
+            workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
+        }
+        
+        workManager.getWorkInfosForUniqueWorkLiveData(TAG).observe(this) { data ->
+            if (data.isNotEmpty()){
+                if(data[0].state == WorkInfo.State.SUCCEEDED){
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
                     startActivity(intent)
                     finish()
                 }
-                delay(2000)
             }
         }
     }

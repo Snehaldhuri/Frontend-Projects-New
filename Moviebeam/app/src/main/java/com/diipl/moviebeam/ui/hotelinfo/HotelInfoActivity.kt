@@ -231,10 +231,10 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                         bundle.putString("desc", desc)
                                     }
                                     val list =
-                                        if (tabMap[it]?.service?.serviceImageList?.isNotEmpty() == true)
-                                            tabMap[it]?.service?.serviceImageList
+                                        if (tabMap[it]?.service?.serviceImageListCloud?.isNotEmpty() == true)
+                                            tabMap[it]?.service?.serviceImageListCloud
                                         else
-                                            tabMap[it]?.service?.serviceImageListNew
+                                            tabMap[it]?.service?.serviceImageListNewCloud
 
                                     var imgUrl = "null"
                                     if (list!!.isNotEmpty()) {

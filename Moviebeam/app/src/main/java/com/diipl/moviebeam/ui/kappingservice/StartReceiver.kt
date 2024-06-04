@@ -34,7 +34,7 @@ class StartReceiver : BroadcastReceiver() {
             context.startActivity(i)
 
         }
-        if (intent.action == Intent.ACTION_REBOOT){
+        if (intent.action == Intent.ACTION_REBOOT && getServiceState(context) == ServiceState.STARTED){
             val preference = SharedPreference(context)
             if (preference.irFrequencyModel == null){
                 preference.irFrequencyModel = IRUtils.SELECTED_BRAND

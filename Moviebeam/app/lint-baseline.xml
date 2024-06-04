@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 7.4.0" type="baseline" client="gradle" dependencies="false" name="AGP (7.4.0)" variant="fatal" version="7.4.0">
+
+    <issue
+        id="InvalidSetHasFixedSize"
+        message="When using `setHasFixedSize() in an `RecyclerView`, `wrap_content` cannot be used as \&#xA;a value for `size` in the scrolling direction."
+        errorLine1="        holder.childRecyclerView.setHasFixedSize(true)"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/movies/ParentAdapter.kt"
+            line="56"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="InvalidSetHasFixedSize"
+        message="When using `setHasFixedSize() in an `RecyclerView`, `wrap_content` cannot be used as \&#xA;a value for `size` in the scrolling direction."
+        errorLine1="        holder.childRecyclerView.setHasFixedSize(true)"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/showtime/ShowtimeParentAdapter.kt"
+            line="40"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="NullSafeMutableLiveData"
+        message="Expected non-nullable value"
+        errorLine1="                    _accountSetupLiveData.postValue(accountSetupDataStore.data.first())"
+        errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/kappingservice/EndlessService.kt"
+            line="449"
+            column="53"/>
+    </issue>
+
+    <issue
+        id="NullSafeMutableLiveData"
+        message="Expected non-nullable value"
+        errorLine1="                    _themeLiveData.postValue(themeDataStore.data.first())"
+        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/kappingservice/EndlessService.kt"
+            line="450"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="NullSafeMutableLiveData"
+        message="Expected non-nullable value"
+        errorLine1="                    _localAttractionLiveData.postValue(localAttractionsDataStore.data.first())"
+        errorLine2="                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/kappingservice/EndlessService.kt"
+            line="451"
+            column="56"/>
+    </issue>
+
+    <issue
+        id="NullSafeMutableLiveData"
+        message="Expected non-nullable value"
+        errorLine1="                    _moviesLiveData.postValue(moviesDataStore.data.first())"
+        errorLine2="                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/kappingservice/EndlessService.kt"
+            line="452"
+            column="47"/>
+    </issue>
+
+    <issue
+        id="NullSafeMutableLiveData"
+        message="Expected non-nullable value"
+        errorLine1="                    _showtimeLiveData.postValue(showtimeDataStore.data.first())"
+        errorLine2="                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/kappingservice/EndlessService.kt"
+            line="453"
+            column="49"/>
+    </issue>
+
+    <issue
+        id="NullSafeMutableLiveData"
+        message="Expected non-nullable value"
+        errorLine1="                    _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())"
+        errorLine2="                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/kappingservice/EndlessService.kt"
+            line="454"
+            column="54"/>
+    </issue>
+
+    <issue
+        id="NullSafeMutableLiveData"
+        message="Expected non-nullable value"
+        errorLine1="                    _channelListLiveData.postValue(channelListDatastore.data.first())"
+        errorLine2="                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/diipl/moviebeam/ui/kappingservice/EndlessService.kt"
+            line="455"
+            column="52"/>
+    </issue>
+
+</issues>
