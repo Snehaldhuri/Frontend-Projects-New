@@ -97,12 +97,16 @@ class WeatherDateTimeFragment : Fragment() {
         if (b){
             binding.ivWeather.toVisible()
             binding.txtTemperature.toVisible()
+            binding.tvDate.toVisible()
+            binding.tvTime.toVisible()
             setIPInfo()
             Constants.CONNECTIVITY = getConnectivityType(requireContext())
             requireActivity().launchLogger()
         } else {
             binding.ivWeather.toGone()
             binding.txtTemperature.toGone()
+            binding.tvDate.toGone()
+            binding.tvTime.toGone()
             Constants.IP_ADDRESS = "0.0.0.0"
             Constants.IP_NET_MASK = "0.0.0.0"
             Constants.IP_GATEWAY = "0.0.0.0"
