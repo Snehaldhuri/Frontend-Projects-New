@@ -9,7 +9,7 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.diipl.moviebeam.data.Resource
@@ -472,7 +472,7 @@ class STBDetailsActivity : BaseActivity() {
                 .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
                 .build()
 
-            val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
+            val request = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
                 .setInputData(inputData)
                 .build()
             uuid = request.id

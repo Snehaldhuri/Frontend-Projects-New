@@ -34,6 +34,7 @@ import androidx.room.TypeConverter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.room.models.RentalMovieModel
@@ -745,4 +746,10 @@ fun Activity.launchLogger() {
     }
     val serviceIntent = Intent(this, LoggingService::class.java)
     bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+}
+
+fun compareVersions(apkVersion: String): Boolean {
+    val a = apkVersion.replace(".", "").toInt()
+    val b = BuildConfig.VERSION_NAME.replace(".", "").toInt()
+    return a != b
 }

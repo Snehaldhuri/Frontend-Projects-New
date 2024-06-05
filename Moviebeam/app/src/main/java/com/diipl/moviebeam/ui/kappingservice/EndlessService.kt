@@ -80,11 +80,11 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.MDM_PACKAGE_NAME
 import com.diipl.moviebeam.utils.DeviceUtils
 import com.diipl.moviebeam.utils.KapingConstants
-import com.diipl.moviebeam.utils.KapingConstants.MDM_SOFTWARE_ACTIVITY
 import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.clearCredentials
+import com.diipl.moviebeam.utils.compareVersions
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.isNotAllowed
@@ -719,7 +719,35 @@ class EndlessService : Service() {
 
     private fun handleKaping(kapingResponse: KapingResponse?) {
 
+        Log.e(TAG, "handleKaping: ${kapingResponse?.cmdData?.cmd}")
+
         when (kapingResponse?.cmdData?.cmd) {
+
+            KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
+                CoroutineScope(Dispatchers.Default).launch {
+                    val response = movieBeamRepository.getSoftwareUpdateDetails()
+                    Log.e(TAG, "handleKaping: $response")
+                    if (response != null && response.isCurrent) {
+                        val isUpgradeable = compareVersions(response.softwareVersion)
+                        if (isUpgradeable) {
+                            Log.e(
+                                TAG,
+                                "handleKaping: $isUpgradeable  ${BuildConfig.VERSION_NAME} $response"
+                            )
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            intent.component =
+                                ComponentName(MDM_PACKAGE_NAME,
+                                    KapingConstants.MDM_SOFTWARE_ACTIVITY
+                                )
+                            intent.putExtra("softwareData", response.toJson())
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            startActivity(intent)
+                        }
+                        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                    }
+                }
+
+            }
 
             KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE, KapingConstants.KAP_CMD_CHECK_IN, KapingConstants.KAP_CMD_CHECK_OUT, KapingConstants.KAP_CMD_THEME_CHANGE -> {
                 removeAdultData()
@@ -871,26 +899,6 @@ class EndlessService : Service() {
                 }
             }
 
-            KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
-                CoroutineScope(Dispatchers.Default).launch {
-                    val response = movieBeamRepository.getSoftwareUpdateDetails()
-                    if (response != null && response.isCurrent) {
-                        val isUpgradeable =
-                            compareVersions(BuildConfig.VERSION_NAME, response.softwareVersion)
-                        val intent = Intent()
-                        intent.component = ComponentName(MDM_PACKAGE_NAME, MDM_SOFTWARE_ACTIVITY)
-                        intent.putExtra("softwareData", response.toJson())
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK /*or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP*/
-                        if (isUpgradeable){
-                            startActivity(intent)
-//                            BaseActivity.currentActivity?.finishAffinity()
-                        }
-                        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                    }
-                }
-
-            }
-
             KapingConstants.KAP_CMD_GET_TICKER_MESSAGES -> {
                 CoroutineScope(Dispatchers.IO).launch {
                     handleTickerMsgCmd(UA)
@@ -909,12 +917,6 @@ class EndlessService : Service() {
                 }
             }
         }
-    }
-
-    private fun compareVersions(buildVersion: String, apkVersion: String): Boolean {
-        val a = apkVersion.replace(".", "").toInt()
-        val b = buildVersion.replace(".", "").toInt()
-        return a != b
     }
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {

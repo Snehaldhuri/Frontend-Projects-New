@@ -25,7 +25,7 @@ import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setIPInfo
-import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -95,14 +95,14 @@ class WeatherDateTimeFragment : Fragment() {
 
     private fun handleNetworkResponse(b: Boolean) {
         if (b){
-            binding.ivWeather.toVisible()
-            binding.txtTemperature.toVisible()
+            binding.root.toVisible()
+//            binding.txtTemperature.toVisible()
             setIPInfo()
             Constants.CONNECTIVITY = getConnectivityType(requireContext())
             requireActivity().launchLogger()
         } else {
-            binding.ivWeather.toGone()
-            binding.txtTemperature.toGone()
+            binding.root.toInvisible()
+//            binding.txtTemperature.toGone()
             Constants.IP_ADDRESS = "0.0.0.0"
             Constants.IP_NET_MASK = "0.0.0.0"
             Constants.IP_GATEWAY = "0.0.0.0"
