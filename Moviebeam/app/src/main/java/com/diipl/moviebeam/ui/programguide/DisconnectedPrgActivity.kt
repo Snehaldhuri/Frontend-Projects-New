@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
@@ -23,6 +24,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.databinding.ActivityDisconnectedPrgBinding
 import com.diipl.moviebeam.service.IIrService
@@ -44,11 +46,10 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
+
 
 private const val TAG = "DisconnectedPrgActivity"
 
@@ -72,6 +73,9 @@ class DisconnectedPrgActivity : BaseActivity() {
     private var previousPrograms: List<ChannelEpgDTO>? = null
     private var currentPrograms: List<ChannelEpgDTO>? = null
     private var nextPrograms: List<ChannelEpgDTO>? = null
+
+    @Inject
+    lateinit var channelListDataStore: DataStore<ChannelListResponse>
 
     @Inject
     lateinit var preferences : SharedPreference
@@ -113,6 +117,9 @@ class DisconnectedPrgActivity : BaseActivity() {
         this.getChannelsFromRoomDB()
         fetchDetails()
         setContentView(binding.root)
+
+        programGuideViewModel.getChannels()
+
         binding.btnBack.handleFocusChange()
         binding.btnBack.setOnClickListener { finish()
 
@@ -120,7 +127,7 @@ class DisconnectedPrgActivity : BaseActivity() {
 //        binding.pbLoader.toVisible()
     }
     private fun getChannelsFromRoomDB() {
-        programGuideViewModel.getAllChannels(key).observe(this) { data ->
+        programGuideViewModel.getAllChannels(null).observe(this) { data ->
             if (!data.isNullOrEmpty()) {
                 currentPrograms = data
                 loadProgramGuide(false, data)
@@ -129,10 +136,8 @@ class DisconnectedPrgActivity : BaseActivity() {
                     binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(
                         0
                     )?.itemView?.requestFocus()
-//                    setOnScrollListener()
 
                 }
-                setNextPrograms()
             } else {
                 programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
             }
@@ -151,7 +156,6 @@ class DisconnectedPrgActivity : BaseActivity() {
     }
 
     private fun setOnScrollListener() {
-//        val recyclerView1 = binding.layoutProgramGuide.layoutPrgGuide.rvProgram
         val recyclerView2 = binding.layoutProgramGuide.layoutPrgGuide.rvChannel
 
         val scrollListeners = arrayOfNulls<RecyclerView.OnScrollListener>(2)
@@ -413,7 +417,7 @@ class DisconnectedPrgActivity : BaseActivity() {
 
     }
 
-    private fun fetchCurrentProgramKey(currentDate: Date = Date()): String {
+    private fun fetchCurrentProgramKey(currentDate : Date = Date()): String {
         val cal = Calendar.getInstance()
         cal.time = currentDate
         val date = cal.get(Calendar.DATE)
@@ -446,6 +450,7 @@ class DisconnectedPrgActivity : BaseActivity() {
         return time.toString()
     }
 
+
     private fun setUpChannels(channelList: List<ChannelEpgDTO>?) {
         val adapter = DisconnectedChannelAdapter(
             onChannelFocused = ::playChannelVideoBg,
@@ -462,59 +467,11 @@ class DisconnectedPrgActivity : BaseActivity() {
         val adapter = ProgramsAdapter(
             onProgramFocused = ::onProgramFocused,
             onProgramClicked = ::launchExoPlayer,
-            loadNextPrograms = ::loadNextPrograms,
-            loadPreviousPrograms = ::loadPreviousPrograms
+            loadNextPrograms = {},
+            loadPreviousPrograms = {}
         )
         adapter.setProgramList(programsList)
         adapter.setProg4Dst(p4Dst)
-    }
-
-    private fun loadPreviousPrograms() {
-        if (!previousPrograms.isNullOrEmpty()) {
-            loadProgramGuide(true, previousPrograms?.toMutableList())
-            nextPrograms = currentPrograms
-            currentPrograms = previousPrograms
-            previousPrograms = null
-            nextKey = key
-            key = previousKey
-            previousKey = null
-            setPreviousPrograms()
-        }
-    }
-
-    private fun loadNextPrograms() {
-        if (!nextPrograms.isNullOrEmpty()) {
-            loadProgramGuide(true, nextPrograms?.toMutableList())
-            previousPrograms = currentPrograms
-            currentPrograms = nextPrograms
-            nextPrograms = null
-            previousKey = key
-            key = nextKey
-            nextKey = null
-            setNextPrograms()
-        }
-    }
-
-    private fun setPreviousPrograms() {
-        val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
-        val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
-        cal.add(Calendar.HOUR_OF_DAY, -2)
-        previousKey = fetchCurrentProgramKey(cal.time)
-        programGuideViewModel.getAllChannels(previousKey!!).observe(this) { data ->
-            previousPrograms = data
-        }
-    }
-
-    private fun setNextPrograms() {
-        val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
-        val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
-        cal.add(Calendar.HOUR_OF_DAY, 2)
-        nextKey = fetchCurrentProgramKey(cal.time)
-        programGuideViewModel.getAllChannels(nextKey!!).observe(this) { data ->
-            nextPrograms = data
-        }
     }
 
 

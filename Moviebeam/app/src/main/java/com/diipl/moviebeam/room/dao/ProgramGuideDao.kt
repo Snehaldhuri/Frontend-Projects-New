@@ -16,6 +16,9 @@ interface ProgramGuideDao {
     @Query("SELECT * FROM channelDetails WHERE [key] = :key")
     fun getChannels(key: String?): LiveData<MutableList<ChannelEpgDTO>>
 
+    @Query("SELECT DISTINCT [key] FROM channelDetails")
+    fun getDates(): List<String>
+
     @Query("DELETE FROM channelDetails")
     suspend fun removeAllChannels()
 

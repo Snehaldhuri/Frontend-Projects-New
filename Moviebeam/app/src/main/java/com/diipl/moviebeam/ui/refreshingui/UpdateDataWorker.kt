@@ -66,14 +66,27 @@ class UpdateDataWorker @AssistedInject constructor(
                     updateThemeData()
                     updateLAData(localAttractionDataStore.data.first())
                     updateHSData(hotelServiceDataStore.data.first())
+                    Result.success()
                 }
 
-                ACTION_HS -> updateHSData(hotelServiceDataStore.data.first())
-                ACTION_LA -> updateLAData(localAttractionDataStore.data.first())
-                ACTION_THEME -> updateThemeData()
-                else -> Log.e(TAG, "doWork: Unknown Work action: $action")
+                ACTION_HS -> {
+                    updateHSData(hotelServiceDataStore.data.first())
+                    Result.success()
+                }
+                ACTION_LA -> {
+                    updateLAData(localAttractionDataStore.data.first())
+                    Result.success()
+                }
+                ACTION_THEME -> {
+                    updateThemeData()
+                    Result.success()
+                }
+                else -> {
+                    Log.e(TAG, "doWork: Unknown Work action: $action")
+                    Result.failure()
+                }
             }
-            Result.success()
+//            Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "doWork: Failed with exception: ${e.message}", e)
             Result.failure()

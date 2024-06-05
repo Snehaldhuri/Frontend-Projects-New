@@ -5,12 +5,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.RoomRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -20,11 +20,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProgramGuideViewModel @Inject constructor(
-    private val roomRepository: RoomRepository
+    private val roomRepository: RoomRepository,
+    private val channelListDataStore: DataStore<ChannelListResponse>
 ) : ViewModel() {
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
+
+    private val _channelList = MutableLiveData<Resource<ChannelListResponse>>()
+    val channelList: LiveData<Resource<ChannelListResponse>> get() = _channelList
 
     //------------------------------------------datastore-------------------------------------------
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
@@ -35,6 +39,12 @@ class ProgramGuideViewModel @Inject constructor(
             }.collect {
                 _weatherLiveData.postValue(Resource.Success(it))
             }
+        }
+    }
+
+    fun getChannels() = viewModelScope.launch(Dispatchers.IO){
+        channelListDataStore.data.collect{
+            _channelList.postValue(Resource.Success(it))
         }
     }
 

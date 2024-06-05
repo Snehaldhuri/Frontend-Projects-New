@@ -9,8 +9,6 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
-import androidx.work.ListenableWorker.Result
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -37,7 +35,6 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
@@ -54,6 +51,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 
 
@@ -98,20 +96,15 @@ class STBDetailsActivity : BaseActivity() {
     @Inject
     lateinit var preferences: SharedPreference
 
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-    private var startMs: Long = 0
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy { PreferenceDataStoreHelper(applicationContext) }
     private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
     private var isNetworkConnected: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        startMs = System.currentTimeMillis()
-
         if (preferences.irFrequencyModel == null)
             preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
-        clearCache()
 
         stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
@@ -121,6 +114,7 @@ class STBDetailsActivity : BaseActivity() {
         } else {
             finish()
         }
+
     }
 
     //observe class
@@ -465,13 +459,14 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                redirectToMainMenuPage()
             }
         }
     }
 
     private fun redirectToMainMenuPage() {
         binding.root.post { binding.root.performClick() }
+        var uuid: UUID? = null
         binding.root.setSafeOnClickListener {
             val inputData = Data.Builder()
                 .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
@@ -480,12 +475,18 @@ class STBDetailsActivity : BaseActivity() {
             val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
                 .setInputData(inputData)
                 .build()
-            workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
+            uuid = request.id
+            Log.e(TAG, "uuid: $uuid")
+//            workManager.enqueueUniqueWork(uuid, ExistingWorkPolicy.REPLACE, request)
+            workManager.enqueue(request)
         }
-        
-        workManager.getWorkInfosForUniqueWorkLiveData(TAG).observe(this) { data ->
-            if (data.isNotEmpty()){
-                if(data[0].state == WorkInfo.State.SUCCEEDED){
+
+
+        lifecycleScope.launch {
+            delay(3000)
+            workManager.getWorkInfoByIdLiveData(uuid!!).observe(this@STBDetailsActivity) { data ->
+                val isDone = data.state == WorkInfo.State.SUCCEEDED
+                if (isDone) {
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
                     startActivity(intent)
                     finish()
@@ -630,7 +631,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
-        if (!isNetworkConnected){
+        if (!isNetworkConnected) {
             launchMain()
             return
         }

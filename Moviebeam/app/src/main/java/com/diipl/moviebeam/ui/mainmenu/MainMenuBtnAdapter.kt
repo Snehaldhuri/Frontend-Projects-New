@@ -1,5 +1,7 @@
 package com.diipl.moviebeam.ui.mainmenu
 
+import android.content.Intent
+import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -20,6 +22,7 @@ class MainMenuBtnAdapter(
 ) :
     RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
     var itemList: List<BtnModel> = mutableListOf()
+    var count = 0
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
@@ -58,9 +61,28 @@ class MainMenuBtnAdapter(
 
         holder.itemView.setOnKeyListener { view, i, keyEvent ->
             if (i == KeyEvent.KEYCODE_TV_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_TV_INPUT")
-            if (i == KeyEvent.KEYCODE_NAVIGATE_IN) Log.e(TAG, "onBindViewHolder: KEYCODE_NAVIGATE_IN")
+            if (i == KeyEvent.KEYCODE_NAVIGATE_IN) Log.e(
+                TAG,
+                "onBindViewHolder: KEYCODE_NAVIGATE_IN"
+            )
             if (i == KeyEvent.KEYCODE_AVR_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_AVR_INPUT")
             if (i == KeyEvent.KEYCODE_STB_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_STB_INPUT")
+            if (holder.absoluteAdapterPosition == 0){
+                if (i == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    count++
+                    Log.e(TAG, "KEYCODE_DPAD_LEFT: $count")
+                    if (count == 20) {
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        intent.action = Settings.ACTION_SETTINGS
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        view.context.startActivity(intent)
+                        count = 0
+                    }
+                }
+            }
+            if (i == KeyEvent.KEYCODE_DPAD_RIGHT || i == KeyEvent.KEYCODE_DPAD_DOWN || i == KeyEvent.KEYCODE_DPAD_UP) {
+                count = 0
+            }
             false
         }
 

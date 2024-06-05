@@ -81,7 +81,7 @@ class MainMenuActivity : BaseActivity() {
     private lateinit var binding: ActivityMainMenuBinding
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
-    private var isNetworkConnected: Boolean = false
+    private var isNetworkConnected = 0
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -115,24 +115,23 @@ class MainMenuActivity : BaseActivity() {
 
 
     private fun handleNetworkResponse(isConnected: Boolean) {
-        isNetworkConnected = isConnected
-//        mainMenuViewModel.showToastMessage("Network is $isConnected")
-        if (isNetworkConnected) {
-            mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        if (isConnected) {
+            isNetworkConnected = 1
             binding.videoView.toVisible()
         } else {
+            isNetworkConnected = -1
             releaseVideoPlayer()
             binding.root.post {
                 binding.root.loadBg()
             }
         }
+        mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
     }
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Log.e(TAG, "onCreate: ")
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
@@ -330,11 +329,15 @@ class MainMenuActivity : BaseActivity() {
 
                         binding.tvGreeting.text = response.hotelInfo
 
-                        val btnListFromApi: List<String> = if (!isNetworkConnected) {
-                            response.buttonsList.filter { it.forDisconnectedMode }
-                                .map { it.buttonName }
-                        } else {
-                            response.buttonsList.map { it.buttonName }
+                        var btnListFromApi = listOf<String>()
+                        when(isNetworkConnected){
+                            1 -> {
+                                btnListFromApi = response.buttonsList.map { it.buttonName }
+                            }
+                            -1 -> {
+                                btnListFromApi = response.buttonsList.filter { it.forDisconnectedMode }
+                                    .map { it.buttonName }
+                            }
                         }
 
                         val btnModelList: List<BtnModel> =
@@ -431,7 +434,7 @@ class MainMenuActivity : BaseActivity() {
                                 }
 
                                 Constants.PRG_GUIDE_ID -> {
-                                    intent = if (!isNetworkConnected) {
+                                    intent = if (isNetworkConnected == -1) {
                                         Intent(this, DisconnectedPrgActivity::class.java)
                                     } else {
                                         Intent(this, ProgramGuideActivity::class.java)
