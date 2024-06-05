@@ -83,8 +83,9 @@ class SerialActivity : BaseActivity() {
         if (isSerialNoTaken) {
             serialViewModel.getStbStatusFromDataStore(preferenceDataStoreHelper)
         } else {
-            fetchSerialNo()
-//            processSerialNo(serialNo)
+//            fetchSerialNo()
+            val serialNo = "29221HFGN30WLA"
+            processSerialNo(serialNo)
         }
         actionOnService(Actions.START)
     }

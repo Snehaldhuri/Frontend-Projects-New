@@ -96,22 +96,16 @@
             app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
             app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cv_program_guide"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_program_guide"
             android:layout_width="@dimen/dp_0"
             android:layout_height="@dimen/dp_0"
             android:layout_marginTop="10dp"
             app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_94"
             app:layout_constraintEnd_toEndOf="@+id/gl_vertical_27"
             app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
-            app:layout_constraintTop_toBottomOf="@id/gl_horizontal_27">
+            app:layout_constraintTop_toBottomOf="@id/gl_horizontal_27"/>
 
-                <include
-                    android:id="@+id/layout_program_guide"
-                    layout="@layout/disconnected_prg_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-        </androidx.cardview.widget.CardView>
         <ProgressBar
             android:id="@+id/pb_loader"
             android:layout_width="wrap_content"

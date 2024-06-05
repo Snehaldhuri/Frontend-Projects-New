@@ -434,7 +434,7 @@ class MainMenuActivity : BaseActivity() {
                                     intent = if (!isNetworkConnected) {
                                         Intent(this, DisconnectedPrgActivity::class.java)
                                     } else {
-                                        Intent(this, ProgramGuideActivity::class.java)
+                                        Intent(this, DisconnectedPrgActivity::class.java)
                                     }
                                 }
 

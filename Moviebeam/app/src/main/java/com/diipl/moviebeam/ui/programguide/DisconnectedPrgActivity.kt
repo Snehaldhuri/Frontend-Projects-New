@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
@@ -21,8 +22,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.program.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.databinding.ActivityDisconnectedPrgBinding
 import com.diipl.moviebeam.service.IIrService
@@ -37,6 +39,7 @@ import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toVisible
@@ -44,10 +47,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 private const val TAG = "DisconnectedPrgActivity"
@@ -65,16 +64,14 @@ class DisconnectedPrgActivity : BaseActivity() {
     private var cNo: String? = null
     private var channelIndex = 0
     private var isFScreenExit = false
-    private var previousKey: String? = fetchCurrentProgramKey()
-    private var key: String? = fetchCurrentProgramKey()
-    private var nextKey: String? = null
-
-    private var previousPrograms: List<ChannelEpgDTO>? = null
     private var currentPrograms: List<ChannelEpgDTO>? = null
-    private var nextPrograms: List<ChannelEpgDTO>? = null
 
     @Inject
     lateinit var preferences : SharedPreference
+
+    @Inject
+    lateinit var channelListDataStore: DataStore<ChannelListResponse>
+
     private var irService: IIrService? = null
 
     private val usbManager: UsbManager by lazy { getSystemService(USB_SERVICE) as UsbManager }
@@ -82,9 +79,7 @@ class DisconnectedPrgActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         initSet()
-
     }
 
     private fun initSet() {
@@ -104,97 +99,114 @@ class DisconnectedPrgActivity : BaseActivity() {
     }
 
     override fun observeViewModel() {
+        observe(programGuideViewModel.channelListLiveData, ::handleChannelListResponse)
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
     }
 
+    private fun handleChannelListResponse(status: Resource<ChannelListResponse>) {
+        when (status) {
+            is Resource.Success -> {
+                status.data?.let {
+                    Log.e(TAG, "handleChannelListResponse: ${it.channelLcnList}", )
+                    setUpChannels(it.channelLcnList)
+                }
+            }
+
+            else -> {
+
+                status.errorCode?.let { programGuideViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { programGuideViewModel.showToastMessage(it) }
+
+            }
+        }
+    }
+
     override fun initViewBinding() {
         binding = ActivityDisconnectedPrgBinding.inflate(layoutInflater)
-        this.getChannelsFromRoomDB()
         fetchDetails()
         setContentView(binding.root)
         binding.btnBack.handleFocusChange()
-        binding.btnBack.setOnClickListener { finish()
+        binding.btnBack.setOnClickListener { finish() }
+        programGuideViewModel.getChannelListResponseData(channelListDataStore)
 
-        }
+//        programGuideViewModel.getChannels()
+//        this.getChannelsFromRoomDB()
 //        binding.pbLoader.toVisible()
     }
-    private fun getChannelsFromRoomDB() {
-        programGuideViewModel.getAllChannels(key).observe(this) { data ->
-            if (!data.isNullOrEmpty()) {
-                currentPrograms = data
-                loadProgramGuide(false, data)
-                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
-                    binding.cvProgramGuide.toVisible()
-                    binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(
-                        0
-                    )?.itemView?.requestFocus()
-//                    setOnScrollListener()
-
-                }
-                setNextPrograms()
-            } else {
-                programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
-            }
-        }
-//        binding.pbLoader.toInvisible()
-    }
+//    private fun getChannelsFromRoomDB() {
+//        programGuideViewModel.channelList.observe(this) { resource ->
+//            resource.data?.channelLcnList?.let { data ->
+//                    currentPrograms = data
+//                loadProgramGuide(false, data?.toMutableList())
+//                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
+//                        binding.cvProgramGuide.toVisible()
+//                        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
+//                    }
+//            }
+//        }
+//    }
 
     override fun onResume() {
         super.onResume()
         if (isFScreenExit) {
             playChannelVideoBg(null)
         }
-
-        setOnScrollListener()
-
+//        setOnScrollListener()
     }
 
-    private fun setOnScrollListener() {
-//        val recyclerView1 = binding.layoutProgramGuide.layoutPrgGuide.rvProgram
-        val recyclerView2 = binding.layoutProgramGuide.layoutPrgGuide.rvChannel
-
-        val scrollListeners = arrayOfNulls<RecyclerView.OnScrollListener>(2)
-        scrollListeners[0] = object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                recyclerView2.removeOnScrollListener(
-                    scrollListeners[1]!!
-                )
-                recyclerView2.scrollBy(dx, dy)
-                recyclerView2.addOnScrollListener(
-                    scrollListeners[1]!!
-                )
-            }
-        }
-        scrollListeners[1] = object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-//                recyclerView1.removeOnScrollListener(
-//                    scrollListeners[0]!!
+//    private fun setOnScrollListener() {
+////        val recyclerView1 = binding.layoutProgramGuide.layoutPrgGuide.rvProgram
+//        val recyclerView2 = binding.layoutProgramGuide.layoutPrgGuide.rvChannel
+//
+//        val scrollListeners = arrayOfNulls<RecyclerView.OnScrollListener>(2)
+//        scrollListeners[0] = object : RecyclerView.OnScrollListener() {
+//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+//                super.onScrolled(recyclerView, dx, dy)
+//                recyclerView2.removeOnScrollListener(
+//                    scrollListeners[1]!!
 //                )
-//                recyclerView1.scrollBy(dx, dy)
-//                recyclerView1.addOnScrollListener(
-//                    scrollListeners[0]!!
+//                recyclerView2.scrollBy(dx, dy)
+//                recyclerView2.addOnScrollListener(
+//                    scrollListeners[1]!!
 //                )
-            }
-        }
-//        recyclerView1.addOnScrollListener(createScrollListener(recyclerView2))
-//        recyclerView2.addOnScrollListener(createScrollListener(recyclerView1))
+//            }
+//        }
+//        scrollListeners[1] = object : RecyclerView.OnScrollListener() {
+//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+//                super.onScrolled(recyclerView, dx, dy)
+////                recyclerView1.removeOnScrollListener(
+////                    scrollListeners[0]!!
+////                )
+////                recyclerView1.scrollBy(dx, dy)
+////                recyclerView1.addOnScrollListener(
+////                    scrollListeners[0]!!
+////                )
+//            }
+//        }
+////        recyclerView1.addOnScrollListener(createScrollListener(recyclerView2))
+////        recyclerView2.addOnScrollListener(createScrollListener(recyclerView1))
+//
+//    }
+    private fun loadProgramGuide(
+        isScrolled: Boolean = false,
+        currentPrograms: MutableList<ChannelEpgDTO>? = null
+    ) {
+
+        val currentProgram = currentPrograms?.get(0)
+
+        currentPrograms?.remove(currentProgram)
+        if (!isScrolled) {
+            channelList = currentPrograms
+            channelContent = currentPrograms?.map { it.VP }
+            setUpChannels(currentPrograms)
+        } else
+            channelListNext = currentPrograms
+
+        setUpChannels(currentPrograms)
 
     }
 
-    private var isScrolling = false
-    private fun createScrollListener(otherRecyclerView: RecyclerView): RecyclerView.OnScrollListener {
-        return object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (isScrolling) return
-                isScrolling = true
-                otherRecyclerView.scrollBy(dx, dy)
-                isScrolling = false
-            }
-        }
-    }
 
     private fun fetchDetails() {
         intent.extras?.getString("themeLogoFileName")?.let {
@@ -230,12 +242,6 @@ class DisconnectedPrgActivity : BaseActivity() {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    private fun appendZeros(value: Int): String {
-        val str = StringBuffer(value.toString()).reverse()
-        str.append("0")
-        return str.reverse().toString()
-    }
-
     private fun playChannelVideoBg(program: ChannelEpgDTO?) {
         if (program == null) {
             isFScreenExit = false
@@ -246,9 +252,9 @@ class DisconnectedPrgActivity : BaseActivity() {
 //                binding.layoutVideo.root.toVisible()
                 this.cNo = program.CNO
                 if (channelListNext != null) {
-                    channelIndex = channelListNext?.indexOf(program) ?: 0
+//                    channelIndex = channelListNext?.indexOf(program) ?: 0
                 } else {
-                    channelIndex = channelList?.indexOf(program) ?: 0
+//                    channelIndex = channelList?.indexOf(program) ?: 0
                 }
             }
         }
@@ -264,9 +270,9 @@ class DisconnectedPrgActivity : BaseActivity() {
                 binding.layoutVideo.root.toVisible()
                 this.cNo = program.CNO
                 if (channelListNext != null) {
-                    channelIndex = channelListNext?.indexOf(program) ?: 0
+//                    channelIndex = channelListNext?.indexOf(program) ?: 0
                 } else {
-                    channelIndex = channelList?.indexOf(program) ?: 0
+//                    channelIndex = channelList?.indexOf(program) ?: 0
                 }
             }
         }
@@ -388,135 +394,29 @@ class DisconnectedPrgActivity : BaseActivity() {
         }
         irService?.transmit(model.frequency, nValue)
     }
+
     override fun onDestroy() {
         super.onDestroy()
         binding.layoutVideo.videoView.player?.release()
         Log.e(TAG, "onDestroy: ")
     }
 
-    private fun loadProgramGuide(
-        isScrolled: Boolean = false,
-        currentPrograms: MutableList<ChannelEpgDTO>? = null
-    ) {
-
-        val currentProgram = currentPrograms?.get(0)
-
-        currentPrograms?.remove(currentProgram)
-        if (!isScrolled) {
-            channelList = currentPrograms
-            Constants.CURRENT_PROGRAMS = currentPrograms
-            channelContent = currentPrograms?.map { it.VP }
-            setUpChannels(currentPrograms)
-        } else
-            channelListNext = currentPrograms
-        setUpPrograms(currentPrograms, currentProgram?.P4_DST)
-
-    }
-
-    private fun fetchCurrentProgramKey(currentDate: Date = Date()): String {
-        val cal = Calendar.getInstance()
-        cal.time = currentDate
-        val date = cal.get(Calendar.DATE)
-        val month = cal.get(Calendar.MONTH) + 1
-        val year = cal.get(Calendar.YEAR)
-        var hour = cal.get(Calendar.HOUR)
-        val minutes = cal.get(Calendar.MINUTE)
-        val amPm = cal.get(Calendar.AM_PM)
-        val time = StringBuilder()
-
-        if (date < 10) time.append(appendZeros(date))
-        else time.append(date)
-
-        if (month < 10) time.append(appendZeros(month))
-        else time.append(month)
-
-        time.append(year)
-
-        if (hour == 0) hour = 12
-
-        if (hour < 10) time.append(appendZeros(hour))
-        else time.append(hour.toString())
-
-        if (minutes < 30) time.append("00")
-        else time.append("30")
-
-        if (amPm == 0) time.append("AM")
-        else time.append("PM")
-
-        return time.toString()
-    }
-
     private fun setUpChannels(channelList: List<ChannelEpgDTO>?) {
-        val adapter = DisconnectedChannelAdapter(
-            onChannelFocused = ::playChannelVideoBg,
-            onChannelClicked = ::launchExoPlayer
-        )
+//        val adapter = DisconnectedChannelAdapter(
+//            onChannelFocused = ::playChannelVideoBg,
+//            onChannelClicked = ::launchExoPlayer
+//        )
+//        adapter.setChannelList(channelList)
+//        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.layoutManager =
+//            LinearLayoutManager(this)
+//        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter = adapter
+
+        val adapter = DisChannelAdapter(onChannelClicked = ::launchExoPlayer)
         adapter.setChannelList(channelList)
-        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.layoutManager =
-            LinearLayoutManager(this)
-        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter = adapter
+        binding.rvProgramGuide.layoutManager = LinearLayoutManager(this)
+        binding.rvProgramGuide.adapter = adapter
+
 
     }
-
-    private fun setUpPrograms(programsList: List<ChannelEpgDTO>?, p4Dst: String?) {
-        val adapter = ProgramsAdapter(
-            onProgramFocused = ::onProgramFocused,
-            onProgramClicked = ::launchExoPlayer,
-            loadNextPrograms = ::loadNextPrograms,
-            loadPreviousPrograms = ::loadPreviousPrograms
-        )
-        adapter.setProgramList(programsList)
-        adapter.setProg4Dst(p4Dst)
-    }
-
-    private fun loadPreviousPrograms() {
-        if (!previousPrograms.isNullOrEmpty()) {
-            loadProgramGuide(true, previousPrograms?.toMutableList())
-            nextPrograms = currentPrograms
-            currentPrograms = previousPrograms
-            previousPrograms = null
-            nextKey = key
-            key = previousKey
-            previousKey = null
-            setPreviousPrograms()
-        }
-    }
-
-    private fun loadNextPrograms() {
-        if (!nextPrograms.isNullOrEmpty()) {
-            loadProgramGuide(true, nextPrograms?.toMutableList())
-            previousPrograms = currentPrograms
-            currentPrograms = nextPrograms
-            nextPrograms = null
-            previousKey = key
-            key = nextKey
-            nextKey = null
-            setNextPrograms()
-        }
-    }
-
-    private fun setPreviousPrograms() {
-        val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
-        val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
-        cal.add(Calendar.HOUR_OF_DAY, -2)
-        previousKey = fetchCurrentProgramKey(cal.time)
-        programGuideViewModel.getAllChannels(previousKey!!).observe(this) { data ->
-            previousPrograms = data
-        }
-    }
-
-    private fun setNextPrograms() {
-        val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
-        val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
-        cal.add(Calendar.HOUR_OF_DAY, 2)
-        nextKey = fetchCurrentProgramKey(cal.time)
-        programGuideViewModel.getAllChannels(nextKey!!).observe(this) { data ->
-            nextPrograms = data
-        }
-    }
-
-
 
 }
