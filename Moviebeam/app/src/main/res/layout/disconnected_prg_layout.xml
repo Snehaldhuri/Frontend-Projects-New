@@ -4,34 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/gl_horizontal_14"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.143" />
-
-    <TextClock
-        android:id="@+id/tv_date"
-        android:layout_width="@dimen/dp_0"
-        android:layout_height="@dimen/dp_0"
-        android:layout_marginVertical="@dimen/dp_1"
-        android:layout_marginStart="@dimen/dp_1"
-        android:layout_marginEnd="1dp"
-        android:background="@color/black"
-        android:fontFamily="@font/manrope_semibold_600"
-        android:format12Hour="MMM dd, yyyy"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="@dimen/dp_2"
-        android:textColor="@color/white"
-        android:textSize="@dimen/sp_14"
-        app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_14"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
     <include
         android:id="@+id/layout_prg_guide"
         layout="@layout/disconnected_prg_recycler_layout"
@@ -40,7 +12,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gl_horizontal_14" />
+        app:layout_constraintTop_toBottomOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
