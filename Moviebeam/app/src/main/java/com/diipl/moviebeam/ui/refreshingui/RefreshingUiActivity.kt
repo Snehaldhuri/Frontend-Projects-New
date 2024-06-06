@@ -300,7 +300,7 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.themeLiveData.value?.data?.let {
-                    refreshingUiViewModel.setThemeResponseData(themeDataStore, it)
+                    refreshingUiViewModel.setThemeResponseData(it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)

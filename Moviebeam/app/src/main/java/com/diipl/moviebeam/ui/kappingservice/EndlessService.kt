@@ -20,9 +20,6 @@ import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
@@ -72,7 +69,6 @@ import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
-import com.diipl.moviebeam.ui.refreshingui.UpdateDataWorker
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
@@ -1002,9 +998,9 @@ class EndlessService : Service() {
         CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getThemeDetails(ua)
             if (response != null) {
-                updateThemeData(themeDataStore, response)
+                updateThemeData( response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
+//                startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
                 LoggingService.sendMessageToWebSocket(
                     "In theme callback success ", getCurrentPanelNumber()
                 )
@@ -1087,7 +1083,7 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getHotelServiceInfo(accountId)
             if (response != null) {
                 updateHotelServices(response)
-                startUpdateDataWorker(UpdateDataWorker.ACTION_HS)
+//                startUpdateDataWorker(UpdateDataWorker.ACTION_HS)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
                     "In Hotel Services callback success ", getCurrentPanelNumber()
@@ -1105,7 +1101,7 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getLocalAttractionInfo(ua)
             if (response != null) {
                 updateLocalAttractions(response)
-                startUpdateDataWorker(UpdateDataWorker.ACTION_LA)
+//                startUpdateDataWorker(UpdateDataWorker.ACTION_LA)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                 LoggingService.sendMessageToWebSocket(
                     "In Local Attractions callback success ", getCurrentPanelNumber()
@@ -1499,11 +1495,9 @@ class EndlessService : Service() {
         }
     }
 
-    private fun updateThemeData(
-        dataStore: DataStore<ThemeResponse>, data: ThemeResponse
-    ) {
+    private fun updateThemeData(data: ThemeResponse) {
         CoroutineScope(Dispatchers.IO).launch {
-            dataStore.updateData { currentPreferences ->
+            /*dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
                     fontCss = data.fontCss,
@@ -1520,7 +1514,8 @@ class EndlessService : Service() {
                     themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
                     themeLogoFileName = data.themeLogoFileName
                 )
-            }
+            }*/
+            updateDataStore.updateThemeData(data)
         }
     }
 
@@ -1921,7 +1916,7 @@ class EndlessService : Service() {
         return if (pm.isInteractive) KapingConstants.POWER_MODE_ON else KapingConstants.POWER_MODE_STAND_BY
     }
 
-    private fun startUpdateDataWorker(action: String) {
+/*    private fun startUpdateDataWorker(action: String) {
         val inputData = Data.Builder()
             .putString(UpdateDataWorker.ACTION, action)
             .build()
@@ -1931,6 +1926,6 @@ class EndlessService : Service() {
             .build()
 
         workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
-    }
+    }*/
 
 }

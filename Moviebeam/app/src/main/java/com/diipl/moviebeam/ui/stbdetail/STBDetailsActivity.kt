@@ -8,9 +8,6 @@ import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -30,15 +27,14 @@ import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
-import com.diipl.moviebeam.ui.refreshingui.UpdateDataWorker
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.isWorkDone
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
-import com.diipl.moviebeam.utils.setSafeOnClickListener
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInteger
@@ -51,7 +47,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.UUID
 import javax.inject.Inject
 
 
@@ -181,7 +176,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
 
                 stbDetailViewModel.themeLiveData.value?.data?.let {
-                    stbDetailViewModel.setThemeResponseData(themeDataStore, it)
+                    stbDetailViewModel.setThemeResponseData(it)
                     Log.d("DataStoreResponse", "handleThemeResponse: $it")
                 }
             }
@@ -465,7 +460,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun redirectToMainMenuPage() {
-        binding.root.post { binding.root.performClick() }
+       /* binding.root.post { binding.root.performClick() }
         var uuid: UUID? = null
         binding.root.setSafeOnClickListener {
             val inputData = Data.Builder()
@@ -477,20 +472,25 @@ class STBDetailsActivity : BaseActivity() {
                 .build()
             uuid = request.id
             Log.e(TAG, "uuid: $uuid")
-//            workManager.enqueueUniqueWork(uuid, ExistingWorkPolicy.REPLACE, request)
-            workManager.enqueue(request)
-        }
-
+            workManager.beginUniqueWork(uuid.toString(), ExistingWorkPolicy.REPLACE, request).enqueue()
+//            workManager.enqueue(request)
+        }*/
 
         lifecycleScope.launch {
-            delay(3000)
-            workManager.getWorkInfoByIdLiveData(uuid!!).observe(this@STBDetailsActivity) { data ->
-                val isDone = data.state == WorkInfo.State.SUCCEEDED
-                if (isDone) {
+//            workManager.getWorkInfoByIdLiveData(uuid!!).observe(this@STBDetailsActivity) { data ->
+//                val isDone = data.state == WorkInfo.State.SUCCEEDED
+//                if (isDone) {
+
+//                }
+            while (true){
+                Log.e(TAG, "isWorkDone: $isWorkDone")
+                if (isWorkDone == 3){
                     val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
                     startActivity(intent)
                     finish()
+                    isWorkDone = 0
                 }
+                delay(5000)
             }
         }
     }
@@ -635,6 +635,8 @@ class STBDetailsActivity : BaseActivity() {
             launchMain()
             return
         }
+
+        isWorkDone = 0
 
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo

@@ -330,12 +330,11 @@ class RefreshingUiViewModel @Inject constructor(
     }
 
     fun setThemeResponseData(
-        dataStore: DataStore<ThemeResponse>,
         data: ThemeResponse
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
+            /*dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
                     fontCss = data.fontCss,
@@ -353,7 +352,8 @@ class RefreshingUiViewModel @Inject constructor(
                     themeLogoFileName = data.themeLogoFileName
                 )
 
-            }
+            }*/
+            updateDataStore.updateThemeData(data)
         }
     }
 
