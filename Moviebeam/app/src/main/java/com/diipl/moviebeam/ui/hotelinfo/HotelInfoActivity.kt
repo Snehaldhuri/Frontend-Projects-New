@@ -22,7 +22,7 @@ import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber

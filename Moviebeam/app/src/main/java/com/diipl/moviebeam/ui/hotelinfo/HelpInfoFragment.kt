@@ -17,7 +17,7 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference

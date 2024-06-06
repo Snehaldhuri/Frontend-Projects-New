@@ -145,7 +145,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun launchMain() {
-        val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
+        val intent = Intent(this, MainMenuActivity::class.java)
         startActivity(intent)
         finish()
     }
@@ -204,8 +204,10 @@ class STBDetailsActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                status.errorMsg?.let {
+                    stbDetailViewModel.showToastMessage(it)
+                    launchMain()
+                }
             }
         }
     }
@@ -485,12 +487,10 @@ class STBDetailsActivity : BaseActivity() {
             while (true){
                 Log.e(TAG, "isWorkDone: $isWorkDone")
                 if (isWorkDone == 3){
-                    val intent = Intent(this@STBDetailsActivity, MainMenuActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                    launchMain()
                     isWorkDone = 0
                 }
-                delay(5000)
+                delay(1000*10)
             }
         }
     }

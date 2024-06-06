@@ -30,7 +30,7 @@ import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ADULT_CONTENT_DISABLED
 import com.diipl.moviebeam.utils.Constants.ADULT_LOCKED

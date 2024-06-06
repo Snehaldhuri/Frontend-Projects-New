@@ -29,8 +29,8 @@ import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
-import com.diipl.moviebeam.ui.kappingservice.EndlessService
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.kappingservice.EndlessService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
@@ -42,6 +42,7 @@ import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toVisible
+import com.diipl.moviebeam.worker.UpdateDataWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

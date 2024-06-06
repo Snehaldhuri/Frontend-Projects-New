@@ -18,7 +18,7 @@ import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseFragment
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster

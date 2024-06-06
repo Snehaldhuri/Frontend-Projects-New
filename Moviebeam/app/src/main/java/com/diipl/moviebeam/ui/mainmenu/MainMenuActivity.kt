@@ -36,11 +36,11 @@ import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
-import com.diipl.moviebeam.ui.kappingservice.Actions
-import com.diipl.moviebeam.ui.kappingservice.EndlessService
-import com.diipl.moviebeam.ui.kappingservice.ServiceState
-import com.diipl.moviebeam.ui.kappingservice.getServiceState
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.kappingservice.Actions
+import com.diipl.moviebeam.service.kappingservice.EndlessService
+import com.diipl.moviebeam.service.kappingservice.ServiceState
+import com.diipl.moviebeam.service.kappingservice.getServiceState
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity

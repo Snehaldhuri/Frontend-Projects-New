@@ -2,13 +2,14 @@ package com.diipl.moviebeam.ui.programguide
 
 import android.annotation.SuppressLint
 import android.graphics.Color
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.program.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.DisconnectedChannelCardBinding
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 import com.diipl.moviebeam.utils.setSafeOnClickListener
 
 class DisChannelAdapter(
@@ -28,6 +29,11 @@ class DisChannelAdapter(
             parent,
             false
         )
+
+        val params = binding.root.layoutParams
+        params.width = getWidthInPercent(parent.context, 22)
+        params.height = getHeightInPercent(parent.context, 6)
+
         return MyViewHolder(binding)
     }
 
@@ -38,18 +44,17 @@ class DisChannelAdapter(
 
         holder.binding.tvChannelNo.text = item?.CNO.toString()
 
-
         if (focusIndex == holder.absoluteAdapterPosition) {
             holder.binding.root.requestFocus()
         } else holder.binding.root.clearFocus()
 
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
-                view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
+                holder.binding.root.setCardBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
                 holder.binding.tvChannelNo.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
                 holder.binding.tvChannelName.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
             } else {
-                view.setBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
+                holder.binding.root.setCardBackgroundColor(Color.parseColor(Constants.COLOR_BLACK))
                 holder.binding.tvChannelNo.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
                 holder.binding.tvChannelName.setTextColor(Color.parseColor(Constants.COLOR_WHITE))
             }

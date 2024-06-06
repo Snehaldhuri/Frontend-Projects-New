@@ -120,7 +120,8 @@ object Constants {
     const val FOOD_DELIVERY_ID = "foodDelivery"
 
     //Home Page Menu Button Title
-    const val PROGRAM_GUIDE = "Program Guide"
+//    const val PROGRAM_GUIDE = "Program Guide"
+    const val PROGRAM_GUIDE = "Live TV"
     const val MOVIES_MORE = "Movies & More"
     const val SHOWTIME_NAME = "Free Selections"
     const val SHOWTIME = "Showtime"

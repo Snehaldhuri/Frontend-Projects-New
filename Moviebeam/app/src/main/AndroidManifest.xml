@@ -223,16 +223,16 @@
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
         <service
-            android:name=".ui.kappingservice.EndlessService"
+            android:name="com.diipl.moviebeam.service.kappingservice.EndlessService"
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".ui.loggerService.LoggingService"
+            android:name=".service.LoggingService"
             android:exported="false"
             android:foregroundServiceType="dataSync|location" />
 
         <receiver
-            android:name=".ui.kappingservice.StartReceiver"
+            android:name="com.diipl.moviebeam.service.kappingservice.StartReceiver"
             android:enabled="true"
             android:exported="false"
             android:directBootAware="true"

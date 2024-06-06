@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.kappingservice
+package com.diipl.moviebeam.service.kappingservice
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -55,14 +55,14 @@ import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
-import com.diipl.moviebeam.ui.base.UpdateDataStore
+import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity

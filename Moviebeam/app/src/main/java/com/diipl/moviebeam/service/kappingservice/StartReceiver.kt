@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.kappingservice
+package com.diipl.moviebeam.service.kappingservice
 
 import android.content.BroadcastReceiver
 import android.content.Context

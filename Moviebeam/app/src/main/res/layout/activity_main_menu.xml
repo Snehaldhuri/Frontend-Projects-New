@@ -152,7 +152,7 @@
         android:id="@+id/cardView"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_200"
-        android:layout_margin="@dimen/dp_8"
+        android:layout_marginVertical="@dimen/dp_8"
         app:cardBackgroundColor="@color/menu_list_bg"
         app:cardCornerRadius="@dimen/dp_18"
         app:cardElevation="@dimen/dp_0"

@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.dialogs
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,11 +29,16 @@ import com.diipl.moviebeam.utils.setIPInfo
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class WeatherDateTimeFragment : Fragment() {
+
+    private val TAG = "WeatherDateTimeFragment"
 
     private lateinit var binding: ViewWeatherTimeDateRowBinding
     private val mainMenuViewModel: MainMenuViewModel by activityViewModels()
@@ -151,8 +157,8 @@ class WeatherDateTimeFragment : Fragment() {
                     Constants.GRADIENT_COLOR_START = it.gradientColor
                     Constants.GRADIENT = null
                     Constants.GRADIENT = getGradientColor()
-                    it.themeBackgroundFileName?.let {
-                        Constants.BG_IMAGE = it
+                    it.themeBackgroundFileName?.let {img ->
+                        Constants.BG_IMAGE = img
                     }
                 }
             }
@@ -179,7 +185,32 @@ class WeatherDateTimeFragment : Fragment() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let { response ->
-                    Constants.SHOWS_COUNT = response.shoContentList.size
+                    lifecycleScope.launch {
+                        Constants.SHOWS_COUNT = 0
+                        val newList = mutableListOf<Int>()
+                        val list = response.shoContentList.map { s ->
+                            async(Dispatchers.IO) {
+                                s.seasonList.size
+                            }
+                        }
+                        val list1 = response.shoGenreList.map { s ->
+                            async(Dispatchers.IO) {
+                                s.detailList.size
+                            }
+                        }
+
+                        newList.addAll(list.awaitAll())
+                        Log.e(TAG, "handleShowtimeServiceResponse: 0 ${newList.size}")
+
+                        newList.addAll(list1.awaitAll())
+                        Log.e(TAG, "handleShowtimeServiceResponse: 1 ${newList.size}")
+
+                        newList.forEach {
+                            Constants.SHOWS_COUNT += it
+                        }
+//                        Constants.SHOWS_COUNT = list.size.plus(list1.size)
+                    }
+
                 }
             }
 

@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.loggerService
+package com.diipl.moviebeam.service
 
 import android.app.Service
 import android.content.Intent
@@ -92,7 +92,7 @@ class LoggingService : Service() {
 
         fun sendMessageToWebSocket(message: String, panel:String) {
             if (webSocket != null){
-                val isSent = webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"${formattedDate}\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
+                val isSent = webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"$formattedDate\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
                 Log.e(TAG, "sendMessageToWebSocket: $isSent  ${webSocket!!.queueSize()}")
                 if (isSent == false) {
                     BaseActivity.currentActivity?.launchLogger()

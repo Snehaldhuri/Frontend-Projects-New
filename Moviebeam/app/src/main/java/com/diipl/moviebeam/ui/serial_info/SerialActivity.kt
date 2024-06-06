@@ -12,9 +12,9 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
-import com.diipl.moviebeam.ui.kappingservice.Actions
-import com.diipl.moviebeam.ui.kappingservice.EndlessService
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.kappingservice.Actions
+import com.diipl.moviebeam.service.kappingservice.EndlessService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getCurrentPanelNumber

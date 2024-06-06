@@ -13,7 +13,7 @@ import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityKapingBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.kappingservice.EndlessService
+import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent

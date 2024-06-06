@@ -21,7 +21,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.NETWORK_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
-import com.diipl.moviebeam.ui.base.UpdateDataStore
+import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SingleEvent
