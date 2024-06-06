@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.programguide
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
@@ -27,9 +28,6 @@ class DisChannelAdapter(
             parent,
             false
         )
-//        binding.root.isFocusable = true
-//        binding.root.isFocusableInTouchMode = true
-
         return MyViewHolder(binding)
     }
 
@@ -37,7 +35,7 @@ class DisChannelAdapter(
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = channelList?.get(position)
-        Log.e("helosnehal", "helosnehal2 $item")
+
         holder.binding.tvChannelNo.text = item?.CNO.toString()
 
 
@@ -64,7 +62,14 @@ class DisChannelAdapter(
 
     fun setChannelList(list: List<ChannelEpgDTO>?) {
         this.channelList = list
-        Log.e("getChannelsFromRoomDB10", "getChannelsFromRoomDB10: $channelList")
+    }
+    fun getChannelList(): List<ChannelEpgDTO>? {
+        return channelList
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateFocus(focusIndex: Int) {
+        this.focusIndex = focusIndex
+        notifyDataSetChanged()
+    }
 }

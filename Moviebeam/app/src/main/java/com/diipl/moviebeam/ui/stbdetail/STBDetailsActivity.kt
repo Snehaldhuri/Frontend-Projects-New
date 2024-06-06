@@ -249,7 +249,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.channelListLiveData.value?.data?.let {
                     stbDetailViewModel.setChannelListResponseData(channelListDataStore, it)
-                    Constants.CHANNEL_COUNT = it.channelLcnList.size
+                    Constants.CHANNEL_COUNT = it.channelLcnList!!.size
                 }
             }
 

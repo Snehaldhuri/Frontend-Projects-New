@@ -442,7 +442,7 @@ class RefreshingUiActivity : BaseActivity() {
                         refreshingUiViewModel.updateChannelList(channelListDataStore, it)
                         EndlessService.kapingCmdExecutionResponse =
                             KapingConstants.EXECUTED_SUCCESSFULLY
-                        Constants.CHANNEL_COUNT = it.channelLcnList.size
+                        Constants.CHANNEL_COUNT = it.channelLcnList!!.size
                         redirectToMainMenuScreen()
                         LoggingService.sendMessageToWebSocket(
                             "In Channel List callback Success ",

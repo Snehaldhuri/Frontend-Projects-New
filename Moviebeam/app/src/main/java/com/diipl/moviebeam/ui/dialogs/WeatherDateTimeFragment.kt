@@ -96,13 +96,11 @@ class WeatherDateTimeFragment : Fragment() {
     private fun handleNetworkResponse(b: Boolean) {
         if (b){
             binding.root.toVisible()
-//            binding.txtTemperature.toVisible()
             setIPInfo()
             Constants.CONNECTIVITY = getConnectivityType(requireContext())
             requireActivity().launchLogger()
         } else {
             binding.root.toInvisible()
-//            binding.txtTemperature.toGone()
             Constants.IP_ADDRESS = "0.0.0.0"
             Constants.IP_NET_MASK = "0.0.0.0"
             Constants.IP_GATEWAY = "0.0.0.0"

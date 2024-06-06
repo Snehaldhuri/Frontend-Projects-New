@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
@@ -32,6 +33,10 @@ class ProgramGuideViewModel @Inject constructor(
     private val _channelListLiveData = MutableLiveData<Resource<ChannelListResponse>>()
     val channelListLiveData: LiveData<Resource<ChannelListResponse>> get() = _channelListLiveData
 
+    private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
+    val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
+
+
     //------------------------------------------datastore-------------------------------------------
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -54,6 +59,18 @@ class ProgramGuideViewModel @Inject constructor(
             }
         }
     }
+
+    fun getAccountSetupResponseData(dataStore: DataStore<AccountSetupResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _accountSetupLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _accountSetupLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
 
 //    fun getChannels() = viewModelScope.launch(Dispatchers.IO){
 //        channelListDataStore.data.collect{
