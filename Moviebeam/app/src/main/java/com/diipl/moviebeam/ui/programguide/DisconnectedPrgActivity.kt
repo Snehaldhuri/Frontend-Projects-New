@@ -1,13 +1,19 @@
 package com.diipl.moviebeam.ui.programguide
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.inputmethod.EditorInfo
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
@@ -17,16 +23,19 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.program.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.databinding.ActivityDisconnectedPrgBinding
+import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.service.IIrService
 import com.diipl.moviebeam.service.UsbIrService
 import com.diipl.moviebeam.service.isCompatibleDevice
@@ -38,9 +47,11 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
+import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
@@ -58,16 +69,17 @@ class DisconnectedPrgActivity : BaseActivity() {
     private lateinit var binding: ActivityDisconnectedPrgBinding
     private val programGuideViewModel: ProgramGuideViewModel by viewModels()
 
-    private var channelContent: List<String?>? = null
-    private var channelList: List<ChannelEpgDTO>? = null
     private var channelListNext: List<ChannelEpgDTO>? = null
     private var cNo: String? = null
-    private var channelIndex = 0
     private var isFScreenExit = false
     private var currentPrograms: List<ChannelEpgDTO>? = null
 
+
     @Inject
     lateinit var preferences : SharedPreference
+
+    @Inject
+    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
     lateinit var channelListDataStore: DataStore<ChannelListResponse>
@@ -76,10 +88,14 @@ class DisconnectedPrgActivity : BaseActivity() {
 
     private val usbManager: UsbManager by lazy { getSystemService(USB_SERVICE) as UsbManager }
     private lateinit var usbDevice: UsbDevice
+    private var hotelChannelVideo =""
+    private var hotelChannelNo =""
+    private var hotelChannelName =""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initSet()
+        programGuideViewModel.getAccountSetupResponseData(accountSetupDataStore)
     }
 
     private fun initSet() {
@@ -99,9 +115,28 @@ class DisconnectedPrgActivity : BaseActivity() {
     }
 
     override fun observeViewModel() {
+        observe(programGuideViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(programGuideViewModel.channelListLiveData, ::handleChannelListResponse)
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
+    }
+
+    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
+        when (status) {
+            is Resource.Success -> {
+                status.data?.let { response ->
+                     hotelChannelVideo = response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                     hotelChannelNo = response.hotelChannelList[0].channelNo
+                     hotelChannelName = response.hotelChannelList[0].channelName
+
+                    programGuideViewModel.getChannelListResponseData(channelListDataStore)
+                }
+            }
+            else -> {
+                status.errorCode?.let { programGuideViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { programGuideViewModel.showToastMessage(it) }
+            }
+        }
     }
 
     private fun handleChannelListResponse(status: Resource<ChannelListResponse>) {
@@ -109,10 +144,10 @@ class DisconnectedPrgActivity : BaseActivity() {
             is Resource.Success -> {
                 status.data?.let {
                     Log.e(TAG, "handleChannelListResponse: ${it.channelLcnList}", )
+
                     setUpChannels(it.channelLcnList)
                 }
             }
-
             else -> {
 
                 status.errorCode?.let { programGuideViewModel.showToastMessage(getString(it)) }
@@ -127,86 +162,77 @@ class DisconnectedPrgActivity : BaseActivity() {
         fetchDetails()
         setContentView(binding.root)
         binding.btnBack.handleFocusChange()
+        binding.btnSearch.handleFocusChange()
         binding.btnBack.setOnClickListener { finish() }
-        programGuideViewModel.getChannelListResponseData(channelListDataStore)
-
-//        programGuideViewModel.getChannels()
-//        this.getChannelsFromRoomDB()
-//        binding.pbLoader.toVisible()
     }
-//    private fun getChannelsFromRoomDB() {
-//        programGuideViewModel.channelList.observe(this) { resource ->
-//            resource.data?.channelLcnList?.let { data ->
-//                    currentPrograms = data
-//                loadProgramGuide(false, data?.toMutableList())
-//                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
-//                        binding.cvProgramGuide.toVisible()
-//                        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
-//                    }
-//            }
-//        }
-//    }
 
     override fun onResume() {
         super.onResume()
         if (isFScreenExit) {
             playChannelVideoBg(null)
         }
-//        setOnScrollListener()
+        binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
+            when (code) {
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                    if (view.isFocused) {
+                        showSearchDialog()
+                        view.clearFocus()
+                    }
+                }
+            }
+            false
+        }
+    }
+    private fun showSearchDialog() {
+        val builder = AlertDialog.Builder(this)
+        val dialogBinding =
+            DialogSearchProgramBinding.inflate(LayoutInflater.from(applicationContext))
+        builder.setView(dialogBinding.root)
+        val dialog = builder.create()
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.setCanceledOnTouchOutside(false)
+        dialog.show()
+
+        dialogBinding.etSearch.requestFocus()
+        dialogBinding.etSearch.showKeyboard()
+        dialogBinding.etSearch.handleFocusChange()
+
+        dialogBinding.etSearch.setOnEditorActionListener { textView, id, keyEvent ->
+            when (id) {
+                EditorInfo.IME_ACTION_DONE -> {
+                    dialog.dismiss()
+                    dialogBinding.etSearch.hideKeyboard()
+                    searchInAdapter(textView.text.toString().trim())
+                    binding.rvProgramGuide.requestFocus()
+                }
+            }
+            false
+        }
     }
 
-//    private fun setOnScrollListener() {
-////        val recyclerView1 = binding.layoutProgramGuide.layoutPrgGuide.rvProgram
-//        val recyclerView2 = binding.layoutProgramGuide.layoutPrgGuide.rvChannel
-//
-//        val scrollListeners = arrayOfNulls<RecyclerView.OnScrollListener>(2)
-//        scrollListeners[0] = object : RecyclerView.OnScrollListener() {
-//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-//                super.onScrolled(recyclerView, dx, dy)
-//                recyclerView2.removeOnScrollListener(
-//                    scrollListeners[1]!!
-//                )
-//                recyclerView2.scrollBy(dx, dy)
-//                recyclerView2.addOnScrollListener(
-//                    scrollListeners[1]!!
-//                )
-//            }
-//        }
-//        scrollListeners[1] = object : RecyclerView.OnScrollListener() {
-//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-//                super.onScrolled(recyclerView, dx, dy)
-////                recyclerView1.removeOnScrollListener(
-////                    scrollListeners[0]!!
-////                )
-////                recyclerView1.scrollBy(dx, dy)
-////                recyclerView1.addOnScrollListener(
-////                    scrollListeners[0]!!
-////                )
-//            }
-//        }
-////        recyclerView1.addOnScrollListener(createScrollListener(recyclerView2))
-////        recyclerView2.addOnScrollListener(createScrollListener(recyclerView1))
-//
-//    }
-    private fun loadProgramGuide(
-        isScrolled: Boolean = false,
-        currentPrograms: MutableList<ChannelEpgDTO>? = null
-    ) {
+    private fun searchInAdapter(name: String) {
+        val adapter = binding.rvProgramGuide.adapter as DisChannelAdapter
+        val list = adapter.getChannelList()
+        var focusIndex = -1
+        run breaking@{
+            list?.forEachIndexed { index, model ->
+                if (name.isNotEmpty()) {
+                    if ((model.CN?.contains(name, true) == true) or (model.CNO.toString()
+                            .contains(name, true))
+                    ) {
+                        focusIndex = index
+                        return@breaking
+                    }
+                }
+            }
+        }
 
-        val currentProgram = currentPrograms?.get(0)
-
-        currentPrograms?.remove(currentProgram)
-        if (!isScrolled) {
-            channelList = currentPrograms
-            channelContent = currentPrograms?.map { it.VP }
-            setUpChannels(currentPrograms)
-        } else
-            channelListNext = currentPrograms
-
-        setUpChannels(currentPrograms)
+        if (focusIndex >= 0) {
+            binding.rvProgramGuide.scrollToPosition(focusIndex)
+        } else programGuideViewModel.showToastMessage("No such channel with $name")
+        adapter.updateFocus(focusIndex)
 
     }
-
 
     private fun fetchDetails() {
         intent.extras?.getString("themeLogoFileName")?.let {
@@ -257,43 +283,6 @@ class DisconnectedPrgActivity : BaseActivity() {
 //                    channelIndex = channelList?.indexOf(program) ?: 0
                 }
             }
-        }
-    }
-
-    private fun onProgramFocused(program: ChannelEpgDTO?, title: String?, synopsis: String?) {
-        if (program == null) {
-            isFScreenExit = false
-            binding.layoutVideo.videoView.player?.play()
-        } else {
-            if (this.cNo != program.CNO) {
-                initializePlayer(program)
-                binding.layoutVideo.root.toVisible()
-                this.cNo = program.CNO
-                if (channelListNext != null) {
-//                    channelIndex = channelListNext?.indexOf(program) ?: 0
-                } else {
-//                    channelIndex = channelList?.indexOf(program) ?: 0
-                }
-            }
-        }
-    }
-
-    @SuppressLint("UnsafeOptInUsageError")
-    private fun initializePlayer(program: ChannelEpgDTO?) {
-        val player = ExoPlayer.Builder(this)
-            .setRenderersFactory(DefaultRenderersFactory(this).setEnableDecoderFallback(true))
-            .build()
-        val playerView = binding.layoutVideo.videoView
-        playerView.player?.release()
-        playerView.player = player
-        player?.let {
-            program?.VP?.let { vp ->
-                it.setMediaItem(MediaItem.fromUri(vp))
-            }
-            it.playWhenReady = true
-            it.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-            it.prepare()
-            it.play()
         }
     }
 
@@ -401,22 +390,30 @@ class DisconnectedPrgActivity : BaseActivity() {
         Log.e(TAG, "onDestroy: ")
     }
 
-    private fun setUpChannels(channelList: List<ChannelEpgDTO>?) {
-//        val adapter = DisconnectedChannelAdapter(
-//            onChannelFocused = ::playChannelVideoBg,
-//            onChannelClicked = ::launchExoPlayer
-//        )
-//        adapter.setChannelList(channelList)
-//        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.layoutManager =
-//            LinearLayoutManager(this)
-//        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter = adapter
+    private fun setUpChannels(channelList: MutableList<ChannelEpgDTO>?) {
 
         val adapter = DisChannelAdapter(onChannelClicked = ::launchExoPlayer)
-        adapter.setChannelList(channelList)
-        binding.rvProgramGuide.layoutManager = LinearLayoutManager(this)
+
+        if (channelList != null && channelList.isNotEmpty()) {
+
+            val updatedChannelList = mutableListOf<ChannelEpgDTO>().apply {
+                addAll(channelList)
+            }
+
+            val hotelVideoProgram = ChannelEpgDTO(
+                CN = hotelChannelName,
+                VP = hotelChannelVideo,
+                CNO = hotelChannelNo,
+            )
+
+            updatedChannelList.add(0, hotelVideoProgram)
+
+            adapter.setChannelList(updatedChannelList)
+        }
+
+        binding.rvProgramGuide.layoutManager = GridLayoutManager(this, 4)
         binding.rvProgramGuide.adapter = adapter
-
-
     }
+
 
 }

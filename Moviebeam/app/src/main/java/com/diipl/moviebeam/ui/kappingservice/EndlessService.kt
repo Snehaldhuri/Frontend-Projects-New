@@ -1156,7 +1156,7 @@ class EndlessService : Service() {
             if (response != null) {
                 updateChannelList(channelListDatastore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                Constants.CHANNEL_COUNT = response.channelLcnList.size
+                Constants.CHANNEL_COUNT = response.channelLcnList!!.size
                 LoggingService.sendMessageToWebSocket(
                     "In Channel List callback success ", getCurrentPanelNumber()
                 )

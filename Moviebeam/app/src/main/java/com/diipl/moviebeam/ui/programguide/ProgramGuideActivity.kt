@@ -33,6 +33,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
@@ -47,6 +48,7 @@ import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
+import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -87,6 +89,8 @@ class ProgramGuideActivity : BaseActivity() {
     private var currentPrograms: List<ChannelEpgDTO>? = null
     private var nextPrograms: List<ChannelEpgDTO>? = null
 
+    private lateinit var hotelChannel: HotelChannel
+    private var hotelChannelVideo: String = ""
     @Inject
     lateinit var preferences : SharedPreference
     private var irService: IIrService? = null
@@ -108,6 +112,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
         binding.btnBack.setOnClickListener { finish() }
+
         binding.pbLoader.toVisible()
     }
 
@@ -165,7 +170,7 @@ class ProgramGuideActivity : BaseActivity() {
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
-                KeyEvent.KEYCODE_DPAD_CENTER -> {
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
                     if (view.isFocused) {
                         showSearchDialog()
                         view.clearFocus()
@@ -286,6 +291,12 @@ class ProgramGuideActivity : BaseActivity() {
         intent.extras?.let {
             binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
             loadBg(it.getString("themeBackgroundFileName"))
+        }
+        intent.extras?.getString("hotelChannel")?.let {
+            hotelChannel = it.fromJson()
+        }
+        intent.extras?.getString("hotelChannelVideo")?.let {
+            hotelChannelVideo = it
         }
     }
 
@@ -542,6 +553,16 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.tvTime4.text = currentProgram?.P4_DST
 
         currentPrograms?.remove(currentProgram)
+        val hotelVideoProgram = ChannelEpgDTO(
+            CN = hotelChannel.channelName,
+            VP = hotelChannelVideo,
+            CNO = hotelChannel.channelNo,
+            P1_PT = hotelChannel.channelName,
+            P1_CLS = "80",
+            C = "1"
+        )
+        currentPrograms?.add(0, hotelVideoProgram)
+
         if (!isScrolled) {
             channelList = currentPrograms
             Constants.CURRENT_PROGRAMS = currentPrograms
