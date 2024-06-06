@@ -13,6 +13,8 @@ object Constants {
     val DATA_TYPE = "dataType"
     val DATA_JSON = "dataJSON"
 
+    var isWorkDone = 0
+
     // IP Details
     var IP_ADDRESS: String = "0.0.0.0"
     var IP_GATEWAY: String = "0.0.0.0"

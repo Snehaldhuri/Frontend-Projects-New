@@ -227,12 +227,11 @@ class STBDetailViewModel @Inject constructor(
     }
 
     fun setThemeResponseData(
-        dataStore: DataStore<ThemeResponse>,
         data: ThemeResponse
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
+            /*dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
                     fontCss = data.fontCss,
@@ -250,7 +249,8 @@ class STBDetailViewModel @Inject constructor(
                     themeLogoFileName = data.themeLogoFileName
                 )
 
-            }
+            }*/
+            updateDataStore.updateThemeData(data)
         }
     }
 
