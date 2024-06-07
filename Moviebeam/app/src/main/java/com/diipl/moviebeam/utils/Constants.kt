@@ -131,7 +131,7 @@ object Constants {
     const val HOTEL_SERVICES = "Hotel Info"
     const val CRACKLE_DEFAULT = "Crackle"
     const val IN_ROOM_DINING = "In Room Dining"
-    const val LOCAL_ATTRACTION = "Local Attraction"
+    const val LOCAL_ATTRACTION = "Local Attractions"
     const val FOOD_DELIVERY = "Food Delivery"
 
 
