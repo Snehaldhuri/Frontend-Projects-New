@@ -7,13 +7,19 @@
     android:orientation="vertical"
     tools:context=".ui.serial_info.SerialActivity">
 
-    <TextView
-        android:id="@+id/tv_serial"
+    <com.google.android.material.imageview.ShapeableImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="user_serial"
-        android:textSize="20sp"
+        android:layout_height="match_parent"
+        android:src="@mipmap/ic_banner"
+        android:scaleType="centerCrop"
         android:visibility="gone"
-        android:textAlignment="center"/>
+        />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/hs_default"
+        android:scaleType="centerCrop"
+        />
 
 </LinearLayout>

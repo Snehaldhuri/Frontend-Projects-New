@@ -139,9 +139,9 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         isNetworkConnected = isConnected
-        if (!isConnected) {
+        /*if (!isConnected) {
             launchMain()
-        }
+        }*/
     }
 
     private fun launchMain() {
@@ -163,9 +163,11 @@ class STBDetailsActivity : BaseActivity() {
             }
 
             else -> {
-                launchMain()
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
+                status.errorMsg?.let {
+                    launchMain()
+                    stbDetailViewModel.showToastMessage(it)
+                }
             }
         }
     }
@@ -635,27 +637,25 @@ class STBDetailsActivity : BaseActivity() {
             launchMain()
             return
         }
-
         isWorkDone = 0
 
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo
         UA = "21$serialNumber"
         Constants.UA = UA
-        stbDetailViewModel.fetchApis(applicationContext, preferenceDataStoreHelper)
+        stbDetailViewModel.fetchApis()
 
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
-        binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
+        binding.root.setupSnackbar(this, event, Snackbar.LENGTH_SHORT)
     }
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
-        binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
+        binding.root.showToast(this, event, Snackbar.LENGTH_SHORT)
     }
 
     private fun replaceDegreeSymbol(temp: String?): String {
-
         var temperature = ""
         temp?.let {
             temperature = if (it.contains("&deg C")) {

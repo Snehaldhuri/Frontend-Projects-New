@@ -15,6 +15,7 @@ import android.view.WindowManager
 import android.widget.PopupWindow
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
@@ -23,8 +24,8 @@ import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.databinding.PopupLayoutBinding
-import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
@@ -36,6 +37,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -50,6 +52,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class AppWorldActivity : BaseActivity() {
+
+    private val TAG = "AppWorldActivity"
 
     private lateinit var binding: ActivityAppWorldBinding
     private val appWorldViewModel: AppWorldViewModel by viewModels()
@@ -103,19 +107,36 @@ class AppWorldActivity : BaseActivity() {
         this.isCheckedIn = status
     }
 
-    private fun getInstalledApps(apiAppList: List<SelectedApps>) {
+    private fun getInstalledApps(apiAppList: List<SelectedApps>) = lifecycleScope.launch {
         try {
             val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-//            val selectedApps = mutableListOf<ApplicationInfo>()
-//            apiAppList.forEach { selectedApp ->
-//                allApps.forEach { installedApp ->
-//                    if (selectedApp.forAndroid and (selectedApp.value == installedApp.packageName))
-//                        selectedApps.add(installedApp)
-//                }
-//            }
-            val selectedApps = allApps.filter { installedApp ->
+
+          /*  val selectedApps = allApps.filter { installedApp ->
                 apiAppList.any { it.forAndroid && it.value == installedApp.packageName }
             }
+            selectedApps.forEach { Log.e(TAG, "selectedApps: ${it.packageName}")}
+
+            val list = mutableListOf<ApplicationInfo>()
+
+            apiAppList.forEach {a->
+                selectedApps.forEach {s->
+                    if (a.forAndroid && a.value == s.packageName){
+                        list.add(s)
+                    }
+                }
+            }*/
+
+            val apiApps = apiAppList.filter { it.forAndroid }.map { it.value }.toSet()
+
+            val list = mutableListOf<ApplicationInfo>()
+            apiApps.forEach {a->
+                allApps.forEach {s->
+                    if (a == s.packageName){
+                        list.add(s)
+                    }
+                }
+            }
+
             val adapter = AppAdapter {
                 if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
                     launchAppSecured(it.packageName)
@@ -123,9 +144,9 @@ class AppWorldActivity : BaseActivity() {
                     launchApp(it.packageName)
                 }
             }
-            adapter.setAppList(selectedApps)
+            adapter.setAppList(list)
             binding.rvApps.adapter = adapter
-            Constants.APP_LIST = ArrayList(selectedApps.map { it.packageName })
+            Constants.APP_LIST = ArrayList(apiApps)
         } catch (e: Exception) {
             LoggingService.sendMessageToWebSocket(
                 "getInstalledApps Exception in AppWorldMain activity ${e.message}",
@@ -227,11 +248,10 @@ class AppWorldActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                val response = appWorldViewModel.accountSetupLiveData.value?.data
-                response?.selectedAppsList?.let {
-                    getInstalledApps(it)
+                status.data?.let { response ->
+                    getInstalledApps(response.selectedAppsList)
+                    binding.pbLoader.toInvisible()
                 }
-                binding.pbLoader.toInvisible()
             }
 
             else -> {

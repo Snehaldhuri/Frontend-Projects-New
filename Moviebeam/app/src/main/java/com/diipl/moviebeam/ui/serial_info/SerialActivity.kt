@@ -8,19 +8,24 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
-import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.kappingservice.Actions
 import com.diipl.moviebeam.service.kappingservice.EndlessService
-import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 private const val TAG = "SerialActivity"
@@ -46,7 +51,12 @@ class SerialActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
+
+        lifecycleScope.launch {
+            delay(1000*5)
+            serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
+        }
+
         launchLogger()
     }
 
@@ -83,9 +93,9 @@ class SerialActivity : BaseActivity() {
         if (isSerialNoTaken) {
             serialViewModel.getStbStatusFromDataStore(preferenceDataStoreHelper)
         } else {
-//            fetchSerialNo()
-            val serialNo = "28301HFGN2CBDU"
-            processSerialNo(serialNo)
+            fetchSerialNo()
+//            val serialNo = "29221HFGN30WLA"
+//            processSerialNo(serialNo)
         }
         actionOnService(Actions.START)
     }
@@ -109,7 +119,7 @@ class SerialActivity : BaseActivity() {
     }
 
     private fun redirectToStbDetailsActivity() {
-        startActivity(Intent(this, STBDetailsActivity::class.java))
+        startActivity(Intent(this, if (BuildConfig.DEBUG) MainMenuActivity::class.java else STBDetailsActivity::class.java))
         finish()
     }
 

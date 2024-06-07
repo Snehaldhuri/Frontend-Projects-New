@@ -8,7 +8,6 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.service.ACTION_USB_PERMISSION
@@ -59,13 +58,13 @@ class BlankActivity : AppCompatActivity() {
                 ACTION_USB_PERMISSION -> {
                     val device = intent.getParcelableExtra<Parcelable>(UsbManager.EXTRA_DEVICE) as UsbDevice?
                     val isGranted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
-                    val isOk = usbManager.hasPermission(device)
-                    Log.e(TAG, "onReceive: $isOk  ==  $isGranted -- ${intent.action}  $device")
                     if (isGranted && device != null) {
                         clearCache()
 //                        context.startActivity(Intent(this@BlankActivity, STBDetailsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 //                        finish()
                         exitProcess(0)
+                    } else {
+                        finish()
                     }
                 }
             }

@@ -23,6 +23,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.media3.exoplayer.ExoPlayer
@@ -658,4 +659,8 @@ fun compareVersions(apkVersion: String): Boolean {
     val a = apkVersion.replace(".", "").toInt()
     val b = BuildConfig.VERSION_NAME.replace(".", "").toInt()
     return a != b
+}
+
+fun Context.showToast(message: String){
+    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 }
