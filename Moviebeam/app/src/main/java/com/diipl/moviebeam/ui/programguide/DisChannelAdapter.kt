@@ -17,11 +17,17 @@ class DisChannelAdapter(
 ) :
     RecyclerView.Adapter<DisChannelAdapter.MyViewHolder>() {
 
-    private var channelList: List<ChannelEpgDTO>? = null
+    private var channelList: MutableList<ChannelEpgDTO> = mutableListOf()
+    private var filteredList: MutableList<ChannelEpgDTO> = mutableListOf()
+
     private var focusIndex = -1
 
     inner class MyViewHolder(val binding: DisconnectedChannelCardBinding) :
         RecyclerView.ViewHolder(binding.root)
+
+    init {
+        filteredList = channelList
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding = DisconnectedChannelCardBinding.inflate(
@@ -37,12 +43,13 @@ class DisChannelAdapter(
         return MyViewHolder(binding)
     }
 
-    override fun getItemCount(): Int = channelList?.size ?: 0
+    override fun getItemCount(): Int = filteredList.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val item = channelList?.get(position)
+        val channel = filteredList[position]
+        val item = filteredList.get(position)
 
-        holder.binding.tvChannelNo.text = item?.CNO.toString()
+        holder.binding.tvChannelNo.text = item.CNO.toString()
 
         if (focusIndex == holder.absoluteAdapterPosition) {
             holder.binding.root.requestFocus()
@@ -62,15 +69,30 @@ class DisChannelAdapter(
         holder.binding.root.setSafeOnClickListener {
             onChannelClicked(item)
         }
-        holder.binding.tvChannelName.text = item?.CN
+        holder.binding.tvChannelName.text = item.CN
     }
 
-    fun setChannelList(list: List<ChannelEpgDTO>?) {
-        this.channelList = list
+
+    fun setChannelList(newChannelList: MutableList<ChannelEpgDTO>) {
+        channelList = newChannelList
+        filteredList = newChannelList
+        notifyDataSetChanged()
     }
-    fun getChannelList(): List<ChannelEpgDTO>? {
+
+    fun getChannelList(): List<ChannelEpgDTO> {
         return channelList
     }
+    fun filter(query: String) {
+        filteredList = if (query.isEmpty()) {
+            channelList
+        } else {
+            channelList.filter {
+                it.CN?.startsWith(query, true) == true || it.CNO!!.startsWith(query, true)
+            }.toMutableList()
+        }
+        notifyDataSetChanged()
+    }
+
 
     @SuppressLint("NotifyDataSetChanged")
     fun updateFocus(focusIndex: Int) {

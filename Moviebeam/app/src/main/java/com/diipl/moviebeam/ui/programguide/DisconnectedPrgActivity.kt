@@ -10,6 +10,8 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -73,6 +75,9 @@ class DisconnectedPrgActivity : BaseActivity() {
     private var cNo: String? = null
     private var isFScreenExit = false
     private var currentPrograms: List<ChannelEpgDTO>? = null
+
+    private var currentSearchQuery: String = ""
+    private var isSearchDialogOpen: Boolean = false
 
 
     @Inject
@@ -163,14 +168,11 @@ class DisconnectedPrgActivity : BaseActivity() {
         setContentView(binding.root)
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
-        binding.btnBack.setOnClickListener { finish() }
+//        binding.btnBack.setOnClickListener { finish() }
     }
 
     override fun onResume() {
         super.onResume()
-        if (isFScreenExit) {
-            playChannelVideoBg(null)
-        }
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
                 KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
@@ -183,19 +185,42 @@ class DisconnectedPrgActivity : BaseActivity() {
             false
         }
     }
+
     private fun showSearchDialog() {
         val builder = AlertDialog.Builder(this)
-        val dialogBinding =
-            DialogSearchProgramBinding.inflate(LayoutInflater.from(applicationContext))
+        val dialogBinding = DialogSearchProgramBinding.inflate(LayoutInflater.from(applicationContext))
         builder.setView(dialogBinding.root)
         val dialog = builder.create()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog.setCanceledOnTouchOutside(false)
+        dialogBinding.etSearch.setText(currentSearchQuery)
         dialog.show()
+
+        isSearchDialogOpen = true
+        if (isSearchDialogOpen) {
+            dialog.setOnKeyListener { _, keycode, _ ->
+                when (keycode) {
+                    KeyEvent.KEYCODE_BACK -> {
+                        currentSearchQuery = ""
+                        searchInAdapter(currentSearchQuery)
+                        binding.btnSearch.text = "Search"
+                        isSearchDialogOpen = false
+                        val dialog = supportFragmentManager.findFragmentByTag("searchDialog") as? AlertDialog
+                        dialog?.dismiss()
+                    }
+                }
+                false
+            }
+
+        }
 
         dialogBinding.etSearch.requestFocus()
         dialogBinding.etSearch.showKeyboard()
         dialogBinding.etSearch.handleFocusChange()
+
+        dialog.setOnDismissListener {
+            isSearchDialogOpen = false
+        }
 
         dialogBinding.etSearch.setOnEditorActionListener { textView, id, keyEvent ->
             when (id) {
@@ -204,33 +229,76 @@ class DisconnectedPrgActivity : BaseActivity() {
                     dialogBinding.etSearch.hideKeyboard()
                     searchInAdapter(textView.text.toString().trim())
                     binding.rvProgramGuide.requestFocus()
+                    val searchTerm = textView.text.toString().trim()
+
+                    currentSearchQuery = searchTerm
+                    Log.d(TAG, "showSearchDialog: $currentSearchQuery")
+                    if(currentSearchQuery != ""){
+                        dialogBinding.etSearch.setText(currentSearchQuery)
+                    }
+                    binding.btnSearch.text = if (currentSearchQuery.isEmpty()) "Search" else currentSearchQuery
                 }
             }
             false
         }
+
+        dialogBinding.etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                searchInAdapter(s.toString().trim())
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
     }
 
-    private fun searchInAdapter(name: String) {
-        val adapter = binding.rvProgramGuide.adapter as DisChannelAdapter
-        val list = adapter.getChannelList()
-        var focusIndex = -1
-        run breaking@{
-            list?.forEachIndexed { index, model ->
-                if (name.isNotEmpty()) {
-                    if ((model.CN?.contains(name, true) == true) or (model.CNO.toString()
-                            .contains(name, true))
-                    ) {
-                        focusIndex = index
-                        return@breaking
-                    }
-                }
-            }
+    override fun onBackPressed() {
+        if (isSearchDialogOpen) {
+            currentSearchQuery = ""
+            searchInAdapter(currentSearchQuery)
+            binding.btnSearch.text = "Search"
+            isSearchDialogOpen = false // Ensure the flag is reset
+            val dialog = supportFragmentManager.findFragmentByTag("searchDialog") as? AlertDialog
+            dialog?.dismiss()
+        } else if (currentSearchQuery.isNotEmpty()) {
+            currentSearchQuery = ""
+            searchInAdapter(currentSearchQuery)
+            binding.btnSearch.text = "Search"
+        } else {
+            super.onBackPressed()
         }
+    }
 
-        if (focusIndex >= 0) {
-            binding.rvProgramGuide.scrollToPosition(focusIndex)
-        } else programGuideViewModel.showToastMessage("No such channel with $name")
-        adapter.updateFocus(focusIndex)
+
+    private fun searchInAdapter(name: String) {
+//        val adapter = binding.rvProgramGuide.adapter as DisChannelAdapter
+//        val list = adapter.getChannelList()
+//        var focusIndex = -1
+//        run breaking@{
+//            list?.forEachIndexed { index, model ->
+//                if (name.isNotEmpty()) {
+//                    if ((model.CN?.contains(name, true) == true) or (model.CNO.toString()
+//                            .contains(name, true))
+//                    ) {
+//                        focusIndex = index
+//                        return@breaking
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (focusIndex >= 0) {
+//            binding.rvProgramGuide.scrollToPosition(focusIndex)
+//        } else programGuideViewModel.showToastMessage("No such channel with $name")
+//        adapter.updateFocus(focusIndex)
+        val adapter = binding.rvProgramGuide.adapter as DisChannelAdapter
+        adapter.filter(name)
+
+        if (adapter.itemCount == 0) {
+            programGuideViewModel.showToastMessage("No channel found with \"$name\"")
+        }
 
     }
 
@@ -266,24 +334,6 @@ class DisconnectedPrgActivity : BaseActivity() {
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
-    }
-
-    private fun playChannelVideoBg(program: ChannelEpgDTO?) {
-        if (program == null) {
-            isFScreenExit = false
-            binding.layoutVideo.videoView.player?.play()
-        } else {
-            if (this.cNo != program.CNO) {
-//                initializePlayer(program)
-//                binding.layoutVideo.root.toVisible()
-                this.cNo = program.CNO
-                if (channelListNext != null) {
-//                    channelIndex = channelListNext?.indexOf(program) ?: 0
-                } else {
-//                    channelIndex = channelList?.indexOf(program) ?: 0
-                }
-            }
-        }
     }
 
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
