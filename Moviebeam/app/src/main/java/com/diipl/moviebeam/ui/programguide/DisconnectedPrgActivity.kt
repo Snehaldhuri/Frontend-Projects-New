@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.programguide
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
@@ -21,13 +20,7 @@ import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -55,7 +48,6 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
-import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -168,7 +160,7 @@ class DisconnectedPrgActivity : BaseActivity() {
         setContentView(binding.root)
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
-//        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { finish() }
     }
 
     override fun onResume() {
@@ -220,6 +212,7 @@ class DisconnectedPrgActivity : BaseActivity() {
 
         dialog.setOnDismissListener {
             isSearchDialogOpen = false
+            dialog.dismiss()
         }
 
         dialogBinding.etSearch.setOnEditorActionListener { textView, id, keyEvent ->

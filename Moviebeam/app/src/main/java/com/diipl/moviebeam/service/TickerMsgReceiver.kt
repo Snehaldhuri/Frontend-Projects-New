@@ -24,11 +24,10 @@ class TickerMsgReceiver : BroadcastReceiver() {
     lateinit var tickerDatastore: DataStore<TickerResponse>
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            tickerDTO =
-                intent?.extras?.getParcelable(Constants.TICKER_DTO_PARAM, TvTickerDTO::class.java)
+        tickerDTO = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent?.extras?.getParcelable(Constants.TICKER_DTO_PARAM, TvTickerDTO::class.java)
         } else {
-            tickerDTO = intent?.extras?.getParcelable(Constants.TICKER_DTO_PARAM)
+            intent?.extras?.getParcelable(Constants.TICKER_DTO_PARAM)
         }
         updateTickerMessage(tickerDatastore)
     }

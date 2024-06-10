@@ -281,6 +281,7 @@ class EndlessService : Service() {
         log(versionNumber)
 
         val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+        filter.addAction(Intent.CATEGORY_HOME)
         filter.addAction(Intent.ACTION_SCREEN_OFF)
         filter.addAction(Intent.ACTION_SCREEN_ON)
         registerReceiver(homePressReceiver, filter)
@@ -317,8 +318,9 @@ class EndlessService : Service() {
 
     private val homePressReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-
             intent.let {
+//                Log.e(TAG, "onReceive: ${intent.action}")
+
                 when (it.action) {
                     Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
                         val reason = it.getStringExtra("reason")
@@ -378,9 +380,8 @@ class EndlessService : Service() {
     }
 
     private fun startMainMenu() {
-        startActivity(Intent(applicationContext, MainMenuActivity::class.java).also { i ->
-            i.flags =
-                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(Intent(applicationContext, MainMenuActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         })
     }
 

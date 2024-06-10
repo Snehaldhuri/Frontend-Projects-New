@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
@@ -24,8 +23,6 @@ import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 private const val TAG = "SerialActivity"
@@ -52,12 +49,17 @@ class SerialActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
-        lifecycleScope.launch {
-            delay(1000*5)
+//        lifecycleScope.launch {
+//            delay(1000*5)
             serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
-        }
+//        }
 
         launchLogger()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        overridePendingTransition(0, 0)
     }
 
     private fun fetchSerialNo() {

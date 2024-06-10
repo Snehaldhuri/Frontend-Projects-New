@@ -5,21 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/transparent"
     tools:context=".ui.serial_info.SerialActivity">
 
-    <com.google.android.material.imageview.ShapeableImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@mipmap/ic_banner"
-        android:scaleType="centerCrop"
-        android:visibility="gone"
-        />
-
-    <com.google.android.material.imageview.ShapeableImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/hs_default"
-        android:scaleType="centerCrop"
-        />
 
 </LinearLayout>

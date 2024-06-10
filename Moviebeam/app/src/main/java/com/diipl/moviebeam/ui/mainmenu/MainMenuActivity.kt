@@ -30,17 +30,17 @@ import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
+import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.service.kappingservice.Actions
+import com.diipl.moviebeam.service.kappingservice.EndlessService
+import com.diipl.moviebeam.service.kappingservice.ServiceState
+import com.diipl.moviebeam.service.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
-import com.diipl.moviebeam.service.kappingservice.Actions
-import com.diipl.moviebeam.service.kappingservice.EndlessService
-import com.diipl.moviebeam.service.kappingservice.ServiceState
-import com.diipl.moviebeam.service.kappingservice.getServiceState
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
@@ -131,7 +131,7 @@ class MainMenuActivity : BaseActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        overridePendingTransition(0, 0)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
@@ -164,7 +164,6 @@ class MainMenuActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        Log.e(TAG, "onResume: ")
 
         initializePlayer()
         binding.root.loadBg()
@@ -173,11 +172,7 @@ class MainMenuActivity : BaseActivity() {
         lifecycleScope.launch {
             while (!player.isPlaying){
                 if (HOTEL_VIDEO_URL.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0){
-                    Log.e(TAG, "onResume: lifecycleScope")
                     binding.videoView.toGone()
-                } else {
-                    Log.e(TAG, "onResume: initializePlayer")
-                    initializePlayer()
                 }
                 delay(5000)
             }
@@ -193,6 +188,7 @@ class MainMenuActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
+        overridePendingTransition(0, 0)
         player.stop()
         player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
