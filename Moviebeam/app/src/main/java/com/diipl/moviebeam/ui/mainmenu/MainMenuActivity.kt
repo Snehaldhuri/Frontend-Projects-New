@@ -238,7 +238,8 @@ class MainMenuActivity : BaseActivity() {
 
     private fun releaseVideoPlayer() {
         binding.videoView.toGone()
-        player.release()
+        if (::player.isInitialized)
+            player.release()
     }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {

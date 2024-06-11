@@ -6,8 +6,8 @@ import android.content.Intent
 import android.hardware.usb.UsbManager
 import android.os.Build
 import android.util.Log
-import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.splash.BlankActivity
+import com.diipl.moviebeam.utils.Constants.GLOBAL_LOOP_SEC
 import com.diipl.moviebeam.utils.Constants.isRebooted
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
@@ -21,11 +21,14 @@ class StartReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_REBOOT){
             Log.e(TAG, "onReceive: ${intent.action}")
+//            context.showToast(intent.action!!)
+            isRebooted = 1
+            GLOBAL_LOOP_SEC = 30
             try {
-                context.packageManager.getLaunchIntentForPackage(context.packageName)?.let {i->
+              /*  context.packageManager.getLaunchIntentForPackage(context.packageName)?.let {i->
                     i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     context.startActivity(i)
-                }
+                }*/
                 val preference = SharedPreference(context)
                 if (preference.irFrequencyModel == null){
                     preference.irFrequencyModel = IRUtils.SELECTED_BRAND
@@ -47,12 +50,12 @@ class StartReceiver : BroadcastReceiver() {
                 context.startService(it)
             }
         }
-        if (intent.extras?.getString("onstop").equals("RESTART")) {
+       /* if (intent.extras?.getString("onstop").equals("RESTART")) {
             val i = Intent(context, MainMenuActivity::class.java)
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             context.startActivity(i)
 
-        }
+        }*/
         if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED){
             val i = Intent(context, BlankActivity::class.java)
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)

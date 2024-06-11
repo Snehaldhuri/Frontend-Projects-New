@@ -116,26 +116,6 @@ class ProgramGuideActivity : BaseActivity() {
         binding.pbLoader.toVisible()
     }
 
-    private fun getChannelsFromRoomDB() {
-        programGuideViewModel.getAllChannels(key).observe(this) { data ->
-            if (!data.isNullOrEmpty()) {
-                currentPrograms = data
-                loadProgramGuide(false, data)
-                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
-                    binding.cvProgramGuide.toVisible()
-                    binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(
-                        0
-                    )?.itemView?.requestFocus()
-//                    setOnScrollListener()
-
-                }
-                setNextPrograms()
-            } else {
-                programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
-            }
-            binding.pbLoader.toInvisible()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -166,8 +146,6 @@ class ProgramGuideActivity : BaseActivity() {
             playChannelVideoBg(null)
         }
 
-        setOnScrollListener()
-
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
                 KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
@@ -180,6 +158,29 @@ class ProgramGuideActivity : BaseActivity() {
             false
         }
 
+        setOnScrollListener()
+
+    }
+
+    private fun getChannelsFromRoomDB() {
+        programGuideViewModel.getAllChannels(key).observe(this) { data ->
+            if (!data.isNullOrEmpty()) {
+                currentPrograms = data
+                loadProgramGuide(false, data)
+                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
+                    binding.cvProgramGuide.toVisible()
+                    binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(
+                        0
+                    )?.itemView?.requestFocus()
+//                    setOnScrollListener()
+
+                }
+                setNextPrograms()
+            } else {
+                programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
+            }
+            binding.pbLoader.toInvisible()
+        }
     }
 
     private fun setOnScrollListener() {
@@ -538,7 +539,6 @@ class ProgramGuideActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         binding.layoutVideo.videoView.player?.release()
-        Log.e(TAG, "onDestroy: ")
     }
 
     private fun loadProgramGuide(
@@ -551,6 +551,8 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.tvTime2.text = currentProgram?.P2_DST
         binding.layoutProgramGuide.tvTime3.text = currentProgram?.P3_DST
         binding.layoutProgramGuide.tvTime4.text = currentProgram?.P4_DST
+
+        Log.e(TAG, "loadProgramGuide: $currentProgram")
 
         currentPrograms?.remove(currentProgram)
         val hotelVideoProgram = ChannelEpgDTO(
@@ -618,6 +620,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.layoutManager =
             LinearLayoutManager(this)
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter = adapter
+        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.setHasFixedSize(true)
 
     }
 
@@ -633,6 +636,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvProgram.layoutManager =
             LinearLayoutManager(this)
         binding.layoutProgramGuide.layoutPrgGuide.rvProgram.adapter = adapter
+//        binding.layoutProgramGuide.layoutPrgGuide.rvProgram.setHasFixedSize(true)
     }
 
     private fun loadPreviousPrograms() {
@@ -666,7 +670,7 @@ class ProgramGuideActivity : BaseActivity() {
     private fun setPreviousPrograms() {
         val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
         val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
+        cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, -2)
         previousKey = fetchCurrentProgramKey(cal.time)
         programGuideViewModel.getAllChannels(previousKey!!).observe(this) { data ->
@@ -677,7 +681,7 @@ class ProgramGuideActivity : BaseActivity() {
     private fun setNextPrograms() {
         val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
         val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
+        cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, 2)
         nextKey = fetchCurrentProgramKey(cal.time)
         programGuideViewModel.getAllChannels(nextKey!!).observe(this) { data ->

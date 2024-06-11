@@ -530,6 +530,8 @@ suspend fun saveImageServer(imgUrl: String?, filePath: String): String? {
 
 suspend fun saveImage(imgUrl: String?, filePath: String): String? {
     var path: String?
+
+
     try {
         val url = URL(imgUrl)
         val imageData = withContext(Dispatchers.IO) { url.readBytes() }
@@ -537,6 +539,7 @@ suspend fun saveImage(imgUrl: String?, filePath: String): String? {
         path = "$filePath${System.currentTimeMillis()}$extension"
         writeByteArrayToFile(path, imageData)
     } catch (e: Exception) {
+//        Log.e( "saveImage: ", "$imgUrl    $filePath")
         Log.e("saveImage", "Exception: ${e.localizedMessage}")
         path = imgUrl
     }

@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ChannelCardBinding
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.setSafeOnClickListener
 import com.diipl.moviebeam.utils.toGone
@@ -29,6 +31,10 @@ class ChannelAdapter(
         val binding = ChannelCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
+
+        val params = binding.root.layoutParams
+        params.width = getWidthInPercent(parent.context, 14)
+        params.height = getHeightInPercent(parent.context, 4)
 
         return MyViewHolder(binding)
     }

@@ -60,8 +60,6 @@ class BlankActivity : AppCompatActivity() {
                     val isGranted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
                     if (isGranted && device != null) {
                         clearCache()
-//                        context.startActivity(Intent(this@BlankActivity, STBDetailsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-//                        finish()
                         exitProcess(0)
                     } else {
                         finish()

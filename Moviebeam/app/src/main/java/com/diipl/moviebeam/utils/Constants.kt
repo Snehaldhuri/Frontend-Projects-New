@@ -14,7 +14,8 @@ object Constants {
     val DATA_JSON = "dataJSON"
 
     var isWorkDone = 0
-    var isRebooted = false
+    var isRebooted = -1
+    var GLOBAL_LOOP_SEC = 60
 
     // IP Details
     var IP_ADDRESS: String = "0.0.0.0"

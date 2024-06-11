@@ -1,6 +1,8 @@
 package com.diipl.moviebeam.ui.mainmenu
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
@@ -13,7 +15,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
-import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 
 private const val TAG = "MainMenuBtnAdapter"
 
@@ -32,6 +36,11 @@ class MainMenuBtnAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
+
+        val params = view.layoutParams
+        params.width = getWidthInPercent(parent.context, 21)
+        params.height = getHeightInPercent(parent.context, 16)
+
         return MyViewHolder(view)
     }
 
@@ -54,7 +63,13 @@ class MainMenuBtnAdapter(
         */
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
-        holder.card.handleFocusChange()
+        holder.card.setOnFocusChangeListener { v, b ->
+            if (b) {
+                v.background = getGradientColor()
+            } else {
+                v.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
         holder.card.setOnClickListener {
             onMenuItemClicked(item)
         }
@@ -86,6 +101,20 @@ class MainMenuBtnAdapter(
             false
         }
 
+    }
+
+    private fun getGradientColor(): GradientDrawable {
+        val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+        val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TR_BL,
+            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+        )
+        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
     }
 
 }

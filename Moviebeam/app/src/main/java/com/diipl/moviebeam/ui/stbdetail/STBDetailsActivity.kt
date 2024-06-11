@@ -93,7 +93,6 @@ class STBDetailsActivity : BaseActivity() {
 
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy { PreferenceDataStoreHelper(applicationContext) }
     private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
-    private var isNetworkConnected: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,7 +137,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleNetworkResponse(isConnected: Boolean) {
-        isNetworkConnected = isConnected
+//        isNetworkConnected = isConnected
         /*if (!isConnected) {
             launchMain()
         }*/
@@ -165,8 +164,8 @@ class STBDetailsActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let {
-                    launchMain()
                     stbDetailViewModel.showToastMessage(it)
+                    launchMain()
                 }
             }
         }
@@ -176,10 +175,8 @@ class STBDetailsActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
-
                 stbDetailViewModel.themeLiveData.value?.data?.let {
                     stbDetailViewModel.setThemeResponseData(it)
-                    Log.d("DataStoreResponse", "handleThemeResponse: $it")
                 }
             }
 
@@ -275,7 +272,7 @@ class STBDetailsActivity : BaseActivity() {
                 }
 
                 val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
-                stbDetailViewModel.epgLiveData.value?.data?.let {
+                status.data?.let {
                     val startDate = simpleDateFormatter.parse(it.ST ?: "")
                     val endDate = simpleDateFormatter.parse(it.ET ?: "")
                     if (isEpgDataValid(startDate, endDate)) {
@@ -444,12 +441,7 @@ class STBDetailsActivity : BaseActivity() {
                         }
                         redirectToMainMenuPage()
                     } else {
-                        if (!isEPGServerApiCalled) {
-                            stbDetailViewModel.fetchEPGDataFromServer(UA)
-                            isEPGServerApiCalled = true
-                        } else {
-                            redirectToMainMenuPage()
-                        }
+                        fetchEPGFromServer()
                     }
                 }
 
@@ -457,9 +449,20 @@ class STBDetailsActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-                redirectToMainMenuPage()
+                status.errorMsg?.let {
+                    stbDetailViewModel.showToastMessage(it)
+                    launchMain()
+                }
             }
+        }
+    }
+
+    private fun fetchEPGFromServer() {
+        if (!isEPGServerApiCalled) {
+            stbDetailViewModel.fetchEPGDataFromServer(UA)
+            isEPGServerApiCalled = true
+        } else {
+            redirectToMainMenuPage()
         }
     }
 
@@ -480,14 +483,14 @@ class STBDetailsActivity : BaseActivity() {
 //            workManager.enqueue(request)
         }*/
 
-        lifecycleScope.launch {
+
 //            workManager.getWorkInfoByIdLiveData(uuid!!).observe(this@STBDetailsActivity) { data ->
 //                val isDone = data.state == WorkInfo.State.SUCCEEDED
 //                if (isDone) {
 
 //                }
+        lifecycleScope.launch {
             while (true){
-                Log.e(TAG, "isWorkDone: $isWorkDone")
                 if (isWorkDone == 3){
                     launchMain()
                     isWorkDone = 0
@@ -620,9 +623,10 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.SHOWS_COUNT = it.shoContentList.size
                     stbDetailViewModel.setShowTimeResponseData(showTimeDataStore, it)
                 }
-                stbDetailViewModel.accountSetupLiveData.value?.data?.let {
-                    stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
-                }
+//                stbDetailViewModel.accountSetupLiveData.value?.data?.let {
+//                    stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
+//                }
+                fetchEPGFromServer()
             }
 
             else -> {
@@ -633,10 +637,10 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
-        if (!isNetworkConnected) {
+     /*   if (!isNetworkConnected) {
             launchMain()
             return
-        }
+        }*/
         isWorkDone = 0
 
         serialNumber = serialNo

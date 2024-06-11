@@ -72,7 +72,7 @@ class UpdateDataStore @Inject constructor(
             )
         }*/
 
-        Log.e(TAG, "updateHSData: Downloading HS Images", )
+        Log.e(TAG, "updateHSData: Downloading HS Images  ${Constants.isWorkDone}" )
         deleteHSFolder()
         val servicesList = mutableListOf<Services>()
         val resp = async(Dispatchers.IO) {
@@ -139,7 +139,7 @@ class UpdateDataStore @Inject constructor(
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
         }
-        Log.e(TAG, "updateHSData: Downloading HS Images Done", )
+        Log.e(TAG, "updateHSData: Downloading HS Images Done  ${Constants.isWorkDone}", )
     }
 
     suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
@@ -152,7 +152,7 @@ class UpdateDataStore @Inject constructor(
             )
         }*/
 
-        Log.e(TAG, "updateLAData: Downloading LA Images", )
+        Log.e(TAG, "updateLAData: Downloading LA Images  ${Constants.isWorkDone}" )
         deleteLAFolder()
         val servicesList = mutableListOf<LAServices>()
         val resp = async(Dispatchers.IO) {
@@ -224,11 +224,11 @@ class UpdateDataStore @Inject constructor(
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
         }
-        Log.e(TAG, "updateLAData: Downloading LA Images Done", )
+        Log.e(TAG, "updateLAData: Downloading LA Images Done  ${Constants.isWorkDone}", )
     }
 
     suspend fun updateThemeData(data: ThemeResponse) = coroutineScope {
-        Log.e(TAG, "updateThemeData: Downloading Theme Images", )
+        Log.e(TAG, "updateThemeData: Downloading Theme Images   $${Constants.isWorkDone}" )
         try {
             deleteThemeFolder()
             val themeBackgroundFileName = async {
@@ -273,7 +273,7 @@ class UpdateDataStore @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Failed to update DataStore: ${e.message}")
         }
-        Log.e(TAG, "updateThemeData: Downloading Theme Images Done", )
+        Log.e(TAG, "updateThemeData: Downloading Theme Images Done  ${Constants.isWorkDone}" )
 
     }
 

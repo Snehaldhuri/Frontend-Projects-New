@@ -82,11 +82,11 @@ class STBDetailViewModel @Inject constructor(
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
     private val _networkStatus = MutableLiveData<Boolean>()
-    val networkStatus : LiveData<Boolean> get() = _networkStatus
+    val networkStatus: LiveData<Boolean> get() = _networkStatus
 
-    fun getNetworkStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper){
+    fun getNetworkStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch(Dispatchers.IO) {
-            preferenceDataStoreHelper.getPreference(NETWORK_STATUS, false).collect{
+            preferenceDataStoreHelper.getPreference(NETWORK_STATUS, false).collect {
                 _networkStatus.postValue(it)
             }
         }
@@ -372,16 +372,30 @@ class STBDetailViewModel @Inject constructor(
     fun setHotelServicesResponseData(
         data: HotelServiceResponse
     ) {
+        var run = true
         viewModelScope.launch(Dispatchers.IO) {
-            updateDataStore.updateHSData(data)
+            while (run) {
+                if (Constants.isWorkDone == 2) {
+                    run = false
+                    updateDataStore.updateHSData(data)
+                }
+                delay(2000)
+            }
         }
     }
 
     fun setLocalAttractionResponseData(
         data: LocalAttractionResponse
     ) {
+        var run = true
         viewModelScope.launch(Dispatchers.IO) {
-            updateDataStore.updateLAData(data)
+            while (run) {
+                if (Constants.isWorkDone == 1) {
+                    run = false
+                    updateDataStore.updateLAData(data)
+                }
+                delay(2000)
+            }
         }
     }
 
@@ -463,7 +477,12 @@ class STBDetailViewModel @Inject constructor(
         viewModelScope.launch {
             delay(5000)
             if (networkUtils.isNetworkAvailable()) {
-                fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE, Constants.ACCOUNT_ID)
+                fetchAllApi(
+                    Constants.ACTIVATE,
+                    Constants.UA,
+                    Constants.MODE,
+                    Constants.ACCOUNT_ID
+                )
             } else {
                 delay(5000)
                 fetchApis()

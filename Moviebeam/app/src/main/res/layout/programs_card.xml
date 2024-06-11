@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rv_programs"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/dp_23">
-
-</androidx.recyclerview.widget.RecyclerView>
+    android:layout_height="@dimen/dp_23"
+    android:layout_marginBottom="@dimen/dp_1"
+    android:nestedScrollingEnabled="false"
+    android:orientation="horizontal"
+    app:fastScrollEnabled="false"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />

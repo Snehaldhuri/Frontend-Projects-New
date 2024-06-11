@@ -21,8 +21,8 @@ import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
-import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
@@ -83,6 +83,17 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+       /* Thread.setDefaultUncaughtExceptionHandler { paramThread, paramThrowable ->
+            Log.e(TAG, "paramThread: ${paramThread.isAlive}")
+            Log.e(TAG, "paramThrowable: ${paramThrowable.localizedMessage}")
+            paramThrowable.printStackTrace()
+           finishAffinity()
+        }
+
+        val res = 1/0
+        Log.e(TAG, "initViewBinding: $res")
+*/
         try {
             // fetch data from dataStore
             hotelInfoViewModel.getThemeResponseData(themeDataStore)

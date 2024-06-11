@@ -2,10 +2,10 @@ package com.diipl.moviebeam.ui.programguide
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ProgramsCardBinding
+import com.diipl.moviebeam.utils.getHeightInPercent
 
 class ProgramsAdapter(
     private val onProgramFocused: (program: ChannelEpgDTO, title: String?, synopsis: String?) -> Unit,
@@ -23,8 +23,11 @@ class ProgramsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding =
             ProgramsCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        binding.rvPrograms.layoutManager =
-            LinearLayoutManager(parent.context, LinearLayoutManager.HORIZONTAL, false)
+
+        val params = binding.root.layoutParams
+//        params.width = getWidthInPercent(parent.context, 0)
+        params.height = getHeightInPercent(parent.context, 4)
+
         return MyViewHolder(binding)
     }
 

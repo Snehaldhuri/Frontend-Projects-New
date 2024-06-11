@@ -197,6 +197,7 @@ class AdultContentDialog(
             setParentalControlView()
         }
         binding.btnCodeCancel.setOnClickListener {
+            dismiss()
             preference.isAdultLocked = true
             onClicked(0)
         }
