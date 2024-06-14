@@ -69,16 +69,19 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name="com.diipl.moviebeam.ui.exoplayer.PlayerActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.splash.BlankActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:launchMode="singleInstance"
             android:exported="false" />
         <activity
             android:name=".ui.serial_info.SerialActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:banner="@mipmap/ic_banner"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
@@ -98,6 +101,7 @@
         </activity>
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:banner="@mipmap/ic_banner"
             android:enabled="true"
             android:exported="true"
@@ -115,107 +119,128 @@
 
         <activity
             android:name=".ui.movies.ConfirmRentalActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:launchMode="singleInstance"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.refreshingui.RefreshingUiActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.inroomdining.InRoomDiningActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.kaping.RegisterSTBActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.casting.CastingActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.guestservice.feedback.thankyou.ThankYouActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.programguide.PrgGuidePlayerActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.programguide.ProgramGuideActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustNothing|adjustPan" />
         <activity
             android:name=".ui.programguide.DisconnectedPrgActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustNothing|adjustPan"/>
         <activity
             android:name=".ui.stbdetail.STBDetailsActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.splash.SplashActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.appworld.AppWorldActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.showtime.ShowtimeActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.movies.MoviesActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.guestservice.GuestServiceActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustNothing|adjustPan" />
         <activity
             android:name=".ui.hotelinfo.HotelInfoActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.localattraction.LocalAttractionActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.exoplayer.ExoPlayerActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:launchMode="singleInstance"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.login.LoginActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:enabled="true"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.home.HomeActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.home.DataStoreActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
