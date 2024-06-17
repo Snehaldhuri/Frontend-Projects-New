@@ -41,7 +41,7 @@ import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFrag
 import com.diipl.moviebeam.ui.guestservice.message.MessageFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.SingleEvent

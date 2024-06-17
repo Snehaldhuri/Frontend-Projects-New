@@ -1,12 +1,12 @@
 package com.diipl.moviebeam.ui.stbdetail
 
-import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
@@ -21,7 +21,6 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.NETWORK_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
-import com.diipl.moviebeam.ui.base.UpdateDataStore
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SingleEvent
@@ -83,11 +82,11 @@ class STBDetailViewModel @Inject constructor(
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
     private val _networkStatus = MutableLiveData<Boolean>()
-    val networkStatus : LiveData<Boolean> get() = _networkStatus
+    val networkStatus: LiveData<Boolean> get() = _networkStatus
 
-    fun getNetworkStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper){
+    fun getNetworkStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch(Dispatchers.IO) {
-            preferenceDataStoreHelper.getPreference(NETWORK_STATUS, false).collect{
+            preferenceDataStoreHelper.getPreference(NETWORK_STATUS, false).collect {
                 _networkStatus.postValue(it)
             }
         }
@@ -373,16 +372,30 @@ class STBDetailViewModel @Inject constructor(
     fun setHotelServicesResponseData(
         data: HotelServiceResponse
     ) {
+        var run = true
         viewModelScope.launch(Dispatchers.IO) {
-            updateDataStore.updateHSData(data)
+            while (run) {
+                if (Constants.isWorkDone == 2) {
+                    run = false
+                    updateDataStore.updateHSData(data)
+                }
+                delay(2000)
+            }
         }
     }
 
     fun setLocalAttractionResponseData(
         data: LocalAttractionResponse
     ) {
+        var run = true
         viewModelScope.launch(Dispatchers.IO) {
-            updateDataStore.updateLAData(data)
+            while (run) {
+                if (Constants.isWorkDone == 1) {
+                    run = false
+                    updateDataStore.updateLAData(data)
+                }
+                delay(2000)
+            }
         }
     }
 
@@ -460,14 +473,19 @@ class STBDetailViewModel @Inject constructor(
         showToastPrivate.value = SingleEvent(error)
     }
 
-    fun fetchApis(context: Context, preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+    fun fetchApis() {
         viewModelScope.launch {
             delay(5000)
             if (networkUtils.isNetworkAvailable()) {
-                fetchAllApi(Constants.ACTIVATE, Constants.UA, Constants.MODE, Constants.ACCOUNT_ID)
+                fetchAllApi(
+                    Constants.ACTIVATE,
+                    Constants.UA,
+                    Constants.MODE,
+                    Constants.ACCOUNT_ID
+                )
             } else {
                 delay(5000)
-                fetchApis(context, preferenceDataStoreHelper)
+                fetchApis()
             }
         }
     }

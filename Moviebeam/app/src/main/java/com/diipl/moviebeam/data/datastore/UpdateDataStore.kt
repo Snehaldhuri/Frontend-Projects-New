@@ -1,22 +1,16 @@
-package com.diipl.moviebeam.ui.refreshingui
+package com.diipl.moviebeam.data.datastore
 
-import android.content.Context
 import android.util.Log
 import androidx.datastore.core.DataStore
-import androidx.hilt.work.HiltWorker
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.Service
 import com.diipl.moviebeam.data.dto.hotelservice.Services
 import com.diipl.moviebeam.data.dto.localattraction.LAService
 import com.diipl.moviebeam.data.dto.localattraction.LAServices
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
-import com.diipl.moviebeam.data.dto.movies.MoviesResponse
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.deleteHSFolder
 import com.diipl.moviebeam.utils.deleteLAFolder
 import com.diipl.moviebeam.utils.deleteThemeFolder
@@ -24,78 +18,61 @@ import com.diipl.moviebeam.utils.saveHSImage
 import com.diipl.moviebeam.utils.saveLAImage
 import com.diipl.moviebeam.utils.saveThemeImage
 import com.diipl.moviebeam.utils.saveThemeImageServer
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.first
 import okhttp3.internal.toImmutableList
+import javax.inject.Inject
 
-@HiltWorker
-class UpdateDataWorker @AssistedInject constructor(
-    private val moviesDataStore: DataStore<MoviesResponse>,
-    private val showTimeDataStore: DataStore<ShowTimeResponse>,
-    private val weatherDataStore: DataStore<WeatherResponse>,
-    private val localAttractionDataStore: DataStore<LocalAttractionResponse>,
-    private val hotelServiceDataStore: DataStore<HotelServiceResponse>,
-    private val themeDataStore: DataStore<ThemeResponse>,
-    private val movieBeamRepository: MovieBeamRepository,
-    @Assisted context: Context,
-    @Assisted workerParams: WorkerParameters
-) : CoroutineWorker(context, workerParams) {
+class UpdateDataStore @Inject constructor(
+    val weatherDataStore: DataStore<WeatherResponse>,
+    val localAttractionDataStore: DataStore<LocalAttractionResponse>,
+    val themeDataStore: DataStore<ThemeResponse>,
+    val hotelServiceDataStore: DataStore<HotelServiceResponse>
+) {
 
-    companion object {
-        const val ACTION = "ACTION"
-        const val ACTION_ALL = "ACTION_ALL"
-        const val ACTION_HS = "ACTION_HS"
-        const val ACTION_LA = "ACTION_LA"
-        const val ACTION_THEME = "ACTION_THEME"
-    }
+    private val TAG = "UpdateDataStore"
 
-    private val TAG = "UpdateDataWorker"
+    suspend fun updateWeatherData(data: WeatherResponse) {
+        weatherDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                accountId = data.accountId,
+                dewPoint = data.dewPoint,
+                durationMin = data.durationMin,
+                high = data.high,
+                highForLingual = data.highForLingual,
+                humidity = data.humidity,
+                id = data.id,
+                location = data.location,
+                low = data.low,
+                lowForLingual = data.lowForLingual,
+                sunrise = data.sunrise,
+                sunset = data.sunset,
+                tempCondition = data.tempCondition,
+                tempConditionUrl = data.tempConditionUrl,
+                tempConditionUrlCloud = data.tempConditionUrlCloud,
+                type = data.type,
+                visibility = data.visibility,
+                weatherProviderImage = data.weatherProviderImage,
+                weatherProviderImageCloud = data.weatherProviderImageCloud,
+                windSpeed = data.windSpeed
+            )
 
-    override suspend fun doWork(): Result {
-        Log.e(TAG, "doWork: START")
-        return try {
-            val action = inputData.getString(ACTION)
-            Log.e(TAG, "doWork: $action")
-            when (action) {
-                ACTION_ALL -> {
-                    updateThemeData()
-                    updateLAData(localAttractionDataStore.data.first())
-                    updateHSData(hotelServiceDataStore.data.first())
-                    Result.success()
-                }
-
-                ACTION_HS -> {
-                    updateHSData(hotelServiceDataStore.data.first())
-                    Result.success()
-                }
-                ACTION_LA -> {
-                    updateLAData(localAttractionDataStore.data.first())
-                    Result.success()
-                }
-                ACTION_THEME -> {
-                    updateThemeData()
-                    Result.success()
-                }
-                else -> {
-                    Log.e(TAG, "doWork: Unknown Work action: $action")
-                    Result.failure()
-                }
-            }
-//            Result.success()
-        } catch (e: Exception) {
-            Log.e(TAG, "doWork: Failed with exception: ${e.message}", e)
-            Result.failure()
         }
-
     }
 
-    private suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
-        Log.e(TAG, "updateHSData: Downloading HS Images", )
+    suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
+        /*hotelServiceDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                id = data.id,
+                servicesList = data.servicesList,
+                type = data.type,
+                version = data.version
+            )
+        }*/
+
+        Log.e(TAG, "updateHSData: Downloading HS Images  ${Constants.isWorkDone}" )
         deleteHSFolder()
         val servicesList = mutableListOf<Services>()
         val resp = async(Dispatchers.IO) {
@@ -157,15 +134,25 @@ class UpdateDataWorker @AssistedInject constructor(
                         version = data.version
                     )
                 }
+                Constants.isWorkDone++
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
         }
-        Log.e(TAG, "updateHSData: Downloading HS Images Done", )
+        Log.e(TAG, "updateHSData: Downloading HS Images Done  ${Constants.isWorkDone}", )
     }
 
-    private suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
-        Log.e(TAG, "updateLAData: Downloading LA Images", )
+    suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
+        /*localAttractionDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                id = data.id,
+                servicesList = data.servicesList,
+                type = data.type,
+                version = data.version
+            )
+        }*/
+
+        Log.e(TAG, "updateLAData: Downloading LA Images  ${Constants.isWorkDone}" )
         deleteLAFolder()
         val servicesList = mutableListOf<LAServices>()
         val resp = async(Dispatchers.IO) {
@@ -232,18 +219,18 @@ class UpdateDataWorker @AssistedInject constructor(
                         version = data.version
                     )
                 }
+                Constants.isWorkDone++
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
         }
-        Log.e(TAG, "updateLAData: Downloading LA Images Done", )
+        Log.e(TAG, "updateLAData: Downloading LA Images Done  ${Constants.isWorkDone}", )
     }
 
-    private suspend fun updateThemeData() = coroutineScope {
-        Log.e(TAG, "updateThemeData: Downloading Theme Images", )
+    suspend fun updateThemeData(data: ThemeResponse) = coroutineScope {
+        Log.e(TAG, "updateThemeData: Downloading Theme Images   $${Constants.isWorkDone}" )
         try {
             deleteThemeFolder()
-            val data = themeDataStore.data.first()
             val themeBackgroundFileName = async {
                 getThemeFileName(
                     data.themeBackgroundFileNameCloud,
@@ -263,17 +250,31 @@ class UpdateDataWorker @AssistedInject constructor(
             if (result[0] != null && result[1] != null) {
                 themeDataStore.updateData { currentPreferences ->
                     currentPreferences.copy(
+                        accountId = data.accountId,
+                        spotLightColor = data.spotLightColor,
+                        fontCss = data.fontCss,
+                        gradientColor = data.gradientColor,
                         themeBackgroundFileName = result[0],
-                        themeLogoFileName = result[1]
+                        themeLogoFileName = result[1],
+                        id = data.id,
+                        themeBgFileName = data.themeBgFileName,
+                        themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
+                        themeCss = data.themeCss,
+                        themeBgFileNameCloud = data.themeBgFileNameCloud,
+                        themeLogoFileNameCloud = data.themeLogoFileNameCloud,
+                        type = data.type,
+                        version = data.version
                     )
                 }
+                Constants.isWorkDone++
             } else {
 
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to update DataStore: ${e.message}")
         }
-        Log.e(TAG, "updateThemeData: Downloading Theme Images Done", )
+        Log.e(TAG, "updateThemeData: Downloading Theme Images Done  ${Constants.isWorkDone}" )
+
     }
 
     private suspend fun getThemeFileName(cloudFileName: String?, localFileName: String?): String? {

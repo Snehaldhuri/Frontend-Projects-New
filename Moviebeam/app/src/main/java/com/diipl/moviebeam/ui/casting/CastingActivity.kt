@@ -5,7 +5,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import com.diipl.moviebeam.databinding.ActivityCastingBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 

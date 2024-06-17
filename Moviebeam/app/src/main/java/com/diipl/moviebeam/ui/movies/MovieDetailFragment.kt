@@ -16,9 +16,9 @@ import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseFragment
-import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
@@ -209,6 +209,9 @@ class MovieDetailFragment : BaseFragment() {
 
     private fun updateUI(content: ContentDto, data: RentalMovieModel?) {
         Log.e(TAG, "updateUI: ${data?.currentSeek ?: "-1"} == $content")
+
+        binding.btnAdultPlay.toGone()
+
         when (content.releaseTypeId) {
             Constants.FREE_MOVIE_RELEASE_TYPE_ID -> {
 //                if (content.genre1 == getString(R.string.adult)) {
@@ -222,6 +225,7 @@ class MovieDetailFragment : BaseFragment() {
                     updateBtn(data)
 //                }
             }
+
 
             Constants.PAID_MOVIE_RELEASE_TYPE_ID -> {
                 binding.btnRentNow.text =

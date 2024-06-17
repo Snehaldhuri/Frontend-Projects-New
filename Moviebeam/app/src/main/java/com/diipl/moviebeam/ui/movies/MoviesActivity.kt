@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
@@ -27,10 +28,10 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ADULT_CONTENT_DISABLED
 import com.diipl.moviebeam.utils.Constants.ADULT_LOCKED
@@ -311,7 +312,7 @@ class MoviesActivity : BaseActivity() {
                                     Constants.FREE_MOVIES_ID -> {
                                         val freeGenreMap: HashMap<String, MutableList<ContentDto>> =
                                             HashMap()
-                                        response.freeContentList?.forEach {
+                                        response.freeContentList.forEach {
                                             if (freeGenreMap[it.genre1] != null) {
                                                 freeGenreMap[it.genre1]?.add(it)
                                             } else {
@@ -338,14 +339,18 @@ class MoviesActivity : BaseActivity() {
                                                 openACDDialog(ADULT_CONTENT_DISABLED)
                                             } else {
                                                 if (!preference.isAdultPassCodeEmpty) {
-                                                    if (!preference.isAdultMCD)
+                                                    if (!preference.isAdultMCD) {
                                                         openACDDialog(ADULT_MCD_BTN)
-                                                    else if (preference.isAdultLocked)
+                                                    }
+                                                    if (preference.isAdultLocked) {
                                                         openACDDialog(ADULT_LOCKED)
-                                                } else {
-                                                    if (!preference.isBtnAdultMCW)
+                                                    }
+//                                                } else {
+                                                    if (!preference.isBtnAdultMCW) {
                                                         openACDDialog(ADULT_MCW_BTN)
+                                                    }
                                                 }
+
                                                 if (preference.isBtnAdultMCW && !isAdultDayPassPurchased && isUserCheckedIn) {
                                                     startActivity(
                                                         Intent(
@@ -356,17 +361,21 @@ class MoviesActivity : BaseActivity() {
                                                             response.adultDayPassPrice.toString()
                                                         )
                                                     )
-                                                }
-                                                if (isAdultDayPassPurchased) {
+                                                    return@MoviesBtnAdapter
+                                                } else if (isAdultDayPassPurchased) {
+                                                    Log.e(TAG, "isAdultDayPassPurchased: 0")
                                                     if (preference.isAdultPassCodeEmpty)
                                                         setAdultData(adultResponse)
-                                                    else if (!preference.isAdultLocked) setAdultData(adultResponse) else openACDDialog(ADULT_LOCKED)
+                                                    else if (!preference.isAdultLocked)
+                                                        setAdultData(adultResponse)
+                                                    else openACDDialog(ADULT_LOCKED)
                                                 }
                                             }
                                         } else {
                                             if (!preference.isBtnAdultMCW)
                                                 openACDDialog(ADULT_MCW_BTN)
-                                            setAdultData(response)
+//                                            setAdultData(response)
+                                            return@MoviesBtnAdapter
                                         }
                                     }
 

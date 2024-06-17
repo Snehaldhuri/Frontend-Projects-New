@@ -5,15 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/transparent"
     tools:context=".ui.serial_info.SerialActivity">
 
-    <TextView
-        android:id="@+id/tv_serial"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="user_serial"
-        android:textSize="20sp"
-        android:visibility="gone"
-        android:textAlignment="center"/>
 
 </LinearLayout>

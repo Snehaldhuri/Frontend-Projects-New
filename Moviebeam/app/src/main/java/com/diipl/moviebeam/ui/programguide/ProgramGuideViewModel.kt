@@ -6,13 +6,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.RoomRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +31,10 @@ class ProgramGuideViewModel @Inject constructor(
 
     private val _channelListLiveData = MutableLiveData<Resource<ChannelListResponse>>()
     val channelListLiveData: LiveData<Resource<ChannelListResponse>> get() = _channelListLiveData
+
+    private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
+    val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
+
 
     //------------------------------------------datastore-------------------------------------------
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
@@ -55,6 +59,18 @@ class ProgramGuideViewModel @Inject constructor(
         }
     }
 
+    fun getAccountSetupResponseData(dataStore: DataStore<AccountSetupResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _accountSetupLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _accountSetupLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+
 //    fun getChannels() = viewModelScope.launch(Dispatchers.IO){
 //        channelListDataStore.data.collect{
 //            _channelList.postValue(Resource.Success(it))
@@ -62,6 +78,7 @@ class ProgramGuideViewModel @Inject constructor(
 //    }
 
     fun getAllChannels(key: String?): LiveData<MutableList<ChannelEpgDTO>> {
+        Log.e("TAG", "getAllChannels: $key")
         return roomRepository.getAllChannels(key)
     }
 

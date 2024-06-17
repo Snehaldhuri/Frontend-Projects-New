@@ -8,10 +8,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
-import android.content.IntentSender
 import android.content.ServiceConnection
-import android.content.pm.PackageInstaller
-import android.content.pm.PackageInstaller.SessionParams
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -26,6 +23,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.media3.exoplayer.ExoPlayer
@@ -39,6 +37,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.ClearCredentialsReceiver
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.TickerMsgReceiver
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -49,7 +48,6 @@ import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
@@ -67,10 +65,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
-import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.URL
@@ -264,94 +259,6 @@ fun Long.toTimeFormat(): String {
     secs = if (sec < 10) "0$sec" else "" + sec
     time = "$minute:$secs"
     return time
-}
-
-fun Activity.startDownload() = CoroutineScope(Dispatchers.Default).launch {
-    try {
-        val fileURL =
-            "https://testmdm.movie-beam.com/files/files-by-google-1-2729-610141523-0-release.apk"
-        val url = URL(fileURL)
-        withContext(Dispatchers.IO) {
-            val connection = url.openConnection() as HttpURLConnection
-            connection.connect()
-            val responseCode = connection.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val directory = File(externalMediaDirs[0].path + "/APK")
-                if (!directory.exists()) directory.mkdirs()
-                val file = File(directory, url.path.substringAfterLast("/"))
-                val outputStream = FileOutputStream(file)
-                val inputStream = connection.inputStream
-                val buffer = ByteArray(4096)
-                var bytesRead: Int
-                while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                    outputStream.write(buffer, 0, bytesRead)
-                }
-                inputStream.close()
-                outputStream.close()
-                Log.e("startDownload:", " Completed  --->  ${file.absolutePath}")
-//                startInstall(file.absolutePath)
-            } else {
-                // Handle the error or show a message if download fails
-                Log.e("startDownload:", "Failed")
-            }
-            connection.disconnect()
-        }
-
-    } catch (e: Exception) {
-        Log.e("startDownload:", " Exception: ${e.message}")
-    }
-}
-
-fun Activity.startInstall(file: String) {
-    val apkFile =
-        "/storage/emulated/0/Android/media/com.diipl.moviebeam/APK/Moviebeam_Prod_V(2.2.4)_20240315-debug.apk"
-
-    try {
-        val `in` = FileInputStream(apkFile)
-        val packageInstaller: PackageInstaller = packageManager.packageInstaller
-        val params = SessionParams(
-            SessionParams.MODE_FULL_INSTALL
-        )
-        params.setAppPackageName(packageName)
-        // set params
-        val sessionId = packageInstaller.createSession(params)
-        val session = packageInstaller.openSession(sessionId)
-        val out = session.openWrite("COSU", 0, -1)
-        val buffer = ByteArray(65536)
-        var c: Int
-        while (`in`.read(buffer).also { c = it } != -1) {
-            out.write(buffer, 0, c)
-        }
-        session.fsync(out)
-        `in`.close()
-        out.close()
-        session.commit(
-            createIntentSender(
-                this,
-                sessionId,
-                packageName
-            )
-        )
-        Log.e("startInstall", "Installation session committed")
-        startActivity(Intent(this, MainMenuActivity::class.java))
-        finish()
-    } catch (e: java.lang.Exception) {
-        Log.e("startInstall", "PackageInstaller error: " + e.message)
-    }
-}
-
-fun createIntentSender(context: Context?, sessionId: Int, packageName: String?): IntentSender {
-    val intent = Intent("INSTALL_COMPLETE")
-    if (packageName != null) {
-        intent.putExtra("PACKAGE_NAME", packageName)
-    }
-    val pendingIntent = PendingIntent.getBroadcast(
-        context,
-        sessionId,
-        intent,
-        PendingIntent.FLAG_IMMUTABLE
-    )
-    return pendingIntent.intentSender
 }
 
 fun Context.getApkLists() {
@@ -623,6 +530,8 @@ suspend fun saveImageServer(imgUrl: String?, filePath: String): String? {
 
 suspend fun saveImage(imgUrl: String?, filePath: String): String? {
     var path: String?
+
+
     try {
         val url = URL(imgUrl)
         val imageData = withContext(Dispatchers.IO) { url.readBytes() }
@@ -630,6 +539,7 @@ suspend fun saveImage(imgUrl: String?, filePath: String): String? {
         path = "$filePath${System.currentTimeMillis()}$extension"
         writeByteArrayToFile(path, imageData)
     } catch (e: Exception) {
+//        Log.e( "saveImage: ", "$imgUrl    $filePath")
         Log.e("saveImage", "Exception: ${e.localizedMessage}")
         path = imgUrl
     }
@@ -752,4 +662,8 @@ fun compareVersions(apkVersion: String): Boolean {
     val a = apkVersion.replace(".", "").toInt()
     val b = BuildConfig.VERSION_NAME.replace(".", "").toInt()
     return a != b
+}
+
+fun Context.showToast(message: String){
+    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 }

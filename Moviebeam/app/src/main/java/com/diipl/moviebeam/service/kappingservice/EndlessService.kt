@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.kappingservice
+package com.diipl.moviebeam.service.kappingservice
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -24,6 +24,7 @@ import androidx.work.WorkManager
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
@@ -52,17 +53,16 @@ import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
-import com.diipl.moviebeam.ui.base.UpdateDataStore
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
@@ -73,6 +73,7 @@ import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.GLOBAL_LOOP_SEC
 import com.diipl.moviebeam.utils.Constants.MDM_PACKAGE_NAME
 import com.diipl.moviebeam.utils.DeviceUtils
 import com.diipl.moviebeam.utils.KapingConstants
@@ -281,6 +282,7 @@ class EndlessService : Service() {
         log(versionNumber)
 
         val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
+        filter.addAction(Intent.CATEGORY_HOME)
         filter.addAction(Intent.ACTION_SCREEN_OFF)
         filter.addAction(Intent.ACTION_SCREEN_ON)
         registerReceiver(homePressReceiver, filter)
@@ -290,23 +292,23 @@ class EndlessService : Service() {
         var count = 0
         CoroutineScope(Dispatchers.IO).launch {
             while (true) {
-                preferenceDataStoreHelper.putPreference(
-                    NETWORK_STATUS,
-                    isNetworkAvailable
-                )
-                if (!isNetworkAvailable && !isSwitched) {
-                    isSwitched = true
-                    startMainMenu()
-                    count = 0
-                }
-                if (isNetworkAvailable && isSwitched) {
-                    isSwitched = false
-                    if (count == 0) {
-                        startMainMenu()
-                        count++
+                if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
+                    if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
+                        preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
+                        if (!isNetworkAvailable && !isSwitched) {
+                            isSwitched = true
+                            startMainMenu()
+                            count = 0
+                        }
+                        if (isNetworkAvailable && isSwitched) {
+                            isSwitched = false
+                            if (count == 0) {
+                                startMainMenu()
+                                count++
+                            }
+                        }
                     }
-                    delay(1000 * 2)
-                }
+                delay(1000 * 2)
             }
         }
 
@@ -317,8 +319,9 @@ class EndlessService : Service() {
 
     private val homePressReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-
             intent.let {
+//                Log.e(TAG, "onReceive: ${intent.action}")
+
                 when (it.action) {
                     Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
                         val reason = it.getStringExtra("reason")
@@ -378,8 +381,8 @@ class EndlessService : Service() {
     }
 
     private fun startMainMenu() {
-        startActivity(Intent(applicationContext, MainMenuActivity::class.java).also { i ->
-            i.flags =
+        startActivity(Intent(applicationContext, MainMenuActivity::class.java).apply {
+            flags =
                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         })
     }
@@ -428,6 +431,7 @@ class EndlessService : Service() {
         Toast.makeText(this, "Service destroyed", Toast.LENGTH_SHORT).show()
     }
 
+    @Suppress("NullSafeMutableLiveData")
     @OptIn(DelicateCoroutinesApi::class)
     private fun startService() {
         if (isServiceStarted) return
@@ -445,6 +449,7 @@ class EndlessService : Service() {
 
         // we're starting a loop in a coroutine
         GlobalScope.launch(Dispatchers.IO) {
+            delay(15000)
             while (isServiceStarted) {
                 launch(Dispatchers.IO) {
                     setIPInfo()
@@ -476,7 +481,8 @@ class EndlessService : Service() {
                         }
                     }
                 }
-                delay(1 * 60 * 1000)
+                Log.e(TAG, "startService: $GLOBAL_LOOP_SEC ")
+                delay(GLOBAL_LOOP_SEC * 1000L)
             }
             log("End of the loop for the service")
         }
@@ -599,6 +605,7 @@ class EndlessService : Service() {
                 call: Call<String>, response: Response<String>
             ) {
                 if (response.isSuccessful) {
+                    GLOBAL_LOOP_SEC = 60
                     isNetworkAvailable = true
                     val data = response.body()
                     val result = KapingResponseParsing().getResponseAsObject(
@@ -715,7 +722,7 @@ class EndlessService : Service() {
 
     private fun handleKaping(kapingResponse: KapingResponse?) {
 
-        Log.e(TAG, "handleKaping: ${kapingResponse?.cmdData?.cmd}")
+//        Log.e(TAG, "handleKaping: ${kapingResponse?.cmdData?.cmd}")
 
         when (kapingResponse?.cmdData?.cmd) {
 
@@ -732,7 +739,8 @@ class EndlessService : Service() {
                             )
                             val intent = Intent(Intent.ACTION_VIEW)
                             intent.component =
-                                ComponentName(MDM_PACKAGE_NAME,
+                                ComponentName(
+                                    MDM_PACKAGE_NAME,
                                     KapingConstants.MDM_SOFTWARE_ACTIVITY
                                 )
                             intent.putExtra("softwareData", response.toJson())
@@ -959,6 +967,7 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_CHECK_OUT -> {
                 resetPopUps(false)
                 handleCheckOutCmd(kapingResponse)
+                Constants.SESSION_ID = "null"
             }
         }
     }
@@ -998,7 +1007,7 @@ class EndlessService : Service() {
         CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getThemeDetails(ua)
             if (response != null) {
-                updateThemeData( response)
+                updateThemeData(response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
 //                startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
                 LoggingService.sendMessageToWebSocket(
@@ -1154,7 +1163,7 @@ class EndlessService : Service() {
             if (response != null) {
                 updateChannelList(channelListDatastore, response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                Constants.CHANNEL_COUNT = response.channelLcnList.size
+                Constants.CHANNEL_COUNT = response.channelLcnList!!.size
                 LoggingService.sendMessageToWebSocket(
                     "In Channel List callback success ", getCurrentPanelNumber()
                 )
@@ -1916,16 +1925,16 @@ class EndlessService : Service() {
         return if (pm.isInteractive) KapingConstants.POWER_MODE_ON else KapingConstants.POWER_MODE_STAND_BY
     }
 
-/*    private fun startUpdateDataWorker(action: String) {
-        val inputData = Data.Builder()
-            .putString(UpdateDataWorker.ACTION, action)
-            .build()
+    /*    private fun startUpdateDataWorker(action: String) {
+            val inputData = Data.Builder()
+                .putString(UpdateDataWorker.ACTION, action)
+                .build()
 
-        val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
-            .setInputData(inputData)
-            .build()
+            val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
+                .setInputData(inputData)
+                .build()
 
-        workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
-    }*/
+            workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
+        }*/
 
 }

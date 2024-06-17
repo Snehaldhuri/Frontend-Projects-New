@@ -23,9 +23,9 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentActivity = this
+
         initViewBinding()
         observeViewModel()
-//        CustomThreadExecutor()
     }
 
     override fun onResume() {

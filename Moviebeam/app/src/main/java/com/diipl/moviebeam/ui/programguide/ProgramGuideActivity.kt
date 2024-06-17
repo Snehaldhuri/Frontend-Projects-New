@@ -33,6 +33,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
@@ -47,6 +48,7 @@ import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
+import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
@@ -87,6 +89,8 @@ class ProgramGuideActivity : BaseActivity() {
     private var currentPrograms: List<ChannelEpgDTO>? = null
     private var nextPrograms: List<ChannelEpgDTO>? = null
 
+    private lateinit var hotelChannel: HotelChannel
+    private var hotelChannelVideo: String = ""
     @Inject
     lateinit var preferences : SharedPreference
     private var irService: IIrService? = null
@@ -108,29 +112,10 @@ class ProgramGuideActivity : BaseActivity() {
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
         binding.btnBack.setOnClickListener { finish() }
+
         binding.pbLoader.toVisible()
     }
 
-    private fun getChannelsFromRoomDB() {
-        programGuideViewModel.getAllChannels(key).observe(this) { data ->
-            if (!data.isNullOrEmpty()) {
-                currentPrograms = data
-                loadProgramGuide(false, data)
-                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
-                    binding.cvProgramGuide.toVisible()
-                    binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(
-                        0
-                    )?.itemView?.requestFocus()
-//                    setOnScrollListener()
-
-                }
-                setNextPrograms()
-            } else {
-                programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
-            }
-            binding.pbLoader.toInvisible()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -161,11 +146,9 @@ class ProgramGuideActivity : BaseActivity() {
             playChannelVideoBg(null)
         }
 
-        setOnScrollListener()
-
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
-                KeyEvent.KEYCODE_DPAD_CENTER -> {
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
                     if (view.isFocused) {
                         showSearchDialog()
                         view.clearFocus()
@@ -175,6 +158,29 @@ class ProgramGuideActivity : BaseActivity() {
             false
         }
 
+        setOnScrollListener()
+
+    }
+
+    private fun getChannelsFromRoomDB() {
+        programGuideViewModel.getAllChannels(key).observe(this) { data ->
+            if (!data.isNullOrEmpty()) {
+                currentPrograms = data
+                loadProgramGuide(false, data)
+                binding.layoutProgramGuide.layoutPrgGuide.rvChannel.post {
+                    binding.cvProgramGuide.toVisible()
+                    binding.layoutProgramGuide.layoutPrgGuide.rvChannel.findViewHolderForAdapterPosition(
+                        0
+                    )?.itemView?.requestFocus()
+//                    setOnScrollListener()
+
+                }
+                setNextPrograms()
+            } else {
+                programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
+            }
+            binding.pbLoader.toInvisible()
+        }
     }
 
     private fun setOnScrollListener() {
@@ -286,6 +292,12 @@ class ProgramGuideActivity : BaseActivity() {
         intent.extras?.let {
             binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
             loadBg(it.getString("themeBackgroundFileName"))
+        }
+        intent.extras?.getString("hotelChannel")?.let {
+            hotelChannel = it.fromJson()
+        }
+        intent.extras?.getString("hotelChannelVideo")?.let {
+            hotelChannelVideo = it
         }
     }
 
@@ -527,7 +539,6 @@ class ProgramGuideActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         binding.layoutVideo.videoView.player?.release()
-        Log.e(TAG, "onDestroy: ")
     }
 
     private fun loadProgramGuide(
@@ -541,7 +552,19 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.tvTime3.text = currentProgram?.P3_DST
         binding.layoutProgramGuide.tvTime4.text = currentProgram?.P4_DST
 
+        Log.e(TAG, "loadProgramGuide: $currentProgram")
+
         currentPrograms?.remove(currentProgram)
+        val hotelVideoProgram = ChannelEpgDTO(
+            CN = hotelChannel.channelName,
+            VP = hotelChannelVideo,
+            CNO = hotelChannel.channelNo,
+            P1_PT = hotelChannel.channelName,
+            P1_CLS = "80",
+            C = "1"
+        )
+        currentPrograms?.add(0, hotelVideoProgram)
+
         if (!isScrolled) {
             channelList = currentPrograms
             Constants.CURRENT_PROGRAMS = currentPrograms
@@ -597,6 +620,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.layoutManager =
             LinearLayoutManager(this)
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter = adapter
+        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.setHasFixedSize(true)
 
     }
 
@@ -612,6 +636,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvProgram.layoutManager =
             LinearLayoutManager(this)
         binding.layoutProgramGuide.layoutPrgGuide.rvProgram.adapter = adapter
+//        binding.layoutProgramGuide.layoutPrgGuide.rvProgram.setHasFixedSize(true)
     }
 
     private fun loadPreviousPrograms() {
@@ -645,7 +670,7 @@ class ProgramGuideActivity : BaseActivity() {
     private fun setPreviousPrograms() {
         val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
         val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
+        cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, -2)
         previousKey = fetchCurrentProgramKey(cal.time)
         programGuideViewModel.getAllChannels(previousKey!!).observe(this) { data ->
@@ -656,7 +681,7 @@ class ProgramGuideActivity : BaseActivity() {
     private fun setNextPrograms() {
         val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
         val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
+        cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, 2)
         nextKey = fetchCurrentProgramKey(cal.time)
         programGuideViewModel.getAllChannels(nextKey!!).observe(this) { data ->

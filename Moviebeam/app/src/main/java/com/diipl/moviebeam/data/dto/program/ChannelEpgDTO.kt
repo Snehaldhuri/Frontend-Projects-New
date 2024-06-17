@@ -4,18 +4,18 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChannelEpgDTO(
-    val AR: Int?,
-    val CBT: String?,
-    val CI: Int?,
-    val CL: String?,
-    val CLCloud: String?,
-    val CN: String?,
-    val CNO: String?,
-    val VP: String?,
-    val httpStreaming: Boolean?,
-    val httpStreamingUrl: String?,
-    val id: Int?,
-    val param1: String?,
-    val param2: String?,
-    val recordable: Boolean?
-)
+    val AR: Int? = null,
+    val CBT: String? = null,
+    val CI: Int? = null,
+    val CL: String? = null,
+    val CLCloud: String? = null,
+    val CN: String? = null,
+    val CNO: String? = null,
+    val VP: String? = null,
+    val httpStreaming: Boolean? = null,
+    val httpStreamingUrl: String? = null,
+    val id: Int? = null,
+    val param1: String? = null,
+    val param2: String? = null,
+    val recordable: Boolean? = null,
+    )

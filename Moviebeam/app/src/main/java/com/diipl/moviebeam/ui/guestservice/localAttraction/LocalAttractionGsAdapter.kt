@@ -37,8 +37,8 @@ class LocalAttractionGsAdapter(
             LayoutInflater.from(parent.context).inflate(R.layout.hotel_info_tab, parent, false)
 
         val params = view.layoutParams
-        params.width = getWidthInPercent(parent.context, 23)
-        params.height = getHeightInPercent(parent.context, 13)
+        params.width = getWidthInPercent(parent.context, 22)
+        params.height = getHeightInPercent(parent.context, 15)
         view.handleFocusChange()
         return MyViewHolder(view)
     }

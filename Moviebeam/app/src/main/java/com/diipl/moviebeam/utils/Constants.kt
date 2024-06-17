@@ -14,6 +14,8 @@ object Constants {
     val DATA_JSON = "dataJSON"
 
     var isWorkDone = 0
+    var isRebooted = -1
+    var GLOBAL_LOOP_SEC = 60
 
     // IP Details
     var IP_ADDRESS: String = "0.0.0.0"
@@ -120,7 +122,8 @@ object Constants {
     const val FOOD_DELIVERY_ID = "foodDelivery"
 
     //Home Page Menu Button Title
-    const val PROGRAM_GUIDE = "Program Guide"
+//    const val PROGRAM_GUIDE = "Program Guide"
+    const val PROGRAM_GUIDE = "Live TV"
     const val MOVIES_MORE = "Movies & More"
     const val SHOWTIME_NAME = "Free Selections"
     const val SHOWTIME = "Showtime"
@@ -130,7 +133,7 @@ object Constants {
     const val HOTEL_SERVICES = "Hotel Info"
     const val CRACKLE_DEFAULT = "Crackle"
     const val IN_ROOM_DINING = "In Room Dining"
-    const val LOCAL_ATTRACTION = "Local Attraction"
+    const val LOCAL_ATTRACTION = "Local Attractions"
     const val FOOD_DELIVERY = "Food Delivery"
 
 
