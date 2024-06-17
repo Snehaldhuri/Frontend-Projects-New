@@ -26,6 +26,7 @@ import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setIPInfo
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
@@ -100,7 +101,7 @@ class WeatherDateTimeFragment : Fragment() {
     }
 
     private fun handleNetworkResponse(b: Boolean) {
-        if (b){
+        if (b) {
             binding.root.toVisible()
             binding.tvDate.toVisible()
             binding.tvTime.toVisible()
@@ -161,7 +162,7 @@ class WeatherDateTimeFragment : Fragment() {
                     Constants.GRADIENT_COLOR_START = it.gradientColor
                     Constants.GRADIENT = null
                     Constants.GRADIENT = getGradientColor()
-                    it.themeBackgroundFileName?.let {img ->
+                    it.themeBackgroundFileName?.let { img ->
                         Constants.BG_IMAGE = img
                     }
                 }
