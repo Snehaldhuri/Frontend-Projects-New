@@ -100,6 +100,7 @@ object Constants {
 
     const val MDM_PACKAGE_NAME = "com.diipl.mdm"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
+    const val MDM_MAIN_ACTIVITY = "$MDM_PACKAGE_NAME.ui.MainActivity"
     const val MDM_CLEAR_CREDENTIALS_ACTION = "$MDM_PACKAGE_NAME.services.START_CLEAR_CREDENTIALS_RECEIVER"
     const val SERIAL_NO_KEY = "SERIAL_NO_KEY"
 

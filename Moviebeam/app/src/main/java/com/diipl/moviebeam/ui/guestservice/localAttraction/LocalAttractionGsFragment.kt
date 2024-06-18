@@ -67,6 +67,7 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
             is Resource.Success -> {
                 val response = status.data
                 val adapter = LocalAttractionGsAdapter(onItemClicked = { view, it ->
+                    binding.laCardCarousel.toInvisible()
                     val cardAdapter = LaCardAdapterGs { v ->
                         lastView = v
                         binding.recyclerView.post {
@@ -74,7 +75,11 @@ class LocalAttractionGsFragment(private var onItemClicked: (View) -> Unit) : Bas
                         }
                     }
                     cardAdapter.setList(it.serviceList)
+                    binding.laCardCarousel.post { binding.laCardCarousel.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus() }
                     binding.laCardCarousel.adapter = cardAdapter
+                    binding.laCardCarousel.postDelayed({
+                        binding.laCardCarousel.toVisible()
+                    }, 240)
                 }, onLeftKeyClicked = { view ->
                     if (lastView == null)
                         onItemClicked(view)

@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.dialogs
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +21,6 @@ import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.getGradientColor
-import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setIPInfo
@@ -104,7 +102,6 @@ class WeatherDateTimeFragment : Fragment() {
             binding.root.toVisible()
             setIPInfo()
             Constants.CONNECTIVITY = getConnectivityType(requireContext())
-            requireActivity().launchLogger()
         } else {
             binding.root.toInvisible()
             Constants.IP_ADDRESS = "0.0.0.0"
@@ -200,10 +197,10 @@ class WeatherDateTimeFragment : Fragment() {
                         }
 
                         newList.addAll(list.awaitAll())
-                        Log.e(TAG, "handleShowtimeServiceResponse: 0 ${newList.size}")
+//                        Log.e(TAG, "handleShowtimeServiceResponse: 0 ${newList.size}")
 
                         newList.addAll(list1.awaitAll())
-                        Log.e(TAG, "handleShowtimeServiceResponse: 1 ${newList.size}")
+//                        Log.e(TAG, "handleShowtimeServiceResponse: 1 ${newList.size}")
 
                         newList.forEach {
                             Constants.SHOWS_COUNT += it

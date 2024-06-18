@@ -92,14 +92,13 @@ fun <T : Any> T.toQueryMap(): Map<String, Any> {
 }
 
 fun String.isNotAllowed(): Boolean {
-    var result = true
-    when (this) {
-        MainMenuActivity::class.java.simpleName -> result = true
-        SerialActivity::class.java.simpleName -> result = false
-        STBDetailsActivity::class.java.simpleName -> result = true
-        RegisterSTBActivity::class.java.simpleName -> result = false
+    return when (this) {
+        SerialActivity::class.java.simpleName -> false
+        RegisterSTBActivity::class.java.simpleName -> false
+        STBDetailsActivity::class.java.simpleName -> false
+        MainMenuActivity::class.java.simpleName -> false
+        else -> true
     }
-    return result
 }
 
 inline fun <reified T> T.toJson(): String {
@@ -654,8 +653,10 @@ fun Activity.launchLogger() {
         override fun onServiceDisconnected(name: ComponentName?) {
         }
     }
+
     val serviceIntent = Intent(this, LoggingService::class.java)
     bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+
 }
 
 fun compareVersions(apkVersion: String): Boolean {
@@ -664,6 +665,6 @@ fun compareVersions(apkVersion: String): Boolean {
     return a != b
 }
 
-fun Context.showToast(message: String){
+fun Context.showToast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 }

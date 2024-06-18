@@ -84,16 +84,6 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-       /* Thread.setDefaultUncaughtExceptionHandler { paramThread, paramThrowable ->
-            Log.e(TAG, "paramThread: ${paramThread.isAlive}")
-            Log.e(TAG, "paramThrowable: ${paramThrowable.localizedMessage}")
-            paramThrowable.printStackTrace()
-           finishAffinity()
-        }
-
-        val res = 1/0
-        Log.e(TAG, "initViewBinding: $res")
-*/
         try {
             // fetch data from dataStore
             hotelInfoViewModel.getThemeResponseData(themeDataStore)

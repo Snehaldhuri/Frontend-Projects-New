@@ -20,7 +20,6 @@ import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.work.WorkManager
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
@@ -146,7 +145,6 @@ class EndlessService : Service() {
     private var transactionId = ""
     private var isEPGServerApiCalled = false
     private var isNetworkAvailable = true
-    private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
 
     private val _accountSetupLiveData = MutableLiveData<AccountSetupResponse>()
     val accountSetupLiveData: LiveData<AccountSetupResponse> get() = _accountSetupLiveData
@@ -282,7 +280,7 @@ class EndlessService : Service() {
         log(versionNumber)
 
         val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
-        filter.addAction(Intent.CATEGORY_HOME)
+//        filter.addAction(Intent.CATEGORY_HOME)
         filter.addAction(Intent.ACTION_SCREEN_OFF)
         filter.addAction(Intent.ACTION_SCREEN_ON)
         registerReceiver(homePressReceiver, filter)
@@ -291,7 +289,7 @@ class EndlessService : Service() {
         var isSwitched = false
         var count = 0
         CoroutineScope(Dispatchers.IO).launch {
-            while (true) {
+            while (activityStack.last()?.isNotEmpty() == true) {
                 if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
                     if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
                         preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
@@ -319,61 +317,65 @@ class EndlessService : Service() {
 
     private val homePressReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            intent.let {
-//                Log.e(TAG, "onReceive: ${intent.action}")
+            if (BaseActivity.currentActivity?.javaClass?.simpleName?.isNotAllowed() == true){
+                intent.let {
+                    when (it.action) {
+                        Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
+                            val reason = it.getStringExtra("reason")
+                            Log.e(TAG, "onReceive: $reason   ${activityStack.last()}")
+                            if (reason == "homekey") {
+//                                if (BaseActivity.currentActivity?.javaClass?.simpleName?.isNotAllowed() == true) {
+                                    if (activityStack.last() == AppWorldActivity::class.java.simpleName) {
+                                        if (Constants.NETFLIX_LAUNCHED) {
+                                            val sessionId = Constants.SESSION_ID
+                                            val url =
+                                                "${Constants.BASE_URL_LG_REST}content/netflixAccess/enter?sessionId=$sessionId"
 
-                when (it.action) {
-                    Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
-                        val reason = it.getStringExtra("reason")
-                        if (reason == "homekey") {
-                            if (BaseActivity.currentActivity?.javaClass?.simpleName?.isNotAllowed() == true) {
-                                if (activityStack.last() == AppWorldActivity::class.java.simpleName) {
-                                    if (Constants.NETFLIX_LAUNCHED) {
-                                        val sessionId = Constants.SESSION_ID
-                                        val url =
-                                            "${Constants.BASE_URL_LG_REST}content/netflixAccess/enter?sessionId=$sessionId"
+                                            val requestBody = createRequestBody(
+                                                Constants.STB_ROOM_NO, Constants.UA, 2
+                                            )
 
-                                        val requestBody = createRequestBody(
-                                            Constants.STB_ROOM_NO, Constants.UA, 2
-                                        )
-
-                                        postRequest(url, requestBody)
-                                        Constants.NETFLIX_LAUNCHED = false;
+                                            postRequest(url, requestBody)
+                                            Constants.NETFLIX_LAUNCHED = false
+                                            return
+                                        } else {
+                                            startMainMenu()
+                                            Log.e(TAG, "onReceive: 3")
+                                            return
+                                        }
+                                    } else {
+                                        startMainMenu()
+                                        Log.e(TAG, "onReceive: 0")
                                         return
                                     }
-                                }
-                            }
-                            if (activityStack.last() != MainMenuActivity::class.java.simpleName && activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
-                                startMainMenu()
-                                Log.e(TAG, "onReceive: 0")
-                                return
+                               /* } else {
+                                    Log.e(TAG, "onReceive: 1")
+                                    return
+                                }*/
                             } else {
-                                Log.e(TAG, "onReceive: 1")
+                                Log.e(TAG, "onReceive: 2")
                                 return
                             }
-                        } else {
-                            Log.e(TAG, "onReceive: 2")
-                            return
                         }
-                    }
 
-                    Intent.ACTION_SCREEN_OFF -> {
+                        Intent.ACTION_SCREEN_OFF -> {
 
-                    }
-
-                    Intent.ACTION_SCREEN_ON -> {
-                        CoroutineScope(Dispatchers.Default).launch {
-                            delay(10000)
-                            startMainMenu()
                         }
-                    }
 
-                    Intent.ACTION_MEDIA_BUTTON -> {
-                        Log.e(TAG, "onReceive: ACTION_MEDIA_BUTTON")
-                    }
+                        Intent.ACTION_SCREEN_ON -> {
+                            CoroutineScope(Dispatchers.Default).launch {
+                                delay(10000)
+                                startMainMenu()
+                            }
+                        }
 
-                    else -> {
-                        Log.e(TAG, "onReceive: ${it.action}")
+                        Intent.ACTION_MEDIA_BUTTON -> {
+                            Log.e(TAG, "onReceive: ACTION_MEDIA_BUTTON")
+                        }
+
+                        else -> {
+                            Log.e(TAG, "onReceive: ${it.action}")
+                        }
                     }
                 }
             }
@@ -428,6 +430,7 @@ class EndlessService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         log("The service has been destroyed".uppercase(Locale.ROOT))
+        unregisterReceiver(homePressReceiver)
         Toast.makeText(this, "Service destroyed", Toast.LENGTH_SHORT).show()
     }
 
@@ -481,7 +484,6 @@ class EndlessService : Service() {
                         }
                     }
                 }
-                Log.e(TAG, "startService: $GLOBAL_LOOP_SEC ")
                 delay(GLOBAL_LOOP_SEC * 1000L)
             }
             log("End of the loop for the service")
