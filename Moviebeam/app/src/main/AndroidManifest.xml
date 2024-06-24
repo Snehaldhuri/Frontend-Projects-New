@@ -20,7 +20,23 @@
 
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.READ" />
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.WRITE" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USB_PERMISSION" />
+    <uses-permission android:name="android.permission.TRANSMIT_IR" />
 
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <uses-feature
+        android:name="android.hardware.consumerir"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.usb.host"
+        android:required="false" />
     <uses-feature
         android:name="android.software.live_tv"
         android:required="true" />
@@ -30,6 +46,12 @@
     <uses-feature
         android:name="android.software.leanback"
         android:required="true" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
 
     <uses-configuration android:reqFiveWayNav="true" />
 
@@ -44,186 +66,168 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Moviebeam"
-        android:usesCleartextTraffic="true"
-        tools:targetApi="m">
-        <!--
-                <activity
-                    android:name=".dtv.RichTvInputSetupActivity"
-                    android:exported="true" />
-        -->
-
-        <!--
-                <service
-                    android:name=".dtv.RichTvInputService"
-                    android:exported="true"
-                    android:permission="android.permission.BIND_TV_INPUT">
-                    <intent-filter>
-                        <action android:name="android.media.tv.TvInputService" />
-                    </intent-filter>
-                    <meta-data
-                        android:name="android.media.tv.input"
-                        android:resource="@xml/richtvinputservice" />
-                </service>
-        -->
-
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name="com.diipl.moviebeam.ui.exoplayer.PlayerActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
+        <activity
+            android:name=".ui.splash.BlankActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false"
+            android:launchMode="singleInstance" />
         <activity
             android:name=".ui.serial_info.SerialActivity"
             android:banner="@mipmap/ic_banner"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:launchMode="singleInstance"
             android:logo="@mipmap/ic_launcher"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustPan|adjustNothing">
-            <!--TODO Uncomment this for release-->
             <intent-filter>
-                <category android:name="android.intent.category.HOME" />
                 <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-                <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
             </intent-filter>
 
         </activity>
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
             android:banner="@mipmap/ic_banner"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
-            android:logo="@mipmap/ic_launcher"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-<!--
-            <intent-filter>
-                <category android:name="android.intent.category.HOME" />
+            android:logo="@mipmap/ic_launcher">
+          <!--  <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-                <action android:name="android.app.action.PROVISIONING_SUCCESSFUL" />
-            </intent-filter>
--->
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>-->
+        </activity>
+        <activity
+            android:name=".ui.kaping.RegisterSTBActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" >
+        </activity>
+        <activity
+            android:name=".ui.stbdetail.STBDetailsActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="true" >
         </activity>
 
         <activity
             android:name=".ui.movies.ConfirmRentalActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
-            android:launchMode="singleInstance"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:launchMode="singleInstance" />
         <activity
             android:name=".ui.refreshingui.RefreshingUiActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.inroomdining.InRoomDiningActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity
-            android:name=".ui.kaping.RegisterSTBActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.casting.CastingActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.guestservice.feedback.thankyou.ThankYouActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.programguide.PrgGuidePlayerActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.programguide.ProgramGuideActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustNothing|adjustPan" />
         <activity
-            android:name=".ui.stbdetail.STBDetailsActivity"
-            android:exported="true"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:name=".ui.programguide.DisconnectedPrgActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false"
+            android:windowSoftInputMode="adjustNothing|adjustPan" />
         <activity
             android:name=".ui.splash.SplashActivity"
-            android:exported="true"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="true" />
         <activity
             android:name=".ui.appworld.AppWorldActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.showtime.ShowtimeActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.movies.MoviesActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.guestservice.GuestServiceActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:windowSoftInputMode="adjustNothing|adjustPan" />
         <activity
             android:name=".ui.hotelinfo.HotelInfoActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.localattraction.LocalAttractionActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
         <activity
             android:name=".ui.exoplayer.ExoPlayerActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
-            android:launchMode="singleInstance"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:launchMode="singleInstance" />
         <activity
             android:name=".ui.login.LoginActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:enabled="true"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:exported="false" />
         <activity
             android:name=".ui.home.HomeActivity"
-            android:exported="true"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="true" />
         <activity
             android:name=".ui.home.DataStoreActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.AppCompat.NoActionBar" />
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
 
         <service
-            android:name=".ui.kappingservice.EndlessService"
+            android:name="com.diipl.moviebeam.service.kappingservice.EndlessService"
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".ui.loggerService.LoggingService"
+            android:name=".service.LoggingService"
             android:exported="false"
             android:foregroundServiceType="dataSync|location" />
 
         <receiver
-            android:name=".ui.kappingservice.StartReceiver"
+            android:name="com.diipl.moviebeam.service.kappingservice.StartReceiver"
+            android:directBootAware="true"
             android:enabled="true"
             android:exported="false"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
+                <action android:name="android.intent.action.REBOOT" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".service.ClearCredentialsReceiver" />
+
+        <receiver android:name=".service.TickerMsgReceiver" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -234,35 +238,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-        <receiver
-            android:name="android.app.admin.DeviceAdminReceiver"
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            tools:node="merge">
             <meta-data
-                android:name="android.app.device_admin"
-                android:resource="@xml/device_admin_receiver" />
-
-            <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-            </intent-filter>
-        </receiver>
-
-        <!-- dpm set-device-owner com.diipl.moviebeam/.AdminReceiver -->
-        <!-- dpm remove-active-admin com.diipl.moviebeam/.AdminReceiver -->
-        <receiver
-            android:name=".AdminReceiver"
-            android:enabled="false"
-            android:exported="true"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
-            <meta-data
-                android:name="android.app.device_admin"
-                android:resource="@xml/device_admin" />
-            <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
-            </intent-filter>
-        </receiver>
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
     </application>
 
 </manifest>

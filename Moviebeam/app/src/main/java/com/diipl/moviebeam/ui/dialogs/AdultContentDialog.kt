@@ -189,7 +189,6 @@ class AdultContentDialog(
         }
         binding.btnMcdParentalControl.setOnClickListener {
             preference.isAdultMCD = true
-            viewType = PARENTAL_CONTROL
             setParentalControlView()
         }
 
@@ -198,6 +197,7 @@ class AdultContentDialog(
             setParentalControlView()
         }
         binding.btnCodeCancel.setOnClickListener {
+            dismiss()
             preference.isAdultLocked = true
             onClicked(0)
         }
@@ -220,6 +220,7 @@ class AdultContentDialog(
 
             ADULT_MCD_BTN -> {
                 binding.layoutParentalMCD.toGone()
+                viewType = PARENTAL_CONTROL
             }
 
             ADULT_LOCKED -> {

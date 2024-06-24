@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.datastore.core.DataStore
 import androidx.fragment.app.activityViewModels
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
@@ -16,7 +15,6 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class WeatherFragment : BaseFragment() {
@@ -24,9 +22,6 @@ class WeatherFragment : BaseFragment() {
     private var _binding: FragmentWeatherBinding? = null
     val binding get() = _binding!!
     private val weatherViewModel: WeatherViewModel by activityViewModels()
-
-    @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
 
     override fun observeViewModel() {
         observe(weatherViewModel.weatherLiveData, ::handleWeatherResponse)
@@ -50,10 +45,7 @@ class WeatherFragment : BaseFragment() {
                 status.data?.let { weatherDetails ->
                     weatherDetails.copy(tempCondition = replaceDegreeSymbol(weatherDetails.tempCondition))
                         .let {
-                            weatherViewModel.setWeatherResponseData(
-                                weatherDataStore,
-                                it
-                            )
+                            weatherViewModel.setWeatherResponseData(it)
                         }
                     weatherDetails.tempConditionUrlCloud.let {
                         binding.ivWeather.loadImagesWithGlideExt(it)

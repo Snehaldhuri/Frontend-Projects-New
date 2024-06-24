@@ -8,8 +8,12 @@ import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +36,9 @@ class GuestServiceViewModel @Inject constructor(
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
+    private val _guestMessageLiveData = MutableLiveData<Resource<MessageResponse>>()
+    val guestMessageLiveData: LiveData<Resource<MessageResponse>> get() = _guestMessageLiveData
+
     //------------------------------------------datastore-------------------------------------------
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -51,6 +58,17 @@ class GuestServiceViewModel @Inject constructor(
                 _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             }.collect {
                 _accountSetupLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun getGuestMessageResponseData(dataStore: DataStore<MessageResponse>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _guestMessageLiveData.postValue(Resource.Loading())
+            dataStore.data.catch {
+                _guestMessageLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            }.collect {
+                _guestMessageLiveData.postValue(Resource.Success(it))
             }
         }
     }

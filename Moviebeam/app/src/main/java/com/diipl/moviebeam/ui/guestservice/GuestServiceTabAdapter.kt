@@ -1,8 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice
 
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -11,9 +9,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
 
@@ -24,10 +23,7 @@ class GuestServiceTabAdapter(
 
 ) : RecyclerView.Adapter<GuestServiceTabAdapter.MyViewHolder>() {
 
-    private var startColor = ""
-    private var endColor = ""
-
-    private var itemList: List<GsBtnModel> = mutableListOf()
+    var itemList: List<GsBtnModel> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
@@ -52,6 +48,7 @@ class GuestServiceTabAdapter(
     interface OnFocusChangeListener {
         fun onItemFocused(position: Int, itemList: List<GsBtnModel>)
     }
+
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 
@@ -79,7 +76,7 @@ class GuestServiceTabAdapter(
                             btn.isClicked = true
                             onMenuItemClicked(it, item)
                         } else {
-                            if(btn.isClicked)
+                            if (btn.isClicked)
                                 notifyItemChanged(itemList.indexOf(btn))
                             holder.imageView.setImageResource(item.spotlightImage)
                             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
@@ -95,7 +92,7 @@ class GuestServiceTabAdapter(
                 }
 
                 holder.card.setOnKeyListener { view, code, keyEvent ->
-                    when(code){
+                    when (code) {
                         KeyEvent.KEYCODE_DPAD_RIGHT -> {
                             onRightClicked(view)
                         }
@@ -103,8 +100,7 @@ class GuestServiceTabAdapter(
                     false
                 }
 
-            }
-            else {
+            } else {
                 if (item.isClicked) {
                     holder.imageView.setImageResource(item.spotlightImage)
                     holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
@@ -117,7 +113,7 @@ class GuestServiceTabAdapter(
             }
         }
 
-        holder.itemView.post{
+        holder.itemView.post {
             if (holder.absoluteAdapterPosition == 0) {
                 holder.card.requestFocus()
 //                item.isClicked = true
@@ -127,24 +123,11 @@ class GuestServiceTabAdapter(
     }
 
     private fun setFocus(cardView: ConstraintLayout) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
+        cardView.background = getGradientColor()
     }
 
     fun setButtonList(btnList: List<GsBtnModel>) {
         itemList = btnList
-    }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        this.startColor = startColor
-        this.endColor = endColor
     }
 
 }

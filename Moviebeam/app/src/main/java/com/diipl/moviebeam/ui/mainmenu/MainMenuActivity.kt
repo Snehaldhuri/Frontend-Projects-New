@@ -1,14 +1,15 @@
 package com.diipl.moviebeam.ui.mainmenu
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
+import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.core.view.updateLayoutParams
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
@@ -20,26 +21,28 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
+import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.service.kappingservice.Actions
+import com.diipl.moviebeam.service.kappingservice.EndlessService
+import com.diipl.moviebeam.service.kappingservice.ServiceState
+import com.diipl.moviebeam.service.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
-import com.diipl.moviebeam.ui.kappingservice.Actions
-import com.diipl.moviebeam.ui.kappingservice.EndlessService
-import com.diipl.moviebeam.ui.kappingservice.ServiceState
-import com.diipl.moviebeam.ui.kappingservice.getServiceState
-import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.Constants
@@ -50,6 +53,8 @@ import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
@@ -64,9 +69,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import javax.inject.Inject
 
 
@@ -77,10 +79,9 @@ class MainMenuActivity : BaseActivity() {
 
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private lateinit var binding: ActivityMainMenuBinding
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
+    private var isNetworkConnected = 0
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -91,34 +92,55 @@ class MainMenuActivity : BaseActivity() {
     @Inject
     lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
 
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    @Inject
+    lateinit var tickerDatastore: DataStore<TickerResponse>
 
-    private lateinit var devicePolicyManager: DevicePolicyManager
+    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     @Inject
     lateinit var preference: SharedPreference
 
     override fun observeViewModel() {
+        observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
         observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
-
+        observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
+
     }
 
+
+    private fun handleNetworkResponse(isConnected: Boolean) {
+        if (isConnected) {
+            isNetworkConnected = 1
+            binding.videoView.toVisible()
+        } else {
+            isNetworkConnected = -1
+            releaseVideoPlayer()
+            binding.root.post {
+                binding.root.loadBg()
+            }
+        }
+        mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
+    }
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        overridePendingTransition(0, 0)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
         // call below function to get data from datastore
+        mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
+
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        mainMenuViewModel.getTickerResponseData(tickerDatastore)
 
         mainMenuViewModel.validateSession(preferenceDataStoreHelper)
 
@@ -128,32 +150,41 @@ class MainMenuActivity : BaseActivity() {
         }
         LoggingService.sendMessageToWebSocket("In MainMenu activity", getCurrentPanelNumber())
 
+
+    }
+
+    private fun init() {
+        player = ExoPlayer.Builder(this).build()
+        player.trackSelectionParameters = player.trackSelectionParameters
+            .buildUpon()
+            .setMaxVideoSize(1920, 1080)
+            .build()
+        binding.videoView.player = player
     }
 
     override fun onResume() {
         super.onResume()
 
-        player = ExoPlayer.Builder(this).build()
-        player.trackSelectionParameters = player.trackSelectionParameters
-            .buildUpon()
-            .setMaxVideoSizeSd()
-            .build()
         initializePlayer()
-
-        lifecycleScope.launch {
-            val ua = preferenceDataStoreHelper.getFirstPreference(
-                PreferenceDataStoreConstants.SERIAL_NO,
-                ""
-            )
-            Constants.SERIAL_NO = ua
-            Constants.UA = "21$ua"
-        }
-
+        binding.root.loadBg()
         binding.rvMenuButton.setItemFocused()
 
+        binding.cardView.postDelayed({
+            binding.cardView.toVisible()
+        }, 500)
 
+        lifecycleScope.launch {
+            while (!player.isPlaying){
+                if (HOTEL_VIDEO_URL.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0){
+                    initializePlayer()
+                    binding.videoView.toGone()
+                }
+                delay(5000)
+            }
+        }
 
     }
+
 
     override fun initViewBinding() {
         binding = ActivityMainMenuBinding.inflate(layoutInflater)
@@ -163,20 +194,25 @@ class MainMenuActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
+        overridePendingTransition(0, 0)
+        player.stop()
         player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
     private fun initializePlayer() {
+
+        if (!::player.isInitialized) {
+            init()
+        }
+
         if (HOTEL_VIDEO_URL.isNotEmpty()) {
             binding.videoView.toVisible()
-            binding.videoView.player = player
             player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
             player.repeatMode = Player.REPEAT_MODE_ALL
-            player.playWhenReady = true
             player.addListener(playerListener)
+            player.playWhenReady = true
             player.prepare()
-            player.play()
         } else {
             lifecycleScope.launch {
                 delay(2000)
@@ -201,14 +237,15 @@ class MainMenuActivity : BaseActivity() {
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
-            HOTEL_VIDEO_LOOP_COUNT--
+            Log.e(TAG, "onMediaItemTransition: $reason")
+            if (reason == 0) HOTEL_VIDEO_LOOP_COUNT--
         }
-
     }
 
     private fun releaseVideoPlayer() {
-        binding.videoView.toInvisible()
-        player.release()
+        binding.videoView.toGone()
+        if (::player.isInitialized)
+            player.release()
     }
 
     private fun handleThemeResponse(status: Resource<ThemeResponse>) {
@@ -216,23 +253,21 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
-                    val response = mainMenuViewModel.themeLiveData.value?.data
+                    val response = status.data
 
-//                    binding.rvMenuButton.setBackgroundColor(resources.getColor(R.color.menu_list_bg))
                     response?.themeLogoFileName?.let {
-//                    getImageBitmap(it, Constants.HOTEL_LOGO)
                         binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
                     }
                     response?.gradientColor?.let {
-                        gradientStartColor = it
                         Constants.GRADIENT_COLOR_START = it
                     }
                     response?.spotLightColor?.let {
-                        gradientEndColor = it
                         Constants.GRADIENT_COLOR_END = it
                     }
+                    Constants.GRADIENT = getGradientColor()
+                    Constants.LOGO_IMAGE = response?.themeLogoFileName
+                    Constants.BG_IMAGE = response?.themeBackgroundFileName
                     response?.themeBackgroundFileName?.let {
-//                    getImageBitmap(it, Constants.BACKGROUND_IMAGE)
                         loadBg(it)
                     }
                     binding.pbLoader.toInvisible()
@@ -251,36 +286,90 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
+    private fun handleTickerResponse(status: Resource<TickerResponse>) {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
+                        if (!response.tvTickerList.isNullOrEmpty()) {
+                            val message = StringBuilder()
+                            response.tvTickerList?.forEach {
+                                message.append(it.msg).append(" ")
+                            }
+                            binding.tvTickerMessage.text = message.toString()
+                            binding.tvTickerMessage.isSelected = true
+                        } else {
+                            binding.tvTickerMessage.text = ""
+                            binding.tvTickerMessage.isSelected = false
+                        }
+                    }
+                } catch (e: Exception) {
+                    LoggingService.sendMessageToWebSocket(
+                        "handleThemeResponse Exception in MainMenu activity ${e.message}",
+                        getCurrentPanelNumber()
+                    )
+                }
+                binding.pbLoader.toInvisible()
 
+            }
+
+            else -> {
+                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
+            }
+        }
+    }
+
+    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>?) {
+        when (status) {
+            is Resource.Loading -> binding.pbLoader.toVisible()
+            is Resource.Success -> {
+                try {
+                    status.data?.let { response ->
                         Constants.ACCOUNT_ID = response.accountId
                         Constants.STB_ROOM_NO = response.roomNo
 
-                        if (response.contentDetailFlag) {
-                            HOTEL_VIDEO_URL =
-                                response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
-                            initializePlayer()
+                        binding.tvGreeting.text = response.hotelInfo
+
+                        var btnListFromApi = listOf<String>()
+                        when(isNetworkConnected){
+                            1 -> {
+                                btnListFromApi = response.buttonsList.map { it.buttonName }
+                            }
+                            -1 -> {
+                                btnListFromApi = response.buttonsList.filter { it.forDisconnectedMode }
+                                    .map { it.buttonName }
+                            }
                         }
 
-                        binding.tvGreeting.text = response.hotelInfo
-                        val btnListFromApi: List<String> = response.buttonsList.map {
-                            it.buttonName
-                        }
                         val btnModelList: List<BtnModel> =
                             Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
                                 btnListFromApi.contains(it.btnId)
                             }
 
                         val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
-                            btnListFromApi.indexOf(it.btnId) ?: Int.MAX_VALUE
+                            btnListFromApi.indexOf(it.btnId)
+                        }
+                        val height = if (sortedBtnModelList.size < 5) {
+                            resources.getDimensionPixelSize(R.dimen.dp_110)
+                        } else {
+                            resources.getDimensionPixelSize(R.dimen.dp_200)
+                        }
+
+                        val marginTop = if (sortedBtnModelList.size < 5) {
+                            resources.getDimensionPixelSize(R.dimen.dp_70)
+                        } else {
+                            resources.getDimensionPixelSize(R.dimen.dp_1)
+                        }
+
+                        binding.cardView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                            this.height = height
+                            this.topMargin = marginTop
                         }
 
                         binding.rvMenuButton.layoutManager = GridLayoutManager(this, 4)
+
                         val adapter = MainMenuBtnAdapter { btn ->
                             releaseVideoPlayer()
                             val bundle = Bundle()
@@ -289,6 +378,7 @@ class MainMenuActivity : BaseActivity() {
                                 response.hotelChannelList.get(0).toJson()
                             )
                             bundle.putString("title", btn.title)
+                            Constants.TITLE = btn.title
                             bundle.putString(
                                 "hotelChannel",
                                 response.hotelChannelList.get(0).toJson()
@@ -308,11 +398,11 @@ class MainMenuActivity : BaseActivity() {
                             )
                             bundle.putString(
                                 "gradientStartColor",
-                                mainMenuViewModel.themeLiveData.value?.data?.gradientColor
+                                Constants.GRADIENT_COLOR_START
                             )
                             bundle.putString(
                                 "gradientEndColor",
-                                mainMenuViewModel.themeLiveData.value?.data?.spotLightColor
+                                Constants.GRADIENT_COLOR_END
                             )
                             var intent: Intent? = null
                             when (btn.btnId) {
@@ -347,7 +437,11 @@ class MainMenuActivity : BaseActivity() {
                                 }
 
                                 Constants.PRG_GUIDE_ID -> {
-                                    intent = Intent(this, ProgramGuideActivity::class.java)
+                                    intent = if (isNetworkConnected == -1) {
+                                        Intent(this, DisconnectedPrgActivity::class.java)
+                                    } else {
+                                        Intent(this, ProgramGuideActivity::class.java)
+                                    }
                                 }
 
                                 Constants.IN_ROOM_DINING_ID -> {
@@ -366,9 +460,6 @@ class MainMenuActivity : BaseActivity() {
                             }
                         }
                         adapter.itemList = sortedBtnModelList
-                        if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
-                            adapter.setGradientColor(gradientStartColor, gradientEndColor)
-                        }
                         binding.rvMenuButton.adapter = adapter
 
                         binding.pbLoader.toInvisible()
@@ -382,16 +473,19 @@ class MainMenuActivity : BaseActivity() {
             }
 
             else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+                status?.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
         }
     }
+
 
     private fun handleValidateSessionResponse(status: Boolean) {
         try {
             if (status) {
                 mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
-            }
+                Constants.IS_CHECKED_IN = true
+            } else
+                Constants.IS_CHECKED_IN = false
             Constants.SESSION_ID = "null"
             binding.pbLoader.toInvisible()
         } catch (e: Exception) {
@@ -408,7 +502,7 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 try {
                     status.data?.let {
-                        if (it.guestFirstName.isNullOrEmpty()){
+                        if (it.guestFirstName.isNullOrEmpty()) {
                             binding.tvWelcome.toGone()
                             binding.pbLoader.toGone()
                         } else {
@@ -453,43 +547,6 @@ class MainMenuActivity : BaseActivity() {
         })
     }
 
-    private fun getImageBitmap(imageUrl: String, filename: String) {
-        Glide.with(this).asBitmap().load(imageUrl).into(object : CustomTarget<Bitmap>() {
-            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                // The 'resource' parameter contains the Bitmap loaded from the imageUrl
-                // Now you can use the bitmap as needed, for example, save it locally
-                saveImageLocally(resource, filename)
-
-            }
-
-            override fun onLoadCleared(placeholder: Drawable?) {
-
-            }
-        })
-    }
-
-    // Save the image locally
-    fun saveImageLocally(bitmap: Bitmap, filename: String) {
-        val directory = File(getExternalFilesDir(null), Constants.THEME_DIRECTORY)
-
-        if (!directory.exists()) {
-            directory.mkdirs()
-        }
-
-        val file = File(directory, filename)
-
-        try {
-            if (!file.exists()) {
-                val out = FileOutputStream(file)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                out.flush()
-                out.close()
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
     private fun actionOnService(action: Actions) {
         if (action == Actions.STOP) {
             isServiceStarted = false
@@ -515,6 +572,5 @@ class MainMenuActivity : BaseActivity() {
         }
         return false
     }
-
 
 }

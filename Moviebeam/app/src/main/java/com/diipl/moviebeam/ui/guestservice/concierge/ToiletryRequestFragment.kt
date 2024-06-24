@@ -1,30 +1,24 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.accountsetup.ItemMenu
 import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.FragmentToiletryRequestBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.ui.guestservice.GuestServiceViewModel
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.showToast
-import com.diipl.moviebeam.utils.toInvisible
-import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 
 class ToiletryRequestFragment(
@@ -33,17 +27,13 @@ class ToiletryRequestFragment(
 
     private var _binding: FragmentToiletryRequestBinding? = null
     val binding get() = _binding!!
-    private var gradientStartColor = ""
-    private var gradientEndColor = ""
     private val selectedMenuItemPosition = 0
     private val guestServiceViewModel: GuestServiceViewModel by activityViewModels()
 
-    private val selectedItems: MutableList<ToiletryResponse.ToiletryData> = mutableListOf()
     private lateinit var toiletryDetailResponse: ToiletryResponse
     lateinit var toiletry_list: List<ToiletryResponse.ToiletryData>
 
     override fun observeViewModel() {
-//        observe(guestServiceViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observeToast(guestServiceViewModel.showToast)
     }
 
@@ -55,56 +45,18 @@ class ToiletryRequestFragment(
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentToiletryRequestBinding.inflate(inflater, container, false)
-        arguments?.let {
-            gradientStartColor = it.getString("gradientStartColor").toString()
-            gradientEndColor = it.getString("gradientEndColor").toString()
-        }
         setToiletryDetailData()
         return binding.root
-    }
-
-    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
-        when (status) {
-            is Resource.Loading -> {
-                binding.loaderView.toVisible()
-            }
-
-            is Resource.Success -> {
-                val response = guestServiceViewModel.accountSetupLiveData.value?.data?.itemMenuList
-
-                binding.loaderView.toInvisible()
-            }
-
-            else -> {
-                status.errorMsg?.let { guestServiceViewModel.showToastMessage(it) }
-            }
-        }
     }
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    private fun setFocus(cardView: Button) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        this.gradientStartColor = startColor
-        this.gradientEndColor = endColor
-    }
     fun setToiletryData(toiletryData: ToiletryResponse) {
         this.toiletryDetailResponse = toiletryData
-        Log.d("setToiletryData","$toiletryData")
     }
+
     fun setToiletryDetailData() {
         toiletry_list = toiletryDetailResponse.toiletryDataList
 
@@ -113,13 +65,6 @@ class ToiletryRequestFragment(
             binding.rvToiletryRequest.layoutManager =
                 GridLayoutManager(context, 2)
 
-//            val toiletryRequestAdapter = ToiletryRequestAdapter { isVisible, item ->
-//                if (item.quantity >= 0) {
-//                    selectedItems.remove(item)
-//                } else {
-//                    selectedItems.add(item)
-//                }
-//            }
             // Initialize adapter with onQuantityChanged callback
             val toiletryRequestAdapter = ToiletryRequestAdapter(
                 onMenuItemClicked = { isVisible, item -> },
@@ -127,8 +72,6 @@ class ToiletryRequestFragment(
             )
             toiletryRequestAdapter.setToiletryList(toiletry_list)
             binding.rvToiletryRequest.adapter = toiletryRequestAdapter
-//            toiletry_list.let { toiletryRequestAdapter.setToiletryist(it) }
-            toiletryRequestAdapter.setGradientColor(gradientStartColor, gradientEndColor)
             binding.rvToiletryRequest.adapter = toiletryRequestAdapter
 
             binding.rvToiletryRequest.post {
@@ -138,7 +81,7 @@ class ToiletryRequestFragment(
             }
             binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
                 if (hasFocus) {
-                    setFocus(binding.btnCancel)
+                    binding.btnCancel.background = getGradientColor()
                     view.setOnKeyListener { _, keycode, keyEvent ->
                         if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                             when (keycode) {
@@ -157,13 +100,7 @@ class ToiletryRequestFragment(
                     binding.btnCancel.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 }
             }
-            binding.btnSendRequest.setOnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-                    setFocus(binding.btnSendRequest)
-                } else {
-                    binding.btnSendRequest.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
-            }
+            binding.btnSendRequest.handleFocusChange()
             binding.btnCancel.setOnClickListener {
                 onOkClicked()
             }
@@ -176,17 +113,15 @@ class ToiletryRequestFragment(
             Log.e("LaundryFragment", "_binding is null")
         }
     }
+
     private fun updateSelectedItems() {
-        val selectedItems = (binding.rvToiletryRequest.adapter as? ToiletryRequestAdapter)?.getSelectedItems()
+        val selectedItems =
+            (binding.rvToiletryRequest.adapter as? ToiletryRequestAdapter)?.getSelectedItems()
         if (!selectedItems.isNullOrEmpty()) {
             val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
             val summaryFragment = ToiletryRequestSummaryFragment {
                 onOkClicked()
             }
-            val mBundle = Bundle()
-            mBundle.putString("gradientStartColor", gradientStartColor)
-            mBundle.putString("gradientEndColor", gradientEndColor)
-            summaryFragment.arguments = mBundle
             summaryFragment.setItemList(selectedItems)
 
             fragmentTransaction.replace(
@@ -196,20 +131,13 @@ class ToiletryRequestFragment(
 
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
-        }
-        else{
+        } else {
             val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
             val summaryFragment = ToiletryRequestErrorFragment()
-            val mBundle = Bundle()
-            mBundle.putString("gradientStartColor", gradientStartColor)
-            mBundle.putString("gradientEndColor", gradientEndColor)
-            summaryFragment.arguments = mBundle
-
             fragmentTransaction.replace(
                 R.id.fv_tab_content,
                 summaryFragment
             )
-
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
         }

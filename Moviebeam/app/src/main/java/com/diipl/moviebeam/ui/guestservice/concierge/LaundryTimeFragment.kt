@@ -2,19 +2,18 @@ package com.diipl.moviebeam.ui.guestservice.concierge
 
 
 import android.annotation.SuppressLint
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentLaundryTimeBinding
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.handleFocusChange
 import java.util.Calendar
 
 
@@ -53,20 +52,12 @@ class LaundryTimeFragment(
         hourPicker.post {
             hourPicker.requestFocus()
         }
-        binding.btnCancel.setOnClickListener(View.OnClickListener {
-            onOkClicked()
-        })
+        binding.btnCancel.setOnClickListener { onOkClicked() }
 
-        binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                setFocus(binding.btnOk)
-            } else {
-                binding.btnOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
+        binding.btnOk.handleFocusChange()
         binding.btnCancel.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                setFocus(binding.btnCancel)
+                view.background = getGradientColor()
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (keyCode) {
@@ -93,13 +84,7 @@ class LaundryTimeFragment(
 
             binding.tvMessage.text =
                 "Thank you.Your request has been received and your room will be serviced on " + day + ". " + month + " " + date + " " + year + " at " + currentHour + ":" + currentminute
-            binding.btnPopOk.setOnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-                    setFocus(binding.btnPopOk)
-                } else {
-                    binding.btnPopOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
-            }
+            binding.btnPopOk.handleFocusChange()
             binding.btnPopOk.setOnClickListener {
                 onOkClicked()
             }
@@ -121,7 +106,6 @@ class LaundryTimeFragment(
                 view.setBackgroundResource(R.drawable.border_bg)
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
-                        Log.d("keypressed", "keypressed")
                         when (keyCode) {
                             KeyEvent.KEYCODE_DPAD_UP -> {
                                 if (currentHour < 24) {
@@ -159,7 +143,6 @@ class LaundryTimeFragment(
                 view.setBackgroundResource(R.drawable.border_bg)
                 view.setOnKeyListener { _, keyCode, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
-                        Log.d("keypressed", "keypressed")
                         when (keyCode) {
                             KeyEvent.KEYCODE_DPAD_UP -> {
                                 if (currentminute < 60) {
@@ -217,7 +200,6 @@ class LaundryTimeFragment(
         this.date = cal.get(Calendar.DATE).toString()
         this.month = getMonth(cal.get(Calendar.MONTH))
         this.year = cal.get(Calendar.YEAR).toString()
-        Log.d("setDatedate", "onCreateView: $currentHour  $currentminute  $day  $date  ${month+1}  $year ${day + month + date + currentHour} ")
     }
 
     private fun getDay(day: Int): String {
@@ -248,23 +230,6 @@ class LaundryTimeFragment(
             "Dec"
         )
         return months[mon]
-    }
-
-    private fun setFocus(cardView: Button) {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        cardView.background = gradientDrawable
-    }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        this.startColor = startColor
-        this.endColor = endColor
     }
 
 }

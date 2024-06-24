@@ -1,5 +1,7 @@
 package com.diipl.moviebeam.utils
 
+import com.diipl.moviebeam.utils.Constants.MDM_PACKAGE_NAME
+
 object KapingConstants {
 
     const val KAP_CMD_DO_NOTHING = "00"
@@ -47,7 +49,6 @@ object KapingConstants {
     const val EVENT_CHECK_IN = "31221"
     const val EVENT_CHECK_OUT = "31220"
 
-    const val MDM_PACKAGE_NAME = "com.hmdm.launcher"
     const val MDM_RESTART_ACTIVITY_NAME = "$MDM_PACKAGE_NAME.ui.RebootActivity"
     const val MDM_SOFTWARE_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SoftwareUpdateActivity"
 

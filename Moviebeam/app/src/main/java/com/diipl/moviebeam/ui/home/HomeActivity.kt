@@ -41,9 +41,6 @@ class HomeActivity : BaseActivity() {
     @Inject
     lateinit var dateTimeDataStore: DataStore<DateTimeResponse>
 
-    @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -121,7 +118,7 @@ class HomeActivity : BaseActivity() {
             is Resource.Success -> {
 
                 homeViewModel.weatherLiveData.value?.data?.let {
-                    homeViewModel.setWeatherResponseData(weatherDataStore, it)
+                    homeViewModel.setWeatherResponseData(it)
                 }
                 binding.tvWeather.text = getString(R.string.weather_success)
                 Log.d("DATASTORE", "handleWeatherResponse: ${homeViewModel.weatherLiveData.value?.data}")

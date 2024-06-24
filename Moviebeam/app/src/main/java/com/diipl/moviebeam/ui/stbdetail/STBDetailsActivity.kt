@@ -1,12 +1,14 @@
 package com.diipl.moviebeam.ui.stbdetail
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.work.WorkManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
@@ -17,6 +19,8 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
+import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
@@ -24,13 +28,20 @@ import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.isWorkDone
+import com.diipl.moviebeam.utils.IRUtils
+import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
+import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toInteger
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -41,6 +52,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class STBDetailsActivity : BaseActivity() {
+
+    private val TAG = "STBDetailsActivity"
 
     private val stbDetailViewModel: STBDetailViewModel by viewModels()
     private lateinit var binding: ActivityStbdetailsBinding
@@ -55,9 +68,6 @@ class STBDetailsActivity : BaseActivity() {
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
-    @Inject
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
 
     @Inject
@@ -65,6 +75,9 @@ class STBDetailsActivity : BaseActivity() {
 
     @Inject
     lateinit var channelListDataStore: DataStore<ChannelListResponse>
+
+    @Inject
+    lateinit var tickerDataStore: DataStore<TickerResponse>
 
     @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
@@ -75,22 +88,32 @@ class STBDetailsActivity : BaseActivity() {
     @Inject
     lateinit var roomRepository: RoomRepository
 
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    @Inject
+    lateinit var preferences: SharedPreference
 
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy { PreferenceDataStoreHelper(applicationContext) }
+    private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (preferences.irFrequencyModel == null)
+            preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
+
+        stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
+
         if (!Constants.IS_API_CALLED) {
-            preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
             stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
             Constants.IS_API_CALLED = true
         } else {
             finish()
         }
+
     }
 
     //observe class
     override fun observeViewModel() {
+        observe(stbDetailViewModel.networkStatus, ::handleNetworkResponse)
         observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
         observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
@@ -98,6 +121,7 @@ class STBDetailsActivity : BaseActivity() {
         observe(stbDetailViewModel.localAttractionLiveData, ::handleLAServiceResponse)
         observe(stbDetailViewModel.channelListLiveData, ::handleChannelListResponse)
         observe(stbDetailViewModel.moviesLiveData, ::handleMoviesResponse)
+        observe(stbDetailViewModel.tickerLiveData, ::handleTickerResponse)
         observe(stbDetailViewModel.showtimeLiveData, ::handleShowtimeServiceResponse)
         observe(stbDetailViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
         observe(stbDetailViewModel.epgLiveData, ::handleEpgResponse)
@@ -112,13 +136,25 @@ class STBDetailsActivity : BaseActivity() {
         setContentView(view)
     }
 
+    private fun handleNetworkResponse(isConnected: Boolean) {
+//        isNetworkConnected = isConnected
+        /*if (!isConnected) {
+            launchMain()
+        }*/
+    }
+
+    private fun launchMain() {
+        val intent = Intent(this, MainMenuActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.weatherLiveData.value?.data?.let {
                     stbDetailViewModel.setWeatherResponseData(
-                        weatherDataStore,
                         it.copy(tempCondition = replaceDegreeSymbol(it.tempCondition))
                     )
                     Log.d("DataStoreResponse", "handleWeatherResponse: $it")
@@ -127,8 +163,10 @@ class STBDetailsActivity : BaseActivity() {
 
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                status.errorMsg?.let {
+                    stbDetailViewModel.showToastMessage(it)
+                    launchMain()
+                }
             }
         }
     }
@@ -137,10 +175,8 @@ class STBDetailsActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
-
                 stbDetailViewModel.themeLiveData.value?.data?.let {
-                    stbDetailViewModel.setThemeResponseData(themeDataStore, it)
-                    Log.d("DataStoreResponse", "handleThemeResponse: $it")
+                    stbDetailViewModel.setThemeResponseData(it)
                 }
             }
 
@@ -160,14 +196,17 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
                     Constants.EPG_CDN_URL = it.epgCdnUrl
+                    scheduleClearCredentialsTask(it.checkOutTime)
                     stbDetailViewModel.fetchHotelService()
                 }
             }
 
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                status.errorMsg?.let {
+                    stbDetailViewModel.showToastMessage(it)
+                    launchMain()
+                }
             }
         }
     }
@@ -177,8 +216,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 status.data?.let {
-                    stbDetailViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
-                    Log.d("DataStoreResponse", "handleHotelServiceResponse: $it")
+                    stbDetailViewModel.setHotelServicesResponseData(it)
                 }
             }
 
@@ -195,8 +233,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.localAttractionLiveData.value?.data?.let {
-                    stbDetailViewModel.setLocalAttractionResponseData(localAttractionDataStore, it)
-                    Log.d("DataStoreResponse", "handleLAServiceResponse: $it")
+                    stbDetailViewModel.setLocalAttractionResponseData(it)
                 }
             }
 
@@ -213,11 +250,12 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.channelListLiveData.value?.data?.let {
                     stbDetailViewModel.setChannelListResponseData(channelListDataStore, it)
-                    Constants.CHANNEL_COUNT = it.channelLcnList.size
+                    Constants.CHANNEL_COUNT = it.channelLcnList!!.size
                 }
             }
 
             else -> {
+
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -234,12 +272,12 @@ class STBDetailsActivity : BaseActivity() {
                 }
 
                 val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
-                stbDetailViewModel.epgLiveData.value?.data?.let {
+                status.data?.let {
                     val startDate = simpleDateFormatter.parse(it.ST ?: "")
                     val endDate = simpleDateFormatter.parse(it.ET ?: "")
                     if (isEpgDataValid(startDate, endDate)) {
-                        Constants.EPG_START = it.ST?:""
-                        Constants.EPG_END = it.ET?:""
+                        Constants.EPG_START = it.ST ?: ""
+                        Constants.EPG_END = it.ET ?: ""
                         val channelList =
                             stbDetailViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()
@@ -305,7 +343,7 @@ class STBDetailsActivity : BaseActivity() {
                                                 }
                                             }
                                             // for live tv and full screen (Next)
-                                            if (channel.C?.toInt()!! > 1) {
+                                            if (channel.C?.toInteger()!! > 1) {
                                                 if (channel.P2_ID != null) {
                                                     val program2 =
                                                         it.programsListMap?.get(channel.P2_ID)
@@ -395,7 +433,7 @@ class STBDetailsActivity : BaseActivity() {
                                 }
                             }
                             //Sorting Channels by Channel No
-                            entries.value.sortBy { it.CNO?.toInt() }
+                            entries.value.sortBy { it.CNO?.toInteger() }
                             //Adding Channels to RoomDB.
                             lifecycleScope.launch(Dispatchers.IO) {
                                 roomRepository.insertChannels(entries.value)
@@ -403,35 +441,63 @@ class STBDetailsActivity : BaseActivity() {
                         }
                         redirectToMainMenuPage()
                     } else {
-                        if (!isEPGServerApiCalled) {
-                            stbDetailViewModel.fetchEPGDataFromServer(UA)
-                            isEPGServerApiCalled = true
-                        } else {
-                            redirectToMainMenuPage()
-                        }
+                        fetchEPGFromServer()
                     }
                 }
-
 
             }
 
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
+                status.errorMsg?.let {
+                    stbDetailViewModel.showToastMessage(it)
+                    launchMain()
+                }
             }
         }
     }
 
-    private fun redirectToMainMenuPage() {
-        val bundle = Bundle()
-        bundle.putString("UA", UA)
-        val intent = Intent(this, MainMenuActivity::class.java)
-        intent.let {
-            it.putExtras(bundle)
-            startActivity(it)
+    private fun fetchEPGFromServer() {
+        if (!isEPGServerApiCalled) {
+            stbDetailViewModel.fetchEPGDataFromServer(UA)
+            isEPGServerApiCalled = true
+        } else {
+            redirectToMainMenuPage()
         }
-        finish()
+    }
+
+    private fun redirectToMainMenuPage() {
+       /* binding.root.post { binding.root.performClick() }
+        var uuid: UUID? = null
+        binding.root.setSafeOnClickListener {
+            val inputData = Data.Builder()
+                .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
+                .build()
+
+            val request = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
+                .setInputData(inputData)
+                .build()
+            uuid = request.id
+            Log.e(TAG, "uuid: $uuid")
+            workManager.beginUniqueWork(uuid.toString(), ExistingWorkPolicy.REPLACE, request).enqueue()
+//            workManager.enqueue(request)
+        }*/
+
+
+//            workManager.getWorkInfoByIdLiveData(uuid!!).observe(this@STBDetailsActivity) { data ->
+//                val isDone = data.state == WorkInfo.State.SUCCEEDED
+//                if (isDone) {
+
+//                }
+        lifecycleScope.launch {
+            while (true){
+                if (isWorkDone == 3){
+                    launchMain()
+                    isWorkDone = 0
+                }
+                delay(1000*10)
+            }
+        }
     }
 
     //  Removes Data Before Current Time.
@@ -448,6 +514,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun fetchCurrentProgramKey(cal: Calendar = Calendar.getInstance()): String {
+
         val date = cal.get(Calendar.DATE)
         val month = cal.get(Calendar.MONTH) + 1
         val year = cal.get(Calendar.YEAR)
@@ -495,7 +562,8 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.moviesLiveData.value?.data?.let {
-                    Constants.MOVIES_COUNT = it.freeContentList.size.plus(it.premiumContentList.size)
+                    Constants.MOVIES_COUNT =
+                        it.freeContentList.size.plus(it.premiumContentList.size)
                     Constants.C_LIST_VERSION = it.version
                     stbDetailViewModel.setMoviesResponseData(moviesDataStore, it)
                 }
@@ -509,6 +577,44 @@ class STBDetailsActivity : BaseActivity() {
         }
     }
 
+    private fun handleTickerResponse(status: Resource<TickerResponse>) {
+        when (status) {
+            is Resource.Success -> {
+                status.data?.let {
+                    val sdf = SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        it.tvTickerList?.removeIf { msg ->
+                            (msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(
+                                msg.etStr
+                            ).before(Date())
+                        }
+                    } else {
+                        val iterator = it.tvTickerList?.iterator()
+                        while (iterator!!.hasNext()) {
+                            val msg: TvTickerDTO = iterator.next()
+                            if ((msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(
+                                    msg.etStr
+                                ).before(Date())
+                            ) {
+                                iterator.remove()
+                            }
+                        }
+                    }
+                    stbDetailViewModel.setTickerResponseData(tickerDataStore, it)
+                    it.tvTickerList?.forEach { msg ->
+                        applicationContext.scheduleMsgEndTask(msg)
+                    }
+                }
+            }
+
+            else -> {
+
+                status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
+            }
+        }
+    }
+
     private fun handleShowtimeServiceResponse(status: Resource<ShowTimeResponse>) {
         when (status) {
             is Resource.Loading -> {}
@@ -517,35 +623,40 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.SHOWS_COUNT = it.shoContentList.size
                     stbDetailViewModel.setShowTimeResponseData(showTimeDataStore, it)
                 }
-                stbDetailViewModel.accountSetupLiveData.value?.data?.let {
-                    stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
-                }
+//                stbDetailViewModel.accountSetupLiveData.value?.data?.let {
+//                    stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
+//                }
+                fetchEPGFromServer()
             }
 
             else -> {
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
             }
         }
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
+     /*   if (!isNetworkConnected) {
+            launchMain()
+            return
+        }*/
+        isWorkDone = 0
+
         serialNumber = serialNo
         Constants.SERIAL_NO = serialNo
-        // TODO edit
         UA = "21$serialNumber"
         Constants.UA = UA
-        stbDetailViewModel.fetchApis(applicationContext, preferenceDataStoreHelper)
+        stbDetailViewModel.fetchApis()
 
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
-        binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
+        binding.root.setupSnackbar(this, event, Snackbar.LENGTH_SHORT)
     }
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
-        binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
+        binding.root.showToast(this, event, Snackbar.LENGTH_SHORT)
     }
 
     private fun replaceDegreeSymbol(temp: String?): String {

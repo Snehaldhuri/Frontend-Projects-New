@@ -8,6 +8,7 @@ import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
 import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
@@ -23,6 +24,7 @@ import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SoftwareResponseDTO
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.datasource.RemoteDataSource
 import javax.inject.Inject
@@ -137,6 +139,14 @@ class MovieBeamRepository @Inject constructor(
 
     suspend fun getSoftwareUpdateDetails(): SoftwareResponseDTO? {
         return remoteDataSource.getSoftwareUpdateDetails()
+    }
+
+    suspend fun getTvTickerMessages(ua: String): TickerResponse? {
+        return remoteDataSource.getTvTickerMessages(ua)
+    }
+
+    suspend fun getGuestMessages(ua: String, guestSessionId: String): MessageResponse? {
+        return remoteDataSource.getGuestMessages(ua, guestSessionId)
     }
 
 }

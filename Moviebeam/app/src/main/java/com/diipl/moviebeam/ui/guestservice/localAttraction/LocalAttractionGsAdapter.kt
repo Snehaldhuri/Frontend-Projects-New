@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.guestservice.localAttraction
 
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -9,11 +8,13 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAServices
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
+import com.diipl.moviebeam.utils.handleFocusChange
 
 private const val TAG = "LAGsAdapter"
 
@@ -23,7 +24,6 @@ class LocalAttractionGsAdapter(
     private var onRightKeyClicked: (View) -> Unit
 ) : RecyclerView.Adapter<LocalAttractionGsAdapter.MyViewHolder>() {
 
-    private var gradientDrawable: GradientDrawable? = null
     private var itemList = listOf<LAServices>()
     private var selectedPosition = -1
 
@@ -37,17 +37,9 @@ class LocalAttractionGsAdapter(
             LayoutInflater.from(parent.context).inflate(R.layout.hotel_info_tab, parent, false)
 
         val params = view.layoutParams
-        params.width = getWidthInPercent(parent.context, 23)
-        params.height = getHeightInPercent(parent.context, 13)
-
-        view.setOnFocusChangeListener { v, b ->
-            if (b) {
-                v.background = gradientDrawable
-            } else {
-                v.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
-
+        params.width = getWidthInPercent(parent.context, 22)
+        params.height = getHeightInPercent(parent.context, 15)
+        view.handleFocusChange()
         return MyViewHolder(view)
     }
 
@@ -58,7 +50,7 @@ class LocalAttractionGsAdapter(
         holder.textView.text = item.categoryName
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
-        if (selectedPosition == -1){
+        if (selectedPosition == -1) {
             onItemClicked(holder.itemView, item)
             holder.itemView.isSelected = true
             selectedPosition = holder.absoluteAdapterPosition
@@ -80,7 +72,7 @@ class LocalAttractionGsAdapter(
                 }
             }
             if (hasFocus) {
-                view.background = gradientDrawable
+                view.background = getGradientColor()
                 view.setOnKeyListener { _, code, _ ->
                     when (code) {
                         KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
@@ -100,13 +92,7 @@ class LocalAttractionGsAdapter(
             } else {
                 updateFocus(holder)
             }
-
         }
-
-    }
-
-    private fun onClick(code: Int, item: LAServices, holder: MyViewHolder) {
-
     }
 
     private fun notifyUI() {
@@ -126,13 +112,8 @@ class LocalAttractionGsAdapter(
         }
     }
 
-    fun setGradientDrawable(gradient: GradientDrawable) {
-        gradientDrawable = gradient
-    }
-
     fun setItemList(btnList: List<LAServices>) {
         itemList = btnList
     }
-
 
 }

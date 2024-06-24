@@ -21,7 +21,7 @@ import com.diipl.moviebeam.databinding.ActivityExoPlayerBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.fromJson
@@ -139,7 +139,6 @@ class ExoPlayerActivity : BaseActivity() {
 //                binding.playerView.setShowRewindButton(false)
                     binding.playerView.setShowNextButton(false)
                     binding.playerView.setShowPreviousButton(false)
-
 
                     if (isTrailer) {
                         playbackUrl =

@@ -3,10 +3,11 @@ package com.diipl.moviebeam.ui.casting
 import android.annotation.SuppressLint
 import android.webkit.WebSettings
 import android.webkit.WebView
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.databinding.ActivityCastingBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
+import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getCurrentPanelNumber
 
 
 class CastingActivity : BaseActivity() {
@@ -25,9 +26,12 @@ class CastingActivity : BaseActivity() {
             webView.settings.javaScriptEnabled = true
             webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
             webView.loadUrl(Constants.CASTING_URL)
-            LoggingService.sendMessageToWebSocket("In CastingPage activity","14")
+            LoggingService.sendMessageToWebSocket(
+                "In CastingPage activity",
+                getCurrentPanelNumber()
+            )
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("${e.message}","14")
+            LoggingService.sendMessageToWebSocket("${e.message}", getCurrentPanelNumber())
         }
 
     }

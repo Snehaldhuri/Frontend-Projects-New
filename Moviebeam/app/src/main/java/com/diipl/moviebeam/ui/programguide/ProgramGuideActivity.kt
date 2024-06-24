@@ -6,17 +6,23 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
 import android.os.Build
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ImageSpan
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.DefaultRenderersFactory
@@ -27,12 +33,23 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
+import com.diipl.moviebeam.service.IIrService
+import com.diipl.moviebeam.service.UsbIrService
+import com.diipl.moviebeam.service.isCompatibleDevice
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.IRUtils
+import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.clearCache
+import com.diipl.moviebeam.utils.fromJson
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -42,10 +59,13 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
 private const val TAG = "ProgramGuideActivity"
 
@@ -55,7 +75,6 @@ class ProgramGuideActivity : BaseActivity() {
     private lateinit var binding: ActivityProgramGuideBinding
     private val programGuideViewModel: ProgramGuideViewModel by viewModels()
 
-    private var gradient: GradientDrawable? = null
     private var channelContent: List<String?>? = null
     private var channelList: List<ChannelEpgDTO>? = null
     private var channelListNext: List<ChannelEpgDTO>? = null
@@ -70,6 +89,16 @@ class ProgramGuideActivity : BaseActivity() {
     private var currentPrograms: List<ChannelEpgDTO>? = null
     private var nextPrograms: List<ChannelEpgDTO>? = null
 
+    private lateinit var hotelChannel: HotelChannel
+    private var hotelChannelVideo: String = ""
+    @Inject
+    lateinit var preferences : SharedPreference
+    private var irService: IIrService? = null
+
+    private val usbManager: UsbManager by lazy { getSystemService(USB_SERVICE) as UsbManager }
+    private lateinit var usbDevice: UsbDevice
+
+
     override fun observeViewModel() {
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
@@ -80,10 +109,57 @@ class ProgramGuideActivity : BaseActivity() {
         this.getChannelsFromRoomDB()
         fetchDetails()
         setContentView(binding.root)
-        binding.btnBack.setOnFocusChangeListener(::handleBtnFocus)
-        binding.btnSearch.setOnFocusChangeListener(::handleBtnFocus)
+        binding.btnBack.handleFocusChange()
+        binding.btnSearch.handleFocusChange()
         binding.btnBack.setOnClickListener { finish() }
+
         binding.pbLoader.toVisible()
+    }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        initSet()
+
+    }
+
+    private fun initSet() {
+        usbManager.deviceList.values.forEach {
+            if (isCompatibleDevice(it)) {
+                usbDevice = it
+                val isOk = usbManager.hasPermission(usbDevice)
+                if (isOk) {
+                    irService = UsbIrService.getInstance(usbManager, usbDevice)
+                } else {
+                    val i = Intent(this, BlankActivity::class.java)
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    startActivity(i)
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isFScreenExit) {
+            playChannelVideoBg(null)
+        }
+
+        binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
+            when (code) {
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                    if (view.isFocused) {
+                        showSearchDialog()
+                        view.clearFocus()
+                    }
+                }
+            }
+            false
+        }
+
+        setOnScrollListener()
+
     }
 
     private fun getChannelsFromRoomDB() {
@@ -105,28 +181,6 @@ class ProgramGuideActivity : BaseActivity() {
             }
             binding.pbLoader.toInvisible()
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isFScreenExit) {
-            playChannelVideoBg(null)
-        }
-
-        setOnScrollListener()
-
-        binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
-            when (code) {
-                KeyEvent.KEYCODE_DPAD_CENTER -> {
-                    if (view.isFocused) {
-                        showSearchDialog()
-                        view.clearFocus()
-                    }
-                }
-            }
-            false
-        }
-
     }
 
     private fun setOnScrollListener() {
@@ -191,10 +245,7 @@ class ProgramGuideActivity : BaseActivity() {
 
         dialogBinding.etSearch.requestFocus()
         dialogBinding.etSearch.showKeyboard()
-        dialogBinding.etSearch.background = getGradient(
-            intent.extras?.getString(Constants.GRADIENT_START_COLOR_PARAM),
-            intent.extras?.getString(Constants.GRADIENT_END_COLOR_PARAM)
-        )
+        dialogBinding.etSearch.handleFocusChange()
 
         dialogBinding.etSearch.setOnEditorActionListener { textView, id, keyEvent ->
             when (id) {
@@ -240,30 +291,14 @@ class ProgramGuideActivity : BaseActivity() {
         }
         intent.extras?.let {
             binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
-            gradient =
-                getGradient(
-                    it.getString(Constants.GRADIENT_START_COLOR_PARAM),
-                    it.getString(Constants.GRADIENT_END_COLOR_PARAM)
-                )
             loadBg(it.getString("themeBackgroundFileName"))
         }
-    }
-
-    private fun fetchDataFromDatastore() {
-    }
-
-    private fun getGradient(
-        gradientStartColor: String?,
-        gradientEndColor: String?
-    ): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TR_BL,
-            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
+        intent.extras?.getString("hotelChannel")?.let {
+            hotelChannel = it.fromJson()
+        }
+        intent.extras?.getString("hotelChannelVideo")?.let {
+            hotelChannelVideo = it
+        }
     }
 
     private fun loadBg(imgUrl: String?) {
@@ -282,14 +317,6 @@ class ProgramGuideActivity : BaseActivity() {
             })
     }
 
-    private fun handleBtnFocus(view: View, focus: Boolean) {
-        if (focus) {
-            view.background = gradient
-        } else {
-            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        }
-    }
-
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
         binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
     }
@@ -305,33 +332,37 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     private fun playChannelVideoBg(program: ChannelEpgDTO?) {
+        updatePopupText(program, binding.tvPopupProgText)
         if (program == null) {
             isFScreenExit = false
             binding.layoutVideo.videoView.player?.play()
         } else {
             if (this.cNo != program.CNO) {
-                initializePlayer(program)
-                binding.layoutVideo.root.toVisible()
+//                initializePlayer(program)
+//                binding.layoutVideo.root.toVisible()
                 binding.tvProgramTitle.text = program.P1_PT
                 binding.tvDescription.text = program.P1_SY
                 this.cNo = program.CNO
-                if (channelListNext != null) {
-                    channelIndex = channelListNext?.indexOf(program) ?: 0
+                channelIndex = if (channelListNext != null) {
+                    channelListNext?.indexOf(program) ?: 0
                 } else {
-                    channelIndex = channelList?.indexOf(program) ?: 0
+                    channelList?.indexOf(program) ?: 0
                 }
             }
         }
     }
 
     private fun onProgramFocused(program: ChannelEpgDTO?, title: String?, synopsis: String?) {
+//        binding.tvProgramTitle.text = title ?: program?.P1_PT
+//        binding.tvDescription.text = synopsis ?: program?.P1_SY
+        updatePopupText(program, binding.tvPopupProgText)
         if (program == null) {
             isFScreenExit = false
             binding.layoutVideo.videoView.player?.play()
         } else {
             if (this.cNo != program.CNO) {
-                initializePlayer(program)
-                binding.layoutVideo.root.toVisible()
+//                initializePlayer(program)
+//                binding.layoutVideo.root.toVisible()
                 if (title != null)
                     binding.tvProgramTitle.text = title
                 else
@@ -341,10 +372,10 @@ class ProgramGuideActivity : BaseActivity() {
                 else
                     binding.tvDescription.text = program.P1_SY
                 this.cNo = program.CNO
-                if (channelListNext != null) {
-                    channelIndex = channelListNext?.indexOf(program) ?: 0
+                channelIndex = if (channelListNext != null) {
+                    channelListNext?.indexOf(program) ?: 0
                 } else {
-                    channelIndex = channelList?.indexOf(program) ?: 0
+                    channelList?.indexOf(program) ?: 0
                 }
             } else {
                 binding.tvProgramTitle.text = title
@@ -352,6 +383,33 @@ class ProgramGuideActivity : BaseActivity() {
             }
         }
     }
+
+    private fun updatePopupText(channel: ChannelEpgDTO?, tvPopupText: TextView) {
+        tvPopupText.text = "Please press the OK button on your remote to tune in to ${channel?.CN}."
+
+        val text = "Press + to return to the Main Menu at any time."
+
+        val spannableString = SpannableString(text)
+
+        val drawable: Drawable = getDrawable(R.drawable.remote_home)!!
+
+        drawable.setBounds(0, 0, 45, 32)
+
+        val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_CENTER)
+
+        spannableString.setSpan(
+            imageSpan,
+            text.indexOf('+'),
+            text.indexOf('+') + 1,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        binding.tvPopupProgDesc.text = spannableString
+
+        binding.tvPopupProgDesc.textAlignment = View.TEXT_ALIGNMENT_CENTER
+
+    }
+
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun initializePlayer(program: ChannelEpgDTO?) {
@@ -361,7 +419,7 @@ class ProgramGuideActivity : BaseActivity() {
         val playerView = binding.layoutVideo.videoView
         playerView.player?.release()
         playerView.player = player
-        player?.let {
+        player.let {
             program?.VP?.let { vp ->
                 it.setMediaItem(MediaItem.fromUri(vp))
             }
@@ -373,35 +431,114 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
-        binding.layoutVideo.videoView.player?.pause()
-        val bundle = Bundle()
-        bundle.putStringArrayList(
-            Constants.CONTENT_LIST_PARAM,
-            channelContent as ArrayList<String?>?
-        )
-        if (channelListNext != null) {
-            bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelListNext?.indexOf(program) ?: 0)
-        } else {
-            bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelList?.indexOf(program) ?: 0)
-        }
-        bundle.putString(Constants.CHANEL_NO_PARAM, program?.CNO)
-        bundle.putString(Constants.CHANNEL_NAME_PARAM, program?.CN)
-        bundle.putString(Constants.CHANNEL_LOGO_PARAM, program?.CL)
-        bundle.putString(Constants.NOW_SHOWING_PARAM, program?.liveProg1)
-        bundle.putString(Constants.NEXT_PROGRAM_PARAM, program?.liveProg2)
-        bundle.putString(Constants.PROG_1_TIME_PARAM, program?.prog1Time)
-        bundle.putString(Constants.PROG_2_TIME_PARAM, program?.prog2Time)
+//        if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_CHROMECAST, true)) {
+                switchToTV(program)
+            /* } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_MINI_BOX, true)) {
+                 binding.layoutVideo.videoView.player?.pause()
+                 val bundle = Bundle()
+                 bundle.putStringArrayList(
+                     Constants.CONTENT_LIST_PARAM,
+                     channelContent as ArrayList<String?>
+                 )
+                 bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelList?.indexOf(program) ?: 0)
+                 bundle.putString(Constants.CHANEL_NO_PARAM, program?.CNO)
+                 bundle.putString(Constants.CHANNEL_NAME_PARAM, program?.CN)
+                 bundle.putString(Constants.CHANNEL_LOGO_PARAM, program?.CL)
+                 bundle.putString(Constants.NOW_SHOWING_PARAM, program?.liveProg1)
+                 bundle.putString(Constants.NEXT_PROGRAM_PARAM, program?.liveProg2)
+                 bundle.putString(Constants.PROG_1_TIME_PARAM, program?.prog1Time)
+                 bundle.putString(Constants.PROG_2_TIME_PARAM, program?.prog2Time)
+                 bundle.putString(Constants.CHANNEL_LIST_PARAM, Gson().toJson(channelList))
 
-        val intent = Intent(this, PrgGuidePlayerActivity::class.java)
-        intent.putExtras(bundle)
-        startActivity(intent)
-        this.isFScreenExit = true
+                 val intent = Intent(this, PrgGuidePlayerActivity::class.java)
+                 intent.putExtras(bundle)
+                 startActivity(intent)
+                 this.isFScreenExit = true
+             } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB, true)) {
+                 launchLiveTvApp()
+             }*/
+    }
+
+    private fun switchToTV(program: ChannelEpgDTO?) {
+        clearCache()
+        lifecycleScope.launch {
+            var model = preferences.irFrequencyModel
+            if (model == null){
+                preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
+                model = preferences.irFrequencyModel
+            }
+            irService?.let { service->
+                val num = program?.CNO/*.plus(100)*/.toString().toCharArray().asList()
+                if (model.tvBrandName != IRUtils.LG) {
+                    service.transmit(model.frequency, model.TV)
+                    delay(model.delayMs)
+                }
+                when (num.size) {
+                    4 -> {
+                        launch {
+                            num[num.size - 4].sendPacket(model)
+                            num[num.size - 3].sendPacket(model)
+                            num[num.size - 2].sendPacket(model)
+                            num[num.size - 1].sendPacket(model)
+                            delay(240)
+                            service.transmit(model.frequency, model.OK)
+                        }
+                    }
+
+                    3 -> {
+                        launch {
+                            num[num.size - 3].sendPacket(model)
+                            num[num.size - 2].sendPacket(model)
+                            num[num.size - 1].sendPacket(model)
+                            delay(240)
+                            service.transmit(model.frequency, model.OK)
+                        }
+                    }
+
+                    2 -> {
+                        launch {
+                            num[num.size - 2].sendPacket(model)
+                            num[num.size - 1].sendPacket(model)
+                            delay(240)
+                            service.transmit(model.frequency, model.OK)
+                        }
+                    }
+
+                    1 -> {
+                        num[0].sendPacket(model)
+                        service.transmit(model.frequency, model.OK)
+                    }
+                }
+
+            }
+
+        }
+    }
+
+    private fun Char.sendPacket(model: FrequencyModel) {
+        val nValue = when (this) {
+            '1' -> model.tv1
+            '2' -> model.tv2
+            '3' -> model.tv3
+            '4' -> model.tv4
+            '5' -> model.tv5
+            '6' -> model.tv6
+            '7' -> model.tv7
+            '8' -> model.tv8
+            '9' -> model.tv9
+            else -> model.tv0
+        }
+        irService?.transmit(model.frequency, nValue)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        finish()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         binding.layoutVideo.videoView.player?.release()
-        Log.e(TAG, "onDestroy: ")
     }
 
     private fun loadProgramGuide(
@@ -415,7 +552,19 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.tvTime3.text = currentProgram?.P3_DST
         binding.layoutProgramGuide.tvTime4.text = currentProgram?.P4_DST
 
+        Log.e(TAG, "loadProgramGuide: $currentProgram")
+
         currentPrograms?.remove(currentProgram)
+        val hotelVideoProgram = ChannelEpgDTO(
+            CN = hotelChannel.channelName,
+            VP = hotelChannelVideo,
+            CNO = hotelChannel.channelNo,
+            P1_PT = hotelChannel.channelName,
+            P1_CLS = "80",
+            C = "1"
+        )
+        currentPrograms?.add(0, hotelVideoProgram)
+
         if (!isScrolled) {
             channelList = currentPrograms
             Constants.CURRENT_PROGRAMS = currentPrograms
@@ -425,6 +574,8 @@ class ProgramGuideActivity : BaseActivity() {
             channelListNext = currentPrograms
         setUpPrograms(currentPrograms, currentProgram?.P4_DST)
 
+        setUpChannels(currentPrograms)
+        setUpPrograms(currentPrograms, currentProgram?.P4_DST)
     }
 
     private fun fetchCurrentProgramKey(currentDate: Date = Date()): String {
@@ -469,6 +620,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.layoutManager =
             LinearLayoutManager(this)
         binding.layoutProgramGuide.layoutPrgGuide.rvChannel.adapter = adapter
+        binding.layoutProgramGuide.layoutPrgGuide.rvChannel.setHasFixedSize(true)
 
     }
 
@@ -484,6 +636,7 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvProgram.layoutManager =
             LinearLayoutManager(this)
         binding.layoutProgramGuide.layoutPrgGuide.rvProgram.adapter = adapter
+//        binding.layoutProgramGuide.layoutPrgGuide.rvProgram.setHasFixedSize(true)
     }
 
     private fun loadPreviousPrograms() {
@@ -517,7 +670,7 @@ class ProgramGuideActivity : BaseActivity() {
     private fun setPreviousPrograms() {
         val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
         val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
+        cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, -2)
         previousKey = fetchCurrentProgramKey(cal.time)
         programGuideViewModel.getAllChannels(previousKey!!).observe(this) { data ->
@@ -528,7 +681,7 @@ class ProgramGuideActivity : BaseActivity() {
     private fun setNextPrograms() {
         val dateFormatter = SimpleDateFormat("ddMMyyyyhhmma", Locale.ENGLISH)
         val cal = Calendar.getInstance()
-        cal.time = dateFormatter.parse(key)
+        cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, 2)
         nextKey = fetchCurrentProgramKey(cal.time)
         programGuideViewModel.getAllChannels(nextKey!!).observe(this) { data ->

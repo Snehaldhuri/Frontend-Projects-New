@@ -1,7 +1,5 @@
 package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
-import android.graphics.drawable.GradientDrawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +7,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryCategory
 import com.diipl.moviebeam.databinding.RecyclerLayoutLaundryBinding
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
 
 class LaundryAdapter(
     private var onMenuItemFocused: (LaundryCategory) -> Unit,
@@ -17,7 +17,6 @@ class LaundryAdapter(
 ) :
     RecyclerView.Adapter<LaundryAdapter.MyViewHolder>() {
 
-    private var gradient: GradientDrawable? = null
     private var laundryList: List<LaundryCategory> = emptyList()
 
     inner class MyViewHolder(val binding: RecyclerLayoutLaundryBinding) :
@@ -38,19 +37,7 @@ class LaundryAdapter(
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-
-//        binding.root.setOnKeyListener { _, keycode, keyEvent ->
-//            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-//                when (keycode) {
-//                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
-//                    KeyEvent.KEYCODE_DPAD_RIGHT -> onRightKeyPressed()
-//                }
-//            }
-//            false
-//        }
-
         val item = laundryList[position]
-        Log.e("item", "onBindViewHolder:${item}")
         holder.binding.tvLaundryType.text = item.categoryName
         holder.binding.clMainCardLaundry.postDelayed({
             if (position == 0) {
@@ -61,7 +48,7 @@ class LaundryAdapter(
         holder.binding.clMainCardLaundry.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 onMenuItemFocused(item)
-                view.background = gradient
+                view.background = getGradientColor()
                 if (position == 0) {
                     if (hasFocus) {
                         view.nextFocusUpId = view.id
@@ -80,17 +67,10 @@ class LaundryAdapter(
                 view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
         }
-
-
     }
 
     fun setLaundryList(laundryDataList: List<LaundryCategory>) {
         this.laundryList = laundryDataList
     }
-
-    fun setGradient(gradient: GradientDrawable) {
-        this.gradient = gradient
-    }
-
 
 }

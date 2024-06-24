@@ -1,9 +1,7 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 
-import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
@@ -23,8 +21,8 @@ import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
@@ -85,15 +83,12 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         try {
             // fetch data from dataStore
             hotelInfoViewModel.getThemeResponseData(themeDataStore)
             hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
             hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
-
-            // check hotel logo image available from local storage
-            //   checkHotelLogoImageAvailableLocally()
-
 
             binding.btnBack.handleFocusChange()
 
@@ -155,7 +150,6 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -165,7 +159,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 status.data?.let {
-                    hotelInfoViewModel.setHotelServicesResponseData(hotelServicesDataStore, it)
+//                    hotelInfoViewModel.setHotelServicesResponseData(it)
                     val tabMap = mutableMapOf<String, TabListObj>()
                     val tabs = mutableListOf<String>()
                     val response = it
@@ -175,24 +169,30 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                 var helpInfoAdded = false
                                 service.serviceList.forEach { s ->
                                     if (s.title == "Help & Info") {
-                                        tabMap[s.title] = TabListObj(2, s, null)
+                                        tabMap[s.title] =
+                                            TabListObj(Constants.SERVICE_TYPE_HELP_INFO, s, null)
                                         tabs.add(s.title)
                                         helpInfoAdded = true
                                     } else {
-                                        tabMap[s.title] = TabListObj(2, s, null)
+                                        tabMap[s.title] =
+                                            TabListObj(Constants.SERVICE_TYPE_SERVICE_INFO, s, null)
                                         tabs.add(s.title)
                                     }
                                 }
 
                                 if (!helpInfoAdded && service.contentTypeId == 15) {
                                     tabs.add(Constants.HELP_INFO)
-                                    tabMap[Constants.HELP_INFO] = TabListObj(3, null, null)
+                                    tabMap[Constants.HELP_INFO] =
+                                        TabListObj(Constants.SERVICE_TYPE_HELP_INFO, null, null)
                                 }
                             }
 
                             else -> {
-                                tabMap[service.categoryName] =
-                                    TabListObj(1, null, service.serviceList)
+                                tabMap[service.categoryName] = TabListObj(
+                                    Constants.SERVICE_TYPE_CAROUSEL,
+                                    null,
+                                    service.serviceList
+                                )
                                 tabs.add(service.categoryName)
                             }
                         }
@@ -204,14 +204,16 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                             focusedView = view
                             val transaction = supportFragmentManager.beginTransaction()
                             when (tabMap[it]?.serviceType) {
-                                1 -> {
+                                Constants.SERVICE_TYPE_CAROUSEL -> {
                                     binding.tvHeaderTitle.text =
                                         tabMap[it]?.serviceList?.get(0)?.title
                                     val carousel = CarouselListFragment(onItemFocused = { title ->
                                         binding.tvHeaderTitle.text = title
-                                    }, onLeftKeyPressed =  { title ->
+                                    }, onLeftKeyPressed = { title ->
                                         binding.rvHotelInfoHeader.post {
-                                            binding.rvHotelInfoHeader.findContainingItemView(focusedView!!)?.requestFocus()
+                                            binding.rvHotelInfoHeader.findContainingItemView(
+                                                focusedView!!
+                                            )?.requestFocus()
                                         }
                                         if (tabMap[it]?.serviceList?.get(0)?.title == title) {
                                             view.requestFocus()
@@ -219,27 +221,38 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     })
                                     carousel.bindData(tabMap[it]?.serviceList)
                                     transaction.replace(R.id.fragment_container_carousel, carousel)
+                                    transaction.commit()
                                 }
 
-                                2 -> {
+                                Constants.SERVICE_TYPE_SERVICE_INFO -> {
                                     binding.tvHeaderTitle.text = it
                                     val bundle = Bundle()
                                     bundle.putString("title", it)
                                     tabMap[it]?.service?.description?.let { desc ->
                                         bundle.putString("desc", desc)
                                     }
-                                    val list = tabMap[it]?.service?.serviceImageList
+                                    val list =
+                                        if (tabMap[it]?.service?.serviceImageListCloud?.isNotEmpty() == true)
+                                            tabMap[it]?.service?.serviceImageListCloud
+                                        else
+                                            tabMap[it]?.service?.serviceImageListNewCloud
+
                                     var imgUrl = "null"
                                     if (list!!.isNotEmpty()) {
                                         imgUrl = list[0]
                                     }
+                                    bundle.putStringArrayList(
+                                        Constants.SERVICE_IMAGE_LIST_PARAM,
+                                        ArrayList(list)
+                                    )
                                     bundle.putString("imgUrl", imgUrl)
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
+                                    transaction.commit()
                                 }
 
-                                3 -> {
+                                Constants.SERVICE_TYPE_HELP_INFO -> {
                                     binding.tvHeaderTitle.text = it
                                     val bundle = Bundle()
                                     bundle.putString("title", it)
@@ -251,6 +264,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
+                                    transaction.commit()
                                 }
 
                                 else -> {
@@ -265,9 +279,9 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
+                                    transaction.commit()
                                 }
                             }
-                            transaction.commit()
                         },
                         onHelpInfoTabClick = { it, pos, view ->
                             val fragment = HelpInfoFragment {
@@ -362,21 +376,6 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                 getCurrentPanelNumber()
             )
         }
-    }
-
-    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-
-        gradientDrawable.cornerRadius = 20f
-
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
     }
 
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {

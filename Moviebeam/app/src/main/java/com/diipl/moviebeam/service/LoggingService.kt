@@ -1,11 +1,13 @@
-package com.diipl.moviebeam.ui.loggerService
+package com.diipl.moviebeam.service
 
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.launchLogger
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -48,16 +50,16 @@ class LoggingService : Service() {
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
-                Log.d(TAG, "WebSocket connection opened")
+                Log.e(TAG, "WebSocket connection opened")
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
-                Log.d(TAG, "WebSocket Received message: $text")
+                Log.e(TAG, "WebSocket Received message: $text")
 
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                Log.d(TAG, "WebSocket connection closed")
+                Log.e(TAG, "WebSocket connection closed")
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
@@ -70,13 +72,14 @@ class LoggingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG,"websocket onDestroy called")
-        stopWebSocket()
+        Log.e(TAG,"websocket onDestroy called")
     }
 
     private fun stopWebSocket() {
         webSocket?.cancel()
+        webSocket = null
     }
+
     companion object {
         private const val TAG = "LoggingService"
         private var webSocket: WebSocket? = null
@@ -85,7 +88,11 @@ class LoggingService : Service() {
 
         fun sendMessageToWebSocket(message: String, panel:String) {
             if (webSocket != null){
-                webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"${formattedDate}\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
+                val isSent = webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"$formattedDate\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
+                Log.e(TAG, "sendMessageToWebSocket: $isSent  ${webSocket!!.queueSize()}")
+                if (isSent == false) {
+                    BaseActivity.currentActivity?.launchLogger()
+                }
             }
             else {
                 Log.e(TAG, "Websocket3 Failed to send message: WebSocket is not initialized or sending failed")

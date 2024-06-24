@@ -1,31 +1,24 @@
 package com.diipl.moviebeam.ui.serial_info
 
-
-import android.Manifest
 import android.app.Activity
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
+import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.service.kappingservice.Actions
+import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
-import com.diipl.moviebeam.ui.kappingservice.Actions
-import com.diipl.moviebeam.ui.kappingservice.EndlessService
-import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.log
 import com.diipl.moviebeam.utils.observe
 
@@ -36,25 +29,7 @@ class SerialActivity : BaseActivity() {
 
     private lateinit var binding: ActivitySerialBinding
     private val serialViewModel: SerialViewModel by viewModels()
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-    private lateinit var loggingService: LoggingService
-
-    private var isServiceBound = false
-
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as LoggingService.LoggingServiceBinder
-            loggingService = binder.getService()
-            isServiceBound = true
-            loggingService.startWebSocket()
-        }
-
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            isServiceBound = false
-        }
-    }
-
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy { PreferenceDataStoreHelper(applicationContext) }
 
     override fun observeViewModel() {
         observe(serialViewModel.serialNoTakenLiveData, ::handleDataStoreResponse)
@@ -70,14 +45,15 @@ class SerialActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), 10)
-        }
+        launchLogger()
+    }
 
+    override fun onPause() {
+        super.onPause()
+        overridePendingTransition(0, 0)
     }
 
     private fun fetchSerialNo() {
@@ -114,6 +90,8 @@ class SerialActivity : BaseActivity() {
             serialViewModel.getStbStatusFromDataStore(preferenceDataStoreHelper)
         } else {
             fetchSerialNo()
+//            val serialNo = "29221HFGN30WLA"
+//            processSerialNo(serialNo)
         }
         actionOnService(Actions.START)
     }
@@ -137,7 +115,7 @@ class SerialActivity : BaseActivity() {
     }
 
     private fun redirectToStbDetailsActivity() {
-        startActivity(Intent(this, STBDetailsActivity::class.java))
+        startActivity(Intent(this, /*if (BuildConfig.DEBUG) MainMenuActivity::class.java else*/ STBDetailsActivity::class.java))
         finish()
     }
 
@@ -146,28 +124,9 @@ class SerialActivity : BaseActivity() {
         finish()
     }
 
-    private fun bindLoggingService() {
-        val serviceIntent = Intent(this, LoggingService::class.java)
-        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-    }
-
-    private fun unbindService() {
-        if (isServiceBound) {
-            unbindService(serviceConnection)
-            isServiceBound = false
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        bindLoggingService()
-        // Start LoggingService if not already running
-//        startService(Intent(this, LoggingService::class.java))
-    }
-
     override fun onStop() {
         super.onStop()
-        unbindService()
+        finish()
     }
 
     private fun actionOnService(action: Actions) {

@@ -28,8 +28,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class LocalAttractionActivity : BaseActivity() {
     private lateinit var binding: ActivityLocalAttractionBinding
-//    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-//    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
     private var gradientStartColor: String? = null
     private var gradientEndColor: String? = null

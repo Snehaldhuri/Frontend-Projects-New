@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.guestservice.news
 
-import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.news.NewsHeader
 import com.diipl.moviebeam.databinding.CardNewsBinding
+import com.diipl.moviebeam.utils.getGradientColor
 
 class NewsHeaderTabAdapter(
     private var onMenuItemClicked: (NewsHeader, View, Int) -> Unit,
@@ -17,7 +17,6 @@ class NewsHeaderTabAdapter(
 ) : RecyclerView.Adapter<NewsHeaderTabAdapter.MyViewHolder>() {
 
     private var newsHeaderList: List<NewsHeader> = emptyList()
-    private var gradient: GradientDrawable? = null
 
     inner class MyViewHolder(val binding: CardNewsBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -26,17 +25,17 @@ class NewsHeaderTabAdapter(
 
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
-/*
-        binding.root.setOnKeyListener { _, keycode, keyEvent ->
-            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-                when (keycode) {
-                    KeyEvent.KEYCODE_DPAD_RIGHT -> onRightKeyPressed()
-                    KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
+        /*
+                binding.root.setOnKeyListener { _, keycode, keyEvent ->
+                    if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                        when (keycode) {
+                            KeyEvent.KEYCODE_DPAD_RIGHT -> onRightKeyPressed()
+                            KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed()
+                        }
+                    }
+                    false
                 }
-            }
-            false
-        }
-*/
+        */
         return MyViewHolder(binding)
     }
 
@@ -48,7 +47,7 @@ class NewsHeaderTabAdapter(
         holder.binding.tvNews.text = item.headerName
 
         holder.itemView.post {
-            if (position == 0){
+            if (position == 0) {
                 holder.itemView.requestFocus()
                 onMenuItemClicked(item, holder.itemView, position)
             }
@@ -65,9 +64,9 @@ class NewsHeaderTabAdapter(
                 if (position == newsHeaderList.size.minus(1)) {
                     view.nextFocusDownId = view.id
                 }
-                holder.binding.clCard.background = gradient
+                holder.binding.clCard.background = getGradientColor()
                 view.setOnKeyListener { _, i, _ ->
-                    when(i){
+                    when (i) {
                         KeyEvent.KEYCODE_DPAD_LEFT -> onLeftKeyPressed(view)
                     }
                     false
@@ -86,10 +85,6 @@ class NewsHeaderTabAdapter(
 
     fun setNewsHeaderList(newsHeaderList: List<NewsHeader>) {
         this.newsHeaderList = newsHeaderList
-    }
-
-    fun setGradient(gradient: GradientDrawable) {
-        this.gradient = gradient
     }
 
 }

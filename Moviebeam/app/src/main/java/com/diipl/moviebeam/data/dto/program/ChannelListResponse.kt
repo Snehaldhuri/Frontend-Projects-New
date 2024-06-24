@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChannelListResponse(
     val id: Int? = null,
-    val channelLcnList: List<ChannelEpgDTO> = emptyList(),
+    val channelLcnList: MutableList<ChannelEpgDTO>? = null,
     val type: String? = null
 )

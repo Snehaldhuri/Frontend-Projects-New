@@ -1,11 +1,9 @@
 package com.diipl.moviebeam.ui.localattraction
 
 import android.animation.Animator
-import android.animation.AnimatorInflater
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.KeyEvent
@@ -19,7 +17,6 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAService
-import com.diipl.moviebeam.ui.guestservice.localAttraction.LaCardAdapterGs
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLA
 
 class LaCardAdapter(
@@ -31,6 +28,7 @@ class LaCardAdapter(
 
     private var itemList: List<LAService> = mutableListOf()
     var isFront = true
+
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_la_card_image)
         val textView: TextView = itemView.findViewById(R.id.tv_la_card_title)
@@ -54,7 +52,11 @@ class LaCardAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
         val item = itemList[position]
-        holder.imageView.loadImagesWithGlideExtLA(item.imagePathPoster)
+        if (!item.imagePathPosterNewCloud.isNullOrBlank())
+            holder.imageView.loadImagesWithGlideExtLA(item.imagePathPosterNewCloud)
+        if (!item.imagePathPosterCloud.isNullOrBlank())
+            holder.imageView.loadImagesWithGlideExtLA(item.imagePathPosterCloud)
+
         holder.textView.text = item.title
         holder.description.text = item.description.replace("<br/>", "")
 
@@ -94,11 +96,12 @@ class LaCardAdapter(
                     }
                 }
             }
-             false
+            false
         }
 
 
     }
+
     private fun flipImage(back: CardView, front: CardView) {
         val flipAnimator = ObjectAnimator.ofFloat(back, "rotationY", 0f, 360f)
         flipAnimator.duration = 500
@@ -109,7 +112,7 @@ class LaCardAdapter(
             }
         })
         flipAnimator.start()
-        isFront=false
+        isFront = false
     }
 
     private fun unFlipImage(back: CardView, front: CardView) {
@@ -122,7 +125,7 @@ class LaCardAdapter(
             }
         })
         unFlipAnimator.start()
-        isFront=true
+        isFront = true
     }
 
     fun setGradientDrawable(gradient: GradientDrawable) {
@@ -131,6 +134,7 @@ class LaCardAdapter(
 
     fun setList(itemList: List<LAService>) {
         this.itemList = itemList
-    }}
+    }
+}
 
 

@@ -11,6 +11,7 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
@@ -19,10 +20,10 @@ import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
@@ -32,6 +33,7 @@ private const val TAG = "RefreshingUiViewModel"
 
 @HiltViewModel
 class RefreshingUiViewModel @Inject constructor(
+    private val updateDataStore: UpdateDataStore,
     private val movieBeamRepository: MovieBeamRepository
 //    private val workManager: WorkManager
 ) : ViewModel() {
@@ -59,6 +61,9 @@ class RefreshingUiViewModel @Inject constructor(
 
     private val _epgLiveData = MutableLiveData<Resource<EPGResponse>>()
     val epgLiveData: LiveData<Resource<EPGResponse>> get() = _epgLiveData
+
+    private val _guestMessageLiveData = MutableLiveData<Resource<MessageResponse>>()
+    val guestMessageLiveData: LiveData<Resource<MessageResponse>> get() = _guestMessageLiveData
 
     fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -164,6 +169,18 @@ class RefreshingUiViewModel @Inject constructor(
                 _epgLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
                 _epgLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
+    fun fetchGuestMessage(ua: String, guestSessionId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _guestMessageLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getGuestMessages(ua, guestSessionId)
+            if (response == null) {
+                _guestMessageLiveData.postValue(Resource.DataError(code = R.string.server_error))
+            } else {
+                _guestMessageLiveData.postValue(Resource.Success(response))
             }
         }
     }
@@ -313,12 +330,11 @@ class RefreshingUiViewModel @Inject constructor(
     }
 
     fun setThemeResponseData(
-        dataStore: DataStore<ThemeResponse>,
         data: ThemeResponse
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
+            /*dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     accountId = data.accountId,
                     fontCss = data.fontCss,
@@ -336,43 +352,26 @@ class RefreshingUiViewModel @Inject constructor(
                     themeLogoFileName = data.themeLogoFileName
                 )
 
-            }
+            }*/
+            updateDataStore.updateThemeData(data)
         }
     }
 
     fun setHotelServicesResponseData(
-        dataStore: DataStore<HotelServiceResponse>,
         data: HotelServiceResponse
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-
-            }
+            updateDataStore.updateHSData(data)
         }
     }
 
     fun setLocalAttractionResponseData(
-        dataStore: DataStore<LocalAttractionResponse>,
         data: LocalAttractionResponse
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    servicesList = data.servicesList,
-                    type = data.type,
-                    version = data.version
-                )
-
-            }
+            updateDataStore.updateLAData(data)
         }
     }
 
@@ -419,7 +418,7 @@ class RefreshingUiViewModel @Inject constructor(
         dataStore: DataStore<ChannelListResponse>,
         data: ChannelListResponse
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     id = data.id,
@@ -437,6 +436,21 @@ class RefreshingUiViewModel @Inject constructor(
                 _channelListLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             }.collect {
                 _channelListLiveData.postValue(Resource.Success(it))
+            }
+        }
+    }
+
+    fun updateGuestMessage(
+        dataStore: DataStore<MessageResponse>,
+        data: MessageResponse
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataStore.updateData { currentPreferences ->
+                currentPreferences.copy(
+                    id = data.id,
+                    messagesList = data.messagesList,
+                    type = data.type,
+                )
             }
         }
     }

@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.app.Service
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.animation.AnimationUtils
@@ -115,8 +116,7 @@ fun View.setupSnackbar(
                     showSnackbar(this.context.getString(it), timeLength)
                 }
 
-                else -> {
-                }
+                else -> {}
             }
 
         }
@@ -157,7 +157,7 @@ fun ImageView.loadImagesWithGlideExtFomAssets(path: String) {
     }
 }
 
-fun ImageView.loadImagesWithGlideExt(url: String) {
+fun ImageView.loadImagesWithGlideExt(url: String?) {
     if (url != null) {
         Glide.with(this)
             .load(url)
@@ -166,7 +166,7 @@ fun ImageView.loadImagesWithGlideExt(url: String) {
     }
 }
 
-fun ImageView.loadImagesWithGlideExtLogo(url: String) {
+fun ImageView.loadImagesWithGlideExtLogo(url: String?) {
     if (url != null) {
         Glide.with(this)
             .load(url)
@@ -232,6 +232,26 @@ fun log(msg: String) {
 }
 
 
+class SafeClickListener(
+    private var defaultInterval: Int = 3000,
+    private val onSafeCLick: (View) -> Unit
+) : View.OnClickListener {
+    private var lastTimeClicked: Long = 0
+    override fun onClick(v: View) {
+        if (SystemClock.elapsedRealtime() - lastTimeClicked < defaultInterval) {
+            return
+        }
+        lastTimeClicked = SystemClock.elapsedRealtime()
+        onSafeCLick(v)
+    }
+}
+
+fun View.setSafeOnClickListener(onSafeClick: (View) -> Unit) {
+    val safeClickListener = SafeClickListener {
+        onSafeClick(it)
+    }
+    setOnClickListener(safeClickListener)
+}
 
 
 

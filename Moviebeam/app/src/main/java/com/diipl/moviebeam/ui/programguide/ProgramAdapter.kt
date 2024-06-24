@@ -8,9 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ProgramCardBinding
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getHeightInPercent
 import kotlin.math.roundToInt
 
 class ProgramAdapter(
@@ -31,6 +32,10 @@ class ProgramAdapter(
         val binding = ProgramCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
+
+        val params = binding.root.layoutParams
+//        params.width = getWidthInPercent(parent.context, 14)
+        params.height = getHeightInPercent(parent.context, 4)
 
         binding.root.setOnClickListener {
             programDto?.let {
@@ -212,21 +217,7 @@ class ProgramAdapter(
         params.width = percent
     }
 
-    private fun extractPercent(width: String?): Float {
-        var percent = 0F
-        val startIndex = width?.indexOf(":")
-        val endIndex = width?.indexOf("%")
-        if (startIndex != null && endIndex != null) {
-            percent = width.substring(startIndex + 1, endIndex).toFloat()
-        }
-//        if(percent>20 && percent<21){
-//            percent = 19.85F
-//        }
-//        if(percent>20 && percent<21){
-//            percent = 20.1F
-//        }
-        return percent
-    }
+
 
     private fun calculatePercent(percent: Float): Float {
         return (68 * percent) / 100

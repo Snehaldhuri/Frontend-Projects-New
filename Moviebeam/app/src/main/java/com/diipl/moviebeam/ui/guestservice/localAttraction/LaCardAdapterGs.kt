@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.graphics.drawable.GradientDrawable
 import android.text.Html
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -17,16 +16,18 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAService
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLA
 
 private const val TAG = "LaCardAdapterGs"
+
 class LaCardAdapterGs(
     private var onLeftKeyClicked: (View) -> Unit
 ) : RecyclerView.Adapter<LaCardAdapterGs.MyViewHolder>() {
-    private val defaultColor = "#FFFFFF"
-    private var gradientDrawable: GradientDrawable? = null
+
     private var itemList: List<LAService> = mutableListOf()
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -48,15 +49,7 @@ class LaCardAdapterGs(
         val params = view.layoutParams
         params.width = getWidthInPercent(parent.context, 40)
         params.height = getHeightInPercent(parent.context, 67)
-
-        view.setOnFocusChangeListener { v, b ->
-            if (b){
-                v.background = gradientDrawable
-            } else {
-                v.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
-
+        view.handleFocusChange()
         return MyViewHolder(view)
     }
 
@@ -65,7 +58,11 @@ class LaCardAdapterGs(
     override fun onBindViewHolder(holder: LaCardAdapterGs.MyViewHolder, position: Int) {
 
         val item = itemList[position]
-        holder.imageView.loadImagesWithGlideExtLA(item.imagePathPoster)
+        if (!item.imagePathPosterNewCloud.isNullOrBlank())
+            holder.imageView.loadImagesWithGlideExtLA(item.imagePathPosterNewCloud)
+        else if (!item.imagePathPosterCloud.isNullOrBlank())
+            holder.imageView.loadImagesWithGlideExtLA(item.imagePathPosterCloud)
+
         holder.textView.text = item.title
         holder.description.text = item.description.replace("<br/>", "")
 
@@ -100,7 +97,7 @@ class LaCardAdapterGs(
             if (hasFocus) {
 
                 holder.frontCard.isClickable = false
-                holder.flipButton.background = gradientDrawable
+                holder.flipButton.background = getGradientColor()
 
                 val scaleX = ObjectAnimator.ofFloat(holder.itemView, View.SCALE_X, 1.0f, 1.02f)
                 val scaleY = ObjectAnimator.ofFloat(holder.itemView, View.SCALE_Y, 1.0f, 1.02f)
@@ -113,7 +110,7 @@ class LaCardAdapterGs(
                 view.setOnKeyListener { _, code, event ->
                     if (event.action == KeyEvent.ACTION_DOWN) {
                         when (code) {
-                            KeyEvent.KEYCODE_DPAD_CENTER ,KeyEvent.KEYCODE_ENTER -> {
+                            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
                                 if (holder.frontCard.visibility == View.VISIBLE) {
                                     flipImage(holder.frontCard, holder.backCard)
 //                                    holder.okButton.background = gradientDrawable
@@ -128,8 +125,11 @@ class LaCardAdapterGs(
                                             b.setOnKeyListener { _, keyCode, event ->
                                                 if (event.action == KeyEvent.ACTION_DOWN) {
                                                     when (keyCode) {
-                                                        KeyEvent.KEYCODE_DPAD_CENTER ,KeyEvent.KEYCODE_ENTER -> {
-                                                            unFlipImage(holder.frontCard, holder.backCard)
+                                                        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+                                                            unFlipImage(
+                                                                holder.frontCard,
+                                                                holder.backCard
+                                                            )
                                                             holder.flipButton.requestFocus()
                                                         }
 
@@ -144,7 +144,7 @@ class LaCardAdapterGs(
                             }
                         }
                     }
-                    when(code){
+                    when (code) {
                         KeyEvent.KEYCODE_DPAD_LEFT -> {
                             onLeftKeyClicked(view)
                         }
@@ -157,15 +157,13 @@ class LaCardAdapterGs(
                 holder.itemView.scaleX = 1.0f
                 holder.itemView.scaleY = 1.0f
                 if (holder.frontCard.visibility == View.VISIBLE) {
-                    holder.flipButton.background = gradientDrawable
+                    holder.flipButton.background = getGradientColor()
                     holder.flipButton.requestFocus()
                 } else {
                     holder.scanImage.requestFocus()
                 }
             }
         }
-
-
     }
 
     private fun flipImage(back: CardView, front: CardView) {
@@ -190,10 +188,6 @@ class LaCardAdapterGs(
             }
         })
         unFlipAnimator.start()
-    }
-
-    fun setGradientDrawable(gradient: GradientDrawable) {
-        gradientDrawable = gradient
     }
 
     fun setList(itemList: List<LAService>) {

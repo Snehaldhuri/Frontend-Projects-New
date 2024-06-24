@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.utils
 
+import android.graphics.drawable.GradientDrawable
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
@@ -8,9 +9,19 @@ import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 
 object Constants {
 
+    // WorkManager
+    val DATA_TYPE = "dataType"
+    val DATA_JSON = "dataJSON"
+
+    var isWorkDone = 0
+    var isRebooted = -1
+    var GLOBAL_LOOP_SEC = 60
+
+    // IP Details
     var IP_ADDRESS: String = "0.0.0.0"
     var IP_GATEWAY: String = "0.0.0.0"
-    lateinit var IP_NET_MASK: String
+    var IP_NET_MASK: String = "0.0.0.0"
+    var CONNECTIVITY = "NO INTERNET"
 
     const val SHOWTIME_RELEASE_TYPE_ID = 1
     const val ENABLE = "ENABLE"
@@ -35,12 +46,13 @@ object Constants {
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
     const val C_TYPE_TRAILER: String = "TRAILER"
+    var IS_CHECKED_IN: Boolean = false
     var SESSION_ID: String = ""
     var RENTAL_ID: String = ""
     var RENTAL_TIME: Long = 1707840000000
     var MOVIE_SELECTED_POSITION: Int = -1
     var MOVIE_PARENT_POSITION: Int = -1
-//    var isUserCheckedIn = false
+    //    var isUserCheckedIn = false
 //    var isUserCheckedIn = true
     const val SPLASH_DELAY = 3000
     var timer = ""
@@ -60,6 +72,10 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
+    var GRADIENT: GradientDrawable? = null
+    var TITLE: String? = null
+    var LOGO_IMAGE: String? = null
+    var BG_IMAGE: String? = null
     var HOTEL_VIDEO_LOOP_COUNT = 3
     var HOTEL_VIDEO_DURATION = 0L
     var HOTEL_VIDEO_URL = ""
@@ -77,13 +93,15 @@ object Constants {
     const val MODE = "JSON"
     const val THEME_DIRECTORY = "ThemeImages"
     const val HOTEL_LOGO = "HotelLogo.jpg"
-    const val BACKGROUND_IMAGE = "BackGroundImage.jpg"
+    var BACKGROUND_IMAGE : String? = null
     var EPG_CDN_URL = ""
     const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
     const val SERIAL_NO_PATH_SUFFIX = "/Documents/system/serialNo.txt"
 
-    const val MDM_PACKAGE_NAME = "com.hmdm.launcher"
+    const val MDM_PACKAGE_NAME = "com.diipl.mdm"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
+    const val MDM_MAIN_ACTIVITY = "$MDM_PACKAGE_NAME.ui.MainActivity"
+    const val MDM_CLEAR_CREDENTIALS_ACTION = "$MDM_PACKAGE_NAME.services.START_CLEAR_CREDENTIALS_RECEIVER"
     const val SERIAL_NO_KEY = "SERIAL_NO_KEY"
 
     const val ASSET = "ASSET"
@@ -105,7 +123,8 @@ object Constants {
     const val FOOD_DELIVERY_ID = "foodDelivery"
 
     //Home Page Menu Button Title
-    const val PROGRAM_GUIDE = "Program Guide"
+//    const val PROGRAM_GUIDE = "Program Guide"
+    const val PROGRAM_GUIDE = "Live TV"
     const val MOVIES_MORE = "Movies & More"
     const val SHOWTIME_NAME = "Free Selections"
     const val SHOWTIME = "Showtime"
@@ -115,7 +134,7 @@ object Constants {
     const val HOTEL_SERVICES = "Hotel Info"
     const val CRACKLE_DEFAULT = "Crackle"
     const val IN_ROOM_DINING = "In Room Dining"
-    const val LOCAL_ATTRACTION = "Local Attraction"
+    const val LOCAL_ATTRACTION = "Local Attractions"
     const val FOOD_DELIVERY = "Food Delivery"
 
 
@@ -159,6 +178,9 @@ object Constants {
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
+    var APP_LIST: ArrayList<String> = ArrayList()
+    const val APP_LIST_PARAM = "APP_LIST"
+    const val CLEAR_CREDENTIALS_REQUEST_CODE = 10
 
     // Static Movies URl
 
@@ -234,7 +256,7 @@ object Constants {
     const val EXPRESS_CHECKOUT = "Express Checkout"
     const val MESSAGE = "Messages"
 
-
+    val MESSAGE_MODEL = GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black)
     val GUEST_SERVICE_BUTTON_LIST = listOf(
         GsBtnModel(WEATHER_ID, WEATHER, R.drawable.weather, R.drawable.weather_black),
         GsBtnModel(
@@ -259,7 +281,7 @@ object Constants {
             R.drawable.guest_feedback,
             R.drawable.guest_feedback_black
         ),
-        GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black),
+        MESSAGE_MODEL,
         GsBtnModel(CONCIERGE_ID, CONCIERGE, R.drawable.concierge, R.drawable.concierge_black),
         GsBtnModel(
             FOOD_DELIVERY_ID,
@@ -320,7 +342,7 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
-//        "Prime Video",
+    //        "Prime Video",
 //        "Crackle",
 //        "Spotify",
 //        "Plex",
@@ -377,6 +399,19 @@ object Constants {
     var NEXT_BUTTON_STATE = 0
 
     var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
+    const val TICKER_DTO_PARAM = "TICKER_DTO"
+    const val TICKER_MESSAGE_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
+    const val CHECK_OUT_TIME_DATE_FORMAT = "hh:mm a"
 
+    const val BUILD_TYPE_CHROMECAST = "CHROMECAST"
+    const val BUILD_TYPE_STB = "STB"
+    const val BUILD_TYPE_MINI_BOX = "MINI_BOX"
+
+    const val DESCRIPTION_PARAM = "desc"
+    const val SERVICE_TYPE_CAROUSEL = 1
+    const val SERVICE_TYPE_SERVICE_INFO = 2
+    const val SERVICE_TYPE_HELP_INFO = 3
+
+    const val SERVICE_IMAGE_LIST_PARAM = "SERVICE_IMAGE_LIST"
 }
 

@@ -6,31 +6,38 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.PopupWindow
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
+import com.diipl.moviebeam.databinding.PopupLayoutBinding
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.loggerService.LoggingService
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -46,13 +53,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AppWorldActivity : BaseActivity() {
 
+    private val TAG = "AppWorldActivity"
+
     private lateinit var binding: ActivityAppWorldBinding
     private val appWorldViewModel: AppWorldViewModel by viewModels()
 
-    private var gradient: GradientDrawable? = null
     private var isCheckedIn = false
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -77,22 +84,20 @@ class AppWorldActivity : BaseActivity() {
             fetchDetails()
             binding.rvApps.layoutManager = GridLayoutManager(this, 4)
             binding.btnBack.setOnClickListener { finish() }
-            binding.btnBack.setOnFocusChangeListener { view, isFocused ->
-                if (isFocused) {
-                    view.background = gradient
-                } else {
-                    view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
+            binding.btnBack.handleFocusChange()
+            binding.btnClearCredentials.handleFocusChange()
+            binding.btnClearCredentials.setOnClickListener {
+                clearCredentials()
+                showPopup()
             }
-            Log.d("checked in ", "checked in $isCheckedIn")
             LoggingService.sendMessageToWebSocket(
-                "In AppWorldMain activity",
+                "In App World activity",
                 getCurrentPanelNumber()
             )
         } catch (e: Exception) {
             e.printStackTrace()
             LoggingService.sendMessageToWebSocket(
-                "launchApp Exception in AppWorldMain activity ${e.message}",
+                "launchApp Exception in App World activity ${e.message}",
                 getCurrentPanelNumber()
             )
         }
@@ -102,17 +107,36 @@ class AppWorldActivity : BaseActivity() {
         this.isCheckedIn = status
     }
 
-    private fun getInstalledApps(apiAppList: List<SelectedApps>) {
+    private fun getInstalledApps(apiAppList: List<SelectedApps>) = lifecycleScope.launch {
         try {
             val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-            val installedApps = filterSystemApps(allApps)
-            val selectedApps = mutableListOf<ApplicationInfo>()
-            apiAppList.forEach { selectedApp ->
-                installedApps.forEach { installedApp ->
-                    if (selectedApp.forAndroid and (selectedApp.value == installedApp.packageName))
-                        selectedApps.add(installedApp)
+
+          /*  val selectedApps = allApps.filter { installedApp ->
+                apiAppList.any { it.forAndroid && it.value == installedApp.packageName }
+            }
+            selectedApps.forEach { Log.e(TAG, "selectedApps: ${it.packageName}")}
+
+            val list = mutableListOf<ApplicationInfo>()
+
+            apiAppList.forEach {a->
+                selectedApps.forEach {s->
+                    if (a.forAndroid && a.value == s.packageName){
+                        list.add(s)
+                    }
+                }
+            }*/
+
+            val apiApps = apiAppList.filter { it.forAndroid }.map { it.value }.toSet()
+
+            val list = mutableListOf<ApplicationInfo>()
+            apiApps.forEach {a->
+                allApps.forEach {s->
+                    if (a == s.packageName){
+                        list.add(s)
+                    }
                 }
             }
+
             val adapter = AppAdapter {
                 if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
                     launchAppSecured(it.packageName)
@@ -120,8 +144,9 @@ class AppWorldActivity : BaseActivity() {
                     launchApp(it.packageName)
                 }
             }
-            adapter.setAppList(selectedApps)
+            adapter.setAppList(list)
             binding.rvApps.adapter = adapter
+            Constants.APP_LIST = ArrayList(apiApps)
         } catch (e: Exception) {
             LoggingService.sendMessageToWebSocket(
                 "getInstalledApps Exception in AppWorldMain activity ${e.message}",
@@ -130,10 +155,10 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-    private fun createRequestBody(roomNo: String, UA: String, accessType: Int): String {
+    private fun createRequestBody(roomNo: String, ua: String, accessType: Int): String {
         val netflixDetails = JSONObject().apply {
             put("stbRoomNo", roomNo)
-            put("ua", UA)
+            put("ua", ua)
             put("accessType", accessType)
         }
         return netflixDetails.toString()
@@ -192,7 +217,6 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-
     private fun launchAppSecured(packageName: String?) {
         try {
             val intent = Intent()
@@ -220,48 +244,20 @@ class AppWorldActivity : BaseActivity() {
         }
     }
 
-
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
             is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
-                val response = appWorldViewModel.accountSetupLiveData.value?.data
-                response?.selectedAppsList?.let {
-                    getInstalledApps(it)
+                status.data?.let { response ->
+                    getInstalledApps(response.selectedAppsList)
+                    binding.pbLoader.toInvisible()
                 }
-                binding.pbLoader.toInvisible()
             }
 
             else -> {
                 status.errorCode?.let { appWorldViewModel.showToastMessage(getString(it)) }
             }
         }
-    }
-
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
-    }
-
-    private fun getGradient(startColor: String?, endColor: String?): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TR_BL,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
     }
 
     private fun filterSystemApps(apps: List<ApplicationInfo>): List<ApplicationInfo> {
@@ -274,17 +270,39 @@ class AppWorldActivity : BaseActivity() {
         return applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
     }
 
-
     private fun fetchDetails() {
         binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
-        gradient = getGradient(
-            intent.extras?.getString("gradientStartColor"),
-            intent.extras?.getString("gradientEndColor")
+        binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(Constants.LOGO_IMAGE)
+        binding.root.loadBg()
+    }
+
+    private fun showPopup() {
+        val popupBinding = PopupLayoutBinding.inflate(layoutInflater)
+        val popupWindow = PopupWindow(
+            popupBinding.root,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
         )
-        intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
+
+        popupBinding.btnOk.requestFocus()
+        popupBinding.btnOk.background = getGradientColor()
+        val blurView = View(this)
+        blurView.setBackgroundColor(Color.parseColor("#80000000"))
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT
+        )
+        window.addContentView(blurView, params)
+
+        popupWindow.showAtLocation(popupBinding.root, Gravity.CENTER, 0, 0)
+
+        popupBinding.btnOk.setOnClickListener {
+            popupWindow.dismiss()
+            (blurView.parent as? ViewGroup)?.removeView(blurView)
         }
-        loadBg(intent.extras?.getString("themeBackgroundFileName"))
+
+        popupBinding.tvPopupText.text = getString(R.string.app_world_clear_credentials_message)
     }
 
 }
