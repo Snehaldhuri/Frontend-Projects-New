@@ -25,7 +25,7 @@ class CastingActivity : BaseActivity() {
             webView.clearCache(true)
             webView.settings.javaScriptEnabled = true
             webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
-            webView.loadUrl(Constants.CASTING_URL)
+            Constants.CASTING_URL?.let { webView.loadUrl(it) }
             LoggingService.sendMessageToWebSocket(
                 "In CastingPage activity",
                 getCurrentPanelNumber()

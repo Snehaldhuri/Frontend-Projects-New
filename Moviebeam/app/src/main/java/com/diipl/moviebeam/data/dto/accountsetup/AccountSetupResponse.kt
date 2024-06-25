@@ -99,5 +99,6 @@ data class AccountSetupResponse(
     val vodMgrIp: String = "",
     val vodMgrPort: String = "",
     val vodVisible: Int = 0,
-    val welcomeScreenVisible: Int = 0
+    val welcomeScreenVisible: Int = 0,
+    val stbCastingPageUrl: String? = null
 )
