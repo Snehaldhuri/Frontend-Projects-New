@@ -9,7 +9,7 @@ import com.diipl.moviebeam.dtv.DvbContract;
 import com.diipl.moviebeam.dtv.SatelliteBean;
 import com.diipl.moviebeam.dtv.TransponderBean;
 
-import org.eclipse.paho.client.mqttv3.MqttTopic;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -43,20 +43,20 @@ public class Utils {
             if (i2 > 0) {
                 sb.append("(");
                 sb.append(i + 1);
-                sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+                sb.append("/");
                 sb.append(i2);
                 sb.append(")");
             }
             sb.append(transponderBean.getFreq() / 1000);
-            sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+            sb.append("/");
             sb.append(getArray(context, R.array.polarity)[transponderBean.getPolar()]);
-            sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+            sb.append("/");
             sb.append(transponderBean.getSymbol() / 1000);
         } else if (str.equals(DvbContract.Tuner.DVB_C)) {
             sb.append(transponderBean.getFreq() / 1000000);
             sb.append("MHz/");
             sb.append(transponderBean.getSymbol() / 1000);
-            sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+            sb.append("/");
             sb.append(getArray(context, R.array.modulation_array)[transponderBean.getMod()]);
         } else {
             sb.append(transponderBean.getFreq() / 1000000);
@@ -90,11 +90,11 @@ public class Utils {
         if (!(lofLo == lofHi && lofHi == 0) && customLowLnb <= 0) {
             String str2 = array[0];
             if (satelliteBean.getLnbType() == 4) {
-                str = lofLo + MqttTopic.TOPIC_LEVEL_SEPARATOR + lofHi + context.getResources().getString(R.string.lnb_ocs);
+                str = lofLo + "/" + lofHi + context.getResources().getString(R.string.lnb_ocs);
             } else if (lofLo == lofHi) {
                 str = String.valueOf(lofLo);
             } else {
-                str = lofLo + MqttTopic.TOPIC_LEVEL_SEPARATOR + lofHi;
+                str = lofLo + "/" + lofHi;
             }
             Log.d(TAG, "getLnbValue : " + str);
             for (int i = 0; i < array.length; i++) {
@@ -163,14 +163,14 @@ public class Utils {
         Object obj2;
         StringBuilder sb = new StringBuilder();
         sb.append(i);
-        sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+        sb.append("/");
         if (i2 >= 10) {
             obj = Integer.valueOf(i2);
         } else {
             obj = "0" + i2;
         }
         sb.append(obj);
-        sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+        sb.append("/");
         if (i3 >= 10) {
             obj2 = Integer.valueOf(i2);
         } else {
@@ -225,7 +225,7 @@ public class Utils {
         if (i == -1 || i2 == 0) {
             return "";
         }
-        return "(" + (i + 1) + MqttTopic.TOPIC_LEVEL_SEPARATOR + i2 + ")";
+        return "(" + (i + 1) + "/" + i2 + ")";
     }
 
     public static List<String> getUniCableUserBand1() {

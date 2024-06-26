@@ -5,7 +5,7 @@ import static com.diipl.moviebeam.dtv.DvbContract.AUTHORITY;
 import android.content.ContentUris;
 import android.net.Uri;
 
-import org.eclipse.paho.client.mqttv3.MqttTopic;
+
 
 public class ChannelContract {
 
@@ -28,7 +28,7 @@ public class ChannelContract {
         public static final String COLUMN_TS_ID = "ts_id";
         public static final String COLUMN_USER_ID = "user_id";
         public static final String COLUMN_WATCH_DURATION = "watch_duration";
-        public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + MqttTopic.TOPIC_LEVEL_SEPARATOR +"recommend_channel");
+        public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" +"recommend_channel");
         public static final String PATH = "recommend_channel";
         public static final String TABLE_NAME = "recommend_channel_table";
 

@@ -2,14 +2,14 @@ package com.diipl.moviebeam.dtv;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Patterns;
 
 import androidx.exifinterface.media.ExifInterface;
-
-import org.eclipse.paho.client.mqttv3.MqttTopic;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 
 public class SetupParamBean implements Parcelable, Cloneable {
@@ -191,19 +191,19 @@ public class SetupParamBean implements Parcelable, Cloneable {
         StringBuilder sb = new StringBuilder();
         if (str.equals(DvbContract.Tuner.DVB_S)) {
             sb.append(transponderBean.getFreq() / 1000);
-            sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+            sb.append("/");
             sb.append(new String[]{"H", ExifInterface.GPS_MEASUREMENT_INTERRUPTED}[transponderBean.getPolar()]);
-            sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+            sb.append("/");
             sb.append(transponderBean.getSymbol() / 1000);
         } else if (str.equals(DvbContract.Tuner.DVB_C)) {
             sb.append(transponderBean.getFreq());
-            sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+            sb.append("/");
             sb.append(transponderBean.getSymbol());
-            sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+            sb.append("/");
             sb.append(new String[]{"Auto", "4QAM", "8QAM", "16QAM", "32QAM", "64QAM", "128QAM", "256QAM"}[transponderBean.getMod()]);
         } else {
             sb.append(transponderBean.getFreq());
-            sb.append(MqttTopic.TOPIC_LEVEL_SEPARATOR);
+            sb.append("/");
             sb.append(new String[]{"8MHZ", "7MHZ", "6MHZ", "5MHZ", "10MHZ"}[transponderBean.getBw()]);
         }
         return sb.toString();

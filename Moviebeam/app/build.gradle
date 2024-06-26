@@ -29,7 +29,7 @@ android {
         minSdk 24
         targetSdk 33
         versionCode 1
-        versionName "2.5.14"
+        versionName "2.6.00"
 
         def formattedDate = new Date().format('yyyyMMdd')
         def apkName = "Moviebeam_Prod_V(${versionName})_$formattedDate"
@@ -60,12 +60,6 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
-/*
-    flavorDimensions("all")
-
-    productFlavors {
-        opensource { }
-    }*/
 
 }
 

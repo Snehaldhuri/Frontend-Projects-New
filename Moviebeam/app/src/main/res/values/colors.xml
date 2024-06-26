@@ -8,6 +8,7 @@
     <color name="yellow">#FFC107</color>
     <color name="white">#FFFFFF</color>
     <color name="white_5">#80FFFFFF</color>
+    <color name="black_5">#80000000</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
     <color name="carousel_focused">#FFFFFF</color>

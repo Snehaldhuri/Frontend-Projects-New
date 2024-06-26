@@ -361,7 +361,7 @@ object Constants {
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
     //Casting
-    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
+    const val CASTING_URL = "https://democast.movie-beam.com/"
 
     // Kaping
     const val KAPING = "KAPING"
@@ -413,5 +413,8 @@ object Constants {
     const val SERVICE_TYPE_HELP_INFO = 3
 
     const val SERVICE_IMAGE_LIST_PARAM = "SERVICE_IMAGE_LIST"
-}
 
+    const val DTV_KIT_PACKAGE_NAME = "org.dtvkit.inputsource"
+    var DVB_INPUT_ID = "$DTV_KIT_PACKAGE_NAME/.DtvkitTvInput/HW19"
+
+}

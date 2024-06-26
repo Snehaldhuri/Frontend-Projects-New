@@ -6,7 +6,7 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.util.Log;
 
-import org.eclipse.paho.client.mqttv3.MqttTopic;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,7 +43,7 @@ public final class DvbContract {
         public static final String BW = "bw";
         public static final String CONTENT_ITEM_TYPE = ("vnd.android.cursor.item/" + DvbContract.AUTHORITY + "." + "transponder");
         public static final String CONTENT_TYPE = ("vnd.android.cursor.dir/" + DvbContract.AUTHORITY + "." + "transponder");
-        public static final Uri CONTENT_URI = Uri.parse("content://" + DvbContract.AUTHORITY + MqttTopic.TOPIC_LEVEL_SEPARATOR + "transponder");
+        public static final Uri CONTENT_URI = Uri.parse("content://" + DvbContract.AUTHORITY + "/" + "transponder");
         public static final String DB_ID = "db_id";
         public static final Uri DTV_KIT_CONTENT_URI = Uri.parse("content://org.dtvkit.inputsource.data.DvbProvider/transponder");
         public static final String DVBSFLAG = "dvbs_flag";
@@ -102,7 +102,7 @@ public final class DvbContract {
         public static final String COMMITTED_CMD = "committed_cmd";
         public static final String CONTENT_ITEM_TYPE = ("vnd.android.cursor.item/" + DvbContract.AUTHORITY + "." + "satellite");
         public static final String CONTENT_TYPE = ("vnd.android.cursor.dir/" + DvbContract.AUTHORITY + "." + "satellite");
-        public static final Uri CONTENT_URI = Uri.parse("content://" + DvbContract.AUTHORITY + MqttTopic.TOPIC_LEVEL_SEPARATOR + "satellite");
+        public static final Uri CONTENT_URI = Uri.parse("content://" + DvbContract.AUTHORITY + "/" + "satellite");
         public static final String CUSTOM_HIGH_LNB = "custom_high_lnb";
         public static final String CUSTOM_HIGH_LNB_MAX = "custom_high_lnb_max";
         public static final String CUSTOM_HIGH_LNB_MIN = "custom_high_lnb_min";
