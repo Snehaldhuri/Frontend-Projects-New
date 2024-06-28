@@ -196,6 +196,7 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.ACCOUNT_ID = it.accountId
                     Constants.STB_ROOM_NO = it.roomNo
                     Constants.EPG_CDN_URL = it.epgCdnUrl
+                    Constants.CASTING_URL = it.stbCastingPageUrl
                     scheduleClearCredentialsTask(it.checkOutTime)
                     stbDetailViewModel.fetchHotelService()
                 }

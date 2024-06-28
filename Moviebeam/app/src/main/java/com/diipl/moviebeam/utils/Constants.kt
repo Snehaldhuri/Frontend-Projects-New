@@ -361,7 +361,7 @@ object Constants {
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
     //Casting
-    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
+    var CASTING_URL: String? = null
 
     // Kaping
     const val KAPING = "KAPING"
