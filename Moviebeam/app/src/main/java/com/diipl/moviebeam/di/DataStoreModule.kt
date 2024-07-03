@@ -5,6 +5,7 @@ import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.Serializer
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStoreFile
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
@@ -57,7 +58,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = ThemeResponseSerializer(),
             produceFile = { appContext.dataStoreFile(THEME_RESPONSE_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { ThemeResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -69,7 +72,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = AccountSetupSerializer(),
             produceFile = { appContext.dataStoreFile(ACCOUNT_SETUP_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { AccountSetupResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -81,7 +86,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = WeatherSerializer(),
             produceFile = { appContext.dataStoreFile(WEATHER_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { WeatherResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -93,7 +100,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = DateTimeSerializer(),
             produceFile = { appContext.dataStoreFile(DATE_TIME_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { DateTimeResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -105,7 +114,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = HotelServiceSerializer(),
             produceFile = { appContext.dataStoreFile(HOTEL_SERVICE_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { HotelServiceResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -117,7 +128,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = LocalAttractionSerializer(),
             produceFile = { appContext.dataStoreFile(LOCAL_ATTRACTION_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { LocalAttractionResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -129,7 +142,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = MoviesSerializer(),
             produceFile = { appContext.dataStoreFile(MOVIES__DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { MoviesResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -141,7 +156,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = ShowTimeSerializer(),
             produceFile = { appContext.dataStoreFile(SHOWTIME__DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { ShowTimeResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -153,7 +170,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = GuestDetailsSerializer(),
             produceFile = { appContext.dataStoreFile(GUEST_DETAILS_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { CmdDataDto() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -165,7 +184,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = ChannelListSerializer(),
             produceFile = { appContext.dataStoreFile(CHANNEL_LIST_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { ChannelListResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -177,7 +198,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = TickerSerializer(),
             produceFile = { appContext.dataStoreFile(TICKER_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { TickerResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )
@@ -189,7 +212,9 @@ object DataStoreModule {
         return DataStoreFactory.create(
             serializer = GuestMessageSerializer(),
             produceFile = { appContext.dataStoreFile(MESSAGE_DATA_STORE_FILE_NAME) },
-            corruptionHandler = null,
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { MessageResponse() }
+            ),
             migrations = listOf(),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
         )

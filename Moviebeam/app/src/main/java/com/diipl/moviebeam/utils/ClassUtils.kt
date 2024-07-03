@@ -29,14 +29,19 @@ import androidx.core.content.ContextCompat
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.ClearCredentialsReceiver
+import com.diipl.moviebeam.service.EpgWorker
 import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.TickerMsgReceiver
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
@@ -74,6 +79,7 @@ import java.util.Calendar
 import java.util.Collections
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaField
 
@@ -659,12 +665,62 @@ fun Activity.launchLogger() {
 
 }
 
-fun compareVersions(apkVersion: String): Boolean {
-    val a = apkVersion.replace(".", "").toInt()
+fun compareVersions(apkVersion: String?): Boolean {
+    val a = apkVersion?.replace(".", "")?.toInteger()
     val b = BuildConfig.VERSION_NAME.replace(".", "").toInt()
     return a != b
 }
 
 fun Context.showToast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+}
+
+fun isEpgDataValid(
+    startDateStr: String?,
+    endDateStr: String?,
+    simpleDateFormatter: SimpleDateFormat
+): Boolean {
+    if (startDateStr == null || endDateStr == null)
+        return false
+    val startDate = simpleDateFormatter.parse(startDateStr)
+    val endDate = simpleDateFormatter.parse(endDateStr)
+    val currentDate = Date()
+    return !(currentDate.before(startDate) or currentDate.after(endDate))
+}
+
+fun removeEarlierData(
+    iterator: MutableIterator<MutableMap.MutableEntry<String, MutableList<ChannelEpgDTO>>>?,
+    currentKey: String
+) {
+    while (iterator?.hasNext() == true) {
+        val entry = iterator.next()
+        if (entry.key == currentKey)
+            break
+        iterator.remove()
+    }
+}
+
+fun Context.scheduleEpgApiCall() {
+    logD("scheduleEpgApiCall: Scheduling Api Call")
+    val myWork = PeriodicWorkRequestBuilder<EpgWorker>(
+        Constants.EPG_API_CALL_TIME_INTERVAL_HOURS,
+        TimeUnit.HOURS
+    ).build()
+
+    WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+        "EpgApiCall",
+        ExistingPeriodicWorkPolicy.REPLACE,
+        myWork
+    )
+    logD("scheduleEpgApiCall: Scheduling Api Call Done")
+}
+
+fun Any.logD(msg: String) {
+    LoggingService.sendMessageToWebSocket(msg, getCurrentPanelNumber())
+    Log.d(this::class.java.simpleName, msg)
+}
+
+fun Any.logE(msg: String) {
+    LoggingService.sendMessageToWebSocket(msg, getCurrentPanelNumber())
+    Log.e(this::class.java.simpleName, msg)
 }

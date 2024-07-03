@@ -413,6 +413,7 @@ class STBDetailViewModel @Inject constructor(
                 )
             }
         }
+
     }
 
     fun setMoviesResponseData(

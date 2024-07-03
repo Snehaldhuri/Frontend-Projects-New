@@ -5,7 +5,7 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.diipl.moviebeam.data.dto.program.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.DisconnectedChannelCardBinding
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent

@@ -9,7 +9,7 @@ plugins {
 
 android {
     signingConfigs {
-        debug {
+        release {
             storeFile file('D:\\Projects\\Moviebeam\\Production\\moviebeam_prod.jks')
             storePassword 'diipl@123'
             keyAlias 'key0'
@@ -29,13 +29,19 @@ android {
         minSdk 24
         targetSdk 33
         versionCode 1
-        versionName "2.5.14"
+        versionName chromeCastVersion
 
-        def formattedDate = new Date().format('yyyyMMdd')
-        def apkName = "Moviebeam_Prod_V(${versionName})_$formattedDate"
+    }
 
-        setProperty("archivesBaseName", apkName)
-
+    applicationVariants.configureEach { variant ->
+        variant.outputs.each { output ->
+            if (variant.buildType.name == "chromeCast") {
+                output.outputFileName = "Moviebeam_Prod_CC_v${chromeCastVersion}.apk"
+            }else if (variant.buildType.name == "stb") {
+                output.outputFileName = "Moviebeam_Prod_STB_v${stbVersion}.apk"
+                output.versionNameOverride = stbVersion
+            }
+        }
     }
 
     buildFeatures {
@@ -44,11 +50,21 @@ android {
     }
 
     buildTypes {
-        release {
+        chromeCast {
             minifyEnabled true
             shrinkResources true
+            buildConfigField("String", "BUILD_TYPE", "\"CHROMECAST\"")
+            buildConfigField("int", "BUILD_TYPE_ID", "4")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
+        }
+        stb {
+            minifyEnabled true
+            shrinkResources true
+            buildConfigField("String", "BUILD_TYPE", "\"STB\"")
+            buildConfigField("int", "BUILD_TYPE_ID", "5")
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 
@@ -60,12 +76,6 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
-/*
-    flavorDimensions("all")
-
-    productFlavors {
-        opensource { }
-    }*/
 
 }
 

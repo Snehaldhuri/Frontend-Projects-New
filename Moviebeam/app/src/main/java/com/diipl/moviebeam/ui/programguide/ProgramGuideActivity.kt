@@ -48,6 +48,7 @@ import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
+import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
@@ -63,7 +64,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -91,8 +91,9 @@ class ProgramGuideActivity : BaseActivity() {
 
     private lateinit var hotelChannel: HotelChannel
     private var hotelChannelVideo: String = ""
+
     @Inject
-    lateinit var preferences : SharedPreference
+    lateinit var preferences: SharedPreference
     private var irService: IIrService? = null
 
     private val usbManager: UsbManager by lazy { getSystemService(USB_SERVICE) as UsbManager }
@@ -432,42 +433,42 @@ class ProgramGuideActivity : BaseActivity() {
 
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
 //        if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_CHROMECAST, true)) {
-                switchToTV(program)
-            /* } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_MINI_BOX, true)) {
-                 binding.layoutVideo.videoView.player?.pause()
-                 val bundle = Bundle()
-                 bundle.putStringArrayList(
-                     Constants.CONTENT_LIST_PARAM,
-                     channelContent as ArrayList<String?>
-                 )
-                 bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelList?.indexOf(program) ?: 0)
-                 bundle.putString(Constants.CHANEL_NO_PARAM, program?.CNO)
-                 bundle.putString(Constants.CHANNEL_NAME_PARAM, program?.CN)
-                 bundle.putString(Constants.CHANNEL_LOGO_PARAM, program?.CL)
-                 bundle.putString(Constants.NOW_SHOWING_PARAM, program?.liveProg1)
-                 bundle.putString(Constants.NEXT_PROGRAM_PARAM, program?.liveProg2)
-                 bundle.putString(Constants.PROG_1_TIME_PARAM, program?.prog1Time)
-                 bundle.putString(Constants.PROG_2_TIME_PARAM, program?.prog2Time)
-                 bundle.putString(Constants.CHANNEL_LIST_PARAM, Gson().toJson(channelList))
+        switchToTV(program)
+        /* } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_MINI_BOX, true)) {
+             binding.layoutVideo.videoView.player?.pause()
+             val bundle = Bundle()
+             bundle.putStringArrayList(
+                 Constants.CONTENT_LIST_PARAM,
+                 channelContent as ArrayList<String?>
+             )
+             bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelList?.indexOf(program) ?: 0)
+             bundle.putString(Constants.CHANEL_NO_PARAM, program?.CNO)
+             bundle.putString(Constants.CHANNEL_NAME_PARAM, program?.CN)
+             bundle.putString(Constants.CHANNEL_LOGO_PARAM, program?.CL)
+             bundle.putString(Constants.NOW_SHOWING_PARAM, program?.liveProg1)
+             bundle.putString(Constants.NEXT_PROGRAM_PARAM, program?.liveProg2)
+             bundle.putString(Constants.PROG_1_TIME_PARAM, program?.prog1Time)
+             bundle.putString(Constants.PROG_2_TIME_PARAM, program?.prog2Time)
+             bundle.putString(Constants.CHANNEL_LIST_PARAM, Gson().toJson(channelList))
 
-                 val intent = Intent(this, PrgGuidePlayerActivity::class.java)
-                 intent.putExtras(bundle)
-                 startActivity(intent)
-                 this.isFScreenExit = true
-             } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB, true)) {
-                 launchLiveTvApp()
-             }*/
+             val intent = Intent(this, PrgGuidePlayerActivity::class.java)
+             intent.putExtras(bundle)
+             startActivity(intent)
+             this.isFScreenExit = true
+         } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB, true)) {
+             launchLiveTvApp()
+         }*/
     }
 
     private fun switchToTV(program: ChannelEpgDTO?) {
         clearCache()
         lifecycleScope.launch {
             var model = preferences.irFrequencyModel
-            if (model == null){
+            if (model == null) {
                 preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
                 model = preferences.irFrequencyModel
             }
-            irService?.let { service->
+            irService?.let { service ->
                 val num = program?.CNO/*.plus(100)*/.toString().toCharArray().asList()
                 if (model.tvBrandName != IRUtils.LG) {
                     service.transmit(model.frequency, model.TV)
@@ -578,39 +579,6 @@ class ProgramGuideActivity : BaseActivity() {
         setUpPrograms(currentPrograms, currentProgram?.P4_DST)
     }
 
-    private fun fetchCurrentProgramKey(currentDate: Date = Date()): String {
-        val cal = Calendar.getInstance()
-        cal.time = currentDate
-        val date = cal.get(Calendar.DATE)
-        val month = cal.get(Calendar.MONTH) + 1
-        val year = cal.get(Calendar.YEAR)
-        var hour = cal.get(Calendar.HOUR)
-        val minutes = cal.get(Calendar.MINUTE)
-        val amPm = cal.get(Calendar.AM_PM)
-        val time = StringBuilder()
-
-        if (date < 10) time.append(appendZeros(date))
-        else time.append(date)
-
-        if (month < 10) time.append(appendZeros(month))
-        else time.append(month)
-
-        time.append(year)
-
-        if (hour == 0) hour = 12
-
-        if (hour < 10) time.append(appendZeros(hour))
-        else time.append(hour.toString())
-
-        if (minutes < 30) time.append("00")
-        else time.append("30")
-
-        if (amPm == 0) time.append("AM")
-        else time.append("PM")
-
-        return time.toString()
-    }
-
     private fun setUpChannels(channelList: List<ChannelEpgDTO>?) {
         val adapter = ChannelAdapter(
             onChannelFocused = ::playChannelVideoBg,
@@ -672,7 +640,7 @@ class ProgramGuideActivity : BaseActivity() {
         val cal = Calendar.getInstance()
         cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, -2)
-        previousKey = fetchCurrentProgramKey(cal.time)
+        previousKey = fetchCurrentProgramKey(cal)
         programGuideViewModel.getAllChannels(previousKey!!).observe(this) { data ->
             previousPrograms = data
         }
@@ -683,7 +651,7 @@ class ProgramGuideActivity : BaseActivity() {
         val cal = Calendar.getInstance()
         cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, 2)
-        nextKey = fetchCurrentProgramKey(cal.time)
+        nextKey = fetchCurrentProgramKey(cal)
         programGuideViewModel.getAllChannels(nextKey!!).observe(this) { data ->
             nextPrograms = data
         }

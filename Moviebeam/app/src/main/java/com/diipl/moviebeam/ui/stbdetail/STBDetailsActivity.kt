@@ -32,8 +32,12 @@ import com.diipl.moviebeam.utils.Constants.isWorkDone
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.fetchCurrentProgramKey
+import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
+import com.diipl.moviebeam.utils.scheduleEpgApiCall
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -91,7 +95,11 @@ class STBDetailsActivity : BaseActivity() {
     @Inject
     lateinit var preferences: SharedPreference
 
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy { PreferenceDataStoreHelper(applicationContext) }
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(
+            applicationContext
+        )
+    }
     private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -197,6 +205,11 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.STB_ROOM_NO = it.roomNo
                     Constants.EPG_CDN_URL = it.epgCdnUrl
                     Constants.CASTING_URL = it.stbCastingPageUrl
+                    if (it.epgDuration.toInteger()!! < 2) {
+                        Constants.EPG_API_CALL_TIME_INTERVAL_HOURS = 8
+                    } else {
+                        Constants.EPG_API_CALL_TIME_INTERVAL_HOURS = 24
+                    }
                     scheduleClearCredentialsTask(it.checkOutTime)
                     stbDetailViewModel.fetchHotelService()
                 }
@@ -272,17 +285,16 @@ class STBDetailsActivity : BaseActivity() {
                     roomRepository.removeAllChannels()
                 }
 
-                val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
+                val simpleDateFormatter =
+                    SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
                 status.data?.let {
-                    val startDate = simpleDateFormatter.parse(it.ST ?: "")
-                    val endDate = simpleDateFormatter.parse(it.ET ?: "")
-                    if (isEpgDataValid(startDate, endDate)) {
+                    if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
                         Constants.EPG_START = it.ST ?: ""
                         Constants.EPG_END = it.ET ?: ""
                         val channelList =
                             stbDetailViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()
-                        this.removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
+                        removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
                         for (entries in it.epgListMap?.entries!!) {
                             val iterator = entries.value.iterator()
                             val key = entries.key
@@ -468,21 +480,22 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun redirectToMainMenuPage() {
-       /* binding.root.post { binding.root.performClick() }
-        var uuid: UUID? = null
-        binding.root.setSafeOnClickListener {
-            val inputData = Data.Builder()
-                .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
-                .build()
+        scheduleEpgApiCall()
+        /* binding.root.post { binding.root.performClick() }
+         var uuid: UUID? = null
+         binding.root.setSafeOnClickListener {
+             val inputData = Data.Builder()
+                 .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
+                 .build()
 
-            val request = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
-                .setInputData(inputData)
-                .build()
-            uuid = request.id
-            Log.e(TAG, "uuid: $uuid")
-            workManager.beginUniqueWork(uuid.toString(), ExistingWorkPolicy.REPLACE, request).enqueue()
-//            workManager.enqueue(request)
-        }*/
+             val request = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
+                 .setInputData(inputData)
+                 .build()
+             uuid = request.id
+             Log.e(TAG, "uuid: $uuid")
+             workManager.beginUniqueWork(uuid.toString(), ExistingWorkPolicy.REPLACE, request).enqueue()
+ //            workManager.enqueue(request)
+         }*/
 
 
 //            workManager.getWorkInfoByIdLiveData(uuid!!).observe(this@STBDetailsActivity) { data ->
@@ -491,71 +504,14 @@ class STBDetailsActivity : BaseActivity() {
 
 //                }
         lifecycleScope.launch {
-            while (true){
-                if (isWorkDone == 3){
+            while (true) {
+                if (isWorkDone == 3) {
                     launchMain()
                     isWorkDone = 0
                 }
-                delay(1000*10)
+                delay(1000 * 10)
             }
         }
-    }
-
-    //  Removes Data Before Current Time.
-    private fun removeEarlierData(
-        iterator: MutableIterator<MutableMap.MutableEntry<String, MutableList<ChannelEpgDTO>>>?,
-        currentKey: String
-    ) {
-        while (iterator?.hasNext() == true) {
-            val entry = iterator.next()
-            if (entry.key == currentKey)
-                break
-            iterator.remove()
-        }
-    }
-
-    private fun fetchCurrentProgramKey(cal: Calendar = Calendar.getInstance()): String {
-
-        val date = cal.get(Calendar.DATE)
-        val month = cal.get(Calendar.MONTH) + 1
-        val year = cal.get(Calendar.YEAR)
-        var hour = cal.get(Calendar.HOUR)
-        val minutes = cal.get(Calendar.MINUTE)
-        val amPm = cal.get(Calendar.AM_PM)
-        val time = StringBuilder()
-
-        if (date < 10) time.append(appendZeros(date))
-        else time.append(date)
-
-        if (month < 10) time.append(appendZeros(month))
-        else time.append(month)
-
-        time.append(year)
-
-        if (hour == 0) hour = 12
-
-        if (hour < 10) time.append(appendZeros(hour))
-        else time.append(hour.toString())
-
-        if (minutes < 30) time.append("00")
-        else time.append("30")
-
-        if (amPm == 0) time.append("AM")
-        else time.append("PM")
-
-        return time.toString()
-    }
-
-    private fun appendZeros(value: Int): String {
-        val str = StringBuffer(value.toString()).reverse()
-        str.append("0")
-        return str.reverse().toString()
-    }
-
-    // Validates Cloud EPG data.
-    private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
-        val currentDate = Date()
-        return !(currentDate.before(startDate) or currentDate.after(endDate))
     }
 
     private fun handleMoviesResponse(status: Resource<MoviesResponse>) {
@@ -624,10 +580,10 @@ class STBDetailsActivity : BaseActivity() {
                     Constants.SHOWS_COUNT = it.shoContentList.size
                     stbDetailViewModel.setShowTimeResponseData(showTimeDataStore, it)
                 }
-//                stbDetailViewModel.accountSetupLiveData.value?.data?.let {
-//                    stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
-//                }
-                fetchEPGFromServer()
+                stbDetailViewModel.accountSetupLiveData.value?.data?.let {
+                    stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
+                }
+//                fetchEPGFromServer()
             }
 
             else -> {
@@ -638,10 +594,10 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
-     /*   if (!isNetworkConnected) {
-            launchMain()
-            return
-        }*/
+        /*   if (!isNetworkConnected) {
+               launchMain()
+               return
+           }*/
         isWorkDone = 0
 
         serialNumber = serialNo
