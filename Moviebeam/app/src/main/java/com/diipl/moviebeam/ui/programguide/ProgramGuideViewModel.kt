@@ -9,8 +9,10 @@ import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
@@ -23,7 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProgramGuideViewModel @Inject constructor(
     private val roomRepository: RoomRepository,
-    private val channelListDataStore: DataStore<ChannelListResponse>
+    private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
@@ -35,6 +37,8 @@ class ProgramGuideViewModel @Inject constructor(
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
+    private var _epgLiveData = MutableLiveData<Resource<EPGResponse>>()
+    val epgLiveData: LiveData<Resource<EPGResponse>> get() = _epgLiveData
 
     //------------------------------------------datastore-------------------------------------------
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
@@ -70,12 +74,17 @@ class ProgramGuideViewModel @Inject constructor(
         }
     }
 
-
-//    fun getChannels() = viewModelScope.launch(Dispatchers.IO){
-//        channelListDataStore.data.collect{
-//            _channelList.postValue(Resource.Success(it))
-//        }
-//    }
+    fun fetchEPGDataFromServer(ua: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _epgLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getEPGDataFromServer(ua)
+            if (response == null) {
+                _epgLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Epg Server Api"))
+            } else {
+                _epgLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
 
     fun getAllChannels(key: String?): LiveData<MutableList<ChannelEpgDTO>> {
         Log.e("TAG", "getAllChannels: $key")

@@ -701,7 +701,7 @@ fun removeEarlierData(
 }
 
 fun Context.scheduleEpgApiCall() {
-    logD("scheduleEpgApiCall: Scheduling Api Call")
+    logD("scheduleEpgApiCall: Scheduling Api Call for every ${Constants.EPG_API_CALL_TIME_INTERVAL_HOURS}")
     val myWork = PeriodicWorkRequestBuilder<EpgWorker>(
         Constants.EPG_API_CALL_TIME_INTERVAL_HOURS,
         TimeUnit.HOURS
