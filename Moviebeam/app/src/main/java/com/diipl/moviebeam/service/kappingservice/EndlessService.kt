@@ -20,7 +20,6 @@ import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.work.WorkManager
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
@@ -82,10 +81,13 @@ import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.compareVersions
+import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.log
+import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
@@ -146,7 +148,6 @@ class EndlessService : Service() {
     private var transactionId = ""
     private var isEPGServerApiCalled = false
     private var isNetworkAvailable = true
-    private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
 
     private val _accountSetupLiveData = MutableLiveData<AccountSetupResponse>()
     val accountSetupLiveData: LiveData<AccountSetupResponse> get() = _accountSetupLiveData
@@ -282,7 +283,7 @@ class EndlessService : Service() {
         log(versionNumber)
 
         val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
-        filter.addAction(Intent.CATEGORY_HOME)
+//        filter.addAction(Intent.CATEGORY_HOME)
         filter.addAction(Intent.ACTION_SCREEN_OFF)
         filter.addAction(Intent.ACTION_SCREEN_ON)
         registerReceiver(homePressReceiver, filter)
@@ -291,7 +292,7 @@ class EndlessService : Service() {
         var isSwitched = false
         var count = 0
         CoroutineScope(Dispatchers.IO).launch {
-            while (true) {
+            while (activityStack.last()?.isNotEmpty() == true) {
                 if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
                     if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
                         preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
@@ -319,61 +320,65 @@ class EndlessService : Service() {
 
     private val homePressReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            intent.let {
-//                Log.e(TAG, "onReceive: ${intent.action}")
+            if (BaseActivity.currentActivity?.javaClass?.simpleName?.isNotAllowed() == true){
+                intent.let {
+                    when (it.action) {
+                        Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
+                            val reason = it.getStringExtra("reason")
+                            Log.e(TAG, "onReceive: $reason   ${activityStack.last()}")
+                            if (reason == "homekey") {
+//                                if (BaseActivity.currentActivity?.javaClass?.simpleName?.isNotAllowed() == true) {
+                                    if (activityStack.last() == AppWorldActivity::class.java.simpleName) {
+                                        if (Constants.NETFLIX_LAUNCHED) {
+                                            val sessionId = Constants.SESSION_ID
+                                            val url =
+                                                "${Constants.BASE_URL_LG_REST}content/netflixAccess/enter?sessionId=$sessionId"
 
-                when (it.action) {
-                    Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
-                        val reason = it.getStringExtra("reason")
-                        if (reason == "homekey") {
-                            if (BaseActivity.currentActivity?.javaClass?.simpleName?.isNotAllowed() == true) {
-                                if (activityStack.last() == AppWorldActivity::class.java.simpleName) {
-                                    if (Constants.NETFLIX_LAUNCHED) {
-                                        val sessionId = Constants.SESSION_ID
-                                        val url =
-                                            "${Constants.BASE_URL_LG_REST}content/netflixAccess/enter?sessionId=$sessionId"
+                                            val requestBody = createRequestBody(
+                                                Constants.STB_ROOM_NO, Constants.UA, 2
+                                            )
 
-                                        val requestBody = createRequestBody(
-                                            Constants.STB_ROOM_NO, Constants.UA, 2
-                                        )
-
-                                        postRequest(url, requestBody)
-                                        Constants.NETFLIX_LAUNCHED = false;
+                                            postRequest(url, requestBody)
+                                            Constants.NETFLIX_LAUNCHED = false
+                                            return
+                                        } else {
+                                            startMainMenu()
+                                            Log.e(TAG, "onReceive: 3")
+                                            return
+                                        }
+                                    } else {
+                                        startMainMenu()
+                                        Log.e(TAG, "onReceive: 0")
                                         return
                                     }
-                                }
-                            }
-                            if (activityStack.last() != MainMenuActivity::class.java.simpleName && activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
-                                startMainMenu()
-                                Log.e(TAG, "onReceive: 0")
-                                return
+                               /* } else {
+                                    Log.e(TAG, "onReceive: 1")
+                                    return
+                                }*/
                             } else {
-                                Log.e(TAG, "onReceive: 1")
+                                Log.e(TAG, "onReceive: 2")
                                 return
                             }
-                        } else {
-                            Log.e(TAG, "onReceive: 2")
-                            return
                         }
-                    }
 
-                    Intent.ACTION_SCREEN_OFF -> {
+                        Intent.ACTION_SCREEN_OFF -> {
 
-                    }
-
-                    Intent.ACTION_SCREEN_ON -> {
-                        CoroutineScope(Dispatchers.Default).launch {
-                            delay(10000)
-                            startMainMenu()
                         }
-                    }
 
-                    Intent.ACTION_MEDIA_BUTTON -> {
-                        Log.e(TAG, "onReceive: ACTION_MEDIA_BUTTON")
-                    }
+                        Intent.ACTION_SCREEN_ON -> {
+                            CoroutineScope(Dispatchers.Default).launch {
+                                delay(10000)
+                                startMainMenu()
+                            }
+                        }
 
-                    else -> {
-                        Log.e(TAG, "onReceive: ${it.action}")
+                        Intent.ACTION_MEDIA_BUTTON -> {
+                            Log.e(TAG, "onReceive: ACTION_MEDIA_BUTTON")
+                        }
+
+                        else -> {
+                            Log.e(TAG, "onReceive: ${it.action}")
+                        }
                     }
                 }
             }
@@ -428,6 +433,7 @@ class EndlessService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         log("The service has been destroyed".uppercase(Locale.ROOT))
+        unregisterReceiver(homePressReceiver)
         Toast.makeText(this, "Service destroyed", Toast.LENGTH_SHORT).show()
     }
 
@@ -481,7 +487,6 @@ class EndlessService : Service() {
                         }
                     }
                 }
-                Log.e(TAG, "startService: $GLOBAL_LOOP_SEC ")
                 delay(GLOBAL_LOOP_SEC * 1000L)
             }
             log("End of the loop for the service")
@@ -728,9 +733,9 @@ class EndlessService : Service() {
 
             KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
                 CoroutineScope(Dispatchers.Default).launch {
-                    val response = movieBeamRepository.getSoftwareUpdateDetails()
+                    val response = movieBeamRepository.getSoftwareUpdateDetails(BuildConfig.BUILD_TYPE_ID, Constants.UA)
                     Log.e(TAG, "handleKaping: $response")
-                    if (response != null && response.isCurrent) {
+                    if (response != null) {
                         val isUpgradeable = compareVersions(response.softwareVersion)
                         if (isUpgradeable) {
                             Log.e(
@@ -1181,11 +1186,9 @@ class EndlessService : Service() {
                 movieBeamRepository.getEPGFromCloud(accountSetupLiveData.value?.epgCdnUrl + accountSetupLiveData.value?.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
             if (response != null) {
 
-                val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
+                val simpleDateFormatter = SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
                 response.let {
-                    val startDate = simpleDateFormatter.parse(it.ST)
-                    val endDate = simpleDateFormatter.parse(it.ET)
-                    if (isEpgDataValid(startDate, endDate)) {
+                    if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
                         processEPGData(response)
                         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                         LoggingService.sendMessageToWebSocket(
@@ -1629,11 +1632,9 @@ class EndlessService : Service() {
         CoroutineScope(Dispatchers.IO).launch {
             roomRepository.removeAllChannels()
 
-            val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
+            val simpleDateFormatter = SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
             epgResponse.let {
-                val startDate = simpleDateFormatter.parse(it.ST)
-                val endDate = simpleDateFormatter.parse(it.ET)
-                if (isEpgDataValid(startDate, endDate)) {
+                if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
                     Constants.EPG_START = it.ST ?: ""
                     Constants.EPG_END = it.ET ?: ""
                     val channelList = channelListLiveData.value?.channelLcnList
@@ -1795,59 +1796,6 @@ class EndlessService : Service() {
             }
         }
 
-    }
-
-    private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
-        val currentDate = Date()
-        return !(currentDate.before(startDate) or currentDate.after(endDate))
-    }
-
-    private fun fetchCurrentProgramKey(cal: Calendar = Calendar.getInstance()): String {
-        val date = cal.get(Calendar.DATE)
-        val month = cal.get(Calendar.MONTH) + 1
-        val year = cal.get(Calendar.YEAR)
-        var hour = cal.get(Calendar.HOUR)
-        val minutes = cal.get(Calendar.MINUTE)
-        val amPm = cal.get(Calendar.AM_PM)
-        val time = StringBuilder()
-
-        if (date < 10) time.append(appendZeros(date))
-        else time.append(date)
-
-        if (month < 10) time.append(appendZeros(month))
-        else time.append(month)
-
-        time.append(year)
-
-        if (hour == 0) hour = 12
-
-        if (hour < 10) time.append(appendZeros(hour))
-        else time.append(hour.toString())
-
-        if (minutes < 30) time.append("00")
-        else time.append("30")
-
-        if (amPm == 0) time.append("AM")
-        else time.append("PM")
-
-        return time.toString()
-    }
-
-    private fun appendZeros(value: Int): String {
-        val str = StringBuffer(value.toString()).reverse()
-        str.append("0")
-        return str.reverse().toString()
-    }
-
-    private fun removeEarlierData(
-        iterator: MutableIterator<MutableMap.MutableEntry<String, MutableList<ChannelEpgDTO>>>?,
-        currentKey: String
-    ) {
-        while (iterator?.hasNext() == true) {
-            val entry = iterator.next()
-            if (entry.key == currentKey) break
-            iterator.remove()
-        }
     }
 
     fun updateStbAllocationStatus(

@@ -363,7 +363,8 @@ class STBDetailViewModel @Inject constructor(
                     vodMgrIp = data.vodMgrIp,
                     vodMgrPort = data.vodMgrPort,
                     vodVisible = data.vodVisible,
-                    welcomeScreenVisible = data.welcomeScreenVisible
+                    welcomeScreenVisible = data.welcomeScreenVisible,
+                    stbCastingPageUrl = data.stbCastingPageUrl
                 )
             }
         }
@@ -412,6 +413,7 @@ class STBDetailViewModel @Inject constructor(
                 )
             }
         }
+
     }
 
     fun setMoviesResponseData(

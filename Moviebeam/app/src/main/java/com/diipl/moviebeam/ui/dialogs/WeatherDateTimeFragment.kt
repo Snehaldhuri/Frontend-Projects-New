@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.dialogs
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,10 +21,10 @@ import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.getGradientColor
-import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setIPInfo
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
@@ -100,13 +99,16 @@ class WeatherDateTimeFragment : Fragment() {
     }
 
     private fun handleNetworkResponse(b: Boolean) {
-        if (b){
+        if (b) {
             binding.root.toVisible()
+            binding.tvDate.toVisible()
+            binding.tvTime.toVisible()
             setIPInfo()
             Constants.CONNECTIVITY = getConnectivityType(requireContext())
-            requireActivity().launchLogger()
         } else {
             binding.root.toInvisible()
+            binding.tvDate.toGone()
+            binding.tvTime.toGone()
             Constants.IP_ADDRESS = "0.0.0.0"
             Constants.IP_NET_MASK = "0.0.0.0"
             Constants.IP_GATEWAY = "0.0.0.0"
@@ -157,7 +159,7 @@ class WeatherDateTimeFragment : Fragment() {
                     Constants.GRADIENT_COLOR_START = it.gradientColor
                     Constants.GRADIENT = null
                     Constants.GRADIENT = getGradientColor()
-                    it.themeBackgroundFileName?.let {img ->
+                    it.themeBackgroundFileName?.let { img ->
                         Constants.BG_IMAGE = img
                     }
                 }
@@ -200,10 +202,10 @@ class WeatherDateTimeFragment : Fragment() {
                         }
 
                         newList.addAll(list.awaitAll())
-                        Log.e(TAG, "handleShowtimeServiceResponse: 0 ${newList.size}")
+//                        Log.e(TAG, "handleShowtimeServiceResponse: 0 ${newList.size}")
 
                         newList.addAll(list1.awaitAll())
-                        Log.e(TAG, "handleShowtimeServiceResponse: 1 ${newList.size}")
+//                        Log.e(TAG, "handleShowtimeServiceResponse: 1 ${newList.size}")
 
                         newList.forEach {
                             Constants.SHOWS_COUNT += it

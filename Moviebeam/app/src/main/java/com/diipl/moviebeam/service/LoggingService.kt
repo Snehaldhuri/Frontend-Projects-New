@@ -86,10 +86,6 @@ class LoggingService : Service() {
         private val sdf = SimpleDateFormat("EEE. MMM d, yyyy hh:mm:ss a", Locale.ENGLISH)
         private val formattedDate = sdf.format(Date())
 
-        fun isWebSocketAlive() : Boolean {
-            return webSocket != null
-        }
-
         fun sendMessageToWebSocket(message: String, panel:String) {
             if (webSocket != null){
                 val isSent = webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"$formattedDate\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")

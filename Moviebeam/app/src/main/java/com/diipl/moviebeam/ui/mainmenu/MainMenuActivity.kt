@@ -170,9 +170,14 @@ class MainMenuActivity : BaseActivity() {
         binding.root.loadBg()
         binding.rvMenuButton.setItemFocused()
 
+        binding.cardView.postDelayed({
+            binding.cardView.toVisible()
+        }, 500)
+
         lifecycleScope.launch {
             while (!player.isPlaying){
                 if (HOTEL_VIDEO_URL.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0){
+                    initializePlayer()
                     binding.videoView.toGone()
                 }
                 delay(5000)
@@ -180,6 +185,7 @@ class MainMenuActivity : BaseActivity() {
         }
 
     }
+
 
     override fun initViewBinding() {
         binding = ActivityMainMenuBinding.inflate(layoutInflater)

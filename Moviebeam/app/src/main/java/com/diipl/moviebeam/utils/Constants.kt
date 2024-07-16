@@ -100,6 +100,7 @@ object Constants {
 
     const val MDM_PACKAGE_NAME = "com.diipl.mdm"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
+    const val MDM_MAIN_ACTIVITY = "$MDM_PACKAGE_NAME.ui.MainActivity"
     const val MDM_CLEAR_CREDENTIALS_ACTION = "$MDM_PACKAGE_NAME.services.START_CLEAR_CREDENTIALS_RECEIVER"
     const val SERIAL_NO_KEY = "SERIAL_NO_KEY"
 
@@ -183,23 +184,9 @@ object Constants {
 
     // Static Movies URl
 
-    const val MOVIE_URL = "http://d3rh9vbn3pp0qe.cloudfront.net/41177_T.m2t"
     const val BASE_PLAYBACK_URL = "https://d14ez9fl8x9e1s.cloudfront.net/"
-    const val TRAILER_EXTENSION = "_T.m2t"
-    const val CONTENT_EXTENSION = ".m2t"
-    const val CONTENT_EXTENSION_MP = ".mp4"
-
-    /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
-     const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
-     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
-     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"*/
-    const val MOVIE_URL1 =
-        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974.mp4"
-    const val MOVIE_URL2 =
-        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974_B.mp4"
-    const val MOVIE_URL3 =
-        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/7107/hotelData/7107.mp4"
-    const val TRAILER_URL = "trailer_url"
+    const val TRAILER_EXTENSION = "_T.mp4"
+    const val CONTENT_EXTENSION = ".mp4"
 
     const val RELEASE_ID = "releaseId"
     const val MOVIE_DETAILS = "movieDetails"
@@ -360,7 +347,7 @@ object Constants {
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
     //Casting
-    const val CASTING_URL = "https://webdemocast.movie-beam.com/"
+    var CASTING_URL: String? = null
 
     // Kaping
     const val KAPING = "KAPING"
@@ -401,6 +388,7 @@ object Constants {
     const val TICKER_DTO_PARAM = "TICKER_DTO"
     const val TICKER_MESSAGE_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
     const val CHECK_OUT_TIME_DATE_FORMAT = "hh:mm a"
+    const val EPG_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
 
     const val BUILD_TYPE_CHROMECAST = "CHROMECAST"
     const val BUILD_TYPE_STB = "STB"
@@ -412,5 +400,8 @@ object Constants {
     const val SERVICE_TYPE_HELP_INFO = 3
 
     const val SERVICE_IMAGE_LIST_PARAM = "SERVICE_IMAGE_LIST"
+
+    var EPG_API_CALL_TIME_INTERVAL_HOURS: Long = 8
+
 }
 

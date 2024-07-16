@@ -27,17 +27,20 @@ import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
+import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
-import com.diipl.moviebeam.service.kappingservice.EndlessService
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.clearCredentials
+import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInteger
@@ -48,7 +51,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -472,10 +474,8 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.epgLiveData.value?.data?.let {
                     val simpleDateFormatter =
-                        SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
-                    val startDate = simpleDateFormatter.parse(it.ST)
-                    val endDate = simpleDateFormatter.parse(it.ET)
-                    if (isEpgDataValid(startDate, endDate)) {
+                        SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
+                    if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
                         processEPGData(it)
                         EndlessService.kapingCmdExecutionResponse =
                             KapingConstants.EXECUTED_SUCCESSFULLY
@@ -544,11 +544,9 @@ class RefreshingUiActivity : BaseActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             roomRepository.removeAllChannels()
 
-            val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
+            val simpleDateFormatter = SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
             epgResponse.let {
-                val startDate = simpleDateFormatter.parse(it.ST)
-                val endDate = simpleDateFormatter.parse(it.ET)
-                if (isEpgDataValid(startDate, endDate)) {
+                if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
                     Constants.EPG_START = it.ST ?: ""
                     Constants.EPG_END = it.ET ?: ""
                     val channelList =
@@ -717,59 +715,10 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
-    private fun removeEarlierData(
-        iterator: MutableIterator<MutableMap.MutableEntry<String, MutableList<ChannelEpgDTO>>>?,
-        currentKey: String
-    ) {
-        while (iterator?.hasNext() == true) {
-            val entry = iterator.next()
-            if (entry.key == currentKey)
-                break
-            iterator.remove()
-        }
-    }
-
-    private fun fetchCurrentProgramKey(cal: Calendar = Calendar.getInstance()): String {
-        val date = cal.get(Calendar.DATE)
-        val month = cal.get(Calendar.MONTH) + 1
-        val year = cal.get(Calendar.YEAR)
-        var hour = cal.get(Calendar.HOUR)
-        val minutes = cal.get(Calendar.MINUTE)
-        val amPm = cal.get(Calendar.AM_PM)
-        val time = StringBuilder()
-
-        if (date < 10) time.append(appendZeros(date))
-        else time.append(date)
-
-        if (month < 10) time.append(appendZeros(month))
-        else time.append(month)
-
-        time.append(year)
-
-        if (hour == 0) hour = 12
-
-        if (hour < 10) time.append(appendZeros(hour))
-        else time.append(hour.toString())
-
-        if (minutes < 30) time.append("00")
-        else time.append("30")
-
-        if (amPm == 0) time.append("AM")
-        else time.append("PM")
-
-        return time.toString()
-    }
-
     private fun appendZeros(value: Int): String {
         val str = StringBuffer(value.toString()).reverse()
         str.append("0")
         return str.reverse().toString()
-    }
-
-    // Validates Cloud EPG data.
-    private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
-        val currentDate = Date()
-        return !(currentDate.before(startDate) or currentDate.after(endDate))
     }
 
     private fun startUpdateDataWorker(action: String) {

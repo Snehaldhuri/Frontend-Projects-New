@@ -26,7 +26,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.program.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.databinding.ActivityDisconnectedPrgBinding
@@ -62,11 +62,6 @@ class DisconnectedPrgActivity : BaseActivity() {
 
     private lateinit var binding: ActivityDisconnectedPrgBinding
     private val programGuideViewModel: ProgramGuideViewModel by viewModels()
-
-    private var channelListNext: List<ChannelEpgDTO>? = null
-    private var cNo: String? = null
-    private var isFScreenExit = false
-    private var currentPrograms: List<ChannelEpgDTO>? = null
 
     private var currentSearchQuery: String = ""
     private var isSearchDialogOpen: Boolean = false

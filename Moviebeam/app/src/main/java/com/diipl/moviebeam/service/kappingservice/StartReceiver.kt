@@ -7,7 +7,6 @@ import android.hardware.usb.UsbManager
 import android.os.Build
 import android.util.Log
 import com.diipl.moviebeam.ui.splash.BlankActivity
-import com.diipl.moviebeam.utils.Constants.GLOBAL_LOOP_SEC
 import com.diipl.moviebeam.utils.Constants.isRebooted
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
@@ -23,11 +22,15 @@ class StartReceiver : BroadcastReceiver() {
             Log.e(TAG, "onReceive: ${intent.action}")
 //            context.showToast(intent.action!!)
             isRebooted = 1
-            GLOBAL_LOOP_SEC = 30
+//            GLOBAL_LOOP_SEC = 30
             try {
-              /*  context.packageManager.getLaunchIntentForPackage(context.packageName)?.let {i->
-                    i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    context.startActivity(i)
+              /*  Intent().apply {
+                    component = ComponentName(
+                        context.packageName,
+                        SerialActivity::class.java.name
+                    )
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(this)
                 }*/
                 val preference = SharedPreference(context)
                 if (preference.irFrequencyModel == null){
