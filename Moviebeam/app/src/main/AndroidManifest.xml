@@ -147,6 +147,14 @@
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false"
             android:windowSoftInputMode="adjustNothing|adjustPan" />
+
+        <activity
+            android:name=".ui.newprogramguide.NewProgramGuideActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:windowSoftInputMode="adjustNothing|adjustPan" />
+
         <activity
             android:name=".ui.programguide.DisconnectedPrgActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"

@@ -42,6 +42,7 @@ import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
@@ -440,7 +441,8 @@ class MainMenuActivity : BaseActivity() {
                                     intent = if (isNetworkConnected == -1) {
                                         Intent(this, DisconnectedPrgActivity::class.java)
                                     } else {
-                                        Intent(this, ProgramGuideActivity::class.java)
+                                        //Intent(this, ProgramGuideActivity::class.java)
+                                        Intent(this, NewProgramGuideActivity::class.java)
                                     }
                                 }
 
