@@ -1,19 +1,9 @@
 package com.diipl.moviebeam.ui.newprogramguide
 
-import android.content.Context
 import android.graphics.Color
-import android.util.Log
-import android.view.KeyEvent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.core.view.get
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.NewProgramGuideItemBinding
 import com.diipl.moviebeam.utils.Constants
@@ -54,8 +44,7 @@ class ProgramGuideAdapter(
         val item = programList?.get(position)
         if (item != null) {
             holder.binding.layoutChannelCard.tvChannelName.text = item.CN
-            holder.binding.layoutChannelCard.tvChannelNo.text =
-                item.CNO + "${holder.bindingAdapterPosition}"
+            holder.binding.layoutChannelCard.tvChannelNo.text = item.CNO
         }
 
         if (channelFocusIndex == holder.absoluteAdapterPosition) {

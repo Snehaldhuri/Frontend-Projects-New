@@ -24,6 +24,8 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -155,48 +157,56 @@ class STBDetailViewModel @Inject constructor(
             )
 
             if (result[0] == null) {
+                logE(Constants.SERVER_ERROR + " in Weather Api")
                 _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Weather Api"))
             } else {
                 _weatherLiveData.postValue(Resource.Success(result[0] as WeatherResponse))
             }
 
             if (result[1] == null) {
+                logE(Constants.SERVER_ERROR + " in Theme Api")
                 _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Theme Api"))
             } else {
                 _themeLiveData.postValue(Resource.Success(result[1] as ThemeResponse))
             }
 
             if (result[2] == null) {
+                logE(Constants.SERVER_ERROR + " in Account Setup Api")
                 _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Account Setup Api"))
             } else {
                 _accountSetupLiveData.postValue(Resource.Success(result[2] as AccountSetupResponse))
             }
 
             if (result[3] == null) {
+                logE(Constants.SERVER_ERROR + " in Local Attraction Api")
                 _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Local Attraction Api"))
             } else {
                 _localAttractionLiveData.postValue(Resource.Success(result[3] as LocalAttractionResponse))
             }
 
             if (result[4] == null) {
+                logE(Constants.SERVER_ERROR + " in Channel List Api")
                 _channelListLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Channel List Api"))
             } else {
                 _channelListLiveData.postValue(Resource.Success(result[4] as ChannelListResponse))
             }
 
             if (result[5] == null) {
+                logE(Constants.SERVER_ERROR + " in Movies Api")
                 _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Api"))
             } else {
                 _moviesLiveData.postValue(Resource.Success(result[5] as MoviesResponse))
             }
 
             if (result[6] == null) {
+                logE(Constants.SERVER_ERROR + " in Ticker Api")
                 _tickerLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Ticker Api"))
             } else {
                 _tickerLiveData.postValue(Resource.Success(result[6] as TickerResponse))
             }
 
             if (result[7] == null) {
+                logE(Constants.SERVER_ERROR + " in ShowTime Api")
                 _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in ShowTime Api"))
             } else {
                 _showtimeLiveData.postValue(Resource.Success(result[7] as ShowTimeResponse))
@@ -477,8 +487,10 @@ class STBDetailViewModel @Inject constructor(
 
     fun fetchApis() {
         viewModelScope.launch {
+            logD("Api Call Started")
             delay(5000)
             if (networkUtils.isNetworkAvailable()) {
+                logD("Network is Available")
                 fetchAllApi(
                     Constants.ACTIVATE,
                     Constants.UA,

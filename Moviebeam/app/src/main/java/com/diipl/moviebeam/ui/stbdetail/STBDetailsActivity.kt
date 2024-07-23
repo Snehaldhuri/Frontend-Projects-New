@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.stbdetail
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -34,6 +33,9 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.isEpgDataValid
+import com.diipl.moviebeam.utils.launchNewActivity
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
@@ -53,11 +55,8 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class STBDetailsActivity : BaseActivity() {
-
-    private val TAG = "STBDetailsActivity"
 
     private val stbDetailViewModel: STBDetailViewModel by viewModels()
     private lateinit var binding: ActivityStbdetailsBinding
@@ -110,9 +109,9 @@ class STBDetailsActivity : BaseActivity() {
 
         stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
-        if (!Constants.IS_API_CALLED) {
+        if (!IS_API_CALLED) {
             stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
-            Constants.IS_API_CALLED = true
+            IS_API_CALLED = true
         } else {
             finish()
         }
@@ -152,9 +151,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun launchMain() {
-        val intent = Intent(this, MainMenuActivity::class.java)
-        startActivity(intent)
-        finish()
+        launchNewActivity(MainMenuActivity::class.java, true)
     }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
@@ -289,6 +286,7 @@ class STBDetailsActivity : BaseActivity() {
                     SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
                 status.data?.let {
                     if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
+                        logD("Valid EPG data found EPG Start time: ${it.ST} & EPG End time: ${it.ET}")
                         Constants.EPG_START = it.ST ?: ""
                         Constants.EPG_END = it.ET ?: ""
                         val channelList =
@@ -454,6 +452,7 @@ class STBDetailsActivity : BaseActivity() {
                         }
                         redirectToMainMenuPage()
                     } else {
+                        logE("Invalid EPG data found")
                         fetchEPGFromServer()
                     }
                 }
@@ -472,6 +471,7 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun fetchEPGFromServer() {
         if (!isEPGServerApiCalled) {
+            logD("Fetching EPG Data from server")
             stbDetailViewModel.fetchEPGDataFromServer(UA)
             isEPGServerApiCalled = true
         } else {
@@ -629,5 +629,9 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {}
+
+    companion object {
+        private var IS_API_CALLED = false
+    }
 
 }

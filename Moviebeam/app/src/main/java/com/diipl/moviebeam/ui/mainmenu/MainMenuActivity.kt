@@ -30,7 +30,6 @@ import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.kappingservice.Actions
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.service.kappingservice.ServiceState
@@ -44,7 +43,6 @@ import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
-import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
@@ -53,11 +51,11 @@ import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_URL
 import com.diipl.moviebeam.utils.Constants.LA_ID
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
-import com.diipl.moviebeam.utils.log
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setItemFocused
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -149,8 +147,6 @@ class MainMenuActivity : BaseActivity() {
         if (!isServiceStarted) {
             actionOnService(Actions.START)
         }
-        LoggingService.sendMessageToWebSocket("In MainMenu activity", getCurrentPanelNumber())
-
 
     }
 
@@ -175,8 +171,8 @@ class MainMenuActivity : BaseActivity() {
         }, 500)
 
         lifecycleScope.launch {
-            while (!player.isPlaying){
-                if (HOTEL_VIDEO_URL.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0){
+            while (!player.isPlaying) {
+                if (HOTEL_VIDEO_URL.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0) {
                     initializePlayer()
                     binding.videoView.toGone()
                 }
@@ -273,10 +269,7 @@ class MainMenuActivity : BaseActivity() {
                     }
                     binding.pbLoader.toInvisible()
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleThemeResponse Exception in MainMenu activity ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleThemeResponse Exception in MainMenu activity ${e.message}")
                 }
             }
 
@@ -306,10 +299,7 @@ class MainMenuActivity : BaseActivity() {
                         }
                     }
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleThemeResponse Exception in MainMenu activity ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleThemeResponse Exception in MainMenu activity ${e.message}")
                 }
                 binding.pbLoader.toInvisible()
 
@@ -334,13 +324,15 @@ class MainMenuActivity : BaseActivity() {
                         binding.tvGreeting.text = response.hotelInfo
 
                         var btnListFromApi = listOf<String>()
-                        when(isNetworkConnected){
+                        when (isNetworkConnected) {
                             1 -> {
                                 btnListFromApi = response.buttonsList.map { it.buttonName }
                             }
+
                             -1 -> {
-                                btnListFromApi = response.buttonsList.filter { it.forDisconnectedMode }
-                                    .map { it.buttonName }
+                                btnListFromApi =
+                                    response.buttonsList.filter { it.forDisconnectedMode }
+                                        .map { it.buttonName }
                             }
                         }
 
@@ -467,10 +459,7 @@ class MainMenuActivity : BaseActivity() {
                         binding.pbLoader.toInvisible()
                     }
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleAccountSetupResponse Exception in MainMenu activity ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleAccountSetupResponse Exception in MainMenu activity ${e.message}")
                 }
             }
 
@@ -491,10 +480,7 @@ class MainMenuActivity : BaseActivity() {
             Constants.SESSION_ID = "null"
             binding.pbLoader.toInvisible()
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "handleValidateSessionResponse Exception in MainMenu activity ${e.message}",
-                getCurrentPanelNumber()
-            )
+            logE("handleValidateSessionResponse Exception in MainMenu activity ${e.message}")
         }
     }
 
@@ -516,10 +502,7 @@ class MainMenuActivity : BaseActivity() {
                         }
                     }
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleGuestDetailsResponse Exception in MainMenu activity ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleGuestDetailsResponse Exception in MainMenu activity ${e.message}")
                 }
             }
 
@@ -559,11 +542,11 @@ class MainMenuActivity : BaseActivity() {
         Intent(this, EndlessService::class.java).also {
             it.action = action.name
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                log("Starting the service in >=26 Mode")
+                logD("Starting the service in >=26 Mode")
                 startForegroundService(it)
                 return
             }
-            log("Starting the service in < 26 Mode")
+            logD("Starting the service in < 26 Mode")
             startService(it)
         }
     }

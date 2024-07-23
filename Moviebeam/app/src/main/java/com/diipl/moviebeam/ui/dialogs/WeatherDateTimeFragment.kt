@@ -67,6 +67,7 @@ class WeatherDateTimeFragment : Fragment() {
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
 
+        mainMenuViewModel.getUAFromDataStore(preferenceDataStoreHelper)
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
@@ -139,6 +140,9 @@ class WeatherDateTimeFragment : Fragment() {
                 status.data?.let { response ->
                     Constants.ACCOUNT_ID = response.accountId
                     Constants.STB_ROOM_NO = response.roomNo
+
+                    Constants.EPG_CDN_URL = response.epgCdnUrl
+                    Constants.CASTING_URL = response.stbCastingPageUrl
 
                     if (response.contentDetailFlag) {
                         Constants.HOTEL_VIDEO_URL =

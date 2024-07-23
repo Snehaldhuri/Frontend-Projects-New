@@ -1,19 +1,22 @@
 package com.diipl.moviebeam.ui.base
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
+import android.util.AttributeSet
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.utils.launchLogger
+import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.setIPInfo
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-
-private const val TAG = "BaseActivity"
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -23,9 +26,20 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentActivity = this
-
+        launchLogger()
         initViewBinding()
         observeViewModel()
+        logD("${this::class.java.simpleName} started.")
+    }
+
+    override fun onCreateView(
+        parent: View?,
+        name: String,
+        context: Context,
+        attrs: AttributeSet
+    ): View? {
+
+        return super.onCreateView(parent, name, context, attrs)
     }
 
     override fun onResume() {

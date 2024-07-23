@@ -41,13 +41,12 @@ import com.diipl.moviebeam.ui.guestservice.localAttraction.LocalAttractionGsFrag
 import com.diipl.moviebeam.ui.guestservice.message.MessageFragment
 import com.diipl.moviebeam.ui.guestservice.news.NewsFragment
 import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -87,44 +86,28 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
         observe(guestServiceViewModel.guestMessageLiveData, ::handleGuestMessageResponse)
         observeSnackBarMessages(guestServiceViewModel.showSnackBar)
         observeToast(guestServiceViewModel.showToast)
-
-//        guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            fetchDetails()
-            guestServiceViewModel.getGuestMessageResponseData(guestMessageDataStore)
-            btnId = intent.getStringExtra("btnId").toString()
-            if (btnId == ALL_SERVICES || btnId == Constants.MESSAGE_ID) {
-                binding.rvTabLayout.layoutManager =
-                    LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-                binding.rvTabLayout.toVisible()
-                binding.tvServiceTitle.toVisible()
-            } else {
-                binding.rvTabLayout.toGone()
-                binding.tvServiceTitle.toGone()
-                bindAdapterView(binding.root, btnId)
-            }
-
-            binding.btnBack.toDelayVisible()
-            binding.btnBack.setOnFocusChangeListener(::handleBackClick)
-            binding.btnBack.setOnClickListener { finish() }
-            LoggingService.sendMessageToWebSocket(
-                "In GuestServicesMain activity",
-                getCurrentPanelNumber()
-            )
-
-        } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In GuestServicesMain activity onCreate:${e.message}",
-                getCurrentPanelNumber()
-            )
+        fetchDetails()
+        guestServiceViewModel.getGuestMessageResponseData(guestMessageDataStore)
+        btnId = intent.getStringExtra("btnId").toString()
+        if (btnId == ALL_SERVICES || btnId == Constants.MESSAGE_ID) {
+            binding.rvTabLayout.layoutManager =
+                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+            binding.rvTabLayout.toVisible()
+            binding.tvServiceTitle.toVisible()
+        } else {
+            binding.rvTabLayout.toGone()
+            binding.tvServiceTitle.toGone()
+            bindAdapterView(binding.root, btnId)
         }
-    }
 
+        binding.btnBack.toDelayVisible()
+        binding.btnBack.setOnFocusChangeListener(::handleBackClick)
+        binding.btnBack.setOnClickListener { finish() }
+    }
 
     private fun readLaundryJson(): LaundryDataResponse? {
         return try {
@@ -132,10 +115,7 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
             val br = this.assets.open("LaundryData.json").bufferedReader()
             gson.fromJson(br, LaundryDataResponse::class.java)
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In GuestServicesMain activity readLaundryJson:${e.message}",
-                getCurrentPanelNumber()
-            )
+            logE("Exception in GuestServiceActivity readLaundryJson:${e.message}")
             null
         }
     }
@@ -151,10 +131,7 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
             val data = JSONObject(stringBuilder.toString())
             gson.fromJson(data.toString(), ToiletryResponse::class.java)
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In GuestServicesMain activity readToiletryJson:${e.message}",
-                getCurrentPanelNumber()
-            )
+            logE("In GuestServiceActivity readToiletryJson:${e.message}")
             ToiletryResponse()
         }
     }
@@ -192,9 +169,7 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
                         }
                         adapterView = view
                         bindAdapterView(view, service.btnId)
-                    }, onRightClicked = {
-
-                    },
+                    }, onRightClicked = {},
                         onFocusChangeListener = this // Provide the onFocusChangeListener here
                     )
                     if (btnId != Constants.LA_ID && btnId != Constants.MESSAGE_ID) {
@@ -213,10 +188,7 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
 
                     binding.loaderView.toInvisible()
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleAccountSetupResponse Exception in GuestServicesMain activity: ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleAccountSetupResponse Exception in GuestServiceActivity: ${e.message}")
                 }
             }
 
@@ -237,10 +209,7 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
                     guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
                     binding.loaderView.toInvisible()
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleGuestMessageResponse Exception in GuestServicesMainActivity: ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleGuestMessageResponse Exception in GuestServiceActivity: ${e.message}")
                 }
             }
 
@@ -310,7 +279,6 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
 
                         5 -> {
                             val fragment = SpaFragment()
-
                             changeFragment(fragment)
                         }
 

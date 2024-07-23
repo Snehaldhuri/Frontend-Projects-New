@@ -52,6 +52,7 @@ import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
@@ -296,7 +297,7 @@ fun getCurrentPanelNumber(): String {
             ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
             CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
             //TODO Pairing Page
-            //TODO Inroom Dining Page
+            InRoomDiningActivity::class.java.simpleName -> return PanelConstants.IN_ROOM_DINING
             //TOdo Food Delivery
             //TODO Crackle
             //TODO NDVR
@@ -716,11 +717,28 @@ fun Context.scheduleEpgApiCall() {
 }
 
 fun Any.logD(msg: String) {
-    LoggingService.sendMessageToWebSocket(msg, getCurrentPanelNumber())
     Log.d(this::class.java.simpleName, msg)
+    LoggingService.sendMessageToWebSocket(msg, LoggingService.INFO)
 }
 
 fun Any.logE(msg: String) {
-    LoggingService.sendMessageToWebSocket(msg, getCurrentPanelNumber())
     Log.e(this::class.java.simpleName, msg)
+    LoggingService.sendMessageToWebSocket(msg, LoggingService.ERROR)
+}
+
+fun Any.logK(msg: String) {
+    Log.d(this::class.java.simpleName, msg)
+    LoggingService.sendMessageToWebSocket(msg, LoggingService.SIGNAL)
+}
+
+fun Any.logSS(msg: String) {
+    Log.d(this::class.java.simpleName, msg)
+    LoggingService.sendMessageToWebSocket(msg, LoggingService.SCREEN_SWITCHING)
+}
+
+fun <T> Activity.launchNewActivity(cls: Class<T>, finish: Boolean = false){
+    logSS("Switching to ${this::class.java.simpleName}")
+    startActivity(Intent(this, cls))
+    if(finish)
+        finish()
 }

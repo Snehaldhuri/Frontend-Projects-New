@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.kaping
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
@@ -18,6 +17,8 @@ import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getConnectivityType
+import com.diipl.moviebeam.utils.launchNewActivity
+import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -27,7 +28,6 @@ import com.google.zxing.qrcode.QRCodeWriter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
 
 @AndroidEntryPoint
 class RegisterSTBActivity : BaseActivity() {
@@ -56,9 +56,8 @@ class RegisterSTBActivity : BaseActivity() {
         lifecycleScope.launch {
             //checking as flag
             if (EndlessService.AS_FLAG) {
-                val intent = Intent(this@RegisterSTBActivity, STBDetailsActivity::class.java)
-                startActivity(intent)
-                finish()
+                logD("AS Flag is True")
+                launchNewActivity(STBDetailsActivity::class.java, true)
             } else {
                 delay(60 * 1000)
                 validateAsFlag()

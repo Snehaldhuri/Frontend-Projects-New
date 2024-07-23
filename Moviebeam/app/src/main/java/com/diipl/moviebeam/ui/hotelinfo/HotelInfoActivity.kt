@@ -28,6 +28,8 @@ import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -83,8 +85,6 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        try {
             // fetch data from dataStore
             hotelInfoViewModel.getThemeResponseData(themeDataStore)
             hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
@@ -92,21 +92,9 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
 
             binding.btnBack.handleFocusChange()
 
-            binding.btnBack.setOnClickListener {
-                finish()
-            }
+            binding.btnBack.setOnClickListener { finish() }
             binding.rvHotelInfoHeader.layoutManager =
                 LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-            LoggingService.sendMessageToWebSocket(
-                "In HotelServicesMain activity",
-                getCurrentPanelNumber()
-            )
-        } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In HotelServicesMain activity onCreate: ${e.message}",
-                getCurrentPanelNumber()
-            )
-        }
     }
 
     private fun checkHotelLogoImageAvailableLocally() {

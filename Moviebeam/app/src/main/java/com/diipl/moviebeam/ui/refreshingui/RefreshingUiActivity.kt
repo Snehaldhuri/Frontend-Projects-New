@@ -27,7 +27,6 @@ import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
@@ -36,9 +35,10 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.isEpgDataValid
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
@@ -184,10 +184,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket(
-            "Signal for check out command",
-            getCurrentPanelNumber()
-        )
+        logD("Signal for check out command")
         refreshingUiViewModel.updateGuestMessage(
             guestMessageDataStore,
             MessageResponse()
@@ -204,10 +201,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket(
-            "Signal for check in command",
-            getCurrentPanelNumber()
-        )
+        logD("Signal for check in command")
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -220,10 +214,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleAccountActivateCmd() {
-        LoggingService.sendMessageToWebSocket(
-            "Signalling to get account set up",
-            getCurrentPanelNumber()
-        )
+        logD("Signalling to get account set up")
         refreshingUiViewModel.fetchAccountSetupDetails(
             Constants.ACTIVATE,
             Constants.UA,
@@ -262,10 +253,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleGetEPGDataCmd() {
-        LoggingService.sendMessageToWebSocket(
-            "Signal for get EPG Data Cmd",
-            getCurrentPanelNumber()
-        )
+        logD("Signal for get EPG Data Cmd")
         refreshingUiViewModel.getChannelList(channelListDataStore)
     }
 
@@ -281,20 +269,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "AccountSetup callback Success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("AccountSetup callback Success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In AccountSetup callback fail",
-                    getCurrentPanelNumber()
-                )
+                logE("In AccountSetup callback fail")
             }
         }
     }
@@ -308,20 +290,14 @@ class RefreshingUiActivity : BaseActivity() {
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "In Theme callback Success",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In Theme callback Success")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Theme Callback fail",
-                    getCurrentPanelNumber()
-                )
+                logE("In Theme Callback fail")
             }
         }
     }
@@ -335,20 +311,14 @@ class RefreshingUiActivity : BaseActivity() {
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_HS)
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "In Hotel Services callback Success",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In Hotel Services callback Success")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Hotel Services callback fail",
-                    getCurrentPanelNumber()
-                )
+                logE("In Hotel Services callback fail")
             }
         }
     }
@@ -364,20 +334,14 @@ class RefreshingUiActivity : BaseActivity() {
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_LA)
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "In Local Attractions callback Success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In Local Attractions callback Success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Local Attractions callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Local Attractions callback fail ")
             }
         }
     }
@@ -392,20 +356,14 @@ class RefreshingUiActivity : BaseActivity() {
                         it.freeContentList.size.plus(it.premiumContentList.size)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
-                    LoggingService.sendMessageToWebSocket(
-                        "In MoviesReleasesCollection callback Success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In MoviesReleasesCollection callback Success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Movies callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Movies callback fail ")
             }
         }
     }
@@ -419,20 +377,14 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "In ShowtimeReleasesCollection callback Success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In ShowtimeReleasesCollection callback Success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Showtime callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Showtime callback fail ")
             }
         }
     }
@@ -447,10 +399,7 @@ class RefreshingUiActivity : BaseActivity() {
                             KapingConstants.EXECUTED_SUCCESSFULLY
                         Constants.CHANNEL_COUNT = it.channelLcnList!!.size
                         redirectToMainMenuScreen()
-                        LoggingService.sendMessageToWebSocket(
-                            "In Channel List callback Success ",
-                            getCurrentPanelNumber()
-                        )
+                        logD("In Channel List callback Success ")
                     } else {
                         refreshingUiViewModel.fetchEPGData(Constants.EPG_CDN_URL + Constants.ACCOUNT_ID + Constants.EPG_CLOUD_URL_SUFFIX)
                     }
@@ -461,10 +410,7 @@ class RefreshingUiActivity : BaseActivity() {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
                 if (EndlessService.kapingCMD == KapingConstants.KAP_CMD_GET_CHANNEL_LIST)
-                    LoggingService.sendMessageToWebSocket(
-                        "In Channel List callback fail ",
-                        getCurrentPanelNumber()
-                    )
+                    logE("In Channel List callback fail ")
             }
         }
     }
@@ -479,10 +425,7 @@ class RefreshingUiActivity : BaseActivity() {
                         processEPGData(it)
                         EndlessService.kapingCmdExecutionResponse =
                             KapingConstants.EXECUTED_SUCCESSFULLY
-                        LoggingService.sendMessageToWebSocket(
-                            "In Get EPG data callback Success ",
-                            getCurrentPanelNumber()
-                        )
+                        logD("In Get EPG data callback Success ")
                         redirectToMainMenuScreen()
                     } else {
                         if (!isEPGServerApiCalled) {
@@ -499,10 +442,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Get EPG data callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Get EPG data callback fail ")
             }
         }
     }
@@ -521,20 +461,14 @@ class RefreshingUiActivity : BaseActivity() {
                     binding.tvTxt.toGone()
                     binding.btnOk.toVisible()
                     binding.btnOk.requestFocus()
-                    LoggingService.sendMessageToWebSocket(
-                        "In Get Guest Message callback success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In Get Guest Message callback success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Get Guest Message callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Get Guest Message callback fail ")
             }
         }
     }

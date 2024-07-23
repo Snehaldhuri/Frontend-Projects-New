@@ -227,11 +227,6 @@ fun ImageView.loadImagesWithGlideExtLA(url: String) {
     }
 }
 
-fun log(msg: String) {
-    Log.d("ENDLESS-SERVICE", msg)
-}
-
-
 class SafeClickListener(
     private var defaultInterval: Int = 3000,
     private val onSafeCLick: (View) -> Unit

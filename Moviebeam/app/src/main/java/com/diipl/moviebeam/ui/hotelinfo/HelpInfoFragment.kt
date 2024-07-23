@@ -4,9 +4,7 @@ import android.content.Context
 import android.media.tv.TvInputManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -17,31 +15,31 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
-private const val TAG = "HelpInfoFragment"
 
 @AndroidEntryPoint
 class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     private var _binding: FragmentHelpInfoBinding? = null
     private val binding get() = _binding!!
+
     @Inject
-    lateinit var preferences : SharedPreference
+    lateinit var preferences: SharedPreference
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        logD("Switch to Help & Info")
         _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
 
         try {
@@ -64,28 +62,24 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
                 requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
             val tvInputInfos = tvInputManager.tvInputList
             if (tvInputInfos.isNotEmpty()) {
-                Log.e(TAG, "Device is connected to an STB $tvInputInfos")
+                logD("Device is connected to an STB $tvInputInfos")
             } else {
-                Log.e(TAG, "Device is not connected to an STB")
+                logD("Device is not connected to an STB")
             }
 
             val connectivityManager =
                 requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val activeNetwork = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                connectivityManager.activeNetwork
-            } else {
-                TODO("VERSION.SDK_INT < M")
-            }
+            val activeNetwork = connectivityManager.activeNetwork
             val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
             if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                Log.e(TAG, "Device is connected to an WiFi")
+                logD("Device is connected to an WiFi")
             } else {
-                Log.e(TAG, "Device is connected to an WiFi")
+                logD("Device is not connected to an WiFi")
             }
 
-            LoggingService.sendMessageToWebSocket("In HelpInfoMain activity", "07")
+            logD("In HelpInfoMain activity")
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("${e.message}", "07")
+            logD("Exception in Help & Info: ${e.message}")
             throw IllegalStateException("Failed to create view for HelpInfoFragment", e)
         }
 
@@ -98,17 +92,18 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         if (preferences.irFrequencyModel == null)
             preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
 
-        if (preferences.irFrequencyModel.tvBrandName == IRUtils.SAMSUNG){
+        if (preferences.irFrequencyModel.tvBrandName == IRUtils.SAMSUNG) {
             binding.rbSamsung.isChecked = true
         } else {
             binding.rbLg.isChecked = true
         }
 
         binding.rgBrand.setOnCheckedChangeListener { group, checkedId ->
-            when(checkedId){
+            when (checkedId) {
                 binding.rbLg.id -> {
                     preferences.irFrequencyModel = IRUtils.lgModel
                 }
+
                 binding.rbSamsung.id -> {
                     preferences.irFrequencyModel = IRUtils.samsungModel
                 }
@@ -145,19 +140,20 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         list.add(Constants.SYSTEM_INFO)
         list.add(Constants.TAB_PARENTAL_CONTROL)
 
-        val adapterForHelpInfo = HelpInfoTabAdapter(list){pos, v->
+        val adapterForHelpInfo = HelpInfoTabAdapter(list) { pos, v ->
             v.requestFocus()
-            when(pos) {
+            when (pos) {
                 0 -> {
                     v.requestFocus()
                     binding.containerControl.toGone()
                     binding.cardInfo.toVisible()
                 }
+
                 1 -> {
                     binding.cardInfo.toGone()
                     binding.containerControl.toVisible()
 
-                    val fragment = ParentalControlFragment{ i ->
+                    val fragment = ParentalControlFragment { i ->
                         v.requestFocus()
                     }
                     parentFragmentManager.beginTransaction()

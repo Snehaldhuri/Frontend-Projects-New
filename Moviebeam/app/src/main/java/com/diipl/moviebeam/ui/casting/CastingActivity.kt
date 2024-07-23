@@ -5,9 +5,8 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import com.diipl.moviebeam.databinding.ActivityCastingBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.logE
 
 
 class CastingActivity : BaseActivity() {
@@ -26,12 +25,8 @@ class CastingActivity : BaseActivity() {
             webView.settings.javaScriptEnabled = true
             webView.settings.cacheMode = WebSettings.LOAD_NO_CACHE
             Constants.CASTING_URL?.let { webView.loadUrl(it) }
-            LoggingService.sendMessageToWebSocket(
-                "In CastingPage activity",
-                getCurrentPanelNumber()
-            )
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("${e.message}", getCurrentPanelNumber())
+            logE("${e.message}")
         }
 
     }
