@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.newprogramguide
 
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -25,13 +24,14 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.bumptech.glide.ListPreloader
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityNewProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.service.IIrService
@@ -48,7 +48,9 @@ import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
+import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
@@ -75,12 +77,14 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private var isFScreenExit = false
 
+    private val preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+    private var epgEndTime = ""
+
     private lateinit var hotelChannel: HotelChannel
     private var hotelChannelVideo: String = ""
 
     @Inject
     lateinit var preferences: SharedPreference
-
 
     private lateinit var adapter: ProgramGuideAdapter
 
@@ -107,7 +111,8 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityNewProgramGuideBinding.inflate(layoutInflater)
-
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
         setContentView(binding.root)
 
         binding.btnBack.handleFocusChange()
@@ -140,10 +145,9 @@ class NewProgramGuideActivity : BaseActivity() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        initializeDatastoreParams()
         initSet()
 
         adapter = ProgramGuideAdapter(
@@ -202,11 +206,10 @@ class NewProgramGuideActivity : BaseActivity() {
         val endDateTime = convertProgramStartOrEndTime(programDateTime.P4_ET)
 
         // Create a Calendar object with the current time
-        val epgEndTime: Date = convertProgramStartOrEndTime(Constants.EPG_END)
+        val epgEndTime: Date = convertProgramStartOrEndTime(epgEndTime)
 
         return endDateTime.compareTo(epgEndTime) == -1 //a value less than 0 if this Date is before the Date argument.
     }
-
 
     private fun updateKey(isNextOrPrevious: Int) {
         //1 for previous
@@ -261,7 +264,6 @@ class NewProgramGuideActivity : BaseActivity() {
         }
 
     }
-
 
     private fun getChannelsFromRoomDB() {
         programGuideViewModel.getAllChannels(key).observe(this) { data ->
@@ -337,35 +339,12 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun fetchDetails() {
-        intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        intent.extras?.let {
-            binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
-            loadBg(it.getString("themeBackgroundFileName"))
-        }
         intent.extras?.getString("hotelChannel")?.let {
             hotelChannel = it.fromJson()
         }
         intent.extras?.getString("hotelChannelVideo")?.let {
             hotelChannelVideo = it
         }
-    }
-
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                @RequiresApi(Build.VERSION_CODES.O)
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
@@ -442,7 +421,6 @@ class NewProgramGuideActivity : BaseActivity() {
     private fun loadProgramGuide(
         currentPrograms: MutableList<ChannelEpgDTO>? = null
     ) {
-
         val currentProgram = currentPrograms?.get(0)
         binding.layoutProgramGuide.tvTime1.text = currentProgram?.P1_DST
         binding.layoutProgramGuide.tvTime2.text = currentProgram?.P2_DST
@@ -468,7 +446,7 @@ class NewProgramGuideActivity : BaseActivity() {
         if (currentPrograms != null) {
             programGuideList.addAll(currentPrograms)
         }
-        Constants.CURRENT_PROGRAMS = currentPrograms
+        CURRENT_PROGRAMS = currentPrograms
 
     }
 
@@ -589,6 +567,21 @@ class NewProgramGuideActivity : BaseActivity() {
         irService?.transmit(model.frequency, nValue)
     }
 
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            epgEndTime = getEpgEt()
+        }
+    }
+
+    private suspend fun getEpgEt(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.EPG_END_TIME_KEY,
+            ""
+        )
+    }
+
+    companion object{
+        var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
+    }
+
 }
-
-

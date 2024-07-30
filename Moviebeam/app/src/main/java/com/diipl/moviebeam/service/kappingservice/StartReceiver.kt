@@ -7,7 +7,6 @@ import android.hardware.usb.UsbManager
 import android.os.Build
 import android.util.Log
 import com.diipl.moviebeam.ui.splash.BlankActivity
-import com.diipl.moviebeam.utils.Constants.isRebooted
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.clearCache
@@ -21,7 +20,6 @@ class StartReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_REBOOT) {
             Log.e(TAG, "onReceive: ${intent.action}")
 //            context.showToast(intent.action!!)
-            isRebooted = 1
 //            GLOBAL_LOOP_SEC = 30
             try {
                 /*  Intent().apply {

@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.movies
 
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,8 +16,6 @@ import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_CONTENT_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
@@ -26,55 +25,38 @@ import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getRentalDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "MoviesViewModel"
+
 @HiltViewModel
 class MoviesViewModel @Inject constructor(
+    @ApplicationContext context: Context,
     private val movieBeamRepository: MovieBeamRepository,
     private val roomRepository: RoomRepository
 ) : ViewModel() {
 
-    private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
-    val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
-
-    private val _themeLiveData = MutableLiveData<Resource<ThemeResponse>>()
-    val themeLiveData: LiveData<Resource<ThemeResponse>> get() = _themeLiveData
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper =
+        PreferenceDataStoreHelper(context)
+    private var ua = ""
 
     private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
     val moviesLiveData: LiveData<Resource<MoviesResponse>> get() = _moviesLiveData
 
+    init {
+        initializeDatastoreParams()
+    }
+
     // Get Response From DataStore
-    fun getThemeResponseData(dataStore: DataStore<ThemeResponse>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _themeLiveData.postValue(Resource.Loading())
-
-            dataStore.data.catch {
-                _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-
-            }.collect {
-                _themeLiveData.postValue(Resource.Success(it))
-            }
-        }
-    }
-
-    fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _weatherLiveData.postValue(Resource.Loading())
-            dataStore.data.catch {
-                _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            }.collect {
-                _weatherLiveData.postValue(Resource.Success(it))
-            }
-        }
-    }
-
     fun getMoviesInfoResponseData(dataStore: DataStore<MoviesResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
             _moviesLiveData.postValue(Resource.Loading())
@@ -102,7 +84,7 @@ class MoviesViewModel @Inject constructor(
     fun validateSession(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch(Dispatchers.IO) {
             preferenceDataStoreHelper.getPreference(
-                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY,
                 false
             ).collect {
                 _isGuestCheckedInLiveData.postValue(it)
@@ -135,7 +117,7 @@ class MoviesViewModel @Inject constructor(
             val model = RentalMovieModel()
             model.rentalID = if (data.rentalID.isEmpty()) 0 else data.rentalID.toInt()
             model.finishTimeStamp = (model.startTimeStamp + (24 * 60 * 60 * 1000))
-            model.sessionID = Constants.SESSION_ID
+            model.sessionID = GuestDetails.SESSION_ID
             model.movieData = movie
 
             roomRepository.insertRentalMovies(model)
@@ -145,13 +127,12 @@ class MoviesViewModel @Inject constructor(
     fun insertShowDetails(show: Detail) {
         viewModelScope.launch {
             val model = ShowTimeModel()
-            model.sessionID = Constants.SESSION_ID
+            model.sessionID = GuestDetails.SESSION_ID
             model.seriesData = show
 
             roomRepository.insertShowDetails(model)
         }
     }
-
 
     private var _movieData = MutableLiveData<RentalMovieModel>()
     val movieData: LiveData<RentalMovieModel> get() = _movieData
@@ -176,7 +157,6 @@ class MoviesViewModel @Inject constructor(
             roomRepository.updateRentalMovies(rentalMovieModel)
         }
     }
-
 
     fun updateRentalMovieLog(request: RentalMovieRequest) {
         viewModelScope.launch {
@@ -209,7 +189,8 @@ class MoviesViewModel @Inject constructor(
         viewModelScope.launch {
             if (rentalMovieModel.rentalID != 0) {
                 val request = RentalReversalRequest()
-                request.reversalDetails = rentalMovieModel.getRentalDetails()
+                request.reversalDetails = rentalMovieModel.getRentalDetails(ua)
+                request.UA = ua
                 val result = movieBeamRepository.setRentalReversal(request)
                 if (result == null) {
                     _rentalReversal.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Rental Reversal Services Api"))
@@ -244,12 +225,25 @@ class MoviesViewModel @Inject constructor(
         viewModelScope.launch {
             _purchaseResponse.postValue(Resource.Loading())
             val result = movieBeamRepository.buyPassRequest(request)
-            if (result == null){
+            if (result == null) {
                 _purchaseResponse.postValue(Resource.DataError(Constants.SERVER_ERROR))
             } else {
                 _purchaseResponse.postValue(Resource.Success(result))
             }
         }
+    }
+
+    private fun initializeDatastoreParams() {
+        viewModelScope.launch {
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
     }
 
 }

@@ -10,7 +10,7 @@ plugins {
 android {
     signingConfigs {
         release {
-            storeFile file('D:\\Projects\\Moviebeam\\Production\\moviebeam_prod.jks')
+            storeFile file('../moviebeam_prod.jks')
             storePassword 'diipl@123'
             keyAlias 'key0'
             keyPassword 'diipl@123'
@@ -67,7 +67,6 @@ android {
             signingConfig signingConfigs.release
         }
     }
-
 
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8

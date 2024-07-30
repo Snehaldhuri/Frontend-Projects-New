@@ -9,11 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.databinding.MoviegenreParentItemBinding
-import com.diipl.moviebeam.utils.Constants.MOVIE_PARENT_POSITION
-import com.diipl.moviebeam.utils.Constants.MOVIE_SELECTED_POSITION
 import com.diipl.moviebeam.utils.getHeightInPercent
-
-private const val TAG = "ParentAdapter"
 
 class ParentAdapter(
     private var onItemClicked: (ContentDto, View) -> Unit,
@@ -57,8 +53,7 @@ class ParentAdapter(
         holder.childRecyclerView.layoutManager =
             LinearLayoutManager(holder.itemView.context, LinearLayoutManager.HORIZONTAL, false)
 
-        val adapter = ChildAdapter(parentItem, onItemClicked = {it, view->
-            MOVIE_PARENT_POSITION = holder.absoluteAdapterPosition
+        val adapter = ChildAdapter(parentItem, onItemClicked = { it, view ->
             onItemClicked(it, holder.itemView)
         }, onLeftKey = {
             onLeftKey(it)
@@ -93,24 +88,5 @@ class ParentAdapter(
         }
 
     }
-
-    fun updateFocus() {
-        if (::rootBinding.isInitialized && ::viewHolder.isInitialized) {
-            rootBinding.langRecyclerView.post {
-//                if (viewHolder.absoluteAdapterPosition == MOVIE_PARENT_POSITION)
-                    rootBinding.langRecyclerView.findViewHolderForAdapterPosition(
-                        MOVIE_SELECTED_POSITION
-                    )?.itemView?.requestFocus()
-//                rootBinding.langRecyclerView.findContainingItemView(selectedView)?.requestFocus()
-
-
-                MOVIE_PARENT_POSITION = -1
-                MOVIE_SELECTED_POSITION = -1
-            }
-            /*val adapter = rootBinding.langRecyclerView.adapter as ChildAdapter
-            adapter.updateFocus()*/
-        }
-    }
-
 
 }

@@ -8,6 +8,7 @@ import com.diipl.moviebeam.room.db.MoviesDatabase
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.GuestDetails
 import javax.inject.Inject
 
 private const val TAG = "RoomRepository"
@@ -19,7 +20,7 @@ class RoomRepository @Inject constructor(
     suspend fun insertRentalMovies(rentalMovieModel: RentalMovieModel) {
         rentalMovieModel.movieData?.let {
             Log.e(TAG, "insertRentalMovies: ${rentalMovieModel.currentSeek}  ${rentalMovieModel.finishTimeStamp}  ${it.movieName}    ")
-            if (database.movieDao().getMovieCount(it.releaseId) == 0  && Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null"){
+            if (database.movieDao().getMovieCount(it.releaseId) == 0  && GuestDetails.SESSION_ID.isNotEmpty() && GuestDetails.SESSION_ID != "null"){
                 database.movieDao().insertMovie(rentalMovieModel)
             }
         }
@@ -28,7 +29,7 @@ class RoomRepository @Inject constructor(
     suspend fun updateRentalMovies(rentalMovieModel: RentalMovieModel) {
         rentalMovieModel.movieData?.let {
             Log.e(TAG, "updateRentalMovies: ${rentalMovieModel.currentSeek}  ${rentalMovieModel.finishTimeStamp} ${it.movieName}    ")
-            if (database.movieDao().getMovieCount(it.releaseId) != 0  && Constants.SESSION_ID.isNotEmpty() && Constants.SESSION_ID != "null"){
+            if (database.movieDao().getMovieCount(it.releaseId) != 0  && GuestDetails.SESSION_ID.isNotEmpty() && GuestDetails.SESSION_ID != "null"){
                 database.movieDao().updateMovie(rentalMovieModel)
             }
         }
@@ -36,7 +37,7 @@ class RoomRepository @Inject constructor(
 
     suspend fun updateShowDetails(showTimeModel: ShowTimeModel) {
         showTimeModel.seriesData?.let {
-            if (database.showDao().getShowCount(it.releaseId) != 0 && Constants.SESSION_ID.isNotEmpty()){
+            if (database.showDao().getShowCount(it.releaseId) != 0 && GuestDetails.SESSION_ID.isNotEmpty()){
                 database.showDao().updateShow(showTimeModel)
             }
         }
@@ -45,7 +46,7 @@ class RoomRepository @Inject constructor(
 
     suspend fun insertShowDetails(showTimeModel: ShowTimeModel) {
         showTimeModel.seriesData?.let {
-            if (database.showDao().getShowCount(it.releaseId) == 0 && Constants.SESSION_ID.isNotEmpty()){
+            if (database.showDao().getShowCount(it.releaseId) == 0 && GuestDetails.SESSION_ID.isNotEmpty()){
                 database.showDao().insertShow(showTimeModel)
             }
         }

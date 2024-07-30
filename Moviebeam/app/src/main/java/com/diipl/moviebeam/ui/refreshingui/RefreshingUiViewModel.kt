@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
@@ -20,7 +21,6 @@ import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
-import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -193,9 +193,15 @@ class RefreshingUiViewModel @Inject constructor(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY,
                 isCheckedIn
             )
+            guestDetails?.sessionId?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.SESSION_ID_KEY,
+                    it
+                )
+            }
             updateGuestDetails(guestDetailsDatastore, guestDetails)
         }
     }

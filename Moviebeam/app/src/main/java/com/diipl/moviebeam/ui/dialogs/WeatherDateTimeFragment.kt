@@ -19,7 +19,8 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
 import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.getConnectivityType
+import com.diipl.moviebeam.utils.GuestDetails
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.observe
@@ -28,6 +29,7 @@ import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -36,8 +38,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class WeatherDateTimeFragment : Fragment() {
-
-    private val TAG = "WeatherDateTimeFragment"
 
     private lateinit var binding: ViewWeatherTimeDateRowBinding
     private val mainMenuViewModel: MainMenuViewModel by activityViewModels()
@@ -66,8 +66,8 @@ class WeatherDateTimeFragment : Fragment() {
         binding = ViewWeatherTimeDateRowBinding.inflate(inflater, container, false)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
+        initializeDatastoreParams()
 
-        mainMenuViewModel.getUAFromDataStore(preferenceDataStoreHelper)
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
@@ -85,38 +85,24 @@ class WeatherDateTimeFragment : Fragment() {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        lifecycleScope.launch {
-            val ua = preferenceDataStoreHelper.getFirstPreference(
-                PreferenceDataStoreConstants.SERIAL_NO,
-                ""
-            )
-            Constants.SERIAL_NO = ua
-            Constants.UA = "21$ua"
-        }
-
-    }
-
     private fun handleNetworkResponse(b: Boolean) {
         if (b) {
             binding.root.toVisible()
             binding.tvDate.toVisible()
             binding.tvTime.toVisible()
             setIPInfo()
-            Constants.CONNECTIVITY = getConnectivityType(requireContext())
         } else {
             binding.root.toInvisible()
             binding.tvDate.toGone()
             binding.tvTime.toGone()
-            Constants.IP_ADDRESS = "0.0.0.0"
-            Constants.IP_NET_MASK = "0.0.0.0"
-            Constants.IP_GATEWAY = "0.0.0.0"
-            Constants.CONNECTIVITY = "NO INTERNET"
+            updateDatastoreVariables(
+                ipAddress = "0.0.0.0",
+                netMask = "0.0.0.0",
+                gateway = "0.0.0.0",
+                connectivity = "NO INTERNET"
+            )
         }
     }
-
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -137,16 +123,29 @@ class WeatherDateTimeFragment : Fragment() {
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
         when (status) {
             is Resource.Success -> {
-                status.data?.let { response ->
-                    Constants.ACCOUNT_ID = response.accountId
-                    Constants.STB_ROOM_NO = response.roomNo
-
-                    Constants.EPG_CDN_URL = response.epgCdnUrl
-                    Constants.CASTING_URL = response.stbCastingPageUrl
-
-                    if (response.contentDetailFlag) {
-                        Constants.HOTEL_VIDEO_URL =
-                            response.httpStreamingHotelvideoUrl + response.hotelChannelList[0].fileName
+                status.data?.let {
+                    CoroutineScope(Dispatchers.Default).launch {
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
+                            it.accountId
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
+                            it.roomNo
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
+                            it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.CASTING_URL_KEY,
+                            it.stbCastingPageUrl
+                        )
+                        if (it.contentDetailFlag)
+                            preferenceDataStoreHelper.putPreference(
+                                PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
+                                it.httpStreamingHotelvideoUrl + it.hotelChannelList[0].fileName
+                            )
                     }
                 }
             }
@@ -159,13 +158,16 @@ class WeatherDateTimeFragment : Fragment() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
-                    Constants.GRADIENT_COLOR_END = it.spotLightColor
-                    Constants.GRADIENT_COLOR_START = it.gradientColor
-                    Constants.GRADIENT = null
-                    Constants.GRADIENT = getGradientColor()
-                    it.themeBackgroundFileName?.let { img ->
-                        Constants.BG_IMAGE = img
-                    }
+                    updateDatastoreVariables(
+                        gradientStartColor = it.gradientColor,
+                        gradientEndColor = it.spotLightColor
+                    )
+                    ThemeDetails.GRADIENT_COLOR_START = it.gradientColor
+                    ThemeDetails.GRADIENT_COLOR_END = it.spotLightColor
+                    ThemeDetails.GRADIENT = null
+                    ThemeDetails.GRADIENT = getGradientColor()
+                    ThemeDetails.BG_IMAGE = it.themeBackgroundFileName
+                    ThemeDetails.LOGO_IMAGE = it.themeLogoFileName
                 }
             }
 
@@ -177,9 +179,12 @@ class WeatherDateTimeFragment : Fragment() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let { response ->
-                    Constants.MOVIES_COUNT =
-                        response.freeContentList.size.plus(response.premiumContentList.size)
-                    Constants.C_LIST_VERSION = response.version
+                    updateDatastoreVariables(
+                        moviesCount = response.freeContentList.size.plus(
+                            response.premiumContentList.size
+                        ),
+                        cListVersion = response.version
+                    )
                 }
             }
 
@@ -192,7 +197,7 @@ class WeatherDateTimeFragment : Fragment() {
             is Resource.Success -> {
                 status.data?.let { response ->
                     lifecycleScope.launch {
-                        Constants.SHOWS_COUNT = 0
+                        var showsCount = 0
                         val newList = mutableListOf<Int>()
                         val list = response.shoContentList.map { s ->
                             async(Dispatchers.IO) {
@@ -206,15 +211,11 @@ class WeatherDateTimeFragment : Fragment() {
                         }
 
                         newList.addAll(list.awaitAll())
-//                        Log.e(TAG, "handleShowtimeServiceResponse: 0 ${newList.size}")
-
                         newList.addAll(list1.awaitAll())
-//                        Log.e(TAG, "handleShowtimeServiceResponse: 1 ${newList.size}")
-
                         newList.forEach {
-                            Constants.SHOWS_COUNT += it
+                            showsCount += it
                         }
-//                        Constants.SHOWS_COUNT = list.size.plus(list1.size)
+                        updateDatastoreVariables(showsCount = showsCount)
                     }
 
                 }
@@ -224,5 +225,94 @@ class WeatherDateTimeFragment : Fragment() {
         }
     }
 
+    private fun updateDatastoreVariables(
+        moviesCount: Int? = null,
+        showsCount: Int? = null,
+        cListVersion: String? = null,
+        ipAddress: String? = null,
+        netMask: String? = null,
+        gateway: String? = null,
+        connectivity: String? = null,
+        gradientStartColor: String? = null,
+        gradientEndColor: String? = null
+    ) {
+        lifecycleScope.launch {
+            moviesCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
+                    it
+                )
+            }
+            showsCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.SHOWS_COUNT_KEY,
+                    it
+                )
+            }
+            cListVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
+                    it
+                )
+            }
+            ipAddress?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IP_ADDRESS_KEY,
+                    it
+                )
+            }
+            netMask?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IP_NET_MASK_KEY,
+                    it
+                )
+            }
+            gateway?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IP_GATEWAY_KEY,
+                    it
+                )
+            }
+            connectivity?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.CONNECTIVITY_KEY,
+                    it
+                )
+            }
+            gradientStartColor?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+                    it
+                )
+            }
+            gradientEndColor?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+                    it
+                )
+            }
+        }
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            GuestDetails.IS_GUEST_CHECKED_IN = getSession()
+            GuestDetails.SESSION_ID = getSessionId()
+        }
+    }
+
+    private suspend fun getSession(): Boolean {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY,
+            false
+        )
+    }
+
+    private suspend fun getSessionId(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.SESSION_ID_KEY,
+            ""
+        )
+    }
 
 }

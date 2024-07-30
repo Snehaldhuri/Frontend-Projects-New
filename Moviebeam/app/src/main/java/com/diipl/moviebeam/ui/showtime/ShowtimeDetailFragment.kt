@@ -1,41 +1,49 @@
 package com.diipl.moviebeam.ui.showtime
 
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseFragment
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
+import kotlinx.coroutines.launch
 
 class ShowtimeDetailFragment : BaseFragment() {
 
     private var _binding: FragmentMovieDetailBinding? = null
     val binding get() = _binding!!
 
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper =
+        PreferenceDataStoreHelper(requireContext())
+    private var ua = ""
+
     private lateinit var show: Detail
-    private var gradient: GradientDrawable? = null
 
     private var position: Int = 0
     private var seekPosition: Long = 0
     private val showtimeViewModel: ShowtimeViewModel by activityViewModels()
-    private val viewModel : MoviesViewModel by activityViewModels()
+    private val viewModel: MoviesViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +51,6 @@ class ShowtimeDetailFragment : BaseFragment() {
         arguments?.let {
             position = it.getInt("movieReleaseId")
         }
-
     }
 
     override fun observeViewModel() {
@@ -56,7 +63,8 @@ class ShowtimeDetailFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
-        LoggingService.sendMessageToWebSocket("In ShowtimeDetailPage create ","13")
+        this.initializeDatastoreParams()
+        LoggingService.sendMessageToWebSocket("In ShowtimeDetailPage create ", "13")
         binding.layoutMovie.toVisible()
         return binding.root
     }
@@ -77,7 +85,8 @@ class ShowtimeDetailFragment : BaseFragment() {
             }
         }
         binding.btnContinueWatch.setOnClickListener {
-            val seekType = if (binding.btnContinueWatch.text.toString() == getString(R.string.watch_now)) 0 else 1
+            val seekType =
+                if (binding.btnContinueWatch.text.toString() == getString(R.string.watch_now)) 0 else 1
             apiCall(seekType, Constants.C_TYPE_MOVIE)
             show.let { it1 ->
                 (activity as ShowtimeActivity?)?.gotoExoPlayerActivity(
@@ -133,7 +142,6 @@ class ShowtimeDetailFragment : BaseFragment() {
 
     }
 
-
     private fun setShowDetails(show: Detail) {
         this.show = show
         binding.btnWatchTrailer.toGone()
@@ -182,16 +190,17 @@ class ShowtimeDetailFragment : BaseFragment() {
         layoutParams.marginStart = resources.getDimensionPixelSize(R.dimen.dp_225)
         binding.btnRentNow.layoutParams = layoutParams
 
-        binding.btnRentNow.setOnFocusChangeListener(::handleBackClick)
-        binding.btnContinueWatch.setOnFocusChangeListener(::handleBackClick)
-        binding.btnWatchFromStart.setOnFocusChangeListener(::handleBackClick)
+        binding.btnRentNow.handleFocusChange()
+        binding.btnContinueWatch.handleFocusChange()
+        binding.btnWatchFromStart.handleFocusChange()
 
     }
 
-    private fun apiCall(seekType: Int,  cType: String) {
+    private fun apiCall(seekType: Int, cType: String) {
         val request = RentalMovieRequest()
-        if (::show.isInitialized){
+        if (::show.isInitialized) {
             show.let {
+                request.UA = ua
                 request.productId = it.productId
                 request.releaseID = it.releaseId
                 request.contentTypeID = it.contentTypeId
@@ -205,16 +214,17 @@ class ShowtimeDetailFragment : BaseFragment() {
         }
     }
 
-    fun setGradient(gradient: GradientDrawable?) {
-        this.gradient = gradient
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            ua = getUa()
+        }
     }
 
-    private fun handleBackClick(view: View, focus: Boolean) {
-        if (focus) {
-            view.background = gradient
-        } else {
-            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        }
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
     }
 
 }

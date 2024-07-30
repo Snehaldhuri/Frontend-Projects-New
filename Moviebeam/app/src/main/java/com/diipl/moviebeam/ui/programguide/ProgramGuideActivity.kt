@@ -40,6 +40,8 @@ import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
@@ -58,7 +60,9 @@ import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.isEpgDataValid
+import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -103,6 +107,14 @@ class ProgramGuideActivity : BaseActivity() {
     private var hotelChannelVideo: String = ""
     private var isEpgApiCalled = false
 
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(
+            applicationContext
+        )
+    }
+    private var ua = ""
+
     @Inject
     lateinit var preferences: SharedPreference
 
@@ -125,6 +137,8 @@ class ProgramGuideActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityProgramGuideBinding.inflate(layoutInflater)
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
         fetchDetails()
         this.getChannelsFromRoomDB()
         setContentView(binding.root)
@@ -136,6 +150,7 @@ class ProgramGuideActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initializeDatastoreParams()
         programGuideViewModel.getChannelListResponseData(channelListDataStore)
         initSet()
     }
@@ -197,7 +212,7 @@ class ProgramGuideActivity : BaseActivity() {
                 if (!isEpgApiCalled) {
                     binding.pbLoader.toVisible()
                     isEpgApiCalled = true
-                    programGuideViewModel.fetchEPGDataFromServer(Constants.UA)
+                    programGuideViewModel.fetchEPGDataFromServer(ua)
                 } else {
                     binding.pbLoader.toInvisible()
                 }
@@ -309,13 +324,6 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     private fun fetchDetails() {
-        intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        intent.extras?.let {
-            binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
-            loadBg(it.getString("themeBackgroundFileName"))
-        }
         intent.extras?.getString("hotelChannel")?.let {
             hotelChannel = it.fromJson()
         }
@@ -590,7 +598,7 @@ class ProgramGuideActivity : BaseActivity() {
 
         if (!isScrolled) {
             channelList = currentPrograms
-            Constants.CURRENT_PROGRAMS = currentPrograms
+            CURRENT_PROGRAMS = currentPrograms
             channelContent = currentPrograms?.map { it.VP }
             setUpChannels(currentPrograms)
         } else
@@ -705,8 +713,7 @@ class ProgramGuideActivity : BaseActivity() {
                     SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
                 status.data?.let {
                     if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
-                        Constants.EPG_START = it.ST ?: ""
-                        Constants.EPG_END = it.ET ?: ""
+                        updateEpgStAndEt(it.ST, it.ET)
                         val channelList =
                             programGuideViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()
@@ -882,6 +889,40 @@ class ProgramGuideActivity : BaseActivity() {
                 status.errorMsg?.let { programGuideViewModel.showToastMessage(it) }
             }
         }
+    }
+
+    private fun updateEpgStAndEt(epgStartTime: String?, epgEndTime: String?) {
+        lifecycleScope.launch {
+            epgStartTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
+                    it
+                )
+            }
+            epgEndTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
+                    it
+                )
+            }
+        }
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
+
+    companion object {
+        var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
     }
 
 }

@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.localattraction
 
 import android.content.Context
-import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +9,10 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAServices
+import com.diipl.moviebeam.utils.getGradientColor
 
 class LocalAttractionAdapter(private var onItemClicked: ((LAServices)) -> Unit) :
-
     RecyclerView.Adapter<LocalAttractionAdapter.MyViewHolder>() {
-    private var gradientDrawable: GradientDrawable? = null
 
     private var itemList = listOf<LAServices>()
 
@@ -45,7 +43,7 @@ class LocalAttractionAdapter(private var onItemClicked: ((LAServices)) -> Unit) 
 
         holder.card.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                holder.card.background = gradientDrawable
+                holder.card.background = getGradientColor()
                 onItemClicked(item)
             } else {
                 holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
@@ -55,10 +53,6 @@ class LocalAttractionAdapter(private var onItemClicked: ((LAServices)) -> Unit) 
 //            onItemClicked(item)
 //        }
 
-    }
-
-    fun setGradientDrawable(gradient: GradientDrawable) {
-        gradientDrawable = gradient
     }
 
     fun setItemList(btnList: List<LAServices>) {

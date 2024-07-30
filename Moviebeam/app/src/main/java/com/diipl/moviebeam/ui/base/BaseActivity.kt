@@ -32,16 +32,6 @@ abstract class BaseActivity : AppCompatActivity() {
         logD("${this::class.java.simpleName} started.")
     }
 
-    override fun onCreateView(
-        parent: View?,
-        name: String,
-        context: Context,
-        attrs: AttributeSet
-    ): View? {
-
-        return super.onCreateView(parent, name, context, attrs)
-    }
-
     override fun onResume() {
         super.onResume()
 

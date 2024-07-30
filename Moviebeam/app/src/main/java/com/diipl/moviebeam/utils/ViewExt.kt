@@ -16,6 +16,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
@@ -248,5 +250,23 @@ fun View.setSafeOnClickListener(onSafeClick: (View) -> Unit) {
     setOnClickListener(safeClickListener)
 }
 
+fun View.loadBg() {
+    Glide.with(this).load(ThemeDetails.BG_IMAGE)
+        .into(object : CustomTarget<Drawable?>() {
+            override fun onResourceReady(
+                resource: Drawable,
+                transition: Transition<in Drawable?>?
+            ) {
+                resource.alpha = 120
+                val root = this@loadBg
+                root.background = resource
+            }
 
+            override fun onLoadCleared(placeholder: Drawable?) {}
+        })
+}
+
+fun ImageView.loadLogo() {
+    loadImagesWithGlideExtLogo(ThemeDetails.LOGO_IMAGE)
+}
 

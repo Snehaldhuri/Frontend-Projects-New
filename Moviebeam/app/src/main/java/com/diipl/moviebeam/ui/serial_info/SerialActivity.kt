@@ -70,13 +70,12 @@ class SerialActivity : BaseActivity() {
 
     private fun processSerialNo(serialNo: String) {
         logD("processSerialNo: $serialNo")
-        Constants.SERIAL_NO = serialNo
-        Constants.UA = "21${Constants.SERIAL_NO}"
+        val ua = "${Constants.UA_PREFIX}${serialNo}"
         serialViewModel.setDataInDataStore(
             preferenceDataStoreHelper,
             true,
-            Constants.SERIAL_NO,
-            Constants.UA
+            serialNo,
+            ua
         )
         redirectToRegisterStbActivity()
     }

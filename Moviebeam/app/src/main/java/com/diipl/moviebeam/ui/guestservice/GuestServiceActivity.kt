@@ -1,21 +1,15 @@
 package com.diipl.moviebeam.ui.guestservice
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -45,7 +39,8 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getGradientColor
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.loadBg
+import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -78,6 +73,8 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
 
     override fun initViewBinding() {
         binding = ActivityGuestServiceBinding.inflate(layoutInflater)
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
         setContentView(binding.root)
     }
 
@@ -90,7 +87,6 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        fetchDetails()
         guestServiceViewModel.getGuestMessageResponseData(guestMessageDataStore)
         btnId = intent.getStringExtra("btnId").toString()
         if (btnId == ALL_SERVICES || btnId == Constants.MESSAGE_ID) {
@@ -135,7 +131,6 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
             ToiletryResponse()
         }
     }
-
 
     @SuppressLint("SetTextI18n")
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
@@ -420,24 +415,6 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
         }
     }
 
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                @RequiresApi(Build.VERSION_CODES.O)
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-//                    resource.setTint(Color.argb(0.2f, 0f, 0f, 0f))
-                    binding.root.background = resource
-//                    binding.root.setBackgroundColor(Color.argb(0.6f, 0f, 0f, 0f))
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
-    }
-
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
         binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
     }
@@ -452,26 +429,6 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
         } else {
             view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         }
-    }
-
-    private fun fetchDetails() {
-//        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
-//        intent.extras?.getString("gradientStartColor")?.let {
-//            gradientStartColor = it
-//        }
-//        intent.extras?.getString("gradientEndColor")?.let {
-//            gradientEndColor = it
-//        }
-//        gradient = getGradient()
-//        intent.extras?.getString("themeLogoFileName")?.let {
-//            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-//        }
-//        loadBg(intent.extras?.getString("themeBackgroundFileName"))
-        binding.layoutHeader.tvTitle.text = Constants.TITLE
-        Constants.LOGO_IMAGE?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        loadBg(Constants.BG_IMAGE)
     }
 
     private fun handleBackRemoteClick() {

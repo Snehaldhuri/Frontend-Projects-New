@@ -10,8 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.BuildConfig
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
@@ -24,10 +27,25 @@ import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
+
+    //Variables from datastore
+    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private var accountId: String = ""
+    private var serialNo: String = ""
+    private var ua: String = ""
+    private var stbRoomNo: String = ""
+    private var moviesCount = 0
+    private var showsCount = 0
+    private var cListVersion = ""
+    private var ipAddress = "0.0.0.0"
+    private var netMask = "0.0.0.0"
+    private var gateway = "0.0.0.0"
+    private var connectivity = "NO INTERNET"
 
     private var _binding: FragmentHelpInfoBinding? = null
     private val binding get() = _binding!!
@@ -41,23 +59,11 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
     ): View {
         logD("Switch to Help & Info")
         _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
-
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
+        this.initializeDatastoreParams()
         try {
             activityStack.add(this::class.java.simpleName)
-
             setHotelInfo()
-
-            val ipAddress = "IP Address: " + Constants.IP_ADDRESS
-            val netmask = "Net Mask: " + Constants.IP_NET_MASK
-            val gateway = "Gateway: " + Constants.IP_GATEWAY
-            val connectivity = "Connectivity: " + Constants.CONNECTIVITY
-
-            binding.tvIpAddress.text = ipAddress
-            binding.tvNetMask.text = netmask
-            binding.tvGateway.text = gateway
-            binding.tvConnectivity.text = connectivity
-
-
             val tvInputManager =
                 requireActivity().getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
             val tvInputInfos = tvInputManager.tvInputList
@@ -88,7 +94,6 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         if (preferences.irFrequencyModel == null)
             preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
 
@@ -170,16 +175,118 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     }
 
-
     private fun setHotelInfo() {
-        binding.tvAccountId.text = "Hotel Code: " + Constants.ACCOUNT_ID
-        binding.tvRoomNo.text = "Room No: " + Constants.STB_ROOM_NO
-        binding.tvUa.text = "UA: " + Constants.UA
-        binding.tvSerialNo.text = "Serial No: " + Constants.SERIAL_NO
+        binding.tvAccountId.text = "Hotel Code: " + accountId
+        binding.tvRoomNo.text = "Room No: " + stbRoomNo
+        binding.tvUa.text = "UA: " + ua
+        binding.tvSerialNo.text = "Serial No: " + serialNo
         binding.tvSoftwareVersion.text = "Software Version: " + BuildConfig.VERSION_NAME
-        binding.tvContentListVersion.text = "Content List Version: ${Constants.C_LIST_VERSION}"
+        binding.tvContentListVersion.text = "Content List Version: $cListVersion"
         binding.tvContentCount.text =
-            "Total Content Count: ${Constants.MOVIES_COUNT.plus(Constants.SHOWS_COUNT)}"
+            "Total Content Count: ${moviesCount.plus(showsCount)}"
+
+        val ipAddress = "IP Address: $ipAddress"
+        val netmask = "Net Mask: $netMask"
+        val gateway = "Gateway: $gateway"
+        val connectivity = "Connectivity: $connectivity"
+
+        binding.tvIpAddress.text = ipAddress
+        binding.tvNetMask.text = netmask
+        binding.tvGateway.text = gateway
+        binding.tvConnectivity.text = connectivity
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            accountId = getAccountId()
+            serialNo = getSerialNo()
+            ua = getUa()
+            stbRoomNo = getStbRoomNo()
+            moviesCount = getMoviesCount()
+            showsCount = getShowsCount()
+            cListVersion = getCListVersion()
+            ipAddress = getIpAddress()
+            netMask = getNetMask()
+            gateway = getGateway()
+            connectivity = getConnectivity()
+        }
+    }
+
+    private suspend fun getAccountId(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
+            ""
+        )
+    }
+
+    private suspend fun getStbRoomNo(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
+            ""
+        )
+    }
+
+    private suspend fun getSerialNo(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.SERIAL_NO,
+            ""
+        )
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
+
+    private suspend fun getMoviesCount(): Int {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
+            0
+        )
+    }
+
+    private suspend fun getShowsCount(): Int {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.SHOWS_COUNT_KEY,
+            0
+        )
+    }
+
+    private suspend fun getCListVersion(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
+            ""
+        )
+    }
+
+    private suspend fun getIpAddress(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.IP_ADDRESS_KEY,
+            "0.0.0.0"
+        )
+    }
+
+    private suspend fun getNetMask(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.IP_NET_MASK_KEY,
+            "0.0.0.0"
+        )
+    }
+
+    private suspend fun getGateway(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.IP_GATEWAY_KEY,
+            "0.0.0.0"
+        )
+    }
+
+    private suspend fun getConnectivity(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.CONNECTIVITY_KEY,
+            "NO INTERNET"
+        )
     }
 
 }

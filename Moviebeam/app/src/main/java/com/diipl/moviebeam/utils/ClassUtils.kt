@@ -23,6 +23,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
@@ -39,6 +40,8 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.ClearCredentialsReceiver
 import com.diipl.moviebeam.service.EpgWorker
@@ -116,11 +119,11 @@ inline fun <reified T> String.fromJson(): T {
     return Gson().fromJson(this, T::class.java)
 }
 
-fun RentalMovieModel.getRentalDetails(): String {
+fun RentalMovieModel.getRentalDetails(ua: String): String {
     val timeStamp = System.currentTimeMillis()
     // UA + ":" + ReleaseId + ":" + ProductId + ":" + Price + ":" + TimeStamp + ":" + SessionId + ":" + 5
     return this.movieData?.let {
-        "${Constants.UA}:${it.releaseId}:${it.productId}:${it.price}:${timeStamp / 1000}:${Constants.SESSION_ID}:5"
+        "${ua}:${it.releaseId}:${it.productId}:${it.price}:${timeStamp / 1000}:${GuestDetails.SESSION_ID}:5"
     }.toString()
 }
 
@@ -187,10 +190,10 @@ fun ExoPlayer?.getLastSeek(): Long {
 }
 
 fun getGradientColor(): GradientDrawable {
-    if (Constants.GRADIENT != null)
-        return Constants.GRADIENT!!
-    val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
-    val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+    if (ThemeDetails.GRADIENT != null)
+        return ThemeDetails.GRADIENT!!
+    val startColor = ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+    val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
     val gradientDrawable = GradientDrawable(
         GradientDrawable.Orientation.TR_BL,
         intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -203,8 +206,8 @@ fun getGradientColor(): GradientDrawable {
 }
 
 fun getGradientColorForTable(): GradientDrawable {
-    val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
-    val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+    val startColor = ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+    val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
     val gradientDrawable = GradientDrawable(
         GradientDrawable.Orientation.TR_BL,
         intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -224,6 +227,19 @@ fun View.handleFocusChange() {
     }
 }
 
+private suspend fun getGradientStartColor(preferenceDataStoreHelper: PreferenceDataStoreHelper): String {
+    return preferenceDataStoreHelper.getFirstPreference(
+        PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+        Constants.DEFAULTGRADIENTSTARTCOLOR
+    )
+}
+
+private suspend fun getGradientEndColor(preferenceDataStoreHelper: PreferenceDataStoreHelper): String {
+    return preferenceDataStoreHelper.getFirstPreference(
+        PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+        Constants.DEFAULTGRADIENTENDCOLOR
+    )
+}
 
 fun RecyclerView.setItemFocused() {
     for (i in 0 until childCount) {
@@ -311,16 +327,21 @@ fun getCurrentPanelNumber(): String {
 }
 
 fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
-
     // NETWORK DETAILS
     try {
+        val ipAddress: String
+        val netMask: String
+        val connectivity: String
+        var gateway = "0.0.0.0"
         val networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
         val address = networkInterfaces[1].interfaceAddresses[1]
 
-        Constants.IP_ADDRESS = address.address?.hostAddress ?: "0.0.0.0"
-        Constants.IP_NET_MASK = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
+        ipAddress = address.address?.hostAddress ?: "0.0.0.0"
+        netMask = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
 
         currentActivity?.let {
+            val preferenceDataStoreHelper = PreferenceDataStoreHelper(it)
+            connectivity = getConnectivityType(it)
             val connectivityManager =
                 it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
             val wifiManager =
@@ -331,8 +352,16 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
                 val linkProperties: LinkProperties? = connectivityManager.getLinkProperties(network)
                 // Get the default gateway from the LinkProperties
                 val defaultGateway = linkProperties?.routes?.get(2)?.gateway?.hostAddress.toString()
-                Constants.IP_GATEWAY = defaultGateway
+                gateway = defaultGateway
             }
+
+            updateDatastoreVariables(
+                preferenceDataStoreHelper,
+                ipAddress,
+                netMask,
+                gateway,
+                connectivity
+            )
 
             // WIFI DETAILS
             if (ContextCompat.checkSelfPermission(
@@ -354,6 +383,41 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
     val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
     val uptime = System.currentTimeMillis() - uptimeMillis
 
+}
+
+private fun updateDatastoreVariables(
+    preferenceDataStoreHelper: PreferenceDataStoreHelper,
+    ipAddress: String? = null,
+    netMask: String? = null,
+    gateway: String? = null,
+    connectivity: String? = null
+) {
+    CoroutineScope(Dispatchers.IO).launch {
+        ipAddress?.let {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IP_ADDRESS_KEY,
+                it
+            )
+        }
+        netMask?.let {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IP_NET_MASK_KEY,
+                it
+            )
+        }
+        gateway?.let {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IP_GATEWAY_KEY,
+                it
+            )
+        }
+        connectivity?.let {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.CONNECTIVITY_KEY,
+                it
+            )
+        }
+    }
 }
 
 private fun getNetmaskFromPrefixLength(prefixLength: Int): String {
@@ -444,7 +508,7 @@ private fun generateUniqueRequestCode(endTime: Long): Int {
 }
 
 fun ConstraintLayout.loadBg() {
-    val url = Constants.BG_IMAGE
+    val url = ThemeDetails.BG_IMAGE
     Log.e("TAG", "loadBg: $url")
     if (!url.isNullOrEmpty())
         Glide.with(this).load(url)
@@ -587,12 +651,12 @@ fun Uri.toURL(): URL {
     return URL(this.toString())
 }
 
-fun Context.clearCredentials() {
+fun Context.clearCredentials(appList: ArrayList<String>) {
     LoggingService.sendMessageToWebSocket(
         "Clearing Application credentials.",
         getCurrentPanelNumber()
     )
-    if (Constants.APP_LIST.isEmpty()) {
+    if (appList.isEmpty()) {
         LoggingService.sendMessageToWebSocket(
             "App List is empty.",
             getCurrentPanelNumber()
@@ -601,7 +665,7 @@ fun Context.clearCredentials() {
     }
     val intent = Intent(Constants.MDM_CLEAR_CREDENTIALS_ACTION).apply {
         setPackage(Constants.MDM_PACKAGE_NAME)
-        putStringArrayListExtra(Constants.APP_LIST_PARAM, Constants.APP_LIST)
+        putStringArrayListExtra(Constants.APP_LIST_PARAM, appList)
     }
     sendBroadcast(intent)
 
@@ -702,8 +766,11 @@ fun removeEarlierData(
 }
 
 fun Context.scheduleEpgApiCall() {
-    logD("scheduleEpgApiCall: Scheduling Api Call for every ${Constants.EPG_API_CALL_TIME_INTERVAL_HOURS}")
+    logD("scheduleEpgApiCall: Scheduling Api Call for every ${Constants.EPG_API_CALL_TIME_INTERVAL_HOURS} hours")
     val myWork = PeriodicWorkRequestBuilder<EpgWorker>(
+        Constants.EPG_API_CALL_TIME_INTERVAL_HOURS,
+        TimeUnit.HOURS
+    ).setInitialDelay(
         Constants.EPG_API_CALL_TIME_INTERVAL_HOURS,
         TimeUnit.HOURS
     ).build()
@@ -736,9 +803,9 @@ fun Any.logSS(msg: String) {
     LoggingService.sendMessageToWebSocket(msg, LoggingService.SCREEN_SWITCHING)
 }
 
-fun <T> Activity.launchNewActivity(cls: Class<T>, finish: Boolean = false){
-    logSS("Switching to ${this::class.java.simpleName}")
+fun <T> Activity.launchNewActivity(cls: Class<T>, finish: Boolean = false) {
+    logSS("Switching to ${cls.simpleName}")
     startActivity(Intent(this, cls))
-    if(finish)
+    if (finish)
         finish()
 }

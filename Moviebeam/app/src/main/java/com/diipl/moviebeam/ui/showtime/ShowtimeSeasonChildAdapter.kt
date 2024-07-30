@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.showtime
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +12,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.showtime.Detail
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 
 class ShowtimeSeasonChildAdapter(
@@ -21,7 +21,6 @@ class ShowtimeSeasonChildAdapter(
 ) : RecyclerView.Adapter<ShowtimeSeasonChildAdapter.ChildViewHolder>() {
 
     private var seasonDet: List<Detail> = emptyList()
-    private var gradient: GradientDrawable? = null
 
     inner class ChildViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val seasonImage: ImageView = itemView.findViewById(R.id.iv_season_image)
@@ -68,7 +67,7 @@ class ShowtimeSeasonChildAdapter(
             scaleAnimatorSet.playTogether(scaleX, scaleY)
 
             if (hasFocus) {
-                holder.movieview.background = gradient
+                holder.movieview.background = getGradientColor()
                 scaleAnimatorSet.start()
             } else {
                 holder.movieview.setBackgroundResource(R.color.transparent)
@@ -84,8 +83,5 @@ class ShowtimeSeasonChildAdapter(
         notifyDataSetChanged()
     }
 
-    fun setGradient(gradient: GradientDrawable?) {
-        this.gradient = gradient
-    }
 }
 

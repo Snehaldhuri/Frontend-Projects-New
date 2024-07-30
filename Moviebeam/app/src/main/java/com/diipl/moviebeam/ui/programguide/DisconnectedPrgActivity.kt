@@ -43,7 +43,9 @@ import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
+import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
@@ -151,7 +153,8 @@ class DisconnectedPrgActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityDisconnectedPrgBinding.inflate(layoutInflater)
-        fetchDetails()
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
         setContentView(binding.root)
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
@@ -288,32 +291,6 @@ class DisconnectedPrgActivity : BaseActivity() {
             programGuideViewModel.showToastMessage("No channel found with \"$name\"")
         }
 
-    }
-
-    private fun fetchDetails() {
-        intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        intent.extras?.let {
-            binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
-            loadBg(it.getString("themeBackgroundFileName"))
-        }
-    }
-
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                @RequiresApi(Build.VERSION_CODES.O)
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {

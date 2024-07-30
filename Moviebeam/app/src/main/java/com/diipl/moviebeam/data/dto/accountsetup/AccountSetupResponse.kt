@@ -100,5 +100,5 @@ data class AccountSetupResponse(
     val vodMgrPort: String = "",
     val vodVisible: Int = 0,
     val welcomeScreenVisible: Int = 0,
-    val stbCastingPageUrl: String? = null
+    val stbCastingPageUrl: String = ""
 )
