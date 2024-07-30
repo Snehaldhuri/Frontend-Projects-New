@@ -2,12 +2,16 @@ package com.diipl.moviebeam.ui.programguide
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.media.tv.TvContract
+import android.media.tv.TvInputManager
 import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
@@ -19,6 +23,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
@@ -38,6 +43,7 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
+import com.diipl.moviebeam.data.dto.program.DvbChannel
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
@@ -49,8 +55,12 @@ import com.diipl.moviebeam.service.IIrService
 import com.diipl.moviebeam.service.UsbIrService
 import com.diipl.moviebeam.service.isCompatibleDevice
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
+import com.diipl.moviebeam.utils.Constants.DVB_INPUT_ID
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
@@ -176,6 +186,8 @@ class ProgramGuideActivity : BaseActivity() {
         if (isFScreenExit) {
             playChannelVideoBg(null)
         }
+
+        fetchTVChannels()
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
@@ -488,7 +500,11 @@ class ProgramGuideActivity : BaseActivity() {
          } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB, true)) {
              launchLiveTvApp()
          }*/
+
+        tuneChannels(program)
+
     }
+
 
     private fun switchToTV(program: ChannelEpgDTO?) {
         clearCache()
@@ -564,11 +580,6 @@ class ProgramGuideActivity : BaseActivity() {
 
     override fun onStop() {
         super.onStop()
-        finish()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
         binding.layoutVideo.videoView.player?.release()
     }
 
@@ -583,8 +594,6 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.tvTime3.text = currentProgram?.P3_DST
         binding.layoutProgramGuide.tvTime4.text = currentProgram?.P4_DST
 
-        Log.e(TAG, "loadProgramGuide: $currentProgram")
-
         currentPrograms?.remove(currentProgram)
         val hotelVideoProgram = ChannelEpgDTO(
             CN = hotelChannel.channelName,
@@ -594,6 +603,9 @@ class ProgramGuideActivity : BaseActivity() {
             P1_CLS = "80",
             C = "1"
         )
+
+        Log.e(TAG, "loadProgramGuide: $hotelVideoProgram")
+
         currentPrograms?.add(0, hotelVideoProgram)
 
         if (!isScrolled) {

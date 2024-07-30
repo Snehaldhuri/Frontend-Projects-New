@@ -13,11 +13,9 @@
         tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.READ" />
     <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.WRITE" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
@@ -25,7 +23,6 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USB_PERMISSION" />
     <uses-permission android:name="android.permission.TRANSMIT_IR" />
-
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -55,6 +52,11 @@
 
     <uses-configuration android:reqFiveWayNav="true" />
 
+    <uses-permission android:name="android.permission.READ_TV_LISTINGS" />
+    <uses-permission android:name="com.android.providers.tv.permission.ACCESS_ALL_EPG_DATA" />
+    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
+    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
+
     <application
         android:name=".di.App"
         android:allowBackup="true"
@@ -68,7 +70,11 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
         <activity
-            android:name="com.diipl.moviebeam.ui.exoplayer.PlayerActivity"
+            android:name=".ui.exoplayer.LiveTVActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
+        <activity
+            android:name=".ui.exoplayer.PlayerActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
@@ -87,11 +93,11 @@
             android:windowSoftInputMode="adjustPan|adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity
             android:name=".ui.mainmenu.MainMenuActivity"
@@ -101,22 +107,22 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:logo="@mipmap/ic_launcher">
-          <!--  <intent-filter>
+
+            <!--
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
-            </intent-filter>-->
+            </intent-filter>
+            -->
         </activity>
         <activity
             android:name=".ui.kaping.RegisterSTBActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
-            android:exported="false" >
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".ui.stbdetail.STBDetailsActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
-            android:exported="true" >
-        </activity>
-
+            android:exported="true"></activity>
         <activity
             android:name=".ui.movies.ConfirmRentalActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
@@ -209,7 +215,7 @@
             android:exported="false" />
 
         <service
-            android:name="com.diipl.moviebeam.service.kappingservice.EndlessService"
+            android:name=".service.kappingservice.EndlessService"
             android:enabled="true"
             android:exported="false" />
         <service
@@ -218,7 +224,7 @@
             android:foregroundServiceType="dataSync|location" />
 
         <receiver
-            android:name="com.diipl.moviebeam.service.kappingservice.StartReceiver"
+            android:name=".service.kappingservice.StartReceiver"
             android:directBootAware="true"
             android:enabled="true"
             android:exported="false"
@@ -229,12 +235,11 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
 
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
         </receiver>
-
         <receiver android:name=".service.ClearCredentialsReceiver" />
-
         <receiver android:name=".service.TickerMsgReceiver" />
 
         <provider

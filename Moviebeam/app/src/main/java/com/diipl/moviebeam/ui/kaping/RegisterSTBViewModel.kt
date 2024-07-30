@@ -4,12 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -65,8 +65,7 @@ class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: 
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             _stbMasterLiveData.postValue(Resource.Loading())
-            val response =
-                movieBeamRepository.processStbMaster(ua, srNo, macAddress, wifiMacAddress, stbType)
+            val response = movieBeamRepository.processStbMaster(ua, srNo, macAddress, wifiMacAddress, stbType)
             if (response == null) {
                 _stbMasterLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {

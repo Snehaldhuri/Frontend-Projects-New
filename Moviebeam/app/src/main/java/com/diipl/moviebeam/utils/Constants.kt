@@ -320,5 +320,8 @@ object Constants {
 
     const val EPG_API_CALL_TIME_INTERVAL_HOURS: Long = 8
 
-}
 
+    const val DTV_KIT_PACKAGE_NAME = "org.dtvkit.inputsource"
+    var DVB_INPUT_ID = "$DTV_KIT_PACKAGE_NAME/.DtvkitTvInput/HW19"
+
+}
