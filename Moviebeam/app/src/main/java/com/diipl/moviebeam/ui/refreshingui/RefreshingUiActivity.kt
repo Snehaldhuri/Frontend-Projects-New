@@ -24,21 +24,23 @@ import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.isEpgDataValid
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
@@ -47,6 +49,7 @@ import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toVisible
 import com.diipl.moviebeam.worker.UpdateDataWorker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -61,8 +64,15 @@ class RefreshingUiActivity : BaseActivity() {
 
     private var kapingResponse: KapingResponse? = null
 
-    private lateinit var binding: ActivityRefreshingUiBinding
+
+    //Variables from datastore
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private var accountId = ""
+    private var epgCdnUrl = ""
+    private var ua = ""
+    private var appList = ArrayList<String>()
+
+    private lateinit var binding: ActivityRefreshingUiBinding
     private val refreshingUiViewModel: RefreshingUiViewModel by viewModels()
     private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
 
@@ -116,6 +126,7 @@ class RefreshingUiActivity : BaseActivity() {
     override fun initViewBinding() {
         binding = ActivityRefreshingUiBinding.inflate(layoutInflater)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+        this.initializeDatastoreParams()
         setContentView(binding.root)
 
         kapingResponse = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -184,10 +195,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket(
-            "Signal for check out command",
-            getCurrentPanelNumber()
-        )
+        logD("Signal for check out command")
         refreshingUiViewModel.updateGuestMessage(
             guestMessageDataStore,
             MessageResponse()
@@ -198,16 +206,13 @@ class RefreshingUiActivity : BaseActivity() {
             false,
             kapingResponse.cmdData?.cmdData
         )
-        clearCredentials()
+        clearCredentials(appList)
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
     }
 
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
-        LoggingService.sendMessageToWebSocket(
-            "Signal for check in command",
-            getCurrentPanelNumber()
-        )
+        logD("Signal for check in command")
         refreshingUiViewModel.updateGuestSession(
             preferenceDataStoreHelper,
             guestDetailsDatastore,
@@ -216,56 +221,49 @@ class RefreshingUiActivity : BaseActivity() {
         )
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
-
     }
 
     private fun handleAccountActivateCmd() {
-        LoggingService.sendMessageToWebSocket(
-            "Signalling to get account set up",
-            getCurrentPanelNumber()
-        )
+        logD("Signalling to get account set up")
         refreshingUiViewModel.fetchAccountSetupDetails(
             Constants.ACTIVATE,
-            Constants.UA,
+            ua,
             Constants.MODE
         )
     }
 
     private fun handleThemeChangeCmd() {
-        refreshingUiViewModel.fetchThemeDetails(Constants.UA)
+        refreshingUiViewModel.fetchThemeDetails(ua)
     }
 
     private fun handleHsChangeCmd() {
-        refreshingUiViewModel.fetchHotelServiceInfo(Constants.ACCOUNT_ID)
+        refreshingUiViewModel.fetchHotelServiceInfo(accountId)
     }
 
     private fun handleLAChangeCmd() {
-        refreshingUiViewModel.fetchLocalAttractionInfo(Constants.UA)
+        refreshingUiViewModel.fetchLocalAttractionInfo(ua)
     }
 
     private fun handleFetchSyncListCmd() {
-        refreshingUiViewModel.fetchSyncList(Constants.UA)
+        refreshingUiViewModel.fetchSyncList(ua)
     }
 
     private fun handleFetchShowtimeCmd() {
-        refreshingUiViewModel.fetchShowtimeData(Constants.UA)
+        refreshingUiViewModel.fetchShowtimeData(ua)
     }
 
     private fun handleFetchChannelListCmd() {
-        refreshingUiViewModel.handleFetchChannelListCmd(Constants.UA)
+        refreshingUiViewModel.handleFetchChannelListCmd(ua)
     }
 
     private fun handleGuestMessageCmd() {
-        if (Constants.IS_CHECKED_IN) {
-            refreshingUiViewModel.fetchGuestMessage(Constants.UA, Constants.SESSION_ID)
+        if (GuestDetails.IS_GUEST_CHECKED_IN) {
+            refreshingUiViewModel.fetchGuestMessage(ua, GuestDetails.SESSION_ID)
         }
     }
 
     private fun handleGetEPGDataCmd() {
-        LoggingService.sendMessageToWebSocket(
-            "Signal for get EPG Data Cmd",
-            getCurrentPanelNumber()
-        )
+        logD("Signal for get EPG Data Cmd")
         refreshingUiViewModel.getChannelList(channelListDataStore)
     }
 
@@ -274,27 +272,41 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 status.data?.let {
                     refreshingUiViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
-                    Constants.ACCOUNT_ID = it.accountId
-                    Constants.STB_ROOM_NO = it.roomNo
-                    Constants.EPG_CDN_URL = it.epgCdnUrl
+                    CoroutineScope(Dispatchers.Default).launch {
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
+                            it.accountId
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
+                            it.roomNo
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
+                            it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.CASTING_URL_KEY,
+                            it.stbCastingPageUrl
+                        )
+                        if (it.contentDetailFlag)
+                            preferenceDataStoreHelper.putPreference(
+                                PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
+                                it.httpStreamingHotelvideoUrl + it.hotelChannelList[0].fileName
+                            )
+                    }
                     scheduleClearCredentialsTask(it.checkOutTime)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "AccountSetup callback Success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("AccountSetup callback Success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In AccountSetup callback fail",
-                    getCurrentPanelNumber()
-                )
+                logE("In AccountSetup callback fail")
             }
         }
     }
@@ -304,24 +316,22 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.themeLiveData.value?.data?.let {
                     refreshingUiViewModel.setThemeResponseData(it)
+                    updateDatastoreVariables(
+                        gradientStartColor = it.gradientColor,
+                        gradientEndColor = it.spotLightColor
+                    )
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "In Theme callback Success",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In Theme callback Success")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Theme Callback fail",
-                    getCurrentPanelNumber()
-                )
+                logE("In Theme Callback fail")
             }
         }
     }
@@ -335,20 +345,14 @@ class RefreshingUiActivity : BaseActivity() {
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_HS)
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "In Hotel Services callback Success",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In Hotel Services callback Success")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Hotel Services callback fail",
-                    getCurrentPanelNumber()
-                )
+                logE("In Hotel Services callback fail")
             }
         }
     }
@@ -364,20 +368,14 @@ class RefreshingUiActivity : BaseActivity() {
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_LA)
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "In Local Attractions callback Success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In Local Attractions callback Success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Local Attractions callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Local Attractions callback fail ")
             }
         }
     }
@@ -387,25 +385,20 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 status.data?.let {
                     refreshingUiViewModel.updateSyncList(moviesDataStore, it)
-                    Constants.C_LIST_VERSION = it.version
-                    Constants.MOVIES_COUNT =
-                        it.freeContentList.size.plus(it.premiumContentList.size)
+                    updateDatastoreVariables(
+                        moviesCount = it.freeContentList.size.plus(it.premiumContentList.size),
+                        cListVersion = it.version
+                    )
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
-                    LoggingService.sendMessageToWebSocket(
-                        "In MoviesReleasesCollection callback Success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In MoviesReleasesCollection callback Success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Movies callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Movies callback fail ")
             }
         }
     }
@@ -414,25 +407,19 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.showtimeLiveData.value?.data?.let {
-                    Constants.SHOWS_COUNT = it.shoContentList.size
+                    updateDatastoreVariables(showsCount = it.shoContentList.size)
                     refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     redirectToMainMenuScreen()
-                    LoggingService.sendMessageToWebSocket(
-                        "In ShowtimeReleasesCollection callback Success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In ShowtimeReleasesCollection callback Success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Showtime callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Showtime callback fail ")
             }
         }
     }
@@ -445,14 +432,11 @@ class RefreshingUiActivity : BaseActivity() {
                         refreshingUiViewModel.updateChannelList(channelListDataStore, it)
                         EndlessService.kapingCmdExecutionResponse =
                             KapingConstants.EXECUTED_SUCCESSFULLY
-                        Constants.CHANNEL_COUNT = it.channelLcnList!!.size
+                        updateDatastoreVariables(channelCount = it.channelLcnList.size)
                         redirectToMainMenuScreen()
-                        LoggingService.sendMessageToWebSocket(
-                            "In Channel List callback Success ",
-                            getCurrentPanelNumber()
-                        )
+                        logD("In Channel List callback Success ")
                     } else {
-                        refreshingUiViewModel.fetchEPGData(Constants.EPG_CDN_URL + Constants.ACCOUNT_ID + Constants.EPG_CLOUD_URL_SUFFIX)
+                        refreshingUiViewModel.fetchEPGData(epgCdnUrl)
                     }
                 }
             }
@@ -461,10 +445,7 @@ class RefreshingUiActivity : BaseActivity() {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
                 if (EndlessService.kapingCMD == KapingConstants.KAP_CMD_GET_CHANNEL_LIST)
-                    LoggingService.sendMessageToWebSocket(
-                        "In Channel List callback fail ",
-                        getCurrentPanelNumber()
-                    )
+                    logE("In Channel List callback fail ")
             }
         }
     }
@@ -479,14 +460,11 @@ class RefreshingUiActivity : BaseActivity() {
                         processEPGData(it)
                         EndlessService.kapingCmdExecutionResponse =
                             KapingConstants.EXECUTED_SUCCESSFULLY
-                        LoggingService.sendMessageToWebSocket(
-                            "In Get EPG data callback Success ",
-                            getCurrentPanelNumber()
-                        )
+                        logD("In Get EPG data callback Success ")
                         redirectToMainMenuScreen()
                     } else {
                         if (!isEPGServerApiCalled) {
-                            refreshingUiViewModel.fetchEPGDataFromServer(Constants.UA)
+                            refreshingUiViewModel.fetchEPGDataFromServer(ua)
                             isEPGServerApiCalled = true
                         } else {
                             redirectToMainMenuScreen()
@@ -499,10 +477,7 @@ class RefreshingUiActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Get EPG data callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Get EPG data callback fail ")
             }
         }
     }
@@ -521,20 +496,14 @@ class RefreshingUiActivity : BaseActivity() {
                     binding.tvTxt.toGone()
                     binding.btnOk.toVisible()
                     binding.btnOk.requestFocus()
-                    LoggingService.sendMessageToWebSocket(
-                        "In Get Guest Message callback success ",
-                        getCurrentPanelNumber()
-                    )
+                    logD("In Get Guest Message callback success ")
                 }
             }
 
             else -> {
                 status.errorCode?.let { refreshingUiViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { refreshingUiViewModel.showToastMessage(it) }
-                LoggingService.sendMessageToWebSocket(
-                    "In Get Guest Message callback fail ",
-                    getCurrentPanelNumber()
-                )
+                logE("In Get Guest Message callback fail ")
             }
         }
     }
@@ -547,8 +516,7 @@ class RefreshingUiActivity : BaseActivity() {
             val simpleDateFormatter = SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
             epgResponse.let {
                 if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
-                    Constants.EPG_START = it.ST ?: ""
-                    Constants.EPG_END = it.ET ?: ""
+                    updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
                     val channelList =
                         refreshingUiViewModel.channelListLiveData.value?.data?.channelLcnList
                     val currentKey = fetchCurrentProgramKey()
@@ -715,12 +683,6 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
-    private fun appendZeros(value: Int): String {
-        val str = StringBuffer(value.toString()).reverse()
-        str.append("0")
-        return str.reverse().toString()
-    }
-
     private fun startUpdateDataWorker(action: String) {
         val inputData = Data.Builder()
             .putString(UpdateDataWorker.ACTION, action)
@@ -737,6 +699,105 @@ class RefreshingUiActivity : BaseActivity() {
         val i = Intent(this, MainMenuActivity::class.java)
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(i)
+    }
+
+    private fun updateDatastoreVariables(
+        moviesCount: Int? = null,
+        showsCount: Int? = null,
+        cListVersion: String? = null,
+        gradientStartColor: String? = null,
+        gradientEndColor: String? = null,
+        channelCount: Int? = null,
+        epgStartTime: String? = null,
+        epgEndTime: String? = null
+    ) {
+        lifecycleScope.launch {
+            moviesCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
+                    it
+                )
+            }
+            showsCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.SHOWS_COUNT_KEY,
+                    it
+                )
+            }
+            cListVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
+                    it
+                )
+            }
+            gradientStartColor?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+                    it
+                )
+            }
+            gradientEndColor?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+                    it
+                )
+            }
+            channelCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.CHANNEL_COUNT_KEY,
+                    it
+                )
+            }
+            epgStartTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
+                    it
+                )
+            }
+            epgEndTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
+                    it
+                )
+            }
+        }
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            accountId = getAccountId()
+            epgCdnUrl = getEpgCdUrl()
+            ua = getUa()
+            appList = ArrayList(getAppList())
+        }
+    }
+
+    private suspend fun getAccountId(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
+            ""
+        )
+    }
+
+    private suspend fun getEpgCdUrl(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
+            ""
+        )
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
+
+    private suspend fun getAppList(): Set<String> {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.APP_LIST_KEY,
+            emptySet()
+        )
     }
 
 }

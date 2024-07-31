@@ -16,7 +16,6 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.databinding.MoviegenreChildlistItemBinding
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.Constants.MOVIE_SELECTED_POSITION
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtSushi
 import com.diipl.moviebeam.utils.toInvisible
 
@@ -29,7 +28,7 @@ class ChildAdapter(
 ) :
     RecyclerView.Adapter<ChildAdapter.ChildViewHolder>() {
     private var pos = -1
-    private var viewHolder : ChildViewHolder? = null
+    private var viewHolder: ChildViewHolder? = null
 
     inner class ChildViewHolder(val binding: MoviegenreChildlistItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -55,7 +54,8 @@ class ChildAdapter(
                 ContextCompat.getColor(parent.context, R.color.home_page_greeting_text_color)
             val unfocusedColor = ContextCompat.getColor(parent.context, R.color.text_color_primary)
 
-            var anim: Animation = AnimationUtils.loadAnimation(parent.context, R.anim.scale_out_animation)
+            var anim: Animation =
+                AnimationUtils.loadAnimation(parent.context, R.anim.scale_out_animation)
             binding.childTitleTv.setTextColor(unfocusedColor)
             binding.imgCard.strokeColor = Color.TRANSPARENT
 
@@ -99,32 +99,34 @@ class ChildAdapter(
         holder.itemView.setOnKeyListener { _, keycode, _ ->
             when (keycode) {
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    if (holder.absoluteAdapterPosition == 0 && pos == -1){
+                    if (holder.absoluteAdapterPosition == 0 && pos == -1) {
                         onLeftKey(true)
                     }
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0) {
                         -1
                     } else {
                         holder.absoluteAdapterPosition
                     }
                 }
+
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                        pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
-                            -1
-                        }
-                        else {
-                            holder.absoluteAdapterPosition
-                        }
-                }
-                KeyEvent.KEYCODE_DPAD_UP -> {
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0) {
                         -1
                     } else {
                         holder.absoluteAdapterPosition
                     }
                 }
+
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0) {
+                        -1
+                    } else {
+                        holder.absoluteAdapterPosition
+                    }
+                }
+
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0) {
                         -1
                     } else {
                         holder.absoluteAdapterPosition
@@ -135,7 +137,6 @@ class ChildAdapter(
         }
 
         holder.movieview.setOnClickListener {
-            MOVIE_SELECTED_POSITION = holder.absoluteAdapterPosition
             onItemClicked(item, holder.itemView)
         }
     }

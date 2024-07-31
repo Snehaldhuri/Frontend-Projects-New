@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.movies
 
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -16,21 +15,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
 
-private const val TAG = "MoviesBtnAdapter"
 class MoviesBtnAdapter(
     private val onMoviesMenuItemClicked: (View, contentType: String) -> Unit,
     private val onRightKeyPressed: () -> Unit
 ) : ListAdapter<BtnModel, MoviesBtnAdapter.MyViewHolder>(diffCallback) {
 
-    var startColor = ""
-    var endColor = ""
     private var selectedPosition = -1
 
     companion object {
-        val diffCallback = object : DiffUtil.ItemCallback<BtnModel>(){
+        val diffCallback = object : DiffUtil.ItemCallback<BtnModel>() {
             override fun areItemsTheSame(oldItem: BtnModel, newItem: BtnModel): Boolean {
                 return oldItem == newItem
             }
@@ -41,7 +38,6 @@ class MoviesBtnAdapter(
 
         }
     }
-
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
@@ -89,7 +85,7 @@ class MoviesBtnAdapter(
 
         holder.card.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
-                fetchGradientColorsFromApi(holder.card)
+                holder.card.background = getGradientColor()
                 holder.card.setOnClickListener {
                     onMoviesMenuItemClicked(v, item.btnId)
                     holder.itemView.isSelected = true
@@ -123,25 +119,4 @@ class MoviesBtnAdapter(
         }
     }
 
-    private fun fetchGradientColorsFromApi(cardView: ConstraintLayout) {
-
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-
-        gradientDrawable.cornerRadius = 20f
-
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-
-        cardView.background = gradientDrawable
-    }
-
-    fun setGradientColor(startColor: String, endColor: String) {
-        this.startColor = startColor
-        this.endColor = endColor
-    }
 }

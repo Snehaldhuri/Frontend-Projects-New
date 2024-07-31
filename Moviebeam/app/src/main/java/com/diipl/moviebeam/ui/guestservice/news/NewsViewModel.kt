@@ -1,22 +1,27 @@
 package com.diipl.moviebeam.ui.guestservice.news
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class NewsViewModel @Inject constructor(
+    @ApplicationContext context: Context,
     private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
 
@@ -26,8 +31,17 @@ class NewsViewModel @Inject constructor(
     private val _newsLiveData = MutableLiveData<Resource<NewsResponse>>()
     val newsLiveData: LiveData<Resource<NewsResponse>> get() = _newsLiveData
 
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(
+            context
+        )
+    }
+    private var ua = ""
+
     init {
-        fetchNewsHeader(Constants.UA, 1)
+        initializeDatastoreParams()
+        fetchNewsHeader(ua, 1)
     }
 
     private fun fetchNewsHeader(ua: String, languageId: Int) {
@@ -62,6 +76,19 @@ class NewsViewModel @Inject constructor(
 
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
+    }
+
+    private fun initializeDatastoreParams() {
+        viewModelScope.launch {
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
     }
 
 }

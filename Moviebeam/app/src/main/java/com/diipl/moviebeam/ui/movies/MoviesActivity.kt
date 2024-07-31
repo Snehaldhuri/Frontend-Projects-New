@@ -1,11 +1,7 @@
 package com.diipl.moviebeam.ui.movies
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
@@ -16,15 +12,11 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
-import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
@@ -39,11 +31,14 @@ import com.diipl.moviebeam.utils.Constants.ADULT_MCD_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_BTN
 import com.diipl.moviebeam.utils.Constants.ADULT_MCW_MAIN
 import com.diipl.moviebeam.utils.Constants.C_TYPE_MOVIE
-import com.diipl.moviebeam.utils.Constants.SESSION_ID
+import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.SharedPreference
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getHeightInPercent
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.loadBg
+import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
@@ -56,24 +51,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-private const val TAG = "MoviesActivity"
-
 @AndroidEntryPoint
 class MoviesActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMoviesBinding
-
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
     private val list: MutableList<BtnModel> = Constants.MOVIES_PAGE_MENU_BUTTON_LIST
 
     private val moviesViewModel: MoviesViewModel by viewModels()
     private val movieDetailFragment = MovieDetailFragment()
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-
-    @Inject
-    lateinit var themeDataStore: DataStore<ThemeResponse>
 
     @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
@@ -89,7 +76,6 @@ class MoviesActivity : BaseActivity() {
     private lateinit var adultResponse: MoviesResponse
 
     override fun observeViewModel() {
-        observe(moviesViewModel.themeLiveData, ::handleThemeResponse)
         observe(moviesViewModel.moviesLiveData, ::handleMoviesServiceResponse)
 //        observe(moviesViewModel.adultStatus, ::handleAdultResponse)
         observe(moviesViewModel.adultDayPassStatus, ::handleAdultDayPassResponse)
@@ -102,9 +88,10 @@ class MoviesActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityMoviesBinding.inflate(layoutInflater)
-        val view = binding.root
-        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
-        setContentView(view)
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
+        binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
+        setContentView(binding.root)
     }
 
 
@@ -114,10 +101,9 @@ class MoviesActivity : BaseActivity() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(applicationContext)
 
         moviesViewModel.getAdultStatus(preferenceDataStoreHelper)
-        moviesViewModel.getThemeResponseData(themeDataStore)
         moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
 
-        binding.btnBack.setOnFocusChangeListener(::handleFocusChange)
+        binding.btnBack.handleFocusChange()
         binding.btnBack.setOnClickListener {
             handleBackClick()
         }
@@ -189,7 +175,9 @@ class MoviesActivity : BaseActivity() {
             if (isFree && activityStack.contains(C_TYPE_MOVIE)) {
                 if (preference.isAdultPassCodeEmpty)
                     setAdultData(adultResponse)
-                else if (!preference.isAdultLocked) setAdultData(adultResponse) else openACDDialog(ADULT_LOCKED)
+                else if (!preference.isAdultLocked) setAdultData(adultResponse) else openACDDialog(
+                    ADULT_LOCKED
+                )
                 activityStack.remove(C_TYPE_MOVIE)
             }
         }
@@ -199,7 +187,8 @@ class MoviesActivity : BaseActivity() {
     override fun onStart() {
         super.onStart()
 
-        isUserCheckedIn = (SESSION_ID.isNotEmpty() && SESSION_ID != "null")
+        isUserCheckedIn =
+            (GuestDetails.SESSION_ID.isNotEmpty() && GuestDetails.SESSION_ID != "null")
 
         if (isUserCheckedIn) {
             if (!preference.isMainAdultMCW) {
@@ -246,14 +235,11 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 lifecycleScope.launch {
                     status.data?.let { response ->
-                        Constants.MOVIES_COUNT =
-                            response.freeContentList.size.plus(response.premiumContentList.size)
-                        Constants.C_LIST_VERSION = response.version
+                        updateMoviesCount(
+                            moviesCount = response.freeContentList.size.plus(response.premiumContentList.size),
+                            cListVersion = response.version
+                        )
                         adultResponse = response
-                        moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-                        }
-                        loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
                         val genreMap: LinkedHashMap<String, MutableList<ContentDto>> =
                             LinkedHashMap()
                         withContext(Dispatchers.IO) {
@@ -363,7 +349,6 @@ class MoviesActivity : BaseActivity() {
                                                     )
                                                     return@MoviesBtnAdapter
                                                 } else if (isAdultDayPassPurchased) {
-                                                    Log.e(TAG, "isAdultDayPassPurchased: 0")
                                                     if (preference.isAdultPassCodeEmpty)
                                                         setAdultData(adultResponse)
                                                     else if (!preference.isAdultLocked)
@@ -434,7 +419,6 @@ class MoviesActivity : BaseActivity() {
                         })
                         parentAdapter.setMovieList(genreMap, null, true)
                         binding.parentRecyclerView.adapter = parentAdapter
-                        adapter.setGradientColor(gradientStartColor, gradientEndColor)
                         binding.menuRecyclerView.adapter = adapter
                         delay(200)
                         binding.loaderView.toGone()
@@ -493,58 +477,6 @@ class MoviesActivity : BaseActivity() {
         dialog.show(supportFragmentManager, null)
     }
 
-
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.loaderView.toVisible()
-            is Resource.Success -> {
-                moviesViewModel.themeLiveData.value?.data?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                moviesViewModel.themeLiveData.value?.data?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
-                movieDetailFragment.setGradient(getGradient(gradientStartColor, gradientEndColor))
-                moviesViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-                }
-                loadBg(moviesViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-            }
-
-            else -> {
-                status.errorCode?.let { moviesViewModel.showToastMessage(getString(it)) }
-            }
-        }
-    }
-
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl).into(object : CustomTarget<Drawable?>() {
-            override fun onResourceReady(
-                resource: Drawable, transition: Transition<in Drawable?>?
-            ) {
-                resource.alpha = 120
-                binding.root.background = resource
-            }
-
-            override fun onLoadCleared(placeholder: Drawable?) {}
-        })
-    }
-
-    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-
-        gradientDrawable.cornerRadius = 20f
-
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
-    }
-
     private fun onMovieClick(movie: ContentDto, view: View) {
         itemView = view
         binding.parentRecyclerView.toGone()
@@ -587,14 +519,6 @@ class MoviesActivity : BaseActivity() {
         }
     }
 
-    private fun handleFocusChange(view: View, focus: Boolean) {
-        if (focus) {
-            view.background = getGradient(gradientStartColor, gradientEndColor)
-        } else {
-            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        }
-    }
-
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
@@ -602,6 +526,23 @@ class MoviesActivity : BaseActivity() {
             }
         }
         return false
+    }
+
+    private fun updateMoviesCount(moviesCount: Int? = null, cListVersion: String? = null) {
+        lifecycleScope.launch {
+            moviesCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
+                    it
+                )
+            }
+            cListVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
+                    it
+                )
+            }
+        }
     }
 
 }

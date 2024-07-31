@@ -14,24 +14,19 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.di.HardwareAPI
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.kappingservice.Actions
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
-import com.diipl.moviebeam.utils.launchLogger
-import com.diipl.moviebeam.utils.log
+import com.diipl.moviebeam.utils.launchNewActivity
+import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-private const val TAG = "SerialActivity"
-
 @AndroidEntryPoint
 class SerialActivity : BaseActivity() {
 
@@ -63,10 +58,7 @@ class SerialActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
-
-        launchLogger()
     }
 
 
@@ -106,25 +98,24 @@ class SerialActivity : BaseActivity() {
         }
 
     private fun processSerialNo(serialNo: String) {
-        Log.e(TAG, "processSerialNo: $serialNo")
-        Constants.SERIAL_NO = serialNo
-        Constants.UA = "21${Constants.SERIAL_NO}"
+        logD("processSerialNo: $serialNo")
+        val ua = "${Constants.UA_PREFIX}${serialNo}"
         serialViewModel.setDataInDataStore(
             preferenceDataStoreHelper,
             true,
-            Constants.SERIAL_NO,
-            Constants.UA
+            serialNo,
+            ua
         )
         redirectToRegisterStbActivity()
     }
 
     private fun handleDataStoreResponse(isSerialNoTaken: Boolean) {
         if (isSerialNoTaken) {
+            logD("Found Serial No in Datastore")
             serialViewModel.getStbStatusFromDataStore(preferenceDataStoreHelper)
         } else {
+            logD("Requesting for Serial No from MDM")
             fetchSerialNo()
-//            val serialNo = "29221HFGN30WLA"
-//            processSerialNo(serialNo)
         }
         actionOnService(Actions.START)
     }
@@ -132,10 +123,10 @@ class SerialActivity : BaseActivity() {
     private fun handleStbStatusResponse(isStbRegistered: Boolean) {
         if (isStbRegistered) {
             serialViewModel.getStbAllocationStatusFromDataStore(preferenceDataStoreHelper)
-            LoggingService.sendMessageToWebSocket("In App Loader create ", getCurrentPanelNumber())
+            logD("In App Loader create")
         } else {
             redirectToRegisterStbActivity()
-            LoggingService.sendMessageToWebSocket("Showing Landing Page", getCurrentPanelNumber())
+            logD("Showing Landing Page")
         }
     }
 
@@ -148,18 +139,11 @@ class SerialActivity : BaseActivity() {
     }
 
     private fun redirectToStbDetailsActivity() {
-        startActivity(
-            Intent(
-                this, /*if (BuildConfig.DEBUG) MainMenuActivity::class.java else*/
-                STBDetailsActivity::class.java
-            )
-        )
-        finish()
+        launchNewActivity(STBDetailsActivity::class.java, true)
     }
 
     private fun redirectToRegisterStbActivity() {
-        startActivity(Intent(this, RegisterSTBActivity::class.java))
-        finish()
+        launchNewActivity(RegisterSTBActivity::class.java, true)
     }
 
     override fun onStop() {
@@ -172,11 +156,11 @@ class SerialActivity : BaseActivity() {
             Intent(this, EndlessService::class.java).also {
                 it.action = action.name
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    log("Starting the service in >=26 Mode")
+                    logD("Starting the service in >=26 Mode")
                     startForegroundService(it)
                     return
                 } else {
-                    log("Starting the service in < 26 Mode")
+                    logD("Starting the service in < 26 Mode")
                     startService(it)
                 }
             }

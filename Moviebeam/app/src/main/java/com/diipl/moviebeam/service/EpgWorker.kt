@@ -8,6 +8,8 @@ import androidx.work.WorkerParameters
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.utils.Constants
@@ -40,8 +42,17 @@ class EpgWorker @AssistedInject constructor(
     private var channelList: MutableList<ChannelEpgDTO> = mutableListOf()
     private var isEPGServerApiCalled = false
 
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(
+            applicationContext
+        )
+    }
+    private var ua = ""
+
     override suspend fun doWork(): Result {
         logD("doWork: Started")
+        initializeDatastoreParams()
         getHotelCustomizationResponseData(channelListDataStore)
         logD("doWork: Ended")
         return Result.success()
@@ -58,7 +69,11 @@ class EpgWorker @AssistedInject constructor(
 
     private suspend fun fetchEPGDataFromCloud() {
         val response =
-            movieBeamRepository.getEPGFromCloud(Constants.EPG_CDN_URL + Constants.ACCOUNT_ID + Constants.EPG_CLOUD_URL_SUFFIX)
+            movieBeamRepository.getEPGFromCloud(
+                preferenceDataStoreHelper.getFirstPreference(
+                    PreferenceDataStoreConstants.EPG_CDN_URL_KEY, ""
+                )
+            )
         if (response != null) {
             logD("fetchEPGDataFromCloud: Success")
             handleEpgResponse(response)
@@ -69,7 +84,7 @@ class EpgWorker @AssistedInject constructor(
     }
 
     private suspend fun fetchEPGDataFromServer() {
-        val response = movieBeamRepository.getEPGDataFromServer(Constants.UA)
+        val response = movieBeamRepository.getEPGDataFromServer(ua)
         if (response != null) {
             logD("fetchEPGDataFromServer: Success")
             handleEpgResponse(response)
@@ -86,8 +101,7 @@ class EpgWorker @AssistedInject constructor(
         response?.let {
             if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
                 logD("handleEpgResponse: Valid Epg Data Found")
-                Constants.EPG_START = it.ST ?: ""
-                Constants.EPG_END = it.ET ?: ""
+                updateEpgStandEt(it.ST, it.ET)
                 val currentKey = fetchCurrentProgramKey()
                 removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
                 for (entries in it.epgListMap?.entries!!) {
@@ -254,6 +268,36 @@ class EpgWorker @AssistedInject constructor(
                 }
             }
             logD("handleEpgResponse: Execution Done")
+        }
+    }
+
+    private fun initializeDatastoreParams() {
+        CoroutineScope(Dispatchers.Default).launch {
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
+
+    private fun updateEpgStandEt(epgStartTime: String?, epgEndTime: String?) {
+        CoroutineScope(Dispatchers.Default).launch {
+            epgStartTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
+                    it
+                )
+            }
+            epgEndTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
+                    it
+                )
+            }
         }
     }
 

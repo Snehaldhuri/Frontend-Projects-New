@@ -62,11 +62,11 @@ class MainMenuViewModel @Inject constructor(
     val showtimeLiveData: LiveData<Resource<ShowTimeResponse>> get() = _showtimeLiveData
 
     private val _networkStatus = MutableLiveData<Boolean>()
-    val networkStatus : LiveData<Boolean> get() = _networkStatus
+    val networkStatus: LiveData<Boolean> get() = _networkStatus
 
-    fun getNetworkStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper){
+    fun getNetworkStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch(Dispatchers.IO) {
-            preferenceDataStoreHelper.getPreference(NETWORK_STATUS, false).collect{
+            preferenceDataStoreHelper.getPreference(NETWORK_STATUS, false).collect {
                 _networkStatus.postValue(it)
             }
         }
@@ -189,7 +189,7 @@ class MainMenuViewModel @Inject constructor(
     fun validateSession(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch(Dispatchers.IO) {
             preferenceDataStoreHelper.getPreference(
-                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN,
+                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY,
                 false
             ).collect {
                 _isGuestCheckedInLiveData.postValue(it)

@@ -1,9 +1,6 @@
 package com.diipl.moviebeam.ui.showtime
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
@@ -13,28 +10,32 @@ import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.datastore.core.DataStore
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
+import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
-import com.diipl.moviebeam.service.LoggingService
-import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.loadBg
+import com.diipl.moviebeam.utils.loadLogo
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -42,15 +43,16 @@ class ShowtimeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityShowtimeBinding
 
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper =
+        PreferenceDataStoreHelper(this)
+
     @Inject
     lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
-
-    private var gradient: GradientDrawable? = null
 
     private val list: List<BtnModel> = Constants.SHOWTIME_PAGE_MENU_BUTTON_LIST
 
     private val showtimeViewModel: ShowtimeViewModel by viewModels()
-    private val moviesViewModel: MoviesViewModel by viewModels()
     private var selectedView: View? = null
 
     override fun observeViewModel() {
@@ -59,21 +61,17 @@ class ShowtimeActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityShowtimeBinding.inflate(layoutInflater)
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
+        binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
         setContentView(binding.root)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
-            fetchDetailsFromBundle()
             fetchDataFromDataStore()
-            binding.btnBack.setOnFocusChangeListener { view, isFocused ->
-                if (isFocused) {
-                    view.background = gradient
-                } else {
-                    view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                }
-            }
+            binding.btnBack.handleFocusChange()
             binding.btnBack.setOnClickListener {
                 handleBackClick()
             }
@@ -93,10 +91,7 @@ class ShowtimeActivity : BaseActivity() {
             cardRecyclerView.layoutManager = LinearLayoutManager(this)
             LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity", "12")
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In ShowtimeMainPage activity onCreate: ${e.message}",
-                "12"
-            )
+            logE("Exception in ShowtimeMainPage activity onCreate: ${e.message}")
         }
 
     }
@@ -114,7 +109,7 @@ class ShowtimeActivity : BaseActivity() {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 status.data?.let { response ->
-                    Constants.SHOWS_COUNT = response.shoContentList.size
+                    updateShowsCount(showsCount = response.shoContentList.size)
                     val showTimeGenreMap: Map<String, List<Detail>> =
                         response.shoGenreList.associate { genre ->
                             genre.name to genre.detailList
@@ -184,7 +179,6 @@ class ShowtimeActivity : BaseActivity() {
 
                     showtimeParentAdapter.setShowsList(showTimeGenreMap)
                     binding.parentRecyclerView.adapter = showtimeParentAdapter
-                    adapter.setGradient(gradient)
                     binding.menuRecyclerView.adapter = adapter
                     binding.loaderView.toInvisible()
                 }
@@ -205,32 +199,6 @@ class ShowtimeActivity : BaseActivity() {
         }
     }
 
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
-    }
-
-    private fun getGradient(startColor: String?, endColor: String?): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TR_BL,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-        gradientDrawable.cornerRadius = 20f
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
-    }
-
     private fun onShowsClick(shows: Detail, position: Int) {
         try {
             val transaction = supportFragmentManager.beginTransaction()
@@ -239,24 +207,19 @@ class ShowtimeActivity : BaseActivity() {
                 bundle.putInt("movieReleaseId", shows.releaseId)
                 val fragment = ShowtimeSeasonFragment()
                 fragment.arguments = bundle
-                fragment.setGradient(gradient)
                 transaction.replace(R.id.fcv_movie_detail, fragment)
             } else {
                 val bundle = Bundle()
                 bundle.putInt("movieReleaseId", shows.releaseId)
                 val fragment = ShowtimeDetailFragment()
                 fragment.arguments = bundle
-                fragment.setGradient(gradient)
                 transaction.replace(R.id.fcv_movie_detail, fragment)
             }
             binding.parentRecyclerView.toInvisible()
             binding.fcvMovieDetail.toVisible()
             transaction.commit()
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In ShowtimeMainPage activity onShowsClick: ${e.message}",
-                "12"
-            )
+            logE("Exception in ShowtimeMainPage activity onShowsClick: ${e.message}")
         }
     }
 
@@ -296,20 +259,19 @@ class ShowtimeActivity : BaseActivity() {
         return false
     }
 
-    private fun fetchDetailsFromBundle() {
-        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
-        intent.extras?.let {
-            gradient =
-                getGradient(it.getString("gradientStartColor"), it.getString("gradientEndColor"))
-        }
-        intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        loadBg(intent.extras?.getString("themeBackgroundFileName"))
-    }
-
     private fun fetchDataFromDataStore() {
         showtimeViewModel.getShowtimeResponseData(showtimeDataStore)
+    }
+
+    private fun updateShowsCount(showsCount: Int? = null) {
+        lifecycleScope.launch {
+            showsCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
+                    it
+                )
+            }
+        }
     }
 
 }

@@ -1,10 +1,7 @@
 package com.diipl.moviebeam.ui.movies
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.view.View
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
@@ -27,6 +24,7 @@ import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.fromJson
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
@@ -43,11 +41,9 @@ class ConfirmRentalActivity : BaseActivity() {
     private lateinit var binding: ActivityConfirmRentalBinding
     private lateinit var movie: ContentDto
     private val viewModel: MoviesViewModel by viewModels()
-    private var gradient: GradientDrawable? = null
     private var isCheckedIn = false
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private var ua = ""
     private lateinit var passPrice: String
 
     @Inject
@@ -56,11 +52,11 @@ class ConfirmRentalActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(viewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(viewModel.rentalMovieResponse, ::handleMovieResponse)
-        observe(viewModel.themeLiveData, ::handleThemeResponse)
+//        observe(viewModel.themeLiveData, ::handleThemeResponse)
         observe(viewModel.purchaseResponse, ::handlePurchaseResponse)
         observeToast(viewModel.showToast)
 
-        viewModel.getThemeResponseData(themeDataStore)
+//        viewModel.getThemeResponseData(themeDataStore)
     }
 
     private fun handlePurchaseResponse(resource: Resource<DayPassResponse>) {
@@ -113,6 +109,7 @@ class ConfirmRentalActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+        this.initializeDatastoreParams()
 
         viewModel.validateSession(preferenceDataStoreHelper)
 
@@ -122,18 +119,26 @@ class ConfirmRentalActivity : BaseActivity() {
             binding.tvPriceConfirm.text =
                 getString(R.string.rental_price_confirm, "", movie.price.toString())
         }
+        if (::movie.isInitialized) {
+            binding.layoutRental.toVisible()
+            binding.btnConfirm.requestFocus()
+        } else {
+            binding.layoutPass.toVisible()
+            binding.btnBuyNow.requestFocus()
+        }
         intent.getStringExtra("price")?.let {
             binding.tvAdultPrice.text = getString(R.string.adult_pass_price, "", it)
             passPrice = it
         }
 
-        binding.btnConfirm.setOnFocusChangeListener(::handleBackClick)
-        binding.btnCancel.setOnFocusChangeListener(::handleBackClick)
-        binding.btnBuyNow.setOnFocusChangeListener(::handleBackClick)
-        binding.btnPassCancel.setOnFocusChangeListener(::handleBackClick)
+        binding.btnConfirm.handleFocusChange()
+        binding.btnCancel.handleFocusChange()
+        binding.btnBuyNow.handleFocusChange()
+        binding.btnPassCancel.handleFocusChange()
 
         binding.btnConfirm.setOnClickListener {
             val request = RentalMovieRequest()
+            request.UA = ua
             request.productId = movie.productId
             request.releaseID = movie.releaseId
             request.price = movie.price
@@ -166,15 +171,6 @@ class ConfirmRentalActivity : BaseActivity() {
         binding.btnPassCancel.setOnClickListener {
             finish()
         }
-
-    }
-
-    private fun handleBackClick(view: View, focus: Boolean) {
-        if (focus) {
-            view.background = getGradient(gradientStartColor, gradientEndColor)
-        } else {
-            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-        }
     }
 
     private fun handleMovieResponse(state: Resource<RentalMovieResponse>) {
@@ -196,16 +192,19 @@ class ConfirmRentalActivity : BaseActivity() {
                             binding.layoutRental.toVisible()
                             viewModel.showToastMessage(getString(R.string.product_is_currently_unavailable))
                         }
+
                         2 -> {
                             binding.progressBar.toGone()
                             binding.layoutRental.toVisible()
                             viewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
                         }
+
                         3 -> {
                             binding.progressBar.toGone()
                             binding.layoutRental.toVisible()
                             viewModel.showToastMessage(getString(R.string.call_front_desk_to_activate_moviebeam_services))
                         }
+
                         else -> {
                             binding.progressBar.toGone()
                             binding.layoutRental.toVisible()
@@ -228,22 +227,8 @@ class ConfirmRentalActivity : BaseActivity() {
         when (status) {
             is Resource.Loading -> {}
             is Resource.Success -> {
-                viewModel.themeLiveData.value?.data?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                viewModel.themeLiveData.value?.data?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
 
-                gradient = getGradient(gradientStartColor, gradientEndColor)
 
-                if (::movie.isInitialized) {
-                    binding.layoutRental.toVisible()
-                    binding.btnConfirm.requestFocus()
-                } else {
-                    binding.layoutPass.toVisible()
-                    binding.btnBuyNow.requestFocus()
-                }
             }
 
             else -> {
@@ -259,21 +244,6 @@ class ConfirmRentalActivity : BaseActivity() {
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
-    }
-
-    private fun getGradient(startColor: String, endColor: String): GradientDrawable {
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
-        )
-
-        gradientDrawable.cornerRadius = 20f
-
-        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
-        gradientDrawable.orientation = GradientDrawable.Orientation.TR_BL
-
-        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
-        return gradientDrawable
     }
 
     private fun startActivity(data: RentalMovieResponse) {
@@ -292,5 +262,17 @@ class ConfirmRentalActivity : BaseActivity() {
         finish()
     }
 
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
 
 }

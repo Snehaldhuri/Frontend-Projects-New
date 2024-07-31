@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
@@ -10,24 +9,19 @@ import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.hotelservice.TabListObj
-import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.databinding.ActivityHotelInfoBinding
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.handleFocusChange
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.loadBg
+import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -35,10 +29,7 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.File
 import javax.inject.Inject
-
-private const val TAG = "HotelInfoActivity"
 
 @AndroidEntryPoint
 class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListener {
@@ -46,18 +37,10 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
     private val hotelInfoViewModel: HotelInfoViewModel by viewModels()
 
     private lateinit var binding: ActivityHotelInfoBinding
-    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
-    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
     private var helpInfoTabIndex = 0
 
     @Inject
-    lateinit var themeDataStore: DataStore<ThemeResponse>
-
-    @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
-
-    @Inject
-    lateinit var dateTimeDataStore: DataStore<DateTimeResponse>
 
     @Inject
     lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
@@ -67,91 +50,29 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
 
     override fun observeViewModel() {
         observe(hotelInfoViewModel.hotelServiceLiveData, ::handleHotelServiceResponse)
-        observe(hotelInfoViewModel.themeLiveData, ::handleThemeResponse)
         observeSnackBarMessages(hotelInfoViewModel.showSnackBar)
         observeToast(hotelInfoViewModel.showToast)
     }
 
     override fun initViewBinding() {
         binding = ActivityHotelInfoBinding.inflate(layoutInflater)
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
+        binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
         setContentView(binding.root)
-//        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
-        gradientStartColor = intent.extras?.getString("gradientStartColor").toString()
-        gradientEndColor = intent.extras?.getString("gradientEndColor").toString()
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // fetch data from dataStore
+        hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
 
-        try {
-            // fetch data from dataStore
-            hotelInfoViewModel.getThemeResponseData(themeDataStore)
-            hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
-            hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
+        binding.btnBack.handleFocusChange()
 
-            binding.btnBack.handleFocusChange()
-
-            binding.btnBack.setOnClickListener {
-                finish()
-            }
-            binding.rvHotelInfoHeader.layoutManager =
-                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-            LoggingService.sendMessageToWebSocket(
-                "In HotelServicesMain activity",
-                getCurrentPanelNumber()
-            )
-        } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In HotelServicesMain activity onCreate: ${e.message}",
-                getCurrentPanelNumber()
-            )
-        }
-    }
-
-    private fun checkHotelLogoImageAvailableLocally() {
-        val hotelLogoImageFile =
-            File(getExternalFilesDir(null), Constants.THEME_DIRECTORY + "/" + Constants.HOTEL_LOGO)
-        val backgroundImageFile = File(
-            getExternalFilesDir(null),
-            Constants.THEME_DIRECTORY + "/" + Constants.BACKGROUND_IMAGE
-        )
-
-        if (hotelLogoImageFile.exists()) {
-            // Load the image from local storage using Glide
-            Glide.with(this)
-                .load(hotelLogoImageFile)
-                .into(binding.layoutHeader.ivHotelLogo)
-        }
-
-        if (backgroundImageFile.exists()) {
-            // Load the image from local storage using Glide
-            loadBgImageFromLocalStorage(backgroundImageFile)
-        }
-    }
-
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                hotelInfoViewModel.themeLiveData.value?.data?.gradientColor?.let {
-                    gradientStartColor = it
-                }
-                hotelInfoViewModel.themeLiveData.value?.data?.spotLightColor?.let {
-                    gradientEndColor = it
-                }
-                hotelInfoViewModel.themeLiveData.value?.data?.themeLogoFileName?.let {
-                    binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-                }
-                loadBg(hotelInfoViewModel.themeLiveData.value?.data?.themeBackgroundFileName)
-                binding.pbLoader.toInvisible()
-            }
-
-            else -> {
-                status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
-            }
-        }
+        binding.btnBack.setOnClickListener { finish() }
+        binding.rvHotelInfoHeader.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
     }
 
     private fun handleHotelServiceResponse(status: Resource<HotelServiceResponse>) {
@@ -303,20 +224,15 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                         },
                         onFocusChangeListener = this
                     )
-                    if (gradientStartColor.isNotEmpty() && gradientEndColor.isNotEmpty()) {
-                        adapter.setGradientColor(gradientStartColor, gradientEndColor)
-                    }
                     binding.rvHotelInfoHeader.adapter = adapter
                     binding.tvHeaderTitle.text = tabs[0]
                     binding.pbLoader.toInvisible()
                 }
-
             }
 
             else -> {
                 status.errorCode?.let { hotelInfoViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { hotelInfoViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -327,55 +243,6 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
-    }
-
-    private fun loadBg(imgUrl: String?) {
-        try {
-            Glide.with(this).load(imgUrl)
-                .into(object : CustomTarget<Drawable?>() {
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        transition: Transition<in Drawable?>?
-                    ) {
-                        resource.alpha = 120
-                        binding.root.background = resource
-                    }
-
-                    override fun onLoadCleared(placeholder: Drawable?) {}
-                })
-        } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In HotelServicesMain activity loadBg: ${e.message}",
-                getCurrentPanelNumber()
-            )
-        }
-
-    }
-
-    private fun loadBgImageFromLocalStorage(filename: File) {
-        try {
-            Glide.with(this)
-                .load(filename)
-                .into(object : CustomTarget<Drawable>() {
-
-                    override fun onResourceReady(
-                        resource: Drawable,
-                        transition: Transition<in Drawable>?
-                    ) {
-                        resource.alpha = 120
-                        binding.root.background = resource
-                    }
-
-                    override fun onLoadCleared(placeholder: Drawable?) {
-
-                    }
-                })
-        } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "In HotelServicesMain activity loadBgImageFromLocalStorage: ${e.message}",
-                getCurrentPanelNumber()
-            )
-        }
     }
 
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
@@ -418,4 +285,5 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             binding.gsDown.visibility = View.VISIBLE
         }
     }
+
 }
