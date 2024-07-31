@@ -632,7 +632,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
-        logE("handleSerialNumberResponse Started")
         /*   if (!isNetworkConnected) {
                launchMain()
                return

@@ -38,6 +38,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
@@ -344,34 +345,12 @@ class ProgramGuideActivity : BaseActivity() {
         }
     }
 
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                @RequiresApi(Build.VERSION_CODES.O)
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
-    }
-
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
         binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
     }
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
-    }
-
-    private fun appendZeros(value: Int): String {
-        val str = StringBuffer(value.toString()).reverse()
-        str.append("0")
-        return str.reverse().toString()
     }
 
     private fun playChannelVideoBg(program: ChannelEpgDTO?) {
@@ -475,7 +454,6 @@ class ProgramGuideActivity : BaseActivity() {
 
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
 //        if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_CHROMECAST, true)) {
-        switchToTV(program)
         /* } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_MINI_BOX, true)) {
              binding.layoutVideo.videoView.player?.pause()
              val bundle = Bundle()
@@ -501,7 +479,10 @@ class ProgramGuideActivity : BaseActivity() {
              launchLiveTvApp()
          }*/
 
-        tuneChannels(program)
+        when(BuildConfig.BUILD_TYPE){
+            Constants.BUILD_TYPE_CHROMECAST -> switchToTV(program)
+            Constants.BUILD_TYPE_STB -> tuneChannels(program)
+        }
 
     }
 
@@ -900,6 +881,130 @@ class ProgramGuideActivity : BaseActivity() {
                 status.errorCode?.let { programGuideViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { programGuideViewModel.showToastMessage(it) }
             }
+        }
+    }
+
+    private fun hasReadTvListings(context: Context): Boolean {
+        return (context.checkSelfPermission("android.permission.READ_TV_LISTINGS")
+                == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun loadChannelList() {
+        DVB_INPUT_ID = findDvbInput() ?: return
+
+        val projection = arrayOf(
+            TvContract.Channels._ID,
+            TvContract.Channels.COLUMN_INPUT_ID,
+            TvContract.Channels.COLUMN_SERVICE_ID,
+            TvContract.Channels.COLUMN_SERVICE_TYPE,
+            TvContract.Channels.COLUMN_DISPLAY_NAME,
+            TvContract.Channels.COLUMN_DISPLAY_NUMBER,
+            TvContract.Channels.COLUMN_TRANSPORT_STREAM_ID,
+            TvContract.Channels.COLUMN_VIDEO_FORMAT,
+            TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID,
+            TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA
+        )
+
+        val cursor = contentResolver.query(
+            TvContract.Channels.CONTENT_URI, projection,
+            null, null,
+            "${TvContract.Channels.COLUMN_DISPLAY_NUMBER} ASC"
+        )
+
+        mChannelList.clear()
+
+        while (cursor?.moveToNext() == true) {
+            var index = 0
+            val channelId = cursor.getLong(index++)
+            val curInputId = cursor.getString(index++)
+            val serviceId = cursor.getString(index++)
+            val serviceType = cursor.getString(index++)
+            val displayName = cursor.getString(index++)
+            val displayNumber = cursor.getString(index++)
+            val streamID = cursor.getString(index++)
+            val format = cursor.getString(index++)
+            val networkID = cursor.getString(index++)
+            val blob = cursor.getBlob(index++)
+
+            // only consider dvb input
+            if (DVB_INPUT_ID != curInputId)
+                continue
+
+            // only keep AUDIO_VIDEO services
+            if (TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO != serviceType)
+                continue
+
+            // skip channels without name or number
+            if (displayName == null || displayNumber == null)
+                continue
+
+            val channelNumber = displayNumber.toInt()
+
+            val channel = DvbChannel(
+                displayName,
+                channelNumber,
+                channelId,
+                curInputId
+            )
+
+            mChannelList.add(channel)
+
+        }
+        cursor?.close()
+
+        if (mChannelList.isEmpty()) {
+            val msg = "Unable to find any dvb channels, are channel searchable ?"
+            Log.e(TAG, msg)
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        mChannelList.sortBy { dvbChannel -> dvbChannel.number }
+    }
+
+    private fun findDvbInput(): String? {
+        val mTvInputManager = getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
+
+        Log.i(TAG, "============================================")
+        Log.i(TAG, "enumerate tv input")
+        var dvbInputFound = false
+        var dtvInputComponent = ""
+        mTvInputManager?.let {
+            for (tvInputInfo in it.tvInputList) {
+                if (tvInputInfo.id.startsWith("${DTV_KIT_PACKAGE_NAME}/")) {
+                    dvbInputFound = true
+                    dtvInputComponent = tvInputInfo.id
+                }
+            }
+        }
+
+        Log.i(TAG, "============================================")
+
+        if (!dvbInputFound) {
+            val msg = "Failed to find dvb input"
+            Log.e(TAG, msg)
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            return null
+        }
+
+        return dtvInputComponent
+    }
+
+    private fun fetchTVChannels() {
+        if (hasReadTvListings(this)) {
+            loadChannelList()
+        } else {
+            requestPermissions(arrayOf("android.permission.READ_TV_LISTINGS"), 1001)
+        }
+    }
+
+    private fun tuneChannels(program: ChannelEpgDTO?) {
+        if (!program?.CN.equals("Hotel Video")) {
+            val intent = Intent(applicationContext, LiveTVActivity::class.java)
+            intent.putExtra("currentPos", 99)
+            startActivity(intent)
+        } else {
+            showToast("Not Available")
         }
     }
 

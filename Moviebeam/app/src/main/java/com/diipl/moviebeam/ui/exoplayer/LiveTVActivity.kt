@@ -50,19 +50,16 @@ class LiveTVActivity : BaseActivity() {
         }
     }
 
-    override fun observeViewModel() {
-
-    }
+    override fun observeViewModel() {}
 
     override fun initViewBinding() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_live_tvactivity)
-
     }
 
     private fun startPlayback(index: Int) {
         mPrevTracksIds.clear()
-//        val channel = mChannelList[index]
-        val channel = DvbChannel("Test", index, index.toLong(), DVB_INPUT_ID)
+        val channel = mChannelList[index]
+//        val channel = DvbChannel("Test", index, index.toLong(), DVB_INPUT_ID)
 //        mChannelList.add(channel)
         Log.e(TAG, "start tv view with: $index  $channel / ${channel.uri} / ${channel.inputId}")
         lifecycleScope.launch {
@@ -240,7 +237,7 @@ class LiveTVActivity : BaseActivity() {
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
          return event?.let {
-            when (it.keyCode) {
+            when (keyCode) {
                 KeyEvent.KEYCODE_CHANNEL_UP, KeyEvent.KEYCODE_PAGE_UP -> {
                     if (isDone)channelUp()
                     true
@@ -254,6 +251,24 @@ class LiveTVActivity : BaseActivity() {
                 else -> super.onKeyUp(keyCode, event)
             }
         } ?: super.onKeyUp(keyCode, event)
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
+        return event?.let {
+            when (it.keyCode) {
+                KeyEvent.KEYCODE_CHANNEL_UP, KeyEvent.KEYCODE_PAGE_UP -> {
+                    if (isDone)channelUp()
+                    true
+                }
+
+                KeyEvent.KEYCODE_CHANNEL_DOWN, KeyEvent.KEYCODE_PAGE_DOWN -> {
+                    if (isDone)channelDown()
+                    true
+                }
+
+                else -> super.dispatchKeyEvent(event)
+            }
+        } ?: super.dispatchKeyEvent(event)
     }
 
     private fun channelUp() {

@@ -61,6 +61,9 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
         _binding = FragmentHelpInfoBinding.inflate(inflater, container, false)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
         this.initializeDatastoreParams()
+        when(BuildConfig.BUILD_TYPE){
+            Constants.BUILD_TYPE_STB -> binding.layoutBrand.toGone()
+        }
         try {
             activityStack.add(this::class.java.simpleName)
             setHotelInfo()
