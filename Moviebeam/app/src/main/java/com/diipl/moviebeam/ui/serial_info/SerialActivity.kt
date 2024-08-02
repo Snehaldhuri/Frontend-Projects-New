@@ -30,6 +30,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class SerialActivity : BaseActivity() {
 
+    private val TAG = "SerialActivity"
 
     private lateinit var binding: ActivitySerialBinding
     private val serialViewModel: SerialViewModel by viewModels()
