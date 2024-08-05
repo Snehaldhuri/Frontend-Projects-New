@@ -8,8 +8,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.android.tv.settings.aidl.common.ISeiCommonApi
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
+import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.service.kappingservice.Actions
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -19,8 +23,14 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.observe
-
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+@AndroidEntryPoint
 class SerialActivity : BaseActivity() {
+
+    private val TAG = "SerialActivity"
 
     private lateinit var binding: ActivitySerialBinding
     private val serialViewModel: SerialViewModel by viewModels()
@@ -29,6 +39,10 @@ class SerialActivity : BaseActivity() {
             applicationContext
         )
     }
+
+    @Inject
+    lateinit var hardwareAPI: HardwareAPI
+
 
     override fun observeViewModel() {
         observe(serialViewModel.serialNoTakenLiveData, ::handleDataStoreResponse)
@@ -42,10 +56,12 @@ class SerialActivity : BaseActivity() {
         setContentView(view)
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
     }
+
 
     override fun onPause() {
         super.onPause()
@@ -53,9 +69,23 @@ class SerialActivity : BaseActivity() {
     }
 
     private fun fetchSerialNo() {
-        val intent = Intent()
-        intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_SERIAL_ACTIVITY)
-        resultLauncher.launch(intent)
+        when(BuildConfig.BUILD_TYPE){
+            Constants.BUILD_TYPE_STB -> {
+                fetchSerialFromSDK()
+            }
+            else -> {
+                val intent = Intent()
+                intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_SERIAL_ACTIVITY)
+                resultLauncher.launch(intent)
+            }
+        }
+    }
+
+    private fun fetchSerialFromSDK() {
+        hardwareAPI.myService?.let {
+            Log.e(TAG, "fetchSerialFromSDK: ${it.deviceSn}")
+            processSerialNo(it.deviceSn)
+        }
     }
 
     private var resultLauncher =
