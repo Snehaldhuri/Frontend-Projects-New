@@ -118,11 +118,11 @@
         <activity
             android:name=".ui.kaping.RegisterSTBActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
-            android:exported="false"></activity>
+            android:exported="false"/>
         <activity
             android:name=".ui.stbdetail.STBDetailsActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
-            android:exported="true"></activity>
+            android:exported="true"/>
         <activity
             android:name=".ui.movies.ConfirmRentalActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"

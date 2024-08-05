@@ -51,8 +51,10 @@ class LoggingService : Service() {
     }
 
     fun startWebSocket() {
+        Log.e(TAG, "startWebSocket: Trying to Start")
         if (!isServiceStarted) {
-
+            isServiceStarted = true
+            Log.e(TAG, "startWebSocket: Starting")
             client = OkHttpClient.Builder()
                 .build()
 
@@ -82,6 +84,8 @@ class LoggingService : Service() {
                     Log.e(TAG, "WebSocket connection failure: ${t.message}")
                 }
             })
+        } else {
+            Log.e(TAG, "startWebSocket: Already started")
         }
 
     }

@@ -23,7 +23,6 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
@@ -74,7 +73,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.URL
@@ -192,7 +193,8 @@ fun ExoPlayer?.getLastSeek(): Long {
 fun getGradientColor(): GradientDrawable {
     if (ThemeDetails.GRADIENT != null)
         return ThemeDetails.GRADIENT!!
-    val startColor = ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+    val startColor =
+        ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
     val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
     val gradientDrawable = GradientDrawable(
         GradientDrawable.Orientation.TR_BL,
@@ -206,7 +208,8 @@ fun getGradientColor(): GradientDrawable {
 }
 
 fun getGradientColorForTable(): GradientDrawable {
-    val startColor = ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+    val startColor =
+        ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
     val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
     val gradientDrawable = GradientDrawable(
         GradientDrawable.Orientation.TR_BL,
@@ -598,29 +601,66 @@ suspend fun saveImageServer(imgUrl: String?, filePath: String): String? {
     return path
 }
 
-suspend fun saveImage(imgUrl: String?, filePath: String): String? {
-    var path: String?
-
-
-    try {
-        val url = URL(imgUrl)
-        val imageData = withContext(Dispatchers.IO) { url.readBytes() }
-        val extension = "." + url.path.substringAfterLast(".").lowercase()
-        path = "$filePath${System.currentTimeMillis()}$extension"
-        writeByteArrayToFile(path, imageData)
-    } catch (e: Exception) {
-//        Log.e( "saveImage: ", "$imgUrl    $filePath")
-        Log.e("saveImage", "Exception: ${e.localizedMessage}")
-        path = imgUrl
-    }
-    return path
-}
-
 suspend fun saveHSImage(imgUrl: String?) = saveImage(imgUrl, HS_FILE_PATH)
 suspend fun saveLAImage(imgUrl: String?) = saveImage(imgUrl, LA_FILE_PATH)
 suspend fun saveThemeImage(imgUrl: String?) = saveImage(imgUrl, THEME_FILE_PATH)
 
 suspend fun saveThemeImageServer(imgUrl: String?) = saveImageServer(imgUrl, THEME_FILE_PATH)
+
+suspend fun saveImage(imgUrl: String?, filePath: String): String? {
+    var path: String? = null
+    if (imgUrl == null) {
+        currentActivity?.logE("saveImage: Image URL is null")
+        return path
+    }
+    try {
+        withContext(Dispatchers.IO) {
+            val url = URL(imgUrl)
+            val connection = (url.openConnection() as HttpURLConnection).apply {
+                connectTimeout = 20_000 // 20 seconds
+                readTimeout = 20_000 // 20 seconds
+                connect()
+            }
+            currentActivity?.logD("saveImage: Connection established with $imgUrl")
+            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                throw IOException("Failed to connect: ${connection.responseMessage}")
+            }
+            connection.inputStream.use { inputStream ->
+                val imageData = inputStream.readBytes()
+                val extension = "." + url.path.substringAfterLast(".").lowercase()
+                path = "$filePath${System.currentTimeMillis()}$extension"
+                currentActivity?.logD("saveImage: Saving image to $path")
+                path?.let {
+                    writeByteArrayToFile(it, imageData)
+                }
+            }
+        }
+    } catch (e: Exception) {
+        currentActivity?.logE("saveImage: Exception: ${e.localizedMessage}")
+        path = imgUrl
+    }
+    return path
+}
+
+private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
+    try {
+        val file = File(filePath)
+        val parentDir = file.parentFile
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs()
+            currentActivity?.logD("writeByteArrayToFile: Created directories for $filePath")
+        }
+        FileOutputStream(file).use { it.write(byteArray) }
+        currentActivity?.logD("writeByteArrayToFile: Successfully wrote data to $filePath")
+    } catch (e: IOException) {
+        currentActivity?.logE("writeByteArrayToFile: IOException: ${e.message}")
+        e.printStackTrace()
+    }
+}
+
+fun Uri.toURL(): URL {
+    return URL(this.toString())
+}
 
 fun deleteFolder(filePath: String) {
     val file = File(filePath)
@@ -632,24 +672,6 @@ fun deleteFolder(filePath: String) {
 fun deleteHSFolder() = deleteFolder(HS_FILE_PATH)
 fun deleteLAFolder() = deleteFolder(LA_FILE_PATH)
 fun deleteThemeFolder() = deleteFolder(THEME_FILE_PATH)
-
-private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
-    try {
-        val file = File(filePath)
-        val parentDir = file.parentFile
-        if (parentDir != null && !parentDir.exists()) {
-            parentDir.mkdirs()
-        }
-        file.writeBytes(byteArray)
-    } catch (e: IOException) {
-        Log.e("writeByteArrayToFile", "IOException: ${e.message}")
-        e.printStackTrace()
-    }
-}
-
-fun Uri.toURL(): URL {
-    return URL(this.toString())
-}
 
 fun Context.clearCredentials(appList: ArrayList<String>) {
     LoggingService.sendMessageToWebSocket(
@@ -719,15 +741,16 @@ fun Activity.launchLogger() {
             val binder = service as LoggingService.LoggingServiceBinder
             loggingService = binder.getService()
             loggingService.startWebSocket()
+            logD("Logging Service Connected")
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
+            logE("Logging Service Disconnected.")
         }
     }
 
     val serviceIntent = Intent(this, LoggingService::class.java)
     bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-
 }
 
 fun compareVersions(apkVersion: String?): Boolean {
