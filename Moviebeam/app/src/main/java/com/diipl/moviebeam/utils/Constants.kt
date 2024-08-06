@@ -50,6 +50,7 @@ object Constants {
     const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
 
     const val NETFLIX_PACKAGE_NAME = "com.netflix.ninja"
+    const val PRIME_VIDEO_PACKAGE_NAME = "com.amazon.amazonvideo.livingroom"
     const val MDM_PACKAGE_NAME = "com.diipl.mdm"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
     const val MDM_CLEAR_CREDENTIALS_ACTION =

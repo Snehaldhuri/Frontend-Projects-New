@@ -36,8 +36,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val TAG = "STBDetailViewModel"
-
 @HiltViewModel
 class STBDetailViewModel @Inject constructor(
     @ApplicationContext context: Context,
@@ -376,7 +374,8 @@ class STBDetailViewModel @Inject constructor(
                     vodMgrPort = data.vodMgrPort,
                     vodVisible = data.vodVisible,
                     welcomeScreenVisible = data.welcomeScreenVisible,
-                    stbCastingPageUrl = data.stbCastingPageUrl
+                    stbCastingPageUrl = data.stbCastingPageUrl,
+                    isEnablePatchWall = data.isEnablePatchWall
                 )
             }
         }

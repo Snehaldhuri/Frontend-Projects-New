@@ -159,5 +159,7 @@
     <string name="connected_mode">Connected Mode</string>
     <string name="home_icon">Home Icon</string>
     <string name="press">Press</string>
+    <string name="netflix">Netflix</string>
+    <string name="prime_video">Prime Video</string>
 
 </resources>

@@ -1,11 +1,17 @@
 package com.diipl.moviebeam.ui.mainmenu
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
+import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import androidx.activity.viewModels
 import androidx.core.view.updateLayoutParams
 import androidx.datastore.core.DataStore
@@ -63,6 +69,7 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Collections
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -108,7 +115,6 @@ class MainMenuActivity : BaseActivity() {
         observeToast(mainMenuViewModel.showToast)
 
     }
-
 
     private fun handleNetworkResponse(isConnected: Boolean) {
         if (isConnected) {
@@ -192,6 +198,12 @@ class MainMenuActivity : BaseActivity() {
         player.stop()
         player.release()
         HOTEL_VIDEO_LOOP_COUNT = 3
+    }
+
+    private fun animateScale(view: View, animationId: Int) {
+        val anim: Animation = AnimationUtils.loadAnimation(view.context, animationId)
+        view.startAnimation(anim)
+        anim.fillAfter = true
     }
 
     private fun initializePlayer() {
@@ -281,6 +293,9 @@ class MainMenuActivity : BaseActivity() {
                 try {
                     status.data?.let { response ->
                         binding.tvGreeting.text = response.hotelInfo
+                        if (response.isEnablePatchWall)
+                            showPatchWall()
+
 
                         var btnListFromApi = listOf<String>()
                         when (isNetworkConnected) {
@@ -407,7 +422,6 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-
     private fun handleValidateSessionResponse(status: Boolean) {
         try {
             if (status) {
@@ -511,6 +525,101 @@ class MainMenuActivity : BaseActivity() {
             PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
             Constants.DEFAULTGRADIENTENDCOLOR
         )
+    }
+
+    private fun showPatchWall() {
+        binding.panelView.toVisible()
+        binding.netflixApp.setImageDrawable(packageManager.getApplicationBanner(Constants.NETFLIX_PACKAGE_NAME))
+        binding.primeVideoApp.setImageDrawable(packageManager.getApplicationBanner(Constants.PRIME_VIDEO_PACKAGE_NAME))
+
+        binding.netflixApp.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                animateScale(binding.netflixCardApp, R.anim.scale_in_animation)
+                view?.setOnKeyListener { _, keycode, keyEvent ->
+                    if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                        when (keycode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                binding.rvMenuButton.requestFocus()
+                                true
+                            }
+
+                            KeyEvent.KEYCODE_DPAD_LEFT -> true
+
+                            else -> false
+                        }
+                    } else {
+                        false
+                    }
+                }
+            } else {
+                animateScale(binding.netflixCardApp, R.anim.scale_out_animation)
+            }
+        }
+        binding.netflixApp.setOnClickListener { launchApplication(Constants.NETFLIX_PACKAGE_NAME) }
+        binding.primeVideoApp.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                animateScale(binding.primeVideoCardApp, R.anim.scale_in_animation)
+                view?.setOnKeyListener { _, keycode, keyEvent ->
+                    if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                        when (keycode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                binding.rvMenuButton.requestFocus()
+                                true
+                            }
+
+                            else -> false
+                        }
+                    } else {
+                        false
+                    }
+                }
+            } else {
+                animateScale(binding.primeVideoCardApp, R.anim.scale_out_animation)
+            }
+        }
+        binding.primeVideoApp.setOnClickListener { launchApplication(Constants.PRIME_VIDEO_PACKAGE_NAME) }
+        binding.rvMenuButton.post { binding.rvMenuButton.requestFocus() }
+    }
+
+    private fun launchApplication(packageName: String) {
+        if (packageManager.getLaunchIntentForPackage(packageName) == null) {
+            launchAppSecured(packageName)
+        } else {
+            launchApp(packageName)
+        }
+    }
+
+    private fun launchApp(packageName: String) {
+        try {
+            startActivity(packageManager.getLaunchIntentForPackage(packageName))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            logE("launchApp Exception in Main Menu activity ${e.message}")
+        }
+    }
+
+    private fun launchAppSecured(packageName: String?) {
+        try {
+            val intent = Intent()
+            intent.setPackage(packageName)
+            val pm = packageManager
+            val resolveInfos = pm.queryIntentActivities(intent, PackageManager.GET_META_DATA)
+            Collections.sort(resolveInfos, ResolveInfo.DisplayNameComparator(pm))
+            if (resolveInfos.size > 0) {
+                val launchAble = resolveInfos[0]
+                val activity = launchAble.activityInfo
+                val name = ComponentName(
+                    activity.applicationInfo.packageName,
+                    activity.name
+                )
+                val i = Intent(Intent.ACTION_MAIN)
+                i.component = name
+                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                startActivity(i)
+            }
+        } catch (e: Exception) {
+            logE("launchAppSecured Exception in Main Menu activity ${e.message}")
+        }
     }
 
     companion object {

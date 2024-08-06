@@ -147,7 +147,7 @@ class LoggingService : Service() {
                 )
                 val isSent = webSocket?.send(msgDto.toJson())
 //                    webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"$formattedDate\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
-                Log.e(TAG, "sendMessageToWebSocket: $isSent  ${webSocket!!.queueSize()}")
+//                Log.e(TAG, "sendMessageToWebSocket: $isSent  ${webSocket!!.queueSize()}")
                 if (isSent == false) {
                     BaseActivity.currentActivity?.launchLogger()
                 }

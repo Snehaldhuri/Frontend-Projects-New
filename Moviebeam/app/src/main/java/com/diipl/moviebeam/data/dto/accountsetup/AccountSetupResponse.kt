@@ -19,7 +19,7 @@ data class AccountSetupResponse(
     val blankChannelMinor: String = "",
     val blankTvChannelBroadcastType: String = "",
     val buttonsList: List<Buttons> = emptyList(),
-    val castingVisible: Int =0,
+    val castingVisible: Int = 0,
     val cityCode: String = "",
     val clipType: String = "",
     val cloudEnabled: Boolean = false,
@@ -61,7 +61,7 @@ data class AccountSetupResponse(
     val languageWiseHotelInfoList: Map<String, LanguageWiseHotelCustomizationDTO> = emptyMap(),
     val languagesList: List<Languages> = emptyList(),
     val liveTVVisible: Int = 0,
-    val mainCastingHdmi: Int =0,
+    val mainCastingHdmi: Int = 0,
     val mbloggerCloudUrl: String = "",
     val multiLingual: Int = 0,
     val ndvrIp: String = "",
@@ -100,5 +100,6 @@ data class AccountSetupResponse(
     val vodMgrPort: String = "",
     val vodVisible: Int = 0,
     val welcomeScreenVisible: Int = 0,
-    val stbCastingPageUrl: String = ""
+    val stbCastingPageUrl: String = "",
+    val isEnablePatchWall: Boolean = false
 )

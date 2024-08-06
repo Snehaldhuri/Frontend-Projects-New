@@ -1514,7 +1514,8 @@ class EndlessService : Service() {
                     vodMgrIp = data.vodMgrIp,
                     vodMgrPort = data.vodMgrPort,
                     vodVisible = data.vodVisible,
-                    welcomeScreenVisible = data.welcomeScreenVisible
+                    welcomeScreenVisible = data.welcomeScreenVisible,
+                    isEnablePatchWall = data.isEnablePatchWall
                 )
             }
         }
