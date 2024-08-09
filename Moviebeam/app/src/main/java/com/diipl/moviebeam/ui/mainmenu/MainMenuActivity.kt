@@ -133,7 +133,6 @@ class MainMenuActivity : BaseActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        overridePendingTransition(0, 0)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         this.initializeDatastoreParams()
@@ -555,7 +554,7 @@ class MainMenuActivity : BaseActivity() {
                 animateScale(binding.netflixCardApp, R.anim.scale_out_animation)
             }
         }
-        binding.netflixApp.setOnClickListener { launchApplication(Constants.NETFLIX_PACKAGE_NAME) }
+        binding.netflixApp.setOnClickListener { handleClick(Constants.NETFLIX_PACKAGE_NAME) }
         binding.primeVideoApp.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 animateScale(binding.primeVideoCardApp, R.anim.scale_in_animation)
@@ -577,8 +576,16 @@ class MainMenuActivity : BaseActivity() {
                 animateScale(binding.primeVideoCardApp, R.anim.scale_out_animation)
             }
         }
-        binding.primeVideoApp.setOnClickListener { launchApplication(Constants.PRIME_VIDEO_PACKAGE_NAME) }
+        binding.primeVideoApp.setOnClickListener { handleClick(Constants.PRIME_VIDEO_PACKAGE_NAME) }
         binding.rvMenuButton.post { binding.rvMenuButton.requestFocus() }
+    }
+
+    private fun handleClick(packageName: String) {
+        if (GuestDetails.IS_GUEST_CHECKED_IN) {
+            launchApplication(packageName)
+        } else {
+            showToast(getString(R.string.please_contact_the_front_desk_for_assistance))
+        }
     }
 
     private fun launchApplication(packageName: String) {

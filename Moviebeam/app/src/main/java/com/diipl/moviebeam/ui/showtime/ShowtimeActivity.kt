@@ -200,7 +200,7 @@ class ShowtimeActivity : BaseActivity() {
     }
 
     private fun onShowsClick(shows: Detail, position: Int) {
-        try {
+//        try {
             val transaction = supportFragmentManager.beginTransaction()
             if (shows.episodesPresent) {
                 val bundle = Bundle()
@@ -218,9 +218,9 @@ class ShowtimeActivity : BaseActivity() {
             binding.parentRecyclerView.toInvisible()
             binding.fcvMovieDetail.toVisible()
             transaction.commit()
-        } catch (e: Exception) {
-            logE("Exception in ShowtimeMainPage activity onShowsClick: ${e.message}")
-        }
+//        } catch (e: Exception) {
+//            logE("Exception in ShowtimeMainPage activity onShowsClick: ${e.message}")
+//        }
     }
 
     fun gotoExoPlayerActivity(

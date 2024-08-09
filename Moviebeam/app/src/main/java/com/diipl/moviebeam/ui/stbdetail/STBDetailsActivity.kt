@@ -238,7 +238,7 @@ class STBDetailsActivity : BaseActivity() {
                             )
                     }
                     scheduleClearCredentialsTask(it.checkOutTime)
-                    stbDetailViewModel.fetchHotelService()
+                    stbDetailViewModel.fetchHotelService(it.accountId)
                 }
                 logD("Account Setup Api call success")
             }

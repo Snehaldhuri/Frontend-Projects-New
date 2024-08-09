@@ -1,13 +1,14 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
-
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
@@ -29,7 +30,11 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val TAG = "HotelInfoActivity"
 
 @AndroidEntryPoint
 class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListener {
@@ -126,8 +131,10 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                             val transaction = supportFragmentManager.beginTransaction()
                             when (tabMap[it]?.serviceType) {
                                 Constants.SERVICE_TYPE_CAROUSEL -> {
-                                    binding.tvHeaderTitle.text =
-                                        tabMap[it]?.serviceList?.get(0)?.title
+                                    if (!tabMap[it]?.serviceList.isNullOrEmpty()) {
+                                        binding.tvHeaderTitle.text =
+                                            tabMap[it]?.serviceList?.get(0)?.title
+                                    }
                                     val carousel = CarouselListFragment(onItemFocused = { title ->
                                         binding.tvHeaderTitle.text = title
                                     }, onLeftKeyPressed = { title ->
@@ -136,7 +143,10 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                                 focusedView!!
                                             )?.requestFocus()
                                         }
-                                        if (tabMap[it]?.serviceList?.get(0)?.title == title) {
+                                        if ((!tabMap[it]?.serviceList.isNullOrEmpty()) && tabMap[it]?.serviceList?.get(
+                                                0
+                                            )?.title == title
+                                        ) {
                                             view.requestFocus()
                                         }
                                     })
@@ -159,7 +169,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                             tabMap[it]?.service?.serviceImageListNewCloud
 
                                     var imgUrl = "null"
-                                    if (list!!.isNotEmpty()) {
+                                    if (!list.isNullOrEmpty()) {
                                         imgUrl = list[0]
                                     }
                                     bundle.putStringArrayList(
@@ -225,7 +235,8 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                         onFocusChangeListener = this
                     )
                     binding.rvHotelInfoHeader.adapter = adapter
-                    binding.tvHeaderTitle.text = tabs[0]
+                    if (tabs.isNotEmpty())
+                        binding.tvHeaderTitle.text = tabs[0]
                     binding.pbLoader.toInvisible()
                 }
             }
@@ -245,21 +256,22 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {
-                handleBackClick()
+    /*
+        override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
+            when (keyCode) {
+                KeyEvent.KEYCODE_BACK -> {
+                    handleBackClick()
+                    return true
+                }
             }
-
-            KeyEvent.KEYCODE_ESCAPE -> {
-                handleBackClick()
-            }
+            return false
         }
-        return false
-    }
+    */
 
-    private fun handleBackClick() {
+    fun handleBackClick() = lifecycleScope.launch{
+        Log.e(TAG, "handleBackClick: ")
         if (binding.fragmentContainerHelpInfo.isVisible) {
+            Log.e(TAG, "handleBackClick: 0")
             binding.fragmentContainerHelpInfo.toInvisible()
             binding.rvHotelInfoHeader.toVisible()
             binding.rvHotelInfoHeader.findViewHolderForAdapterPosition(helpInfoTabIndex)?.itemView?.requestFocus()
@@ -268,9 +280,11 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             binding.btnBack.toVisible()
             binding.layoutHeader.tvTitle.text = Constants.HOTEL_INFORMATION
             activityStack.add(this::class.java.simpleName)
-        } else {
-            finish()
+            return@launch
         }
+        Log.e(TAG, "handleBackClick: 1")
+        finish()
+        this.cancel()
     }
 
     override fun onItemFocused(position: Int, itemList: List<String>) {

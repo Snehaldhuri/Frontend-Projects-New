@@ -206,6 +206,7 @@ class RefreshingUiActivity : BaseActivity() {
             false,
             kapingResponse.cmdData?.cmdData
         )
+        GuestDetails.IS_GUEST_CHECKED_IN = false
         clearCredentials(appList)
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
@@ -219,6 +220,7 @@ class RefreshingUiActivity : BaseActivity() {
             true,
             kapingResponse.cmdData?.cmdData
         )
+        GuestDetails.IS_GUEST_CHECKED_IN = true
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
     }

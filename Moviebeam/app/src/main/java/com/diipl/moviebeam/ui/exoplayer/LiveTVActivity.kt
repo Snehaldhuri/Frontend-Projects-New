@@ -63,8 +63,8 @@ class LiveTVActivity : BaseActivity() {
 //        mChannelList.add(channel)
         Log.e(TAG, "start tv view with: $index  $channel / ${channel.uri} / ${channel.inputId}")
         lifecycleScope.launch {
-//            Glide.with(applicationContext).load(channel.imageUri).into(binding.image)
-            binding.tvChannelName.text = "Channel ID    -->  ${channel.channelId} \nChannel No.   -->  ${channel.number}  \nChannel Name  -->  ${channel.name}"
+//            Glide.with(applicationContext).load(channel.imageUri).into(binding.image) /*Channel ID    -->  ${channel.channelId}*/
+            binding.tvChannelName.text = "\nChannel No.   -->  ${channel.number}  \nChannel Name  -->  ${channel.name}"
             binding.cardTv.toVisible()
             delay(5000)
             binding.cardTv.toInvisible()

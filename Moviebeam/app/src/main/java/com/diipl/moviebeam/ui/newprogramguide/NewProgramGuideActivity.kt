@@ -414,7 +414,8 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun onStop() {
         super.onStop()
-        finish()
+        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST)
+            finish()
     }
 
     override fun onDestroy() {

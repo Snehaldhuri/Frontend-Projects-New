@@ -1318,6 +1318,7 @@ class EndlessService : Service() {
         updateGuestSession(
             preferenceDataStoreHelper, guestDetailsDatastore, true, kapingResponse.cmdData?.cmdData
         )
+        GuestDetails.IS_GUEST_CHECKED_IN = true
         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
     }
 
@@ -1332,6 +1333,7 @@ class EndlessService : Service() {
                 kapingResponse.cmdData?.cmdData
             )
             clearCredentials(appList)
+            GuestDetails.IS_GUEST_CHECKED_IN = false
             kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         }
     }

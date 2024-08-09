@@ -27,6 +27,7 @@ import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
@@ -307,7 +308,8 @@ class MovieDetailFragment : BaseFragment() {
             binding.btnContinueWatch.toGone()
             binding.btnWatchFromStart.toGone()
             binding.btnRentNow.toVisible()
-            binding.btnWatchTrailer.toVisible()
+            if (movie?.trailerAvailable == true) binding.btnWatchTrailer.toVisible()
+            else binding.btnWatchTrailer.toInvisible()
             binding.btnRentNow.requestFocus()
         }
     }

@@ -34,8 +34,9 @@ class ShowtimeDetailFragment : BaseFragment() {
     val binding get() = _binding!!
 
     //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper =
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
         PreferenceDataStoreHelper(requireContext())
+    }
     private var ua = ""
 
     private lateinit var show: Detail
