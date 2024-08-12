@@ -110,6 +110,10 @@ class ConfirmRentalActivity : BaseActivity() {
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         this.initializeDatastoreParams()
+        binding.btnConfirm.handleFocusChange()
+        binding.btnCancel.handleFocusChange()
+        binding.btnBuyNow.handleFocusChange()
+        binding.btnPassCancel.handleFocusChange()
 
         viewModel.validateSession(preferenceDataStoreHelper)
 
@@ -131,10 +135,6 @@ class ConfirmRentalActivity : BaseActivity() {
             passPrice = it
         }
 
-        binding.btnConfirm.handleFocusChange()
-        binding.btnCancel.handleFocusChange()
-        binding.btnBuyNow.handleFocusChange()
-        binding.btnPassCancel.handleFocusChange()
 
         binding.btnConfirm.setOnClickListener {
             val request = RentalMovieRequest()
@@ -208,6 +208,7 @@ class ConfirmRentalActivity : BaseActivity() {
                         else -> {
                             binding.progressBar.toGone()
                             binding.layoutRental.toVisible()
+                            binding.btnConfirm.requestFocus()
                         }
 
                     }

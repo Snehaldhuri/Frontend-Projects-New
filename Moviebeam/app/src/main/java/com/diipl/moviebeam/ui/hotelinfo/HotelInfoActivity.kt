@@ -152,7 +152,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     })
                                     carousel.bindData(tabMap[it]?.serviceList)
                                     transaction.replace(R.id.fragment_container_carousel, carousel)
-                                    transaction.commit()
+                                    transaction.commitAllowingStateLoss()
                                 }
 
                                 Constants.SERVICE_TYPE_SERVICE_INFO -> {
@@ -180,7 +180,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
-                                    transaction.commit()
+                                    transaction.commitAllowingStateLoss()
                                 }
 
                                 Constants.SERVICE_TYPE_HELP_INFO -> {
@@ -195,7 +195,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
-                                    transaction.commit()
+                                    transaction.commitAllowingStateLoss()
                                 }
 
                                 else -> {
@@ -210,7 +210,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
-                                    transaction.commit()
+                                    transaction.commitAllowingStateLoss()
                                 }
                             }
                         },
@@ -224,7 +224,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                             binding.fragmentContainerHelpInfo.toVisible()
                             supportFragmentManager.beginTransaction()
                                 .replace(R.id.fragment_container_help_info, fragment)
-                                .commit()
+                                .commitAllowingStateLoss()
                             binding.fragmentContainerCarousel.toInvisible()
                             binding.rvHotelInfoHeader.toInvisible()
                             binding.tvHeaderTitle.toInvisible()

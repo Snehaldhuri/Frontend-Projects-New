@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.showtime
 
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -107,6 +108,18 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
 
         dropdown.adapter = dropdownAdapter
         dropdown.onItemSelectedListener = this
+
+        dropdown.setOnKeyListener { _, keyCode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                        binding.seasonListRecyclerView.requestFocus()
+                        return@setOnKeyListener true
+                    }
+                }
+            }
+            false
+        }
 
         adapter = ShowtimeSeasonChildAdapter(
             onItemClicked = { movieDetail ->
