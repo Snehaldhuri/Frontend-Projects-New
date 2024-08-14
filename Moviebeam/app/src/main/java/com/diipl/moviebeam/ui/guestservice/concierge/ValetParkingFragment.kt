@@ -1,12 +1,10 @@
 package com.diipl.moviebeam.ui.guestservice.concierge
 
 import android.os.Bundle
-import android.text.InputType
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.fragment.app.Fragment
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.FragmentValetParkingBinding
@@ -34,47 +32,54 @@ class ValetParkingFragment(
         _binding = FragmentValetParkingBinding.inflate(inflater, container, false)
 
         binding.edtTicketNo.requestFocus()
+
+        binding.btnCancel.handleFocusChange()
+        binding.btnOk.handleFocusChange()
+        binding.btnPopOk.handleFocusChange()
+
+        return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        binding.edtTicketNo.setOnKeyListener { _, keyCode, event ->
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_CENTER -> {
+                    binding.btnOk.requestFocus()
+                    return@setOnKeyListener true
+                }
+
+                KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_DOWN_RIGHT, KeyEvent.KEYCODE_DPAD_DOWN_LEFT -> {
+                    binding.btnCancel.requestFocus()
+                    return@setOnKeyListener true
+                }
+            }
+            false
+        }
+
         binding.edtTicketNo.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 view.showKeyboard()
-
-                view.setOnKeyListener { _, keyCode, event ->
-                    if (event.action == KeyEvent.ACTION_DOWN) {
-                        when (keyCode) {
-                            KeyEvent.KEYCODE_DPAD_CENTER -> {
-                                binding.btnOk.requestFocus()
-                                return@setOnKeyListener true
-                            }
-
-                        }
-                    }
-                    false
-                }
             } else {
                 view.hideKeyboard()
                 binding.edtTicketNo.setBackgroundResource(R.drawable.rounded_corner_border)
             }
         }
-        binding.btnOk.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                view.handleFocusChange()
-                view.setOnKeyListener { _, keyCode, event ->
-                    if (event.action == KeyEvent.ACTION_DOWN) {
-                        when (keyCode) {
-                            KeyEvent.KEYCODE_DPAD_UP -> {
-                                binding.edtTicketNo.requestFocus()
-                                return@setOnKeyListener true
-                            }
 
-                        }
+        binding.btnOk.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_UP -> {
+                        binding.edtTicketNo.requestFocus()
+                        return@setOnKeyListener true
                     }
-                    false
+
                 }
-            } else {
-                binding.btnOk.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
+            false
         }
-        binding.btnCancel.handleFocusChange()
+
         binding.btnCancel.setOnClickListener {
             onOkClicked()
         }
@@ -90,36 +95,12 @@ class ValetParkingFragment(
             binding.tvMessage.text =
                 "Thank you.your request has been sent.\nPlease proceed with valet desk to retrive your vehicle."
 
-            binding.btnPopOk.setOnClickListener {
-                onOkClicked()
-            }
         }
 
-        return binding.root
-    }
-
-    private fun showSerialNumberDialog() {
-        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
-        builder.setTitle("Enter valet ticket Number")
-
-        // Serial No :- 29221HFGN30WLA
-
-        val input = EditText(context)
-        var m_Text: String
-        input.inputType = InputType.TYPE_CLASS_TEXT
-        builder.setView(input)
-
-        builder.setPositiveButton("OK") { dialog, which ->
-            m_Text = input.text.toString()
-            binding.edtTicketNo.setText(m_Text)
-            binding.btnOk.requestFocus()
-        }
-        builder.setNegativeButton(
-            "Cancel"
-        ) { dialog, which ->
+        binding.btnPopOk.setOnClickListener {
+            onOkClicked()
         }
 
-        builder.show()
     }
 
 }

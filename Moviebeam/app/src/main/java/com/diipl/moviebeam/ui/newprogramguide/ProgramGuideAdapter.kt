@@ -139,6 +139,18 @@ class ProgramGuideAdapter(
 
     override fun getItemCount(): Int = programList?.size ?: 0
 
+    fun updateChannelFocus(
+        focusedPosition: Int,
+        viewHolder: RecyclerView.ViewHolder
+    ) {
+        val holder = viewHolder as ProgramGuideAdapter.MyViewHolder
+        holder.binding.rvProgramGuidePrograms.apply {
+            post {
+                getChildAt(focusedPosition).requestFocus()
+            }
+        }
+    }
+
     fun updateProgramFocus(focusedPosition: Int) {
         focusedAdapter = focusedPosition
     }

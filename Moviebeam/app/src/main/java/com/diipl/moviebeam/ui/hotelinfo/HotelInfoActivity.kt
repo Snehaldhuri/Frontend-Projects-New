@@ -61,17 +61,20 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
 
     override fun initViewBinding() {
         binding = ActivityHotelInfoBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         binding.root.loadBg()
         binding.layoutHeader.ivHotelLogo.loadLogo()
         binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
-        setContentView(binding.root)
+
+        hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
+        hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // fetch data from dataStore
-        hotelInfoViewModel.getAccountSetupResponseData(accountSetupDataStore)
-        hotelInfoViewModel.getHotelServicesResponseData(hotelServicesDataStore)
 
         binding.btnBack.handleFocusChange()
 
@@ -152,7 +155,8 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     })
                                     carousel.bindData(tabMap[it]?.serviceList)
                                     transaction.replace(R.id.fragment_container_carousel, carousel)
-                                    transaction.commit()
+                                    transaction.commitAllowingStateLoss()
+//                                    transaction.commit()
                                 }
 
                                 Constants.SERVICE_TYPE_SERVICE_INFO -> {
@@ -174,13 +178,14 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     }
                                     bundle.putStringArrayList(
                                         Constants.SERVICE_IMAGE_LIST_PARAM,
-                                        ArrayList(list)
+                                        list?.let { it1 -> ArrayList(it1) }
                                     )
                                     bundle.putString("imgUrl", imgUrl)
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
-                                    transaction.commit()
+                                    transaction.commitAllowingStateLoss()
+//                                    transaction.commit()
                                 }
 
                                 Constants.SERVICE_TYPE_HELP_INFO -> {
@@ -195,7 +200,8 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
-                                    transaction.commit()
+                                    transaction.commitAllowingStateLoss()
+//                                    transaction.commit()
                                 }
 
                                 else -> {
@@ -210,7 +216,8 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                                     val fragment = HotelServiceInfoFragment()
                                     fragment.arguments = bundle
                                     transaction.replace(R.id.fragment_container_carousel, fragment)
-                                    transaction.commit()
+                                    transaction.commitAllowingStateLoss()
+//                                    transaction.commit()
                                 }
                             }
                         },
@@ -224,7 +231,8 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
                             binding.fragmentContainerHelpInfo.toVisible()
                             supportFragmentManager.beginTransaction()
                                 .replace(R.id.fragment_container_help_info, fragment)
-                                .commit()
+                                .commitAllowingStateLoss()
+//                                .commit()
                             binding.fragmentContainerCarousel.toInvisible()
                             binding.rvHotelInfoHeader.toInvisible()
                             binding.tvHeaderTitle.toInvisible()
@@ -256,19 +264,17 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    /*
-        override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
-            when (keyCode) {
-                KeyEvent.KEYCODE_BACK -> {
-                    handleBackClick()
-                    return true
-                }
+    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_BACK -> {
+                handleBackClick()
+                return true
             }
-            return false
         }
-    */
+        return false
+    }
 
-    fun handleBackClick() = lifecycleScope.launch{
+    fun handleBackClick() = lifecycleScope.launch {
         Log.e(TAG, "handleBackClick: ")
         if (binding.fragmentContainerHelpInfo.isVisible) {
             Log.e(TAG, "handleBackClick: 0")
@@ -299,5 +305,7 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
             binding.gsDown.visibility = View.VISIBLE
         }
     }
+
+
 
 }

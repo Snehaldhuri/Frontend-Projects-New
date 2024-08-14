@@ -10,7 +10,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ActivityPrgGuidePlayerBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
+import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity.Companion.CURRENT_PROGRAMS
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.toInvisible
@@ -21,7 +21,7 @@ class PrgGuidePlayerActivity : BaseActivity(), KeyEvent.Callback {
     private lateinit var binding: ActivityPrgGuidePlayerBinding
     private lateinit var player: ExoPlayer
     private var contentList = mutableListOf<MediaItem>()
-    private var channelList: List<ChannelEpgDTO>? = NewProgramGuideActivity.CURRENT_PROGRAMS
+    private var channelList: List<ChannelEpgDTO>? = CURRENT_PROGRAMS
     private var index = 0
 
     override fun observeViewModel() {}

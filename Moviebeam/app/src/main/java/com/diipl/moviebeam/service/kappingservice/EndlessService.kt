@@ -92,6 +92,7 @@ import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
+import com.diipl.moviebeam.utils.startActivity
 import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toTimestamp
@@ -627,11 +628,7 @@ class EndlessService : Service() {
                     } else {
                         updateStbAllocationStatus(preferenceDataStoreHelper, false)
                         if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
-                            startActivity(
-                                Intent(
-                                    applicationContext, RegisterSTBActivity::class.java
-                                ).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            )
+                            RegisterSTBActivity::class.java.startActivity()
                         }
                         false
                     }
@@ -965,7 +962,7 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_CHECK_OUT -> resetPopUps(false)
         }
         val i = Intent(applicationContext, RefreshingUiActivity::class.java)
-        i.putExtra("response", kapingResponse)
+        i.putExtra("response", kapingResponse.toJson())
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         startActivity(i)
     }

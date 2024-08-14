@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.refreshingui
 
 import android.content.Intent
-import android.os.Build
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.lifecycleScope
@@ -37,6 +36,7 @@ import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
+import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.logD
@@ -125,15 +125,16 @@ class RefreshingUiActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityRefreshingUiBinding.inflate(layoutInflater)
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        this.initializeDatastoreParams()
         setContentView(binding.root)
 
-        kapingResponse = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra("response", KapingResponse::class.java)
-        } else {
-            intent.getParcelableExtra("response")
-        }
+        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+        this.initializeDatastoreParams()
+
+        val data = intent.getStringExtra("response")
+         data?.let {
+             kapingResponse = it.fromJson<KapingResponse>()
+         }
+
         binding.btnOk.handleFocusChange()
         binding.btnOk.setOnClickListener {
             val intent = Intent(this, GuestServiceActivity::class.java)

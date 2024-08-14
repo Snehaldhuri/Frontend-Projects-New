@@ -237,7 +237,9 @@ class ExoPlayerActivity : BaseActivity() {
                 }
                 if (::rentalMovieModel.isInitialized) {
                     moviesViewModel.setRentalReversal(rentalMovieModel)
+                    return
                 }
+                finish()
             }
 
         }

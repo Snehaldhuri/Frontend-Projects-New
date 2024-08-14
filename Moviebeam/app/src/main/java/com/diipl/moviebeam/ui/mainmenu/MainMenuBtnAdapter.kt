@@ -21,6 +21,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
+import com.diipl.moviebeam.utils.handleFocusChange
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -74,13 +75,16 @@ class MainMenuBtnAdapter(
         */
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
-        holder.card.setOnFocusChangeListener { v, b ->
+     /*   holder.card.setOnFocusChangeListener { v, b ->
             if (b) {
                 v.background = getGradientColor()
             } else {
                 v.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
-        }
+        }*/
+
+        holder.card.handleFocusChange()
+
         holder.card.setOnClickListener {
             onMenuItemClicked(item)
         }

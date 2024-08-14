@@ -22,10 +22,13 @@
         android:layout_height="match_parent">
 
         <!-- Parent FrameLayout for images -->
-        <FrameLayout
+        <androidx.cardview.widget.CardView
             android:layout_width="58dp"
             android:layout_height="match_parent"
             android:id="@+id/fl_image_container"
+            app:cardElevation="@dimen/dp_0"
+            app:cardBackgroundColor="@color/menu_list_bg"
+            app:cardCornerRadius="@dimen/dp_8"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -37,7 +40,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-
                 android:clipToOutline="true"
                 android:src="@drawable/weather_static"
                 />
@@ -51,7 +53,7 @@
                 android:layout_margin="4dp"
                 android:src="@drawable/play"
                />
-        </FrameLayout>
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/tv_season_name"

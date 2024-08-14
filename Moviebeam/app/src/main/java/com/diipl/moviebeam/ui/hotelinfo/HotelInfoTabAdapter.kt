@@ -43,7 +43,7 @@ class HotelInfoTabAdapter(
     override fun getItemCount(): Int = itemList.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.setIsRecyclable(false)
+//        holder.setIsRecyclable(false)
         val item = itemList[position]
 
         holder.textView.text = item

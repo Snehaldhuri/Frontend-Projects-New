@@ -80,7 +80,6 @@ class ShowtimeSeasonChildAdapter(
 
     fun updateSeasons(newSeasons: List<Detail>) {
         this.seasonDet = newSeasons
-        notifyDataSetChanged()
     }
 
 }

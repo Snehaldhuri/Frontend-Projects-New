@@ -335,4 +335,29 @@ class MovieDetailFragment : BaseFragment() {
         )
     }
 
+/*    fun View.handleFocusChange() {
+        setOnFocusChangeListener { _, b ->
+            if (b) {
+                background = getGradientColor()
+            } else {
+                setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+    }
+
+    fun getGradientColor(): GradientDrawable {
+        val startColor =
+            ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+        val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TR_BL,
+            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+        )
+        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
+    }*/
+
 }

@@ -1,10 +1,7 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.leanback.app.RowsSupportFragment
 import androidx.leanback.widget.ArrayObjectAdapter
@@ -32,8 +29,6 @@ class CarouselListFragment(
         super.onResume()
 
         requireActivity().onBackPressedDispatcher.addCallback {
-            Log.e(TAG, "onResume: ")
-            onLeftKeyPressed("null")
             activity.handleBackClick()
         }
 

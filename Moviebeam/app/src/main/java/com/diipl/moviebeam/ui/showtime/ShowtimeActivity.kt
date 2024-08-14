@@ -31,6 +31,7 @@ import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
@@ -92,6 +93,26 @@ class ShowtimeActivity : BaseActivity() {
             LoggingService.sendMessageToWebSocket("In ShowtimeMainPage activity", "12")
         } catch (e: Exception) {
             logE("Exception in ShowtimeMainPage activity onCreate: ${e.message}")
+        }
+
+        binding.btnBack.setOnKeyListener { v, keyCode, event ->
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    /*if (binding.parentRecyclerView.isVisible()){
+                        binding.parentRecyclerView.getChildAt(0).requestFocus()
+                    } else {
+                        binding.fcvMovieDetail.requestFocus()
+                    }*/
+                    binding.menuRecyclerView.getChildAt(0).requestFocus()
+                    return@setOnKeyListener true
+                }
+                KeyEvent.KEYCODE_DPAD_LEFT -> return@setOnKeyListener true
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    binding.menuRecyclerView.getChildAt(0).requestFocus()
+                    return@setOnKeyListener true
+                }
+            }
+            false
         }
 
     }
@@ -201,23 +222,23 @@ class ShowtimeActivity : BaseActivity() {
 
     private fun onShowsClick(shows: Detail, position: Int) {
 //        try {
-            val transaction = supportFragmentManager.beginTransaction()
-            if (shows.episodesPresent) {
-                val bundle = Bundle()
-                bundle.putInt("movieReleaseId", shows.releaseId)
-                val fragment = ShowtimeSeasonFragment()
-                fragment.arguments = bundle
-                transaction.replace(R.id.fcv_movie_detail, fragment)
-            } else {
-                val bundle = Bundle()
-                bundle.putInt("movieReleaseId", shows.releaseId)
-                val fragment = ShowtimeDetailFragment()
-                fragment.arguments = bundle
-                transaction.replace(R.id.fcv_movie_detail, fragment)
-            }
-            binding.parentRecyclerView.toInvisible()
-            binding.fcvMovieDetail.toVisible()
-            transaction.commit()
+        val transaction = supportFragmentManager.beginTransaction()
+        if (shows.episodesPresent) {
+            val bundle = Bundle()
+            bundle.putInt("movieReleaseId", shows.releaseId)
+            val fragment = ShowtimeSeasonFragment()
+            fragment.arguments = bundle
+            transaction.replace(R.id.fcv_movie_detail, fragment)
+        } else {
+            val bundle = Bundle()
+            bundle.putInt("movieReleaseId", shows.releaseId)
+            val fragment = ShowtimeDetailFragment()
+            fragment.arguments = bundle
+            transaction.replace(R.id.fcv_movie_detail, fragment)
+        }
+        binding.parentRecyclerView.toGone()
+        binding.fcvMovieDetail.toVisible()
+        transaction.commit()
 //        } catch (e: Exception) {
 //            logE("Exception in ShowtimeMainPage activity onShowsClick: ${e.message}")
 //        }

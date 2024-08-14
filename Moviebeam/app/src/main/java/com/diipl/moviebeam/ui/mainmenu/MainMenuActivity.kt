@@ -123,7 +123,7 @@ class MainMenuActivity : BaseActivity() {
         } else {
             isNetworkConnected = -1
             releaseVideoPlayer()
-            binding.root.post {
+            runOnUiThread {
                 binding.root.loadBg()
             }
         }
@@ -166,12 +166,12 @@ class MainMenuActivity : BaseActivity() {
         super.onResume()
 
         initializePlayer()
+
         binding.root.loadBg()
-        binding.rvMenuButton.setItemFocused()
 
         binding.cardView.postDelayed({
             binding.cardView.toVisible()
-        }, 500)
+        }, 240)
 
         lifecycleScope.launch {
             while (!player.isPlaying) {
@@ -526,8 +526,7 @@ class MainMenuActivity : BaseActivity() {
         )
     }
 
-    private fun showPatchWall() {
-        binding.panelView.toVisible()
+    private fun showPatchWall() = lifecycleScope.launch {
         binding.netflixApp.setImageDrawable(packageManager.getApplicationBanner(Constants.NETFLIX_PACKAGE_NAME))
         binding.primeVideoApp.setImageDrawable(packageManager.getApplicationBanner(Constants.PRIME_VIDEO_PACKAGE_NAME))
 
@@ -577,7 +576,10 @@ class MainMenuActivity : BaseActivity() {
             }
         }
         binding.primeVideoApp.setOnClickListener { handleClick(Constants.PRIME_VIDEO_PACKAGE_NAME) }
-        binding.rvMenuButton.post { binding.rvMenuButton.requestFocus() }
+//        binding.rvMenuButton.post { binding.rvMenuButton.requestFocus() }
+        delay(500)
+        binding.rvMenuButton.setItemFocused()
+        binding.panelView.toVisible()
     }
 
     private fun handleClick(packageName: String) {

@@ -1,8 +1,6 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 import android.os.Bundle
-import android.text.Html
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,29 +29,15 @@ class HotelServiceInfoFragment : Fragment() {
 
     lateinit var activity: HotelInfoActivity
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            title = it.getString("title").toString()
-            description = it.getString("desc").toString()
-            serviceImgUrl = it.getString("imgUrl").toString()
-            serviceImageList = it.getStringArrayList(Constants.SERVICE_IMAGE_LIST_PARAM)
-        }
-
-
-
-    }
-
     override fun onResume() {
         super.onResume()
 
         requireActivity().onBackPressedDispatcher.addCallback {
-            Log.e(TAG, "onResume: ")
-//            onLeftKeyPressed("null")
             activity.handleBackClick()
         }
 
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -63,6 +47,14 @@ class HotelServiceInfoFragment : Fragment() {
         _binding = FragmentHotelServiceInfoBinding.inflate(inflater, container, false)
 
         activity = requireActivity() as HotelInfoActivity
+
+        arguments?.let {
+            title = it.getString("title").toString()
+            description = it.getString("desc").toString()
+            serviceImgUrl = it.getString("imgUrl").toString()
+            serviceImageList = it.getStringArrayList(Constants.SERVICE_IMAGE_LIST_PARAM)
+        }
+
 
         if (description == "null" || description.isEmpty()) {
             binding.tvServiceDesc.toInvisible()

@@ -191,8 +191,8 @@ fun ExoPlayer?.getLastSeek(): Long {
 }
 
 fun getGradientColor(): GradientDrawable {
-    if (ThemeDetails.GRADIENT != null)
-        return ThemeDetails.GRADIENT!!
+//    if (ThemeDetails.GRADIENT != null)
+//        return ThemeDetails.GRADIENT!!
     val startColor =
         ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
     val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
@@ -520,6 +520,7 @@ fun ConstraintLayout.loadBg() {
                     resource: Drawable,
                     transition: Transition<in Drawable?>?
                 ) {
+                    resource.alpha = 160
                     background = resource
                 }
 
@@ -828,7 +829,13 @@ fun Any.logSS(msg: String) {
 
 fun <T> Activity.launchNewActivity(cls: Class<T>, finish: Boolean = false) {
     logSS("Switching to ${cls.simpleName}")
-    startActivity(Intent(this, cls))
+    startActivity(Intent(this, cls).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     if (finish)
         finish()
+}
+
+fun <T> Class<T>.startActivity() {
+    currentActivity?.let {
+        it.startActivity(Intent(it, this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP))
+    }
 }

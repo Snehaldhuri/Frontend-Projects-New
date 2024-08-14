@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -73,6 +74,8 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
+private const val TAG = "NewProgramGuideActivity"
+
 @AndroidEntryPoint
 class NewProgramGuideActivity : BaseActivity() {
 
@@ -117,9 +120,9 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityNewProgramGuideBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         binding.root.loadBg()
         binding.layoutHeader.ivHotelLogo.loadLogo()
-        setContentView(binding.root)
 
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
@@ -167,18 +170,18 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private fun loadNewPrograms(isNextOrPrevious: Int, position: Int) {
         if (!checkNextProgramTimeSlotExists(isNextOrPrevious)) {
-            return;
+            return
         }
         focusedPosition = position
         updateKey(isNextOrPrevious)
     }
 
     private fun checkNextProgramTimeSlotExists(nextOrPrevious: Int): Boolean {
-        if (nextOrPrevious == 1) {
+        return if (nextOrPrevious == 1) {
             //check for previous slot exists or not
-            return checkPreviousSlotExistsOrNot()
+            checkPreviousSlotExistsOrNot()
         } else {
-            return checkFutureSlotExistsOrNot()
+            checkFutureSlotExistsOrNot()
         }
     }
 
@@ -193,12 +196,9 @@ class NewProgramGuideActivity : BaseActivity() {
         var date: Date? = null
         val dateFormat = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.getDefault())
 
-        // Example string time
-        val timeString = time
-
         try {
             // Parse the string to a Date object
-            date = dateFormat.parse(timeString)!!
+            date = time?.let { dateFormat.parse(it) }!!
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -233,9 +233,7 @@ class NewProgramGuideActivity : BaseActivity() {
     private fun updateChannels() {
         programGuideViewModel.getAllChannels(key).observe(this) { data ->
             if (!data.isNullOrEmpty()) {
-
                 programGuideList.clear()
-
                 loadProgramGuide(data)
                 adapter.setProgramList(programGuideList)
                 // focus to adapter position
@@ -251,8 +249,17 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+
         if (isFScreenExit) {
             playChannelVideoBg(null)
+        }
+
+        lifecycleScope.launch {
+            delay(500)
+            if (onPause) {
+                adapter.updateFocusOnSearch(focusedPosition)
+                onPause = false
+            }
         }
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
@@ -654,16 +661,21 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private fun tuneChannels(program: ChannelEpgDTO?) {
         if (!program?.CN.equals("Hotel Video")) {
-            val list = mChannelList.toList()
-            val dvb = list.filter { program?.CNO?.toInt() == it.number }
-            val pos = mChannelList.indexOf(dvb[0])
             if (mChannelList.size > 0) {
-                val intent = Intent(applicationContext, LiveTVActivity::class.java)
-                intent.putExtra("currentPos", pos)
-                startActivity(intent)
+                val list = mChannelList.toList()
+                val dvb = list.filter { program?.CNO?.toInt() == it.number }
+                Log.e(TAG, "tuneChannels: ${mChannelList.size}  ${dvb.size}")
+                if (dvb.isNotEmpty()) {
+                    val pos = mChannelList.indexOf(dvb[0])
+                    focusedPosition = programGuideList.indexOf(program)
+                    onPause = true
+                    val intent = Intent(applicationContext, LiveTVActivity::class.java)
+                    intent.putExtra("currentPos", pos)
+                    startActivity(intent)
+                } else showToast("Channel No. ${program?.CNO} is not available.")
             }
         } else {
-            showToast("Not Available")
+            showToast("Hotel Video is not available.")
         }
     }
 
@@ -674,7 +686,7 @@ class NewProgramGuideActivity : BaseActivity() {
         logD("enumerate tv input")
         var dvbInputFound = false
         var dtvInputComponent = ""
-        mTvInputManager?.let {
+        mTvInputManager.let {
             for (tvInputInfo in it.tvInputList) {
                 if (tvInputInfo.id.startsWith("$DTV_KIT_PACKAGE_NAME/")) {
                     dvbInputFound = true
@@ -700,7 +712,6 @@ class NewProgramGuideActivity : BaseActivity() {
             loadChannelList()
         } else {
             grantPermission()
-//            requestPermissions(arrayOf("android.permission.READ_TV_LISTINGS"), 1001)
         }
     }
 
@@ -719,7 +730,6 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private fun grantPermission() {
         try {
-            logD("grantPermission: ")
             Intent(Intent.ACTION_VIEW).apply {
                 component =
                     ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_GRANT_PERMISSION)
@@ -736,8 +746,21 @@ class NewProgramGuideActivity : BaseActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        when (BuildConfig.BUILD_TYPE) {
+            Constants.BUILD_TYPE_STB -> {
+
+            }
+
+            else -> finish()
+        }
+
+    }
+
     companion object {
         var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
+        var onPause = false
     }
 
 }

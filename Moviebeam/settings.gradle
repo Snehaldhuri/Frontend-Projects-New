@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Moviebeam"
 include ':app'
-//include ':tvlibrary'

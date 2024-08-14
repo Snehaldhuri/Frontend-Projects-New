@@ -77,7 +77,6 @@ class MoviesActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(moviesViewModel.moviesLiveData, ::handleMoviesServiceResponse)
-//        observe(moviesViewModel.adultStatus, ::handleAdultResponse)
         observe(moviesViewModel.adultDayPassStatus, ::handleAdultDayPassResponse)
 
     }
@@ -88,12 +87,8 @@ class MoviesActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityMoviesBinding.inflate(layoutInflater)
-        binding.root.loadBg()
-        binding.layoutHeader.ivHotelLogo.loadLogo()
-        binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
         setContentView(binding.root)
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -180,12 +175,21 @@ class MoviesActivity : BaseActivity() {
                 )
                 activityStack.remove(C_TYPE_MOVIE)
             }
+
+            binding.root.loadBg()
+            binding.layoutHeader.ivHotelLogo.loadLogo()
+            binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
+
         }
 
     }
 
     override fun onStart() {
         super.onStart()
+
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
+        binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
 
         isUserCheckedIn =
             (GuestDetails.SESSION_ID.isNotEmpty() && GuestDetails.SESSION_ID != "null")

@@ -32,6 +32,7 @@ import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -52,11 +53,8 @@ class ConfirmRentalActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(viewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(viewModel.rentalMovieResponse, ::handleMovieResponse)
-//        observe(viewModel.themeLiveData, ::handleThemeResponse)
         observe(viewModel.purchaseResponse, ::handlePurchaseResponse)
         observeToast(viewModel.showToast)
-
-//        viewModel.getThemeResponseData(themeDataStore)
     }
 
     private fun handlePurchaseResponse(resource: Resource<DayPassResponse>) {
@@ -119,22 +117,28 @@ class ConfirmRentalActivity : BaseActivity() {
             binding.tvPriceConfirm.text =
                 getString(R.string.rental_price_confirm, "", movie.price.toString())
         }
-        if (::movie.isInitialized) {
-            binding.layoutRental.toVisible()
-            binding.btnConfirm.requestFocus()
-        } else {
-            binding.layoutPass.toVisible()
-            binding.btnBuyNow.requestFocus()
-        }
-        intent.getStringExtra("price")?.let {
-            binding.tvAdultPrice.text = getString(R.string.adult_pass_price, "", it)
-            passPrice = it
-        }
 
         binding.btnConfirm.handleFocusChange()
         binding.btnCancel.handleFocusChange()
         binding.btnBuyNow.handleFocusChange()
         binding.btnPassCancel.handleFocusChange()
+
+
+        intent.getStringExtra("price")?.let {
+            binding.tvAdultPrice.text = getString(R.string.adult_pass_price, "", it)
+            passPrice = it
+        }
+
+        lifecycleScope.launch {
+            delay(240)
+            if (::movie.isInitialized) {
+                binding.layoutRental.toVisible()
+                binding.btnConfirm.requestFocus()
+            } else {
+                binding.layoutPass.toVisible()
+                binding.btnBuyNow.requestFocus()
+            }
+        }
 
         binding.btnConfirm.setOnClickListener {
             val request = RentalMovieRequest()
@@ -223,20 +227,10 @@ class ConfirmRentalActivity : BaseActivity() {
         }
     }
 
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> {}
-            is Resource.Success -> {
-
-
-            }
-
-            else -> {
-                status.errorCode?.let { viewModel.showToastMessage(getString(it)) }
-            }
-        }
+    override fun onStop() {
+        super.onStop()
+        finish()
     }
-
 
     private fun handleValidateSessionResponse(status: Boolean) {
         this.isCheckedIn = status
