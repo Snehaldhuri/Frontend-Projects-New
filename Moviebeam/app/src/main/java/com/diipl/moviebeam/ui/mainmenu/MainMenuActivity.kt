@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -230,6 +231,7 @@ class MainMenuActivity : BaseActivity() {
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
+            Log.e("TAG", "onPlayerError: ${error.localizedMessage}")
             releaseVideoPlayer()
         }
 

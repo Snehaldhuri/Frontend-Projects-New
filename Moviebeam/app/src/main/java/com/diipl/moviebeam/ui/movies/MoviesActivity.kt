@@ -103,6 +103,21 @@ class MoviesActivity : BaseActivity() {
             handleBackClick()
         }
 
+        binding.btnBack.setOnKeyListener { v, keyCode, event ->
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    binding.menuRecyclerView.getChildAt(0).requestFocus()
+                    return@setOnKeyListener true
+                }
+                KeyEvent.KEYCODE_DPAD_LEFT -> return@setOnKeyListener true
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    binding.menuRecyclerView.getChildAt(0).requestFocus()
+                    return@setOnKeyListener true
+                }
+            }
+            false
+        }
+
         val parentRecyclerView: RecyclerView = binding.parentRecyclerView
         parentRecyclerView.setHasFixedSize(true)
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)

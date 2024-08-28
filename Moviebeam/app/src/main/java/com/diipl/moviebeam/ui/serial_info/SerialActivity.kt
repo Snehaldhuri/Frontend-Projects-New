@@ -9,8 +9,8 @@ import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.android.tv.settings.aidl.common.ISeiCommonApi
 import com.diipl.moviebeam.BuildConfig
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivitySerialBinding
 import com.diipl.moviebeam.di.HardwareAPI
@@ -24,9 +24,9 @@ import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 @AndroidEntryPoint
 class SerialActivity : BaseActivity() {
 
@@ -47,7 +47,7 @@ class SerialActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(serialViewModel.serialNoTakenLiveData, ::handleDataStoreResponse)
         observe(serialViewModel.stbStatusLiveData, ::handleStbStatusResponse)
-        observe(serialViewModel.stbAllocationStatusLiveData, ::handleStbAllocationStatusResponse)
+//        observe(serialViewModel.stbAllocationStatusLiveData, ::handleStbAllocationStatusResponse)
     }
 
     override fun initViewBinding() {
@@ -60,6 +60,14 @@ class SerialActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
+
+        lifecycleScope.launch {
+            val isValid = preferenceDataStoreHelper.getFirstPreference(
+                PreferenceDataStoreConstants.IS_STB_ALLOCATED,
+                false
+            )
+            handleStbAllocationStatusResponse(isValid)
+        }
     }
 
 

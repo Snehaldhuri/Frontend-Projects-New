@@ -61,7 +61,7 @@ import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
-import com.diipl.moviebeam.utils.Constants.DVB_INPUT_ID
+import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
@@ -890,7 +890,7 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     private fun loadChannelList() {
-        DVB_INPUT_ID = findDvbInput() ?: return
+        DTV_INPUT_ID = findDvbInput() ?: return
 
         val projection = arrayOf(
             TvContract.Channels._ID,
@@ -927,7 +927,7 @@ class ProgramGuideActivity : BaseActivity() {
             val blob = cursor.getBlob(index++)
 
             // only consider dvb input
-            if (DVB_INPUT_ID != curInputId)
+            if (DTV_INPUT_ID != curInputId)
                 continue
 
             // only keep AUDIO_VIDEO services
