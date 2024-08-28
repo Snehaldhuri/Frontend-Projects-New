@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.showtime
 
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -14,8 +13,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
+import com.diipl.moviebeam.utils.handleFocusChange
 
 class ShowtimeMenuAdapter(
     private val itemList: List<BtnModel>,
@@ -23,7 +24,6 @@ class ShowtimeMenuAdapter(
     private val onRightKeyPressed: () -> Unit
 ) : RecyclerView.Adapter<ShowtimeMenuAdapter.MyViewHolder>() {
 
-    private var gradient: GradientDrawable? = null
     private var selectedPosition = -1
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -70,16 +70,10 @@ class ShowtimeMenuAdapter(
 
 //        holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
+        holder.card.handleFocusChange()
         holder.card.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                view.background = gradient
-            } else {
-                holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-            }
-        }
-        holder.card.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                view.background = gradient
+                view.background = getGradientColor()
                 holder.card.setOnClickListener {
                     onMoviesMenuItemClicked(view, item.btnId)
                     holder.itemView.isSelected = true
@@ -114,9 +108,5 @@ class ShowtimeMenuAdapter(
     }
 
     override fun getItemCount(): Int = itemList.size
-
-    fun setGradient(gradient: GradientDrawable?) {
-        this.gradient = gradient
-    }
 
 }

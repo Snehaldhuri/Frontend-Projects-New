@@ -8,6 +8,9 @@ import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.AppCardBinding
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.GuestDetails
+import com.diipl.moviebeam.utils.showToast
 
 
 class AppAdapter(
@@ -50,7 +53,10 @@ class AppAdapter(
         holder.binding.tvAppName.text = context.packageManager.getApplicationLabel(item)
         holder.binding.ivAppIcon.setImageDrawable(context.packageManager.getApplicationBanner(item))
         holder.binding.cardApp.setOnClickListener {
-            onItemClicked(item)
+            if((item.packageName != Constants.NETFLIX_PACKAGE_NAME) || (item.packageName == Constants.NETFLIX_PACKAGE_NAME && GuestDetails.IS_GUEST_CHECKED_IN))
+                onItemClicked(item)
+            else
+                context.showToast(context.getString(R.string.please_contact_the_front_desk_for_assistance))
         }
     }
 

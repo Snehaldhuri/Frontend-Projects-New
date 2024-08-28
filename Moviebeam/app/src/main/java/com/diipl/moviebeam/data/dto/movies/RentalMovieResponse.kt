@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.data.dto.movies
 
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.GuestDetails
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
@@ -40,7 +41,7 @@ data class AdultDayPassRequest(
     @SerializedName("Q")
     var Q: String = "PURCHASE_PASS",
     @SerializedName("UA")
-    var UA: String = Constants.UA,
+    var UA: String = "",
     @SerializedName("TYPE")
     var type: String = "D1001",
     @SerializedName("PRICE_LIST")
@@ -50,7 +51,7 @@ data class AdultDayPassRequest(
     @SerializedName("TIMESTAMP")
     var timeStamp: Long = System.currentTimeMillis()/1000,
     @SerializedName("SID")
-    var sessionID: String = Constants.SESSION_ID,
+    var sessionID: String = GuestDetails.SESSION_ID,
     @SerializedName("MODE")
     var mode: String = "JSON"
 )
@@ -80,13 +81,13 @@ data class AdultDayPassSync(
 @Serializable
 data class RentalMovieRequest(
     @SerializedName("Q") var q: String = "RENTAL",
-    @SerializedName("UA") var UA: String = Constants.UA,
+    @SerializedName("UA") var UA: String = "",
     @SerializedName("RID") var releaseID: Int = 0,
     @SerializedName("PID") var productId: Int = 0,
     @SerializedName("PRICE") var price: Double = 00.00,
     @SerializedName("TIMESTAMP") var timeStamp: Long = System.currentTimeMillis() / 1000,
     @SerializedName("SEEK") var seek: Long = 0,
-    @SerializedName("SID") var sessionID: String = Constants.SESSION_ID,
+    @SerializedName("SID") var sessionID: String = GuestDetails.SESSION_ID,
     @SerializedName("A") var a: Int = 1,
     @SerializedName("RA") var ra: Int = 1,
     @SerializedName("CTYPE") var cType: String = Constants.C_TYPE_MOVIE,

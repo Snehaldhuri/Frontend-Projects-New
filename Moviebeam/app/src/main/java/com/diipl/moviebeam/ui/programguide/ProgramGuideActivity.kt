@@ -2,12 +2,16 @@ package com.diipl.moviebeam.ui.programguide
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.media.tv.TvContract
+import android.media.tv.TvInputManager
 import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
@@ -19,8 +23,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
@@ -32,38 +38,57 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.epg.EPGResponse
+import com.diipl.moviebeam.data.dto.program.DvbChannel
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
+import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.service.IIrService
 import com.diipl.moviebeam.service.UsbIrService
 import com.diipl.moviebeam.service.isCompatibleDevice
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
+import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
+import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
+import com.diipl.moviebeam.utils.isEpgDataValid
+import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.loadLogo
+import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -91,37 +116,54 @@ class ProgramGuideActivity : BaseActivity() {
 
     private lateinit var hotelChannel: HotelChannel
     private var hotelChannelVideo: String = ""
+    private var isEpgApiCalled = false
+
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(
+            applicationContext
+        )
+    }
+    private var ua = ""
+
     @Inject
-    lateinit var preferences : SharedPreference
+    lateinit var preferences: SharedPreference
+
+    @Inject
+    lateinit var channelListDataStore: DataStore<ChannelListResponse>
+
+    @Inject
+    lateinit var roomRepository: RoomRepository
+
     private var irService: IIrService? = null
 
     private val usbManager: UsbManager by lazy { getSystemService(USB_SERVICE) as UsbManager }
     private lateinit var usbDevice: UsbDevice
 
-
     override fun observeViewModel() {
+        observe(programGuideViewModel.epgLiveData, ::handleEpgResponse)
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
     }
 
     override fun initViewBinding() {
         binding = ActivityProgramGuideBinding.inflate(layoutInflater)
-        this.getChannelsFromRoomDB()
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
         fetchDetails()
+        this.getChannelsFromRoomDB()
         setContentView(binding.root)
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
         binding.btnBack.setOnClickListener { finish() }
-
         binding.pbLoader.toVisible()
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        initializeDatastoreParams()
+        programGuideViewModel.getChannelListResponseData(channelListDataStore)
         initSet()
-
     }
 
     private fun initSet() {
@@ -145,6 +187,8 @@ class ProgramGuideActivity : BaseActivity() {
         if (isFScreenExit) {
             playChannelVideoBg(null)
         }
+
+        fetchTVChannels()
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
@@ -176,10 +220,17 @@ class ProgramGuideActivity : BaseActivity() {
 
                 }
                 setNextPrograms()
+                binding.pbLoader.toInvisible()
             } else {
-                programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
+                if (!isEpgApiCalled) {
+                    binding.pbLoader.toVisible()
+                    isEpgApiCalled = true
+                    programGuideViewModel.fetchEPGDataFromServer(ua)
+                } else {
+                    binding.pbLoader.toInvisible()
+                }
+//                programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
             }
-            binding.pbLoader.toInvisible()
         }
     }
 
@@ -286,13 +337,6 @@ class ProgramGuideActivity : BaseActivity() {
     }
 
     private fun fetchDetails() {
-        intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        intent.extras?.let {
-            binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
-            loadBg(it.getString("themeBackgroundFileName"))
-        }
         intent.extras?.getString("hotelChannel")?.let {
             hotelChannel = it.fromJson()
         }
@@ -301,34 +345,12 @@ class ProgramGuideActivity : BaseActivity() {
         }
     }
 
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                @RequiresApi(Build.VERSION_CODES.O)
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
-    }
-
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
         binding.root.setupSnackbar(this, event, Snackbar.LENGTH_LONG)
     }
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
-    }
-
-    private fun appendZeros(value: Int): String {
-        val str = StringBuffer(value.toString()).reverse()
-        str.append("0")
-        return str.reverse().toString()
     }
 
     private fun playChannelVideoBg(program: ChannelEpgDTO?) {
@@ -432,42 +454,48 @@ class ProgramGuideActivity : BaseActivity() {
 
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
 //        if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_CHROMECAST, true)) {
-                switchToTV(program)
-            /* } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_MINI_BOX, true)) {
-                 binding.layoutVideo.videoView.player?.pause()
-                 val bundle = Bundle()
-                 bundle.putStringArrayList(
-                     Constants.CONTENT_LIST_PARAM,
-                     channelContent as ArrayList<String?>
-                 )
-                 bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelList?.indexOf(program) ?: 0)
-                 bundle.putString(Constants.CHANEL_NO_PARAM, program?.CNO)
-                 bundle.putString(Constants.CHANNEL_NAME_PARAM, program?.CN)
-                 bundle.putString(Constants.CHANNEL_LOGO_PARAM, program?.CL)
-                 bundle.putString(Constants.NOW_SHOWING_PARAM, program?.liveProg1)
-                 bundle.putString(Constants.NEXT_PROGRAM_PARAM, program?.liveProg2)
-                 bundle.putString(Constants.PROG_1_TIME_PARAM, program?.prog1Time)
-                 bundle.putString(Constants.PROG_2_TIME_PARAM, program?.prog2Time)
-                 bundle.putString(Constants.CHANNEL_LIST_PARAM, Gson().toJson(channelList))
+        /* } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_MINI_BOX, true)) {
+             binding.layoutVideo.videoView.player?.pause()
+             val bundle = Bundle()
+             bundle.putStringArrayList(
+                 Constants.CONTENT_LIST_PARAM,
+                 channelContent as ArrayList<String?>
+             )
+             bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelList?.indexOf(program) ?: 0)
+             bundle.putString(Constants.CHANEL_NO_PARAM, program?.CNO)
+             bundle.putString(Constants.CHANNEL_NAME_PARAM, program?.CN)
+             bundle.putString(Constants.CHANNEL_LOGO_PARAM, program?.CL)
+             bundle.putString(Constants.NOW_SHOWING_PARAM, program?.liveProg1)
+             bundle.putString(Constants.NEXT_PROGRAM_PARAM, program?.liveProg2)
+             bundle.putString(Constants.PROG_1_TIME_PARAM, program?.prog1Time)
+             bundle.putString(Constants.PROG_2_TIME_PARAM, program?.prog2Time)
+             bundle.putString(Constants.CHANNEL_LIST_PARAM, Gson().toJson(channelList))
 
-                 val intent = Intent(this, PrgGuidePlayerActivity::class.java)
-                 intent.putExtras(bundle)
-                 startActivity(intent)
-                 this.isFScreenExit = true
-             } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB, true)) {
-                 launchLiveTvApp()
-             }*/
+             val intent = Intent(this, PrgGuidePlayerActivity::class.java)
+             intent.putExtras(bundle)
+             startActivity(intent)
+             this.isFScreenExit = true
+         } else if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB, true)) {
+             launchLiveTvApp()
+         }*/
+
+        when(BuildConfig.BUILD_TYPE){
+            Constants.BUILD_TYPE_CHROMECAST -> switchToTV(program)
+            Constants.BUILD_TYPE_STB -> tuneChannels(program)
+        }
+
     }
+
 
     private fun switchToTV(program: ChannelEpgDTO?) {
         clearCache()
         lifecycleScope.launch {
             var model = preferences.irFrequencyModel
-            if (model == null){
+            if (model == null) {
                 preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
                 model = preferences.irFrequencyModel
             }
-            irService?.let { service->
+            irService?.let { service ->
                 val num = program?.CNO/*.plus(100)*/.toString().toCharArray().asList()
                 if (model.tvBrandName != IRUtils.LG) {
                     service.transmit(model.frequency, model.TV)
@@ -533,11 +561,6 @@ class ProgramGuideActivity : BaseActivity() {
 
     override fun onStop() {
         super.onStop()
-        finish()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
         binding.layoutVideo.videoView.player?.release()
     }
 
@@ -552,8 +575,6 @@ class ProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.tvTime3.text = currentProgram?.P3_DST
         binding.layoutProgramGuide.tvTime4.text = currentProgram?.P4_DST
 
-        Log.e(TAG, "loadProgramGuide: $currentProgram")
-
         currentPrograms?.remove(currentProgram)
         val hotelVideoProgram = ChannelEpgDTO(
             CN = hotelChannel.channelName,
@@ -563,11 +584,14 @@ class ProgramGuideActivity : BaseActivity() {
             P1_CLS = "80",
             C = "1"
         )
+
+        Log.e(TAG, "loadProgramGuide: $hotelVideoProgram")
+
         currentPrograms?.add(0, hotelVideoProgram)
 
         if (!isScrolled) {
             channelList = currentPrograms
-            Constants.CURRENT_PROGRAMS = currentPrograms
+            CURRENT_PROGRAMS = currentPrograms
             channelContent = currentPrograms?.map { it.VP }
             setUpChannels(currentPrograms)
         } else
@@ -576,39 +600,6 @@ class ProgramGuideActivity : BaseActivity() {
 
         setUpChannels(currentPrograms)
         setUpPrograms(currentPrograms, currentProgram?.P4_DST)
-    }
-
-    private fun fetchCurrentProgramKey(currentDate: Date = Date()): String {
-        val cal = Calendar.getInstance()
-        cal.time = currentDate
-        val date = cal.get(Calendar.DATE)
-        val month = cal.get(Calendar.MONTH) + 1
-        val year = cal.get(Calendar.YEAR)
-        var hour = cal.get(Calendar.HOUR)
-        val minutes = cal.get(Calendar.MINUTE)
-        val amPm = cal.get(Calendar.AM_PM)
-        val time = StringBuilder()
-
-        if (date < 10) time.append(appendZeros(date))
-        else time.append(date)
-
-        if (month < 10) time.append(appendZeros(month))
-        else time.append(month)
-
-        time.append(year)
-
-        if (hour == 0) hour = 12
-
-        if (hour < 10) time.append(appendZeros(hour))
-        else time.append(hour.toString())
-
-        if (minutes < 30) time.append("00")
-        else time.append("30")
-
-        if (amPm == 0) time.append("AM")
-        else time.append("PM")
-
-        return time.toString()
     }
 
     private fun setUpChannels(channelList: List<ChannelEpgDTO>?) {
@@ -672,7 +663,7 @@ class ProgramGuideActivity : BaseActivity() {
         val cal = Calendar.getInstance()
         cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, -2)
-        previousKey = fetchCurrentProgramKey(cal.time)
+        previousKey = fetchCurrentProgramKey(cal)
         programGuideViewModel.getAllChannels(previousKey!!).observe(this) { data ->
             previousPrograms = data
         }
@@ -683,7 +674,7 @@ class ProgramGuideActivity : BaseActivity() {
         val cal = Calendar.getInstance()
         cal.time = key?.let { dateFormatter.parse(it) }!!
         cal.add(Calendar.HOUR_OF_DAY, 2)
-        nextKey = fetchCurrentProgramKey(cal.time)
+        nextKey = fetchCurrentProgramKey(cal)
         programGuideViewModel.getAllChannels(nextKey!!).observe(this) { data ->
             nextPrograms = data
         }
@@ -703,5 +694,352 @@ class ProgramGuideActivity : BaseActivity() {
         }
     }
 
+    private fun handleEpgResponse(status: Resource<EPGResponse>) {
+        when (status) {
+            is Resource.Success -> {
+                //Removing all Epg Channels From RoomDB.
+                lifecycleScope.launch(Dispatchers.IO) {
+                    roomRepository.removeAllChannels()
+                }
+
+                val simpleDateFormatter =
+                    SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
+                status.data?.let {
+                    if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
+                        updateEpgStAndEt(it.ST, it.ET)
+                        val channelList =
+                            programGuideViewModel.channelListLiveData.value?.data?.channelLcnList
+                        val currentKey = fetchCurrentProgramKey()
+                        removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
+                        for (entries in it.epgListMap?.entries!!) {
+                            val iterator = entries.value.iterator()
+                            val key = entries.key
+                            val ciMap = HashMap<Int, Boolean>()
+                            while (iterator.hasNext()) {
+                                val channel = iterator.next()
+                                channel.key = key
+                                if (channel.CI != null) {
+                                    var isFound = false
+                                    for (channelApi in channelList!!) {
+                                        if (channelApi.CI == channel.CI) {
+                                            isFound = true
+                                            //Mapping EpgMap with Channel List Api
+                                            channel.AR = channelApi.AR
+                                            channel.CN = channelApi.CN
+                                            channel.CNO = channelApi.CNO
+                                            channel.CBT = channelApi.CBT
+                                            channel.CL = channelApi.CL
+                                            channel.CLCloud = channelApi.CLCloud
+                                            if (channelApi.httpStreaming == true)
+                                                channel.VP = channelApi.httpStreamingUrl
+                                            else
+                                                channel.VP = channelApi.VP
+                                            channel.param1 = channelApi.param1
+                                            channel.param2 = channelApi.param2
+                                            channel.httpStreamingUrl = channelApi.httpStreamingUrl
+                                            channel.httpStreaming = channelApi.httpStreaming
+                                            channel.recordable = channelApi.recordable
+
+                                            channel.channelNameNo =
+                                                "${channelApi.CNO}   ${channelApi.CN}"
+                                            channel.lastProg = channel.C
+                                            channel.prog1Time =
+                                                "${channel.P1_ST} - ${channel.P1_ET}"
+
+                                            //Mapping EpgMap with Program Map Api
+                                            if (channel.P1_ID != null) {
+                                                val program1 =
+                                                    it.programsListMap?.get(channel.P1_ID)
+                                                if (program1 != null) {
+                                                    channel.P1_PT = program1.PT
+                                                    channel.P1_SY = program1.SY
+                                                    channel.progInfo = program1.PT
+                                                    channel.progSynopsis = program1.SY
+                                                    channel.liveProg1 = program1.PT
+                                                    channel.progInfo1 =
+                                                        "${channel.CNO} - ${program1.PT}"
+                                                } else {
+                                                    channel.P1_PT =
+                                                        Constants.NO_INFORMATION_AVAILABLE
+                                                    channel.P1_SY =
+                                                        Constants.NO_INFORMATION_AVAILABLE
+                                                    channel.progInfo =
+                                                        Constants.NO_INFORMATION_AVAILABLE
+                                                    channel.progSynopsis =
+                                                        Constants.NO_INFORMATION_AVAILABLE
+                                                    channel.liveProg1 =
+                                                        Constants.NO_INFORMATION_AVAILABLE
+                                                }
+                                            }
+                                            // for live tv and full screen (Next)
+                                            if (channel.C?.toInteger()!! > 1) {
+                                                if (channel.P2_ID != null) {
+                                                    val program2 =
+                                                        it.programsListMap?.get(channel.P2_ID)
+                                                    channel.P2_PT = program2?.PT
+                                                    channel.P2_SY = program2?.SY
+                                                    channel.liveProg2 = program2?.PT
+                                                    channel.progInfo2 =
+                                                        "${channel.CNO} - ${program2?.PT}"
+                                                    channel.prog2Time =
+                                                        "${channel.P2_ST} - ${channel.P2_ET}"
+                                                }
+                                                if (channel.P3_ID != null) {
+                                                    val program3 =
+                                                        it.programsListMap?.get(channel.P3_ID)
+                                                    channel.P3_PT = program3?.PT
+                                                    channel.P3_SY = program3?.SY
+                                                }
+                                                if (channel.P4_ID != null) {
+                                                    val program4 =
+                                                        it.programsListMap?.get(channel.P4_ID)
+                                                    channel.P4_PT = program4?.PT
+                                                    channel.P4_SY = program4?.SY
+                                                }
+                                                if (channel.P5_ID != null) {
+                                                    val program5 =
+                                                        it.programsListMap?.get(channel.P5_ID)
+                                                    channel.P5_PT = program5?.PT
+                                                    channel.P5_SY = program5?.SY
+                                                }
+                                                if (channel.P6_ID != null) {
+                                                    val program6 =
+                                                        it.programsListMap?.get(channel.P6_ID)
+                                                    channel.P6_PT = program6?.PT
+                                                    channel.P6_SY = program6?.SY
+                                                }
+                                                if (channel.P7_ID != null) {
+                                                    val program7 =
+                                                        it.programsListMap?.get(channel.P7_ID)
+                                                    channel.P7_PT = program7?.PT
+                                                    channel.P7_SY = program7?.SY
+                                                }
+                                                if (channel.P8_ID != null) {
+                                                    val program8 =
+                                                        it.programsListMap?.get(channel.P8_ID)
+                                                    channel.P8_PT = program8?.PT
+                                                    channel.P8_SY = program8?.SY
+                                                }
+                                            } else {
+                                                //Calculating next Program Time from program1 end Time when Only One Program is Available
+                                                val nextProgramTime = Calendar.getInstance()
+                                                nextProgramTime.time =
+                                                    simpleDateFormatter.parse(channel.P1_DET)
+                                                val nextProgramKey =
+                                                    fetchCurrentProgramKey(nextProgramTime)
+                                                val nextProgram: ChannelEpgDTO? =
+                                                    it.epgListMap[nextProgramKey]?.first {
+                                                        it.CI == channelApi.CI
+                                                    }
+                                                when (nextProgramTime.get(Calendar.MINUTE)) {
+                                                    0, 30 -> {
+                                                        channel.prog2Time =
+                                                            "${nextProgram?.P1_ST} - ${channel.P1_ET}"
+                                                        channel.liveProg2 =
+                                                            it.programsListMap?.get(nextProgram?.P1_ID)?.PT
+                                                    }
+
+                                                    else -> {
+                                                        channel.prog2Time =
+                                                            "${channel.P2_ST} - ${channel.P2_ET}"
+                                                        channel.liveProg2 =
+                                                            it.programsListMap?.get(nextProgram?.P2_ID)?.PT
+                                                    }
+                                                }
+                                            }
+                                            break
+                                        }
+                                    }
+                                    if (!isFound)
+                                        iterator.remove()
+                                    else {
+                                        //Removing Duplicate Channels
+                                        if (ciMap[channel.CI] != null)
+                                            iterator.remove()
+                                        else
+                                            ciMap[channel.CI] = true
+                                    }
+                                }
+                            }
+                            //Sorting Channels by Channel No
+                            entries.value.sortBy { it.CNO?.toInteger() }
+                            //Adding Channels to RoomDB.
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                roomRepository.insertChannels(entries.value)
+                            }
+                        }
+                        this.getChannelsFromRoomDB()
+                    } else {
+                        //TODO invalid Data found
+                        binding.pbLoader.toInvisible()
+                        programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
+                    }
+                }
+            }
+
+            else -> {
+                status.errorCode?.let { programGuideViewModel.showToastMessage(getString(it)) }
+                status.errorMsg?.let { programGuideViewModel.showToastMessage(it) }
+            }
+        }
+    }
+
+    private fun hasReadTvListings(context: Context): Boolean {
+        return (context.checkSelfPermission("android.permission.READ_TV_LISTINGS")
+                == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun loadChannelList() {
+        DTV_INPUT_ID = findDvbInput() ?: return
+
+        val projection = arrayOf(
+            TvContract.Channels._ID,
+            TvContract.Channels.COLUMN_INPUT_ID,
+            TvContract.Channels.COLUMN_SERVICE_ID,
+            TvContract.Channels.COLUMN_SERVICE_TYPE,
+            TvContract.Channels.COLUMN_DISPLAY_NAME,
+            TvContract.Channels.COLUMN_DISPLAY_NUMBER,
+            TvContract.Channels.COLUMN_TRANSPORT_STREAM_ID,
+            TvContract.Channels.COLUMN_VIDEO_FORMAT,
+            TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID,
+            TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA
+        )
+
+        val cursor = contentResolver.query(
+            TvContract.Channels.CONTENT_URI, projection,
+            null, null,
+            "${TvContract.Channels.COLUMN_DISPLAY_NUMBER} ASC"
+        )
+
+        mChannelList.clear()
+
+        while (cursor?.moveToNext() == true) {
+            var index = 0
+            val channelId = cursor.getLong(index++)
+            val curInputId = cursor.getString(index++)
+            val serviceId = cursor.getString(index++)
+            val serviceType = cursor.getString(index++)
+            val displayName = cursor.getString(index++)
+            val displayNumber = cursor.getString(index++)
+            val streamID = cursor.getString(index++)
+            val format = cursor.getString(index++)
+            val networkID = cursor.getString(index++)
+            val blob = cursor.getBlob(index++)
+
+            // only consider dvb input
+            if (DTV_INPUT_ID != curInputId)
+                continue
+
+            // only keep AUDIO_VIDEO services
+            if (TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO != serviceType)
+                continue
+
+            // skip channels without name or number
+            if (displayName == null || displayNumber == null)
+                continue
+
+            val channelNumber = displayNumber.toInt()
+
+            val channel = DvbChannel(
+                displayName,
+                channelNumber,
+                channelId,
+                curInputId
+            )
+
+            mChannelList.add(channel)
+
+        }
+        cursor?.close()
+
+        if (mChannelList.isEmpty()) {
+            val msg = "Unable to find any dvb channels, are channel searchable ?"
+            Log.e(TAG, msg)
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        mChannelList.sortBy { dvbChannel -> dvbChannel.number }
+    }
+
+    private fun findDvbInput(): String? {
+        val mTvInputManager = getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
+
+        Log.i(TAG, "============================================")
+        Log.i(TAG, "enumerate tv input")
+        var dvbInputFound = false
+        var dtvInputComponent = ""
+        mTvInputManager?.let {
+            for (tvInputInfo in it.tvInputList) {
+                if (tvInputInfo.id.startsWith("${DTV_KIT_PACKAGE_NAME}/")) {
+                    dvbInputFound = true
+                    dtvInputComponent = tvInputInfo.id
+                }
+            }
+        }
+
+        Log.i(TAG, "============================================")
+
+        if (!dvbInputFound) {
+            val msg = "Failed to find dvb input"
+            Log.e(TAG, msg)
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            return null
+        }
+
+        return dtvInputComponent
+    }
+
+    private fun fetchTVChannels() {
+        if (hasReadTvListings(this)) {
+            loadChannelList()
+        } else {
+            requestPermissions(arrayOf("android.permission.READ_TV_LISTINGS"), 1001)
+        }
+    }
+
+    private fun tuneChannels(program: ChannelEpgDTO?) {
+        if (!program?.CN.equals("Hotel Video")) {
+            val intent = Intent(applicationContext, LiveTVActivity::class.java)
+            intent.putExtra("currentPos", 99)
+            startActivity(intent)
+        } else {
+            showToast("Not Available")
+        }
+    }
+
+    private fun updateEpgStAndEt(epgStartTime: String?, epgEndTime: String?) {
+        lifecycleScope.launch {
+            epgStartTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
+                    it
+                )
+            }
+            epgEndTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
+                    it
+                )
+            }
+        }
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
+
+    companion object {
+        var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
+    }
 
 }

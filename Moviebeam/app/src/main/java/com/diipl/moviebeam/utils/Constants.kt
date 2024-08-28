@@ -1,31 +1,16 @@
 package com.diipl.moviebeam.utils
 
-import android.graphics.drawable.GradientDrawable
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
 import com.diipl.moviebeam.data.dto.btn.GsBtnModel
-import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 
 object Constants {
 
-    // WorkManager
-    val DATA_TYPE = "dataType"
-    val DATA_JSON = "dataJSON"
-
     var isWorkDone = 0
-    var isRebooted = -1
-    var GLOBAL_LOOP_SEC = 60
-
-    // IP Details
-    var IP_ADDRESS: String = "0.0.0.0"
-    var IP_GATEWAY: String = "0.0.0.0"
-    var IP_NET_MASK: String = "0.0.0.0"
-    var CONNECTIVITY = "NO INTERNET"
+    const val GLOBAL_LOOP_SEC = 60
 
     const val SHOWTIME_RELEASE_TYPE_ID = 1
-    const val ENABLE = "ENABLE"
-    const val DISABLE = "DISABLE"
 
     // Adult Pop-up viewType
     const val ADULT_MCW_MAIN = 1
@@ -35,27 +20,10 @@ object Constants {
     const val ADULT_LOCKED = 5
     const val PARENTAL_CONTROL = 6
 
-    // Content Count
-    var MOVIES_COUNT = 0
-    var SHOWS_COUNT = 0
-
-    // Gradient Colors
-    var GRADIENT_COLOR_START = ""
-    var GRADIENT_COLOR_END = ""
-
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
     const val C_TYPE_TRAILER: String = "TRAILER"
-    var IS_CHECKED_IN: Boolean = false
-    var SESSION_ID: String = ""
-    var RENTAL_ID: String = ""
-    var RENTAL_TIME: Long = 1707840000000
-    var MOVIE_SELECTED_POSITION: Int = -1
-    var MOVIE_PARENT_POSITION: Int = -1
-    //    var isUserCheckedIn = false
-//    var isUserCheckedIn = true
     const val SPLASH_DELAY = 3000
-    var timer = ""
     const val BASE_URL_LG_REST =
         "https://stb.moviebeam.com:1930/LG/rest/"//https://stb.moviebeam.com:1930/LG/rest
     const val BASE_URL_ACCOUNT_SETUP = "https://stb.moviebeam.com:1926/"
@@ -72,35 +40,22 @@ object Constants {
     const val HOTEL_INFORMATION = "Hotel Information"
     const val DEFAULTGRADIENTSTARTCOLOR = "#85bf08"
     const val DEFAULTGRADIENTENDCOLOR = "#0ca654"
-    var GRADIENT: GradientDrawable? = null
-    var TITLE: String? = null
-    var LOGO_IMAGE: String? = null
-    var BG_IMAGE: String? = null
-    var HOTEL_VIDEO_LOOP_COUNT = 3
-    var HOTEL_VIDEO_DURATION = 0L
-    var HOTEL_VIDEO_URL = ""
-    var UA = ""
-    var SERIAL_NO = ""
-    val MAC_ADDRESS = "test"
-    val STB_TYPE = "LG"
-    val WIFI_MAC_ADDRESS = ""
-    var IS_API_CALLED = false
-    var ACCOUNT_ID = "13827"
-    var STB_ROOM_NO = ""
-    var C_LIST_VERSION = ""
-    var NETFLIX_LAUNCHED = false
+    const val UA_PREFIX = "21"
+
+    const val MAC_ADDRESS = "test"
+    const val STB_TYPE = "LG"
+    const val WIFI_MAC_ADDRESS = ""
     const val ACTIVATE = "ACTIVATE"
     const val MODE = "JSON"
-    const val THEME_DIRECTORY = "ThemeImages"
-    const val HOTEL_LOGO = "HotelLogo.jpg"
-    var BACKGROUND_IMAGE : String? = null
-    var EPG_CDN_URL = ""
     const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
-    const val SERIAL_NO_PATH_SUFFIX = "/Documents/system/serialNo.txt"
 
+    const val NETFLIX_PACKAGE_NAME = "com.netflix.ninja"
+    const val PRIME_VIDEO_PACKAGE_NAME = "com.amazon.amazonvideo.livingroom"
     const val MDM_PACKAGE_NAME = "com.diipl.mdm"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
-    const val MDM_CLEAR_CREDENTIALS_ACTION = "$MDM_PACKAGE_NAME.services.START_CLEAR_CREDENTIALS_RECEIVER"
+    const val MDM_CLEAR_CREDENTIALS_ACTION =
+        "$MDM_PACKAGE_NAME.services.START_CLEAR_CREDENTIALS_RECEIVER"
+    const val MDM_GRANT_PERMISSION = "$MDM_PACKAGE_NAME.ui.GrantPermission"
     const val SERIAL_NO_KEY = "SERIAL_NO_KEY"
 
     const val ASSET = "ASSET"
@@ -177,29 +132,14 @@ object Constants {
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
     )
-    var APP_LIST: ArrayList<String> = ArrayList()
     const val APP_LIST_PARAM = "APP_LIST"
     const val CLEAR_CREDENTIALS_REQUEST_CODE = 10
 
     // Static Movies URl
 
-    const val MOVIE_URL = "http://d3rh9vbn3pp0qe.cloudfront.net/41177_T.m2t"
     const val BASE_PLAYBACK_URL = "https://d14ez9fl8x9e1s.cloudfront.net/"
-    const val TRAILER_EXTENSION = "_T.m2t"
-    const val CONTENT_EXTENSION = ".m2t"
-    const val CONTENT_EXTENSION_MP = ".mp4"
-
-    /* const val MOVIE_URL1 = "https://d3rh9vbn3pp0qe.cloudfront.net/41177_T.ts"
-     const val MOVIE_URL2 = "https://d3rh9vbn3pp0qe.cloudfront.net/41132_T.ts"
-     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"
-     const val MOVIE_URL3 = "https://d3rh9vbn3pp0qe.cloudfront.net/41191_T.ts"*/
-    const val MOVIE_URL1 =
-        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974.mp4"
-    const val MOVIE_URL2 =
-        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/12974/hotelData/12974_B.mp4"
-    const val MOVIE_URL3 =
-        "https://s3.amazonaws.com/demohotelvideo.moviebeam.com/lgThemes/7107/hotelData/7107.mp4"
-    const val TRAILER_URL = "trailer_url"
+    const val TRAILER_EXTENSION = "_T.mp4"
+    const val CONTENT_EXTENSION = ".mp4"
 
     const val RELEASE_ID = "releaseId"
     const val MOVIE_DETAILS = "movieDetails"
@@ -209,7 +149,8 @@ object Constants {
     const val IS_CONTINUE = "isContinue"
 
     val RECENT_BUTTON = BtnModel(RECENT_WATCH_MOVIE_ID, R.drawable.img_recent_view, RECENTLY_VIEWED)
-    val ADULT_DAY_PASS_BUTTON = BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS)
+    val ADULT_DAY_PASS_BUTTON =
+        BtnModel(ADULT_DAY_PASS_ID, R.drawable.adult_day_pass, ADULT_DAY_PASS)
     val ADULT_BUTTON = BtnModel(ADULT_ID, R.drawable.adult, ADULT)
 
     val MOVIES_PAGE_MENU_BUTTON_LIST = mutableListOf(
@@ -255,7 +196,8 @@ object Constants {
     const val EXPRESS_CHECKOUT = "Express Checkout"
     const val MESSAGE = "Messages"
 
-    val MESSAGE_MODEL = GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black)
+    val MESSAGE_MODEL =
+        GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black)
     val GUEST_SERVICE_BUTTON_LIST = listOf(
         GsBtnModel(WEATHER_ID, WEATHER, R.drawable.weather, R.drawable.weather_black),
         GsBtnModel(
@@ -341,14 +283,6 @@ object Constants {
     const val SYMBOL_DEGREE_CELSIUS = " \u2103"
     const val SYMBOL_DEGREE_FAHRENHEIT = " \u2109"
 
-    //        "Prime Video",
-//        "Crackle",
-//        "Spotify",
-//        "Plex",
-//        "Vudu Movies & TV",
-//        "DAZN",
-//        "Pac-12 Now",
-//        "ESPN"
     //Guest Feedback
     const val UNACCEPTABLE = "Unacceptable"
     const val DISAPPOINTING = "Disappointing"
@@ -359,58 +293,40 @@ object Constants {
     const val FEEDBACK_POSITIVE_COLOR = "#34C759"
     const val FEEDBACK_NEGATIVE_COLOR = "#FF453A"
 
-    //Casting
-    var CASTING_URL: String? = null
-
     // Kaping
     const val KAPING = "KAPING"
     const val DV = "3.0.1.23"
-    const val CLISTVER = "201803130001"
     const val RBTY = "0100"
-    const val LAVER = "1510818301"
-    const val HSVER = "1513951822"
-    const val THMVER = "1509529572"
     const val INRMVER = "1520924235"
     const val LAUVER = "1520937775"
 
     //Program Guide
-    var CHANNEL_COUNT = 0
     const val CONTENT_LIST_PARAM = "contentList"
-    const val CHANNEL_LIST_PARAM = "channelList"
     const val SELECTED_CHANNEL_INDEX = "index"
-    const val CHANEL_NO_PARAM = "channelNo"
-    const val CHANNEL_NAME_PARAM = "channelName"
-    const val CHANNEL_LOGO_PARAM = "channelLogo"
-    const val NOW_SHOWING_PARAM = "nowShowing"
-    const val NEXT_PROGRAM_PARAM = "nextProgram"
-    const val PROG_1_TIME_PARAM = "prog1Time"
-    const val PROG_2_TIME_PARAM = "prog2Time"
     const val NO_INFORMATION_AVAILABLE = "No Information Available"
 
-    const val GRADIENT_START_COLOR_PARAM = "gradientStartColor"
-    const val GRADIENT_END_COLOR_PARAM = "gradientEndColor"
-    const val TITLE_PARAM = "title"
-    const val BG_IMAGE_URL = "bgImageUrl"
-    const val LOGO_IMAGE_URL = "logoImageUrl"
-    var EPG_START = ""
-    var EPG_END = ""
-
-    var NEXT_BUTTON_STATE = 0
-
-    var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
     const val TICKER_DTO_PARAM = "TICKER_DTO"
     const val TICKER_MESSAGE_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
     const val CHECK_OUT_TIME_DATE_FORMAT = "hh:mm a"
+    const val EPG_DATE_FORMAT = "dd-MMM-yyyy hh:mm a"
 
     const val BUILD_TYPE_CHROMECAST = "CHROMECAST"
     const val BUILD_TYPE_STB = "STB"
     const val BUILD_TYPE_MINI_BOX = "MINI_BOX"
 
-    const val DESCRIPTION_PARAM = "desc"
     const val SERVICE_TYPE_CAROUSEL = 1
     const val SERVICE_TYPE_SERVICE_INFO = 2
     const val SERVICE_TYPE_HELP_INFO = 3
 
     const val SERVICE_IMAGE_LIST_PARAM = "SERVICE_IMAGE_LIST"
-}
 
+    const val EPG_API_CALL_TIME_INTERVAL_HOURS: Long = 8
+
+
+    const val DTV_KIT_PACKAGE_NAME = "org.dtvkit.inputsource"
+    var DTV_INPUT_ID = "$DTV_KIT_PACKAGE_NAME/.DtvkitTvInput/HW19"
+
+    const val SEI_MB730 = "MB730"
+    const val HOTEL_VIDEO = "Hotel Video"
+
+}

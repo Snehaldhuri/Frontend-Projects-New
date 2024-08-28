@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -21,18 +20,21 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.databinding.PopupLayoutBinding
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.GuestDetails
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.clearCredentials
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadBg
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.loadLogo
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
@@ -53,13 +55,16 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AppWorldActivity : BaseActivity() {
 
-    private val TAG = "AppWorldActivity"
-
     private lateinit var binding: ActivityAppWorldBinding
     private val appWorldViewModel: AppWorldViewModel by viewModels()
 
     private var isCheckedIn = false
+
+    //Variables from Datastore
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private var stbRoomNo = ""
+    private var ua = ""
+    private var appList = ArrayList<String>()
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -71,6 +76,9 @@ class AppWorldActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityAppWorldBinding.inflate(layoutInflater)
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
+        binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
         setContentView(binding.root)
     }
 
@@ -79,27 +87,20 @@ class AppWorldActivity : BaseActivity() {
         try {
             appWorldViewModel.getAccountSetupResponseData(accountSetupDataStore)
             preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+            this.initializeDatastoreParams()
 
             appWorldViewModel.validateSession(preferenceDataStoreHelper)
-            fetchDetails()
             binding.rvApps.layoutManager = GridLayoutManager(this, 4)
             binding.btnBack.setOnClickListener { finish() }
             binding.btnBack.handleFocusChange()
             binding.btnClearCredentials.handleFocusChange()
             binding.btnClearCredentials.setOnClickListener {
-                clearCredentials()
+                clearCredentials(appList)
                 showPopup()
             }
-            LoggingService.sendMessageToWebSocket(
-                "In App World activity",
-                getCurrentPanelNumber()
-            )
         } catch (e: Exception) {
             e.printStackTrace()
-            LoggingService.sendMessageToWebSocket(
-                "launchApp Exception in App World activity ${e.message}",
-                getCurrentPanelNumber()
-            )
+            logE("launchApp Exception in App World activity ${e.message}")
         }
     }
 
@@ -110,28 +111,12 @@ class AppWorldActivity : BaseActivity() {
     private fun getInstalledApps(apiAppList: List<SelectedApps>) = lifecycleScope.launch {
         try {
             val allApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-
-          /*  val selectedApps = allApps.filter { installedApp ->
-                apiAppList.any { it.forAndroid && it.value == installedApp.packageName }
-            }
-            selectedApps.forEach { Log.e(TAG, "selectedApps: ${it.packageName}")}
-
-            val list = mutableListOf<ApplicationInfo>()
-
-            apiAppList.forEach {a->
-                selectedApps.forEach {s->
-                    if (a.forAndroid && a.value == s.packageName){
-                        list.add(s)
-                    }
-                }
-            }*/
-
             val apiApps = apiAppList.filter { it.forAndroid }.map { it.value }.toSet()
 
             val list = mutableListOf<ApplicationInfo>()
-            apiApps.forEach {a->
-                allApps.forEach {s->
-                    if (a == s.packageName){
+            apiApps.forEach { a ->
+                allApps.forEach { s ->
+                    if (a == s.packageName) {
                         list.add(s)
                     }
                 }
@@ -146,12 +131,10 @@ class AppWorldActivity : BaseActivity() {
             }
             adapter.setAppList(list)
             binding.rvApps.adapter = adapter
-            Constants.APP_LIST = ArrayList(apiApps)
+            appList = ArrayList(apiApps)
+            updateAppList(apiApps)
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "getInstalledApps Exception in AppWorldMain activity ${e.message}",
-                getCurrentPanelNumber()
-            )
+            logE("getInstalledApps Exception in AppWorldMain activity ${e.message}")
         }
     }
 
@@ -175,19 +158,16 @@ class AppWorldActivity : BaseActivity() {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
-                LoggingService.sendMessageToWebSocket("Network error: ${e.message}", "09")
+                logE("Network error: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    Log.d("sessionid url success", "sessionid url success")
+                    logD("sessionId url success")
                 } else {
                     val responseBody = response.body?.string() ?: "No response body"
                     val responseCode = response.code
-                    Log.e(
-                        "sessionid error",
-                        "sessionid Failed to call URL. Response code: $responseCode, Response body: $responseBody"
-                    )
+                    logE("sessionId Failed to call URL. Response code: $responseCode, Response body: $responseBody")
                 }
             }
         })
@@ -197,23 +177,20 @@ class AppWorldActivity : BaseActivity() {
         try {
             startActivity(packageManager.getLaunchIntentForPackage(packageName))
 
-            if (packageName == "com.netflix.ninja") {
-                val sessionId = Constants.SESSION_ID
+            if (packageName == Constants.NETFLIX_PACKAGE_NAME) {
+                val sessionId = GuestDetails.SESSION_ID
                 val url =
                     "https://stb.moviebeam.com:1930/LG/rest/content/netflixAccess/enter?sessionId=$sessionId"
 
-                val requestBody = createRequestBody(Constants.STB_ROOM_NO, Constants.UA, 1)
+                val requestBody = createRequestBody(stbRoomNo, ua, 1)
 
                 postRequest(url, requestBody)
-                Constants.NETFLIX_LAUNCHED = true;
+                NETFLIX_LAUNCHED = true;
             }
 
         } catch (e: Exception) {
             e.printStackTrace()
-            LoggingService.sendMessageToWebSocket(
-                "launchApp Exception in AppWorldMain activity ${e.message}",
-                getCurrentPanelNumber()
-            )
+            logE("launchApp Exception in AppWorldMain activity ${e.message}")
         }
     }
 
@@ -237,10 +214,7 @@ class AppWorldActivity : BaseActivity() {
                 startActivity(i)
             }
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "launchAppSecured Exception in AppWorldMain activity ${e.message}",
-                getCurrentPanelNumber()
-            )
+            logE("launchAppSecured Exception in AppWorldMain activity ${e.message}")
         }
     }
 
@@ -270,12 +244,6 @@ class AppWorldActivity : BaseActivity() {
         return applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
     }
 
-    private fun fetchDetails() {
-        binding.layoutHeader.tvTitle.text = intent.extras?.getString("title")
-        binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(Constants.LOGO_IMAGE)
-        binding.root.loadBg()
-    }
-
     private fun showPopup() {
         val popupBinding = PopupLayoutBinding.inflate(layoutInflater)
         val popupWindow = PopupWindow(
@@ -303,6 +271,40 @@ class AppWorldActivity : BaseActivity() {
         }
 
         popupBinding.tvPopupText.text = getString(R.string.app_world_clear_credentials_message)
+    }
+
+    private fun updateAppList(appList: Set<String>) {
+        lifecycleScope.launch {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.APP_LIST_KEY,
+                appList
+            )
+        }
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            stbRoomNo = getStbRoomNo()
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getStbRoomNo(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
+            ""
+        )
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
+
+    companion object {
+        var NETFLIX_LAUNCHED = false
     }
 
 }

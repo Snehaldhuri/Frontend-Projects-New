@@ -98,6 +98,12 @@ interface LgRestApiService {
         @Query("STB_TIME") stbTime: String
     ): Response<String>
 
+    @GET("process/softwareDetails")
+    suspend fun getSoftwareUpdateDetails(
+        @Query("stbTypeId") stbTypeId: Int,
+        @Query("UA") ua: String
+    ): Response<String>
+
     @GET("StbServlet")
     fun getKapingService(
         @Query("Q") Q: String,

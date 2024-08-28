@@ -1,13 +1,18 @@
 package com.diipl.moviebeam.ui.mainmenu
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Intent
-import android.graphics.drawable.Drawable
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import androidx.activity.viewModels
 import androidx.core.view.updateLayoutParams
 import androidx.datastore.core.DataStore
@@ -18,9 +23,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -28,9 +30,9 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.kappingservice.Actions
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.service.kappingservice.ServiceState
@@ -44,20 +46,18 @@ import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
-import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
-import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_LOOP_COUNT
-import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO_URL
 import com.diipl.moviebeam.utils.Constants.LA_ID
+import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.getCurrentPanelNumber
-import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.loadBg
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
-import com.diipl.moviebeam.utils.log
+import com.diipl.moviebeam.utils.loadLogo
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setItemFocused
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -70,16 +70,20 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Collections
 import javax.inject.Inject
-
-
-private const val TAG = "MainMenuActivity"
 
 @AndroidEntryPoint
 class MainMenuActivity : BaseActivity() {
 
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
     private lateinit var binding: ActivityMainMenuBinding
+
+    //Variables from datastore
+    private var hotelVideoUrl = ""
+    private var gradientStartColor = ""
+    private var gradientEndColor = ""
+
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
     private var isNetworkConnected = 0
@@ -103,7 +107,6 @@ class MainMenuActivity : BaseActivity() {
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
-        observe(mainMenuViewModel.themeLiveData, ::handleThemeResponse)
         observe(mainMenuViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
         observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
@@ -114,7 +117,6 @@ class MainMenuActivity : BaseActivity() {
 
     }
 
-
     private fun handleNetworkResponse(isConnected: Boolean) {
         if (isConnected) {
             isNetworkConnected = 1
@@ -122,7 +124,7 @@ class MainMenuActivity : BaseActivity() {
         } else {
             isNetworkConnected = -1
             releaseVideoPlayer()
-            binding.root.post {
+            runOnUiThread {
                 binding.root.loadBg()
             }
         }
@@ -132,9 +134,9 @@ class MainMenuActivity : BaseActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        overridePendingTransition(0, 0)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+        this.initializeDatastoreParams()
 
         // call below function to get data from datastore
         mainMenuViewModel.getNetworkStatus(preferenceDataStoreHelper)
@@ -149,8 +151,6 @@ class MainMenuActivity : BaseActivity() {
         if (!isServiceStarted) {
             actionOnService(Actions.START)
         }
-        LoggingService.sendMessageToWebSocket("In MainMenu activity", getCurrentPanelNumber())
-
 
     }
 
@@ -167,12 +167,17 @@ class MainMenuActivity : BaseActivity() {
         super.onResume()
 
         initializePlayer()
+
         binding.root.loadBg()
-        binding.rvMenuButton.setItemFocused()
+
+        binding.cardView.postDelayed({
+            binding.cardView.toVisible()
+        }, 240)
 
         lifecycleScope.launch {
-            while (!player.isPlaying){
-                if (HOTEL_VIDEO_URL.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0){
+            while (!player.isPlaying) {
+                if (hotelVideoUrl.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0) {
+                    initializePlayer()
                     binding.videoView.toGone()
                 }
                 delay(5000)
@@ -183,8 +188,8 @@ class MainMenuActivity : BaseActivity() {
 
     override fun initViewBinding() {
         binding = ActivityMainMenuBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        binding.ivHotelLogo.loadLogo()
+        setContentView(binding.root)
     }
 
     override fun onPause() {
@@ -195,15 +200,21 @@ class MainMenuActivity : BaseActivity() {
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
+    private fun animateScale(view: View, animationId: Int) {
+        val anim: Animation = AnimationUtils.loadAnimation(view.context, animationId)
+        view.startAnimation(anim)
+        anim.fillAfter = true
+    }
+
     private fun initializePlayer() {
 
         if (!::player.isInitialized) {
             init()
         }
 
-        if (HOTEL_VIDEO_URL.isNotEmpty()) {
+        if (hotelVideoUrl.isNotEmpty()) {
             binding.videoView.toVisible()
-            player.setMediaItem(MediaItem.fromUri(HOTEL_VIDEO_URL))
+            player.setMediaItem(MediaItem.fromUri(hotelVideoUrl))
             player.repeatMode = Player.REPEAT_MODE_ALL
             player.addListener(playerListener)
             player.playWhenReady = true
@@ -220,6 +231,7 @@ class MainMenuActivity : BaseActivity() {
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
+            Log.e("TAG", "onPlayerError: ${error.localizedMessage}")
             releaseVideoPlayer()
         }
 
@@ -232,7 +244,7 @@ class MainMenuActivity : BaseActivity() {
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
-            Log.e(TAG, "onMediaItemTransition: $reason")
+            logD("onMediaItemTransition: $reason")
             if (reason == 0) HOTEL_VIDEO_LOOP_COUNT--
         }
     }
@@ -241,44 +253,6 @@ class MainMenuActivity : BaseActivity() {
         binding.videoView.toGone()
         if (::player.isInitialized)
             player.release()
-    }
-
-    private fun handleThemeResponse(status: Resource<ThemeResponse>) {
-        when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
-            is Resource.Success -> {
-                try {
-                    val response = status.data
-
-                    response?.themeLogoFileName?.let {
-                        binding.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-                    }
-                    response?.gradientColor?.let {
-                        Constants.GRADIENT_COLOR_START = it
-                    }
-                    response?.spotLightColor?.let {
-                        Constants.GRADIENT_COLOR_END = it
-                    }
-                    Constants.GRADIENT = getGradientColor()
-                    Constants.LOGO_IMAGE = response?.themeLogoFileName
-                    Constants.BG_IMAGE = response?.themeBackgroundFileName
-                    response?.themeBackgroundFileName?.let {
-                        loadBg(it)
-                    }
-                    binding.pbLoader.toInvisible()
-                } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleThemeResponse Exception in MainMenu activity ${e.message}",
-                        getCurrentPanelNumber()
-                    )
-                }
-            }
-
-            else -> {
-                status.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
-                status.errorMsg?.let { mainMenuViewModel.showToastMessage(it) }
-            }
-        }
     }
 
     private fun handleTickerResponse(status: Resource<TickerResponse>) {
@@ -300,10 +274,7 @@ class MainMenuActivity : BaseActivity() {
                         }
                     }
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleThemeResponse Exception in MainMenu activity ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleThemeResponse Exception in MainMenu activity ${e.message}")
                 }
                 binding.pbLoader.toInvisible()
 
@@ -322,19 +293,21 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
-                        Constants.ACCOUNT_ID = response.accountId
-                        Constants.STB_ROOM_NO = response.roomNo
-
                         binding.tvGreeting.text = response.hotelInfo
+                        if (response.isEnablePatchWall)
+                            showPatchWall()
+
 
                         var btnListFromApi = listOf<String>()
-                        when(isNetworkConnected){
+                        when (isNetworkConnected) {
                             1 -> {
                                 btnListFromApi = response.buttonsList.map { it.buttonName }
                             }
+
                             -1 -> {
-                                btnListFromApi = response.buttonsList.filter { it.forDisconnectedMode }
-                                    .map { it.buttonName }
+                                btnListFromApi =
+                                    response.buttonsList.filter { it.forDisconnectedMode }
+                                        .map { it.buttonName }
                             }
                         }
 
@@ -368,12 +341,7 @@ class MainMenuActivity : BaseActivity() {
                         val adapter = MainMenuBtnAdapter { btn ->
                             releaseVideoPlayer()
                             val bundle = Bundle()
-                            bundle.putString(
-                                "hotelChannel",
-                                response.hotelChannelList.get(0).toJson()
-                            )
-                            bundle.putString("title", btn.title)
-                            Constants.TITLE = btn.title
+                            ThemeDetails.TITLE = btn.title
                             bundle.putString(
                                 "hotelChannel",
                                 response.hotelChannelList.get(0).toJson()
@@ -383,22 +351,6 @@ class MainMenuActivity : BaseActivity() {
                                     0
                                 ).fileName
                             bundle.putString("hotelChannelVideo", hotelChannelVideo)
-                            bundle.putString(
-                                "themeLogoFileName",
-                                mainMenuViewModel.themeLiveData.value?.data?.themeLogoFileName
-                            )
-                            bundle.putString(
-                                "themeBackgroundFileName",
-                                mainMenuViewModel.themeLiveData.value?.data?.themeBackgroundFileName
-                            )
-                            bundle.putString(
-                                "gradientStartColor",
-                                Constants.GRADIENT_COLOR_START
-                            )
-                            bundle.putString(
-                                "gradientEndColor",
-                                Constants.GRADIENT_COLOR_END
-                            )
                             var intent: Intent? = null
                             when (btn.btnId) {
                                 Constants.HOTEL_SERVICES_ID -> {
@@ -461,10 +413,7 @@ class MainMenuActivity : BaseActivity() {
                         binding.pbLoader.toInvisible()
                     }
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleAccountSetupResponse Exception in MainMenu activity ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleAccountSetupResponse Exception in MainMenu activity ${e.message}")
                 }
             }
 
@@ -474,21 +423,17 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-
     private fun handleValidateSessionResponse(status: Boolean) {
         try {
             if (status) {
                 mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
-                Constants.IS_CHECKED_IN = true
+                GuestDetails.IS_GUEST_CHECKED_IN = true
             } else
-                Constants.IS_CHECKED_IN = false
-            Constants.SESSION_ID = "null"
+                GuestDetails.IS_GUEST_CHECKED_IN = false
+            GuestDetails.SESSION_ID = "null"
             binding.pbLoader.toInvisible()
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket(
-                "handleValidateSessionResponse Exception in MainMenu activity ${e.message}",
-                getCurrentPanelNumber()
-            )
+            logE("handleValidateSessionResponse Exception in MainMenu activity ${e.message}")
         }
     }
 
@@ -502,7 +447,7 @@ class MainMenuActivity : BaseActivity() {
                             binding.tvWelcome.toGone()
                             binding.pbLoader.toGone()
                         } else {
-                            Constants.SESSION_ID = it.sessionId.toString()
+                            GuestDetails.SESSION_ID = it.sessionId.toString()
                             binding.tvWelcome.text =
                                 "Welcome ${it.guestFirstName} ${it.guestLastName}"
                             binding.tvWelcome.toVisible()
@@ -510,10 +455,7 @@ class MainMenuActivity : BaseActivity() {
                         }
                     }
                 } catch (e: Exception) {
-                    LoggingService.sendMessageToWebSocket(
-                        "handleGuestDetailsResponse Exception in MainMenu activity ${e.message}",
-                        getCurrentPanelNumber()
-                    )
+                    logE("handleGuestDetailsResponse Exception in MainMenu activity ${e.message}")
                 }
             }
 
@@ -531,18 +473,6 @@ class MainMenuActivity : BaseActivity() {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl).into(object : CustomTarget<Drawable?>() {
-            override fun onResourceReady(
-                resource: Drawable, transition: Transition<in Drawable?>?
-            ) {
-                binding.root.background = resource
-            }
-
-            override fun onLoadCleared(placeholder: Drawable?) {}
-        })
-    }
-
     private fun actionOnService(action: Actions) {
         if (action == Actions.STOP) {
             isServiceStarted = false
@@ -553,11 +483,11 @@ class MainMenuActivity : BaseActivity() {
         Intent(this, EndlessService::class.java).also {
             it.action = action.name
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                log("Starting the service in >=26 Mode")
+                logD("Starting the service in >=26 Mode")
                 startForegroundService(it)
                 return
             }
-            log("Starting the service in < 26 Mode")
+            logD("Starting the service in < 26 Mode")
             startService(it)
         }
     }
@@ -567,6 +497,144 @@ class MainMenuActivity : BaseActivity() {
             KeyEvent.KEYCODE_BACK -> {}
         }
         return false
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            hotelVideoUrl = getHotelVideoUrl()
+            gradientStartColor = getGradientStartColor()
+            gradientEndColor = getGradientEndColor()
+        }
+    }
+
+    private suspend fun getHotelVideoUrl(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
+            ""
+        )
+    }
+
+    private suspend fun getGradientStartColor(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+            Constants.DEFAULTGRADIENTSTARTCOLOR
+        )
+    }
+
+    private suspend fun getGradientEndColor(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+            Constants.DEFAULTGRADIENTENDCOLOR
+        )
+    }
+
+    private fun showPatchWall() = lifecycleScope.launch {
+        binding.netflixApp.setImageDrawable(packageManager.getApplicationBanner(Constants.NETFLIX_PACKAGE_NAME))
+        binding.primeVideoApp.setImageDrawable(packageManager.getApplicationBanner(Constants.PRIME_VIDEO_PACKAGE_NAME))
+
+        binding.netflixApp.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                animateScale(binding.netflixCardApp, R.anim.scale_in_animation)
+                view?.setOnKeyListener { _, keycode, keyEvent ->
+                    if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                        when (keycode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                binding.rvMenuButton.requestFocus()
+                                true
+                            }
+
+                            KeyEvent.KEYCODE_DPAD_LEFT -> true
+
+                            else -> false
+                        }
+                    } else {
+                        false
+                    }
+                }
+            } else {
+                animateScale(binding.netflixCardApp, R.anim.scale_out_animation)
+            }
+        }
+        binding.netflixApp.setOnClickListener { handleClick(Constants.NETFLIX_PACKAGE_NAME) }
+        binding.primeVideoApp.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                animateScale(binding.primeVideoCardApp, R.anim.scale_in_animation)
+                view?.setOnKeyListener { _, keycode, keyEvent ->
+                    if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                        when (keycode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                                binding.rvMenuButton.requestFocus()
+                                true
+                            }
+
+                            else -> false
+                        }
+                    } else {
+                        false
+                    }
+                }
+            } else {
+                animateScale(binding.primeVideoCardApp, R.anim.scale_out_animation)
+            }
+        }
+        binding.primeVideoApp.setOnClickListener { handleClick(Constants.PRIME_VIDEO_PACKAGE_NAME) }
+//        binding.rvMenuButton.post { binding.rvMenuButton.requestFocus() }
+        delay(500)
+        binding.rvMenuButton.setItemFocused()
+        binding.panelView.toVisible()
+    }
+
+    private fun handleClick(packageName: String) {
+        if (GuestDetails.IS_GUEST_CHECKED_IN) {
+            launchApplication(packageName)
+        } else {
+            showToast(getString(R.string.please_contact_the_front_desk_for_assistance))
+        }
+    }
+
+    private fun launchApplication(packageName: String) {
+        if (packageManager.getLaunchIntentForPackage(packageName) == null) {
+            launchAppSecured(packageName)
+        } else {
+            launchApp(packageName)
+        }
+    }
+
+    private fun launchApp(packageName: String) {
+        try {
+            startActivity(packageManager.getLaunchIntentForPackage(packageName))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            logE("launchApp Exception in Main Menu activity ${e.message}")
+        }
+    }
+
+    private fun launchAppSecured(packageName: String?) {
+        try {
+            val intent = Intent()
+            intent.setPackage(packageName)
+            val pm = packageManager
+            val resolveInfos = pm.queryIntentActivities(intent, PackageManager.GET_META_DATA)
+            Collections.sort(resolveInfos, ResolveInfo.DisplayNameComparator(pm))
+            if (resolveInfos.size > 0) {
+                val launchAble = resolveInfos[0]
+                val activity = launchAble.activityInfo
+                val name = ComponentName(
+                    activity.applicationInfo.packageName,
+                    activity.name
+                )
+                val i = Intent(Intent.ACTION_MAIN)
+                i.component = name
+                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                startActivity(i)
+            }
+        } catch (e: Exception) {
+            logE("launchAppSecured Exception in Main Menu activity ${e.message}")
+        }
+    }
+
+    companion object {
+        var HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
 }

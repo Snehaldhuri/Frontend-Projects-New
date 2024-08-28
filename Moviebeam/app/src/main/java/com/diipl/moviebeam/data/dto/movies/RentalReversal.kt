@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.data.dto.movies
 
-import com.diipl.moviebeam.utils.Constants
 import com.google.gson.annotations.SerializedName
 
 data class RentalReversalResponse(
@@ -16,7 +15,7 @@ data class RentalReversalRequest(
     @SerializedName("Q")
     var type: String = "RENTAL_REVERSAL",
     @SerializedName("UA")
-    var UA: String = Constants.UA,
+    var UA: String = "",
     @SerializedName("REVERSAL_DETAILS")
     var reversalDetails: String = ""
 )

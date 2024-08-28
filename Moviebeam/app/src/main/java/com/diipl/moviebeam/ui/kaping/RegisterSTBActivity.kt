@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.ui.kaping
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
@@ -10,14 +9,17 @@ import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityKapingBinding
-import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.service.kappingservice.EndlessService
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getConnectivityType
+import com.diipl.moviebeam.utils.launchNewActivity
+import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -28,7 +30,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @AndroidEntryPoint
 class RegisterSTBActivity : BaseActivity() {
 
@@ -36,15 +37,19 @@ class RegisterSTBActivity : BaseActivity() {
     private lateinit var binding: ActivityKapingBinding
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private var ipAddress = "0.0.0.0"
+    private var netmask = "0.0.0.0"
+    private var gateway = "0.0.0.0"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+        this.initializeDatastoreParams()
         registerSTBViewModel.getSerialNoFromDataStore(preferenceDataStoreHelper)
 
-        binding.tvIp.text = Constants.IP_ADDRESS
-        binding.tvNetMask.text = Constants.IP_NET_MASK
-        binding.tvGateway.text = Constants.IP_GATEWAY
+        binding.tvIp.text = ipAddress
+        binding.tvNetMask.text = netmask
+        binding.tvGateway.text = gateway
 
         binding.tvSwVersion.text = BuildConfig.VERSION_NAME
         binding.tvConnectivity.text = getConnectivityType(applicationContext)
@@ -56,14 +61,18 @@ class RegisterSTBActivity : BaseActivity() {
         lifecycleScope.launch {
             //checking as flag
             if (EndlessService.AS_FLAG) {
-                val intent = Intent(this@RegisterSTBActivity, STBDetailsActivity::class.java)
-                startActivity(intent)
-                finish()
+                logD("AS Flag is True")
+                launchNewActivity(STBDetailsActivity::class.java, true)
             } else {
                 delay(60 * 1000)
                 validateAsFlag()
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        finish()
     }
 
     override fun observeViewModel() {
@@ -74,14 +83,13 @@ class RegisterSTBActivity : BaseActivity() {
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
-        Constants.SERIAL_NO = serialNo
-        Constants.UA = "21$serialNo"
-        binding.tvUa.text = Constants.UA
-        binding.tvSerialNo.text = Constants.SERIAL_NO
-        binding.ivQrCode.setImageBitmap(generateQRCode(Constants.SERIAL_NO))
+        val ua = "${Constants.UA_PREFIX}$serialNo"
+        binding.tvUa.text = ua
+        binding.tvSerialNo.text = serialNo
+        binding.ivQrCode.setImageBitmap(generateQRCode(serialNo))
         registerSTBViewModel.processSTBMaster(
-            Constants.UA,
-            Constants.SERIAL_NO,
+            ua,
+            serialNo,
             Constants.MAC_ADDRESS,
             Constants.WIFI_MAC_ADDRESS,
             Constants.STB_TYPE
@@ -125,7 +133,6 @@ class RegisterSTBActivity : BaseActivity() {
         setContentView(view)
     }
 
-
     private fun generateQRCode(str: String): Bitmap {
         val writer = QRCodeWriter()
         val bitMatrix = writer.encode(str, BarcodeFormat.QR_CODE, 400, 400)
@@ -145,5 +152,34 @@ class RegisterSTBActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {}
+
+    private fun initializeDatastoreParams(){
+        lifecycleScope.launch {
+            ipAddress = getIpAddress()
+            netmask = getNetMask()
+            gateway = getGateway()
+        }
+    }
+
+    private suspend fun getIpAddress(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.IP_ADDRESS_KEY,
+            "0.0.0.0"
+        )
+    }
+
+    private suspend fun getNetMask(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.IP_NET_MASK_KEY,
+            "0.0.0.0"
+        )
+    }
+
+    private suspend fun getGateway(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.IP_GATEWAY_KEY,
+            "0.0.0.0"
+        )
+    }
 
 }

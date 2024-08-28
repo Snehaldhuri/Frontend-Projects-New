@@ -21,7 +21,7 @@ import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
-import com.diipl.moviebeam.data.dto.sysInfo.SoftwareResponseDTO
+import com.diipl.moviebeam.data.dto.sysInfo.SoftwareUpgradeResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
@@ -137,8 +137,8 @@ class MovieBeamRepository @Inject constructor(
         return remoteDataSource.sendSysInfo(ua, body)
     }
 
-    suspend fun getSoftwareUpdateDetails(): SoftwareResponseDTO? {
-        return remoteDataSource.getSoftwareUpdateDetails()
+    suspend fun getSoftwareUpdateDetails(stbTypeId: Int, ua: String): SoftwareUpgradeResponse? {
+        return remoteDataSource.getSoftwareUpdateDetails(stbTypeId, ua)
     }
 
     suspend fun getTvTickerMessages(ua: String): TickerResponse? {

@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.movies
 
 import android.content.Intent
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,10 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
@@ -21,13 +22,16 @@ import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
+import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 
 private const val TAG = "MovieDetailFragment"
 
@@ -38,9 +42,14 @@ class MovieDetailFragment : BaseFragment() {
     val binding get() = _binding!!
 
     var movie: ContentDto? = null
-    private var gradient: GradientDrawable? = null
     private var isCheckedIn = false
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(requireContext())
+    }
+
+    private var ua = ""
+
     private var seekPosition: Long = 0
     private var rentalID = ""
     private var isAdultDayPassPurchased = false
@@ -56,6 +65,7 @@ class MovieDetailFragment : BaseFragment() {
     }
 
     override fun initViewBinding() {
+        initializeDatastoreParams()
     }
 
     override fun onCreateView(
@@ -71,7 +81,6 @@ class MovieDetailFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
         viewModel.validateSession(preferenceDataStoreHelper)
 
         viewModel.getAdultStatus(preferenceDataStoreHelper)
@@ -167,6 +176,7 @@ class MovieDetailFragment : BaseFragment() {
     private fun apiCall(seekType: Int, cType: String) {
         val request = RentalMovieRequest()
         movie?.let {
+            request.UA = ua
             request.productId = it.productId
             request.releaseID = it.releaseId
             request.price = it.price
@@ -181,15 +191,14 @@ class MovieDetailFragment : BaseFragment() {
         }
     }
 
-
     override fun onResume() {
         super.onResume()
 
-        binding.btnRentNow.setOnFocusChangeListener(::handleBackClick)
-        binding.btnWatchTrailer.setOnFocusChangeListener(::handleBackClick)
-        binding.btnContinueWatch.setOnFocusChangeListener(::handleBackClick)
-        binding.btnWatchFromStart.setOnFocusChangeListener(::handleBackClick)
-        binding.btnAdultPlay.setOnFocusChangeListener(::handleBackClick)
+        binding.btnRentNow.handleFocusChange()
+        binding.btnWatchTrailer.handleFocusChange()
+        binding.btnContinueWatch.handleFocusChange()
+        binding.btnWatchFromStart.handleFocusChange()
+        binding.btnAdultPlay.handleFocusChange()
 
         if (movie != null)
             setMovieDetails(movie!!)
@@ -219,13 +228,12 @@ class MovieDetailFragment : BaseFragment() {
 //                    binding.btnAdultPlay.toVisible()
 //                    binding.btnAdultPlay.requestFocus()
 //                } else {
-                    binding.btnRentNow.text = getString(R.string.watch_free)
-                    binding.layoutMovie.toVisible()
-                    binding.btnRentNow.requestFocus()
-                    updateBtn(data)
+                binding.btnRentNow.text = getString(R.string.watch_free)
+                binding.layoutMovie.toVisible()
+                binding.btnRentNow.requestFocus()
+                updateBtn(data)
 //                }
             }
-
 
             Constants.PAID_MOVIE_RELEASE_TYPE_ID -> {
                 binding.btnRentNow.text =
@@ -300,7 +308,8 @@ class MovieDetailFragment : BaseFragment() {
             binding.btnContinueWatch.toGone()
             binding.btnWatchFromStart.toGone()
             binding.btnRentNow.toVisible()
-            binding.btnWatchTrailer.toVisible()
+            if (movie?.trailerAvailable == true) binding.btnWatchTrailer.toVisible()
+            else binding.btnWatchTrailer.toInvisible()
             binding.btnRentNow.requestFocus()
         }
     }
@@ -313,16 +322,42 @@ class MovieDetailFragment : BaseFragment() {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    fun setGradient(gradient: GradientDrawable) {
-        this.gradient = gradient
-    }
-
-    private fun handleBackClick(view: View, focus: Boolean) {
-        if (focus) {
-            view.background = gradient
-        } else {
-            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            ua = getUa()
         }
     }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
+
+/*    fun View.handleFocusChange() {
+        setOnFocusChangeListener { _, b ->
+            if (b) {
+                background = getGradientColor()
+            } else {
+                setBackgroundResource(R.drawable.btn_bg_gradient_default)
+            }
+        }
+    }
+
+    fun getGradientColor(): GradientDrawable {
+        val startColor =
+            ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+        val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TR_BL,
+            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+        )
+        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
+    }*/
 
 }

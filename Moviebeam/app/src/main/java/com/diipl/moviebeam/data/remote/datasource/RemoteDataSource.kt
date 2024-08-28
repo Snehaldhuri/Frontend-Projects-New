@@ -21,7 +21,7 @@ import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
-import com.diipl.moviebeam.data.dto.sysInfo.SoftwareResponseDTO
+import com.diipl.moviebeam.data.dto.sysInfo.SoftwareUpgradeResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
@@ -201,9 +201,9 @@ class RemoteDataSource @Inject constructor(
         return ApiResponseParsing().parseSysInfoResponse(result.data)
     }
 
-    suspend fun getSoftwareUpdateDetails(): SoftwareResponseDTO? {
-        val result = safeAPiCall { epgApiService.getSoftwareUpdateDetails() }
-        return result.data
+    suspend fun getSoftwareUpdateDetails(stbTypeId: Int, ua: String): SoftwareUpgradeResponse? {
+        val result = safeAPiCall { lgRestApiService.getSoftwareUpdateDetails(stbTypeId, ua) }
+        return ApiResponseParsing().getResponseAsObject(result.data, SoftwareUpgradeResponse::class)
     }
 
     suspend fun getTvTickerMessages(ua: String): TickerResponse? {

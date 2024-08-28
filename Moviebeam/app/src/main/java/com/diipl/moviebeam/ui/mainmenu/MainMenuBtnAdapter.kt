@@ -15,9 +15,16 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
+import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getWidthInPercent
+import com.diipl.moviebeam.utils.handleFocusChange
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private const val TAG = "MainMenuBtnAdapter"
 
@@ -28,6 +35,11 @@ class MainMenuBtnAdapter(
     var itemList: List<BtnModel> = mutableListOf()
     var count = 0
 
+    //Variables from datastore
+    private val preferenceDataStoreHelper = PreferenceDataStoreHelper(currentActivity!!)
+    private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
+    private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
+
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageView: ImageView = itemView.findViewById(R.id.iv_menu_icon)
         val textView: TextView = itemView.findViewById(R.id.tv_menu_title)
@@ -36,7 +48,7 @@ class MainMenuBtnAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_button, parent, false)
-
+        initializeDatastoreParams()
         val params = view.layoutParams
         params.width = getWidthInPercent(parent.context, 21)
         params.height = getHeightInPercent(parent.context, 16)
@@ -63,13 +75,16 @@ class MainMenuBtnAdapter(
         */
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
-        holder.card.setOnFocusChangeListener { v, b ->
+     /*   holder.card.setOnFocusChangeListener { v, b ->
             if (b) {
                 v.background = getGradientColor()
             } else {
                 v.setBackgroundResource(R.drawable.btn_bg_gradient_default)
             }
-        }
+        }*/
+
+        holder.card.handleFocusChange()
+
         holder.card.setOnClickListener {
             onMenuItemClicked(item)
         }
@@ -82,14 +97,15 @@ class MainMenuBtnAdapter(
             )
             if (i == KeyEvent.KEYCODE_AVR_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_AVR_INPUT")
             if (i == KeyEvent.KEYCODE_STB_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_STB_INPUT")
-            if (holder.absoluteAdapterPosition == 0){
+            if (holder.absoluteAdapterPosition == 0) {
                 if (i == KeyEvent.KEYCODE_DPAD_LEFT) {
                     count++
                     Log.e(TAG, "KEYCODE_DPAD_LEFT: $count")
                     if (count == 20) {
                         val intent = Intent(Intent.ACTION_VIEW)
                         intent.action = Settings.ACTION_SETTINGS
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        intent.flags =
+                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         view.context.startActivity(intent)
                         count = 0
                     }
@@ -104,17 +120,36 @@ class MainMenuBtnAdapter(
     }
 
     private fun getGradientColor(): GradientDrawable {
-        val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
-        val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
         val gradientDrawable = GradientDrawable(
             GradientDrawable.Orientation.TR_BL,
-            intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
+            intArrayOf(Color.parseColor(gradientStartColor), Color.parseColor(gradientEndColor))
         )
         gradientDrawable.cornerRadius = 20f
         gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
 
         gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
         return gradientDrawable
+    }
+
+    private fun initializeDatastoreParams() {
+        CoroutineScope(Dispatchers.Default).launch {
+            gradientStartColor = getGradientStartColor()
+            gradientEndColor = getGradientEndColor()
+        }
+    }
+
+    private suspend fun getGradientStartColor(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+            Constants.DEFAULTGRADIENTSTARTCOLOR
+        )
+    }
+
+    private suspend fun getGradientEndColor(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+            Constants.DEFAULTGRADIENTENDCOLOR
+        )
     }
 
 }

@@ -6,6 +6,7 @@ import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -17,11 +18,13 @@ import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityExoPlayerBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
-import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.fromJson
@@ -29,9 +32,11 @@ import com.diipl.moviebeam.utils.getLastSeek
 import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 
 private const val TAG = "ExoPlayerActivity"
+
 @AndroidEntryPoint
 class ExoPlayerActivity : BaseActivity() {
 
@@ -55,30 +60,38 @@ class ExoPlayerActivity : BaseActivity() {
     private lateinit var movieData: ContentDto
     private lateinit var seriesData: Detail
 
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper =
+        PreferenceDataStoreHelper(this)
+    private var ua = ""
+
     override fun observeViewModel() {
         observe(moviesViewModel.rentalReversal, ::handleRentalReversalResponse)
     }
 
     private fun handleRentalReversalResponse(resource: Resource<RentalReversalResponse>) {
-        when(resource){
+        when (resource) {
             is Resource.Success -> {
                 resource.data?.let {
-                    if (it.errorCode == 0 && it.description == "success"){
+                    if (it.errorCode == 0 && it.description == "success") {
                         moviesViewModel.deleteMovieDetails(rentalMovieModel)
                     }
-                    if (it.errorCode == 0 && it.description.isEmpty()){
+                    if (it.errorCode == 0 && it.description.isEmpty()) {
                         moviesViewModel.deleteMovieDetails(rentalMovieModel)
                     }
                     finish()
                 }
 
             }
+
             else -> {}
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        this.initializeDatastoreParams()
 
         if (intent != null) {
             intent.extras?.getString(Constants.MOVIE_DETAILS)?.let { movieData = it.fromJson() }
@@ -145,9 +158,9 @@ class ExoPlayerActivity : BaseActivity() {
                             Constants.BASE_PLAYBACK_URL + releaseId + Constants.TRAILER_EXTENSION
                     }
 
-                // TODO remove below code in release
-                /*if (releaseId == 41232)
-                    releaseId = 41391*/
+                    // TODO remove below code in release
+                    /*if (releaseId == 41232)
+                        releaseId = 41391*/
 
                     if (isContent) {
                         playbackUrl =
@@ -168,20 +181,20 @@ class ExoPlayerActivity : BaseActivity() {
 
                 }
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("initializePlayer Exception: ${e.message}","")
+            LoggingService.sendMessageToWebSocket("initializePlayer Exception: ${e.message}", "")
         }
     }
 
     private fun releasePlayer() {
         try {
             player?.let { exoPlayer ->
-            if (isContent && ::rentalMovieModel.isInitialized) {
-                rentalMovieModel.currentSeek = exoPlayer.getLastSeek()
-                moviesViewModel.updateMovieDetails(rentalMovieModel)
-            }
-            if (isContent && ::showTimeModel.isInitialized) {
-                showTimeModel.currentSeek = exoPlayer.getLastSeek()
-                moviesViewModel.updateShowDetails(showTimeModel)
+                if (isContent && ::rentalMovieModel.isInitialized) {
+                    rentalMovieModel.currentSeek = exoPlayer.getLastSeek()
+                    moviesViewModel.updateMovieDetails(rentalMovieModel)
+                }
+                if (isContent && ::showTimeModel.isInitialized) {
+                    showTimeModel.currentSeek = exoPlayer.getLastSeek()
+                    moviesViewModel.updateShowDetails(showTimeModel)
                 }
                 playbackPosition = exoPlayer.currentPosition
                 mediaItemIndex = exoPlayer.currentMediaItemIndex
@@ -190,7 +203,7 @@ class ExoPlayerActivity : BaseActivity() {
             }
             player = null
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("releasePlayer Exception: ${e.message}","")
+            LoggingService.sendMessageToWebSocket("releasePlayer Exception: ${e.message}", "")
         }
     }
 
@@ -207,7 +220,7 @@ class ExoPlayerActivity : BaseActivity() {
             super.onBackPressed()
             finish()
         } catch (e: Exception) {
-            LoggingService.sendMessageToWebSocket("onBackPressed Exception: ${e.message}","")
+            LoggingService.sendMessageToWebSocket("onBackPressed Exception: ${e.message}", "")
         }
     }
 
@@ -216,15 +229,17 @@ class ExoPlayerActivity : BaseActivity() {
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
             Log.e(TAG, "onPlayerError: ${error.localizedMessage}")
-            if (error.localizedMessage!! == "Source error"){
-                if (::showTimeModel.isInitialized){
+            if (error.localizedMessage!! == "Source error") {
+                if (::showTimeModel.isInitialized) {
                     moviesViewModel.deleteShowDetails(showTimeModel)
                     moviesViewModel.viewModelScope.cancel()
                     finish()
                 }
-                if (::rentalMovieModel.isInitialized ){
+                if (::rentalMovieModel.isInitialized) {
                     moviesViewModel.setRentalReversal(rentalMovieModel)
+                    return
                 }
+                finish()
             }
 
         }
@@ -272,13 +287,15 @@ class ExoPlayerActivity : BaseActivity() {
 
     private fun apiCall(seekType: Int, a: Int) {
         val request = RentalMovieRequest()
+        request.UA = ua
         if (::movieData.isInitialized) {
             movieData.let {
                 request.productId = it.productId
                 request.releaseID = it.releaseId
                 request.price = it.price
                 request.contentTypeID = it.contentTypeId
-                request.rentalID = if (::rentalMovieModel.isInitialized) rentalMovieModel.rentalID.toString() else ""
+                request.rentalID =
+                    if (::rentalMovieModel.isInitialized) rentalMovieModel.rentalID.toString() else ""
                 request.productType = it.releaseTypeId
                 request.a = a
                 request.ra = 0
@@ -292,7 +309,8 @@ class ExoPlayerActivity : BaseActivity() {
                 request.productId = it.productId
                 request.releaseID = it.releaseId
                 request.contentTypeID = it.contentTypeId
-                request.rentalID = if (::showTimeModel.isInitialized) showTimeModel.rentalID.toString() else ""
+                request.rentalID =
+                    if (::showTimeModel.isInitialized) showTimeModel.rentalID.toString() else ""
                 request.productType = Constants.SHOWTIME_RELEASE_TYPE_ID
                 request.a = a
                 request.ra = 0
@@ -304,8 +322,6 @@ class ExoPlayerActivity : BaseActivity() {
 
     }
 
-
-
     private fun hideSystemUi() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, binding.playerView).let { controller ->
@@ -314,5 +330,19 @@ class ExoPlayerActivity : BaseActivity() {
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
     }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
+
 }
 

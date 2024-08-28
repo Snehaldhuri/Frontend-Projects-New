@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.stbdetail
 
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -24,7 +25,10 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -32,15 +36,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val TAG = "STBDetailViewModel"
-
 @HiltViewModel
 class STBDetailViewModel @Inject constructor(
+    @ApplicationContext context: Context,
     private val updateDataStore: UpdateDataStore,
     private val networkUtils: NetworkUtils,
     private val movieBeamRepository: MovieBeamRepository
-) :
-    ViewModel() {
+) : ViewModel() {
+
+    //Variables from datastore
+    private var preferenceDataStoreHelper: PreferenceDataStoreHelper =
+        PreferenceDataStoreHelper(context)
+    private var accountId: String = ""
+    private var ua: String = ""
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
@@ -84,6 +92,10 @@ class STBDetailViewModel @Inject constructor(
     private val _networkStatus = MutableLiveData<Boolean>()
     val networkStatus: LiveData<Boolean> get() = _networkStatus
 
+    init {
+        initializeDatastoreParams()
+    }
+
     fun getNetworkStatus(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch(Dispatchers.IO) {
             preferenceDataStoreHelper.getPreference(NETWORK_STATUS, false).collect {
@@ -92,10 +104,10 @@ class STBDetailViewModel @Inject constructor(
         }
     }
 
-    fun fetchHotelService() {
+    fun fetchHotelService(accountId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val hotelServicesResponse =
-                async { movieBeamRepository.getHotelServiceInfo(Constants.ACCOUNT_ID) }
+                async { movieBeamRepository.getHotelServiceInfo(accountId) }
             val result = awaitAll(
                 hotelServicesResponse
             )
@@ -132,7 +144,6 @@ class STBDetailViewModel @Inject constructor(
 
     private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
             val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
             val accountSetupApiResponse =
@@ -155,48 +166,56 @@ class STBDetailViewModel @Inject constructor(
             )
 
             if (result[0] == null) {
+                logE(Constants.SERVER_ERROR + " in Weather Api")
                 _weatherLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Weather Api"))
             } else {
                 _weatherLiveData.postValue(Resource.Success(result[0] as WeatherResponse))
             }
 
             if (result[1] == null) {
+                logE(Constants.SERVER_ERROR + " in Theme Api")
                 _themeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Theme Api"))
             } else {
                 _themeLiveData.postValue(Resource.Success(result[1] as ThemeResponse))
             }
 
             if (result[2] == null) {
+                logE(Constants.SERVER_ERROR + " in Account Setup Api")
                 _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Account Setup Api"))
             } else {
                 _accountSetupLiveData.postValue(Resource.Success(result[2] as AccountSetupResponse))
             }
 
             if (result[3] == null) {
+                logE(Constants.SERVER_ERROR + " in Local Attraction Api")
                 _localAttractionLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Local Attraction Api"))
             } else {
                 _localAttractionLiveData.postValue(Resource.Success(result[3] as LocalAttractionResponse))
             }
 
             if (result[4] == null) {
+                logE(Constants.SERVER_ERROR + " in Channel List Api")
                 _channelListLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Channel List Api"))
             } else {
                 _channelListLiveData.postValue(Resource.Success(result[4] as ChannelListResponse))
             }
 
             if (result[5] == null) {
+                logE(Constants.SERVER_ERROR + " in Movies Api")
                 _moviesLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Movies Api"))
             } else {
                 _moviesLiveData.postValue(Resource.Success(result[5] as MoviesResponse))
             }
 
             if (result[6] == null) {
+                logE(Constants.SERVER_ERROR + " in Ticker Api")
                 _tickerLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Ticker Api"))
             } else {
                 _tickerLiveData.postValue(Resource.Success(result[6] as TickerResponse))
             }
 
             if (result[7] == null) {
+                logE(Constants.SERVER_ERROR + " in ShowTime Api")
                 _showtimeLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in ShowTime Api"))
             } else {
                 _showtimeLiveData.postValue(Resource.Success(result[7] as ShowTimeResponse))
@@ -207,21 +226,13 @@ class STBDetailViewModel @Inject constructor(
     // Get Response From DataStore
     fun getDataFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
         viewModelScope.launch {
-            preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.SERIAL_NO, "")
-                .collect {
-                    _serialNoLiveData.postValue(it)
-                }
-        }
-    }
-
-    // Set Response to DataStore
-
-    fun setUAInDataStore(
-        preferenceDataStoreHelper: PreferenceDataStoreHelper,
-        ua: String
-    ) {
-        viewModelScope.launch {
-            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.UA, ua)
+//            preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.SERIAL_NO, "")
+//                .collect {
+//                    _serialNoLiveData.postValue(it)
+//                }
+            preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SERIAL_NO, "").let {
+                _serialNoLiveData.postValue(it)
+            }
         }
     }
 
@@ -260,7 +271,6 @@ class STBDetailViewModel @Inject constructor(
             updateDataStore.updateWeatherData(data)
         }
     }
-
 
     fun setAccountSetupResponseData(
         dataStore: DataStore<AccountSetupResponse>,
@@ -364,7 +374,8 @@ class STBDetailViewModel @Inject constructor(
                     vodMgrPort = data.vodMgrPort,
                     vodVisible = data.vodVisible,
                     welcomeScreenVisible = data.welcomeScreenVisible,
-                    stbCastingPageUrl = data.stbCastingPageUrl
+                    stbCastingPageUrl = data.stbCastingPageUrl,
+                    isEnablePatchWall = data.isEnablePatchWall
                 )
             }
         }
@@ -413,6 +424,7 @@ class STBDetailViewModel @Inject constructor(
                 )
             }
         }
+
     }
 
     fun setMoviesResponseData(
@@ -476,19 +488,42 @@ class STBDetailViewModel @Inject constructor(
 
     fun fetchApis() {
         viewModelScope.launch {
+            this@STBDetailViewModel.logD("Api Call Started")
             delay(5000)
             if (networkUtils.isNetworkAvailable()) {
+                this@STBDetailViewModel.logD("Network is Available")
                 fetchAllApi(
                     Constants.ACTIVATE,
-                    Constants.UA,
+                    ua,
                     Constants.MODE,
-                    Constants.ACCOUNT_ID
+                    accountId
                 )
             } else {
                 delay(5000)
                 fetchApis()
             }
         }
+    }
+
+    private fun initializeDatastoreParams() {
+        viewModelScope.launch {
+            accountId = getAccountId()
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getAccountId(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
+            ""
+        )
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
     }
 
 }

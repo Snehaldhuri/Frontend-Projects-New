@@ -4,24 +4,20 @@ import com.diipl.moviebeam.data.Resource
 import retrofit2.Response
 import javax.inject.Inject
 
-private const val TAG = "NetworkHandler"
-
 open class NetworkHandler @Inject constructor(
     private val networkUtil: NetworkUtils
 ) {
     suspend fun <T> safeAPiCall(api: suspend () -> Response<T>): Resource<T> {
         try {
-//            if (networkUtil.isNetworkConnected) {
             val result = api()
             if (result.isSuccessful) {
                 val body = result.body()
                 return Resource.Success(body)
             }
+            logE(result.message())
             return Resource.DataError(msg = result.message(), code = result.code())
-//            } else {
-//                return Resource.DataError(msg = Constants.INTERNET_ERROR_MESSAGE)
-//            }
         } catch (e: Exception) {
+            e.message?.let { logE(it) }
             return Resource.DataError(msg = e.message)
         }
     }

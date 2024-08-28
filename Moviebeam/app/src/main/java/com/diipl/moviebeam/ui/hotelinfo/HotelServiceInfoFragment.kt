@@ -1,10 +1,10 @@
 package com.diipl.moviebeam.ui.hotelinfo
 
 import android.os.Bundle
-import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -17,6 +17,7 @@ import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 
+private const val TAG = "HotelServiceInfoFragment"
 class HotelServiceInfoFragment : Fragment() {
     private var title: String = ""
     private var description: String = ""
@@ -26,15 +27,17 @@ class HotelServiceInfoFragment : Fragment() {
     private var _binding: FragmentHotelServiceInfoBinding? = null
     val binding get() = _binding!!
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            title = it.getString("title").toString()
-            description = it.getString("desc").toString()
-            serviceImgUrl = it.getString("imgUrl").toString()
-            serviceImageList = it.getStringArrayList(Constants.SERVICE_IMAGE_LIST_PARAM)
+    lateinit var activity: HotelInfoActivity
+
+    override fun onResume() {
+        super.onResume()
+
+        requireActivity().onBackPressedDispatcher.addCallback {
+            activity.handleBackClick()
         }
+
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +45,17 @@ class HotelServiceInfoFragment : Fragment() {
     ): View {
         // Inflate the layout for this fragment
         _binding = FragmentHotelServiceInfoBinding.inflate(inflater, container, false)
+
+        activity = requireActivity() as HotelInfoActivity
+
+        arguments?.let {
+            title = it.getString("title").toString()
+            description = it.getString("desc").toString()
+            serviceImgUrl = it.getString("imgUrl").toString()
+            serviceImageList = it.getStringArrayList(Constants.SERVICE_IMAGE_LIST_PARAM)
+        }
+
+
         if (description == "null" || description.isEmpty()) {
             binding.tvServiceDesc.toInvisible()
             binding.glVertical50.setGuidelinePercent(0f)

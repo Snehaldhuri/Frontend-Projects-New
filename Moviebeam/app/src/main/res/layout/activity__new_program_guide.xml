@@ -236,7 +236,7 @@
         android:layout_height="@dimen/dp_0"
         app:cardCornerRadius="16dp"
         app:strokeWidth="1.6dp"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="@color/lb_grey"
         app:cardElevation="@dimen/dp_0"
         android:visibility="invisible"
         app:strokeColor="@color/lb_grey"

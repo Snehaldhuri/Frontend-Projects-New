@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -17,14 +16,12 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.localattraction.LAService
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtLA
 
 class LaCardAdapter(
     private var onMenuItemClicked: (String) -> Unit
-) :
-    RecyclerView.Adapter<LaCardAdapter.MyViewHolder>() {
-    private val defaultColor = "#FFFFFF"
-    private var gradientDrawable: GradientDrawable? = null
+) : RecyclerView.Adapter<LaCardAdapter.MyViewHolder>() {
 
     private var itemList: List<LAService> = mutableListOf()
     var isFront = true
@@ -69,7 +66,7 @@ class LaCardAdapter(
         holder.flipButton.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
                 holder.frontCard.isClickable = false
-                holder.flipButton.background = gradientDrawable
+                holder.flipButton.background = getGradientColor()
 
                 val scaleX = ObjectAnimator.ofFloat(holder.itemView, View.SCALE_X, 1.0f, 1.02f)
                 val scaleY = ObjectAnimator.ofFloat(holder.itemView, View.SCALE_Y, 1.0f, 1.02f)
@@ -98,8 +95,6 @@ class LaCardAdapter(
             }
             false
         }
-
-
     }
 
     private fun flipImage(back: CardView, front: CardView) {
@@ -126,10 +121,6 @@ class LaCardAdapter(
         })
         unFlipAnimator.start()
         isFront = true
-    }
-
-    fun setGradientDrawable(gradient: GradientDrawable) {
-        gradientDrawable = gradient
     }
 
     fun setList(itemList: List<LAService>) {

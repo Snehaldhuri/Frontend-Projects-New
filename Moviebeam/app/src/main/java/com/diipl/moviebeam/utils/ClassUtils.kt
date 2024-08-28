@@ -29,14 +29,21 @@ import androidx.core.content.ContextCompat
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.ClearCredentialsReceiver
+import com.diipl.moviebeam.service.EpgWorker
 import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.service.TickerMsgReceiver
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
@@ -47,6 +54,7 @@ import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
+import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
@@ -65,7 +73,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.URL
@@ -74,6 +84,7 @@ import java.util.Calendar
 import java.util.Collections
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaField
 
@@ -92,14 +103,13 @@ fun <T : Any> T.toQueryMap(): Map<String, Any> {
 }
 
 fun String.isNotAllowed(): Boolean {
-    var result = true
-    when (this) {
-        MainMenuActivity::class.java.simpleName -> result = true
-        SerialActivity::class.java.simpleName -> result = false
-        STBDetailsActivity::class.java.simpleName -> result = true
-        RegisterSTBActivity::class.java.simpleName -> result = false
+    return when (this) {
+        SerialActivity::class.java.simpleName -> false
+        RegisterSTBActivity::class.java.simpleName -> false
+        STBDetailsActivity::class.java.simpleName -> false
+        MainMenuActivity::class.java.simpleName -> false
+        else -> true
     }
-    return result
 }
 
 inline fun <reified T> T.toJson(): String {
@@ -110,11 +120,11 @@ inline fun <reified T> String.fromJson(): T {
     return Gson().fromJson(this, T::class.java)
 }
 
-fun RentalMovieModel.getRentalDetails(): String {
+fun RentalMovieModel.getRentalDetails(ua: String): String {
     val timeStamp = System.currentTimeMillis()
     // UA + ":" + ReleaseId + ":" + ProductId + ":" + Price + ":" + TimeStamp + ":" + SessionId + ":" + 5
     return this.movieData?.let {
-        "${Constants.UA}:${it.releaseId}:${it.productId}:${it.price}:${timeStamp / 1000}:${Constants.SESSION_ID}:5"
+        "${ua}:${it.releaseId}:${it.productId}:${it.price}:${timeStamp / 1000}:${GuestDetails.SESSION_ID}:5"
     }.toString()
 }
 
@@ -181,10 +191,11 @@ fun ExoPlayer?.getLastSeek(): Long {
 }
 
 fun getGradientColor(): GradientDrawable {
-    if (Constants.GRADIENT != null)
-        return Constants.GRADIENT!!
-    val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
-    val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+//    if (ThemeDetails.GRADIENT != null)
+//        return ThemeDetails.GRADIENT!!
+    val startColor =
+        ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+    val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
     val gradientDrawable = GradientDrawable(
         GradientDrawable.Orientation.TR_BL,
         intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -197,8 +208,9 @@ fun getGradientColor(): GradientDrawable {
 }
 
 fun getGradientColorForTable(): GradientDrawable {
-    val startColor = Constants.GRADIENT_COLOR_START.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
-    val endColor = Constants.GRADIENT_COLOR_END.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
+    val startColor =
+        ThemeDetails.GRADIENT_COLOR_START?.ifEmpty { Constants.DEFAULTGRADIENTSTARTCOLOR }
+    val endColor = ThemeDetails.GRADIENT_COLOR_END?.ifEmpty { Constants.DEFAULTGRADIENTENDCOLOR }
     val gradientDrawable = GradientDrawable(
         GradientDrawable.Orientation.TR_BL,
         intArrayOf(Color.parseColor(startColor), Color.parseColor(endColor))
@@ -218,6 +230,19 @@ fun View.handleFocusChange() {
     }
 }
 
+private suspend fun getGradientStartColor(preferenceDataStoreHelper: PreferenceDataStoreHelper): String {
+    return preferenceDataStoreHelper.getFirstPreference(
+        PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+        Constants.DEFAULTGRADIENTSTARTCOLOR
+    )
+}
+
+private suspend fun getGradientEndColor(preferenceDataStoreHelper: PreferenceDataStoreHelper): String {
+    return preferenceDataStoreHelper.getFirstPreference(
+        PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+        Constants.DEFAULTGRADIENTENDCOLOR
+    )
+}
 
 fun RecyclerView.setItemFocused() {
     for (i in 0 until childCount) {
@@ -291,7 +316,7 @@ fun getCurrentPanelNumber(): String {
             ShowtimeDetailFragment::class.java.simpleName -> return PanelConstants.SHOWTIME_CONTENT_DETAIL_PAGE
             CastingActivity::class.java.simpleName -> return PanelConstants.CASTING_PAGE
             //TODO Pairing Page
-            //TODO Inroom Dining Page
+            InRoomDiningActivity::class.java.simpleName -> return PanelConstants.IN_ROOM_DINING
             //TOdo Food Delivery
             //TODO Crackle
             //TODO NDVR
@@ -305,16 +330,21 @@ fun getCurrentPanelNumber(): String {
 }
 
 fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
-
     // NETWORK DETAILS
     try {
+        val ipAddress: String
+        val netMask: String
+        val connectivity: String
+        var gateway = "0.0.0.0"
         val networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
         val address = networkInterfaces[1].interfaceAddresses[1]
 
-        Constants.IP_ADDRESS = address.address?.hostAddress ?: "0.0.0.0"
-        Constants.IP_NET_MASK = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
+        ipAddress = address.address?.hostAddress ?: "0.0.0.0"
+        netMask = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
 
         currentActivity?.let {
+            val preferenceDataStoreHelper = PreferenceDataStoreHelper(it)
+            connectivity = getConnectivityType(it)
             val connectivityManager =
                 it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
             val wifiManager =
@@ -325,8 +355,16 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
                 val linkProperties: LinkProperties? = connectivityManager.getLinkProperties(network)
                 // Get the default gateway from the LinkProperties
                 val defaultGateway = linkProperties?.routes?.get(2)?.gateway?.hostAddress.toString()
-                Constants.IP_GATEWAY = defaultGateway
+                gateway = defaultGateway
             }
+
+            updateDatastoreVariables(
+                preferenceDataStoreHelper,
+                ipAddress,
+                netMask,
+                gateway,
+                connectivity
+            )
 
             // WIFI DETAILS
             if (ContextCompat.checkSelfPermission(
@@ -348,6 +386,41 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
     val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
     val uptime = System.currentTimeMillis() - uptimeMillis
 
+}
+
+private fun updateDatastoreVariables(
+    preferenceDataStoreHelper: PreferenceDataStoreHelper,
+    ipAddress: String? = null,
+    netMask: String? = null,
+    gateway: String? = null,
+    connectivity: String? = null
+) {
+    CoroutineScope(Dispatchers.IO).launch {
+        ipAddress?.let {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IP_ADDRESS_KEY,
+                it
+            )
+        }
+        netMask?.let {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IP_NET_MASK_KEY,
+                it
+            )
+        }
+        gateway?.let {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IP_GATEWAY_KEY,
+                it
+            )
+        }
+        connectivity?.let {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.CONNECTIVITY_KEY,
+                it
+            )
+        }
+    }
 }
 
 private fun getNetmaskFromPrefixLength(prefixLength: Int): String {
@@ -438,7 +511,7 @@ private fun generateUniqueRequestCode(endTime: Long): Int {
 }
 
 fun ConstraintLayout.loadBg() {
-    val url = Constants.BG_IMAGE
+    val url = ThemeDetails.BG_IMAGE
     Log.e("TAG", "loadBg: $url")
     if (!url.isNullOrEmpty())
         Glide.with(this).load(url)
@@ -447,6 +520,7 @@ fun ConstraintLayout.loadBg() {
                     resource: Drawable,
                     transition: Transition<in Drawable?>?
                 ) {
+                    resource.alpha = 160
                     background = resource
                 }
 
@@ -528,29 +602,66 @@ suspend fun saveImageServer(imgUrl: String?, filePath: String): String? {
     return path
 }
 
-suspend fun saveImage(imgUrl: String?, filePath: String): String? {
-    var path: String?
-
-
-    try {
-        val url = URL(imgUrl)
-        val imageData = withContext(Dispatchers.IO) { url.readBytes() }
-        val extension = "." + url.path.substringAfterLast(".").lowercase()
-        path = "$filePath${System.currentTimeMillis()}$extension"
-        writeByteArrayToFile(path, imageData)
-    } catch (e: Exception) {
-//        Log.e( "saveImage: ", "$imgUrl    $filePath")
-        Log.e("saveImage", "Exception: ${e.localizedMessage}")
-        path = imgUrl
-    }
-    return path
-}
-
 suspend fun saveHSImage(imgUrl: String?) = saveImage(imgUrl, HS_FILE_PATH)
 suspend fun saveLAImage(imgUrl: String?) = saveImage(imgUrl, LA_FILE_PATH)
 suspend fun saveThemeImage(imgUrl: String?) = saveImage(imgUrl, THEME_FILE_PATH)
 
 suspend fun saveThemeImageServer(imgUrl: String?) = saveImageServer(imgUrl, THEME_FILE_PATH)
+
+suspend fun saveImage(imgUrl: String?, filePath: String): String? {
+    var path: String? = null
+    if (imgUrl == null) {
+        currentActivity?.logE("saveImage: Image URL is null")
+        return path
+    }
+    try {
+        withContext(Dispatchers.IO) {
+            val url = URL(imgUrl)
+            val connection = (url.openConnection() as HttpURLConnection).apply {
+                connectTimeout = 20_000 // 20 seconds
+                readTimeout = 20_000 // 20 seconds
+                connect()
+            }
+            currentActivity?.logD("saveImage: Connection established with $imgUrl")
+            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                throw IOException("Failed to connect: ${connection.responseMessage}")
+            }
+            connection.inputStream.use { inputStream ->
+                val imageData = inputStream.readBytes()
+                val extension = "." + url.path.substringAfterLast(".").lowercase()
+                path = "$filePath${System.currentTimeMillis()}$extension"
+                currentActivity?.logD("saveImage: Saving image to $path")
+                path?.let {
+                    writeByteArrayToFile(it, imageData)
+                }
+            }
+        }
+    } catch (e: Exception) {
+        currentActivity?.logE("saveImage: Exception: ${e.localizedMessage}")
+        path = imgUrl
+    }
+    return path
+}
+
+private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
+    try {
+        val file = File(filePath)
+        val parentDir = file.parentFile
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs()
+            currentActivity?.logD("writeByteArrayToFile: Created directories for $filePath")
+        }
+        FileOutputStream(file).use { it.write(byteArray) }
+        currentActivity?.logD("writeByteArrayToFile: Successfully wrote data to $filePath")
+    } catch (e: IOException) {
+        currentActivity?.logE("writeByteArrayToFile: IOException: ${e.message}")
+        e.printStackTrace()
+    }
+}
+
+fun Uri.toURL(): URL {
+    return URL(this.toString())
+}
 
 fun deleteFolder(filePath: String) {
     val file = File(filePath)
@@ -563,30 +674,12 @@ fun deleteHSFolder() = deleteFolder(HS_FILE_PATH)
 fun deleteLAFolder() = deleteFolder(LA_FILE_PATH)
 fun deleteThemeFolder() = deleteFolder(THEME_FILE_PATH)
 
-private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
-    try {
-        val file = File(filePath)
-        val parentDir = file.parentFile
-        if (parentDir != null && !parentDir.exists()) {
-            parentDir.mkdirs()
-        }
-        file.writeBytes(byteArray)
-    } catch (e: IOException) {
-        Log.e("writeByteArrayToFile", "IOException: ${e.message}")
-        e.printStackTrace()
-    }
-}
-
-fun Uri.toURL(): URL {
-    return URL(this.toString())
-}
-
-fun Context.clearCredentials() {
+fun Context.clearCredentials(appList: ArrayList<String>) {
     LoggingService.sendMessageToWebSocket(
         "Clearing Application credentials.",
         getCurrentPanelNumber()
     )
-    if (Constants.APP_LIST.isEmpty()) {
+    if (appList.isEmpty()) {
         LoggingService.sendMessageToWebSocket(
             "App List is empty.",
             getCurrentPanelNumber()
@@ -595,7 +688,7 @@ fun Context.clearCredentials() {
     }
     val intent = Intent(Constants.MDM_CLEAR_CREDENTIALS_ACTION).apply {
         setPackage(Constants.MDM_PACKAGE_NAME)
-        putStringArrayListExtra(Constants.APP_LIST_PARAM, Constants.APP_LIST)
+        putStringArrayListExtra(Constants.APP_LIST_PARAM, appList)
     }
     sendBroadcast(intent)
 
@@ -649,21 +742,100 @@ fun Activity.launchLogger() {
             val binder = service as LoggingService.LoggingServiceBinder
             loggingService = binder.getService()
             loggingService.startWebSocket()
+            logD("Logging Service Connected")
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
+            logE("Logging Service Disconnected.")
         }
     }
+
     val serviceIntent = Intent(this, LoggingService::class.java)
     bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
 }
 
-fun compareVersions(apkVersion: String): Boolean {
-    val a = apkVersion.replace(".", "").toInt()
+fun compareVersions(apkVersion: String?): Boolean {
+    val a = apkVersion?.replace(".", "")?.toInteger()
     val b = BuildConfig.VERSION_NAME.replace(".", "").toInt()
     return a != b
 }
 
-fun Context.showToast(message: String){
+fun Context.showToast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+}
+
+fun isEpgDataValid(
+    startDateStr: String?,
+    endDateStr: String?,
+    simpleDateFormatter: SimpleDateFormat
+): Boolean {
+    if (startDateStr == null || endDateStr == null)
+        return false
+    val startDate = simpleDateFormatter.parse(startDateStr)
+    val endDate = simpleDateFormatter.parse(endDateStr)
+    val currentDate = Date()
+    return !(currentDate.before(startDate) or currentDate.after(endDate))
+}
+
+fun removeEarlierData(
+    iterator: MutableIterator<MutableMap.MutableEntry<String, MutableList<ChannelEpgDTO>>>?,
+    currentKey: String
+) {
+    while (iterator?.hasNext() == true) {
+        val entry = iterator.next()
+        if (entry.key == currentKey)
+            break
+        iterator.remove()
+    }
+}
+
+fun Context.scheduleEpgApiCall() {
+    logD("scheduleEpgApiCall: Scheduling Api Call for every ${Constants.EPG_API_CALL_TIME_INTERVAL_HOURS} hours")
+    val myWork = PeriodicWorkRequestBuilder<EpgWorker>(
+        Constants.EPG_API_CALL_TIME_INTERVAL_HOURS,
+        TimeUnit.HOURS
+    ).setInitialDelay(
+        Constants.EPG_API_CALL_TIME_INTERVAL_HOURS,
+        TimeUnit.HOURS
+    ).build()
+
+    WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+        "EpgApiCall",
+        ExistingPeriodicWorkPolicy.REPLACE,
+        myWork
+    )
+    logD("scheduleEpgApiCall: Scheduling Api Call Done")
+}
+
+fun Any.logD(msg: String) {
+    Log.d(this::class.java.simpleName, msg)
+    LoggingService.sendMessageToWebSocket(msg, LoggingService.INFO)
+}
+
+fun Any.logE(msg: String) {
+    Log.e(this::class.java.simpleName, msg)
+    LoggingService.sendMessageToWebSocket(msg, LoggingService.ERROR)
+}
+
+fun Any.logK(msg: String) {
+    Log.d(this::class.java.simpleName, msg)
+    LoggingService.sendMessageToWebSocket(msg, LoggingService.SIGNAL)
+}
+
+fun Any.logSS(msg: String) {
+    Log.d(this::class.java.simpleName, msg)
+    LoggingService.sendMessageToWebSocket(msg, LoggingService.SCREEN_SWITCHING)
+}
+
+fun <T> Activity.launchNewActivity(cls: Class<T>, finish: Boolean = false) {
+    logSS("Switching to ${cls.simpleName}")
+    startActivity(Intent(this, cls).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    if (finish)
+        finish()
+}
+
+fun <T> Class<T>.startActivity() {
+    currentActivity?.let {
+        it.startActivity(Intent(it, this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP))
+    }
 }

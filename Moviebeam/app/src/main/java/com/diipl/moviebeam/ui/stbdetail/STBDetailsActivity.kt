@@ -1,14 +1,11 @@
 package com.diipl.moviebeam.ui.stbdetail
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.work.WorkManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
@@ -22,6 +19,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
@@ -32,14 +30,24 @@ import com.diipl.moviebeam.utils.Constants.isWorkDone
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.fetchCurrentProgramKey
+import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.isEpgDataValid
+import com.diipl.moviebeam.utils.launchNewActivity
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
+import com.diipl.moviebeam.utils.scheduleEpgApiCall
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInteger
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -49,11 +57,8 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class STBDetailsActivity : BaseActivity() {
-
-    private val TAG = "STBDetailsActivity"
 
     private val stbDetailViewModel: STBDetailViewModel by viewModels()
     private lateinit var binding: ActivityStbdetailsBinding
@@ -91,8 +96,13 @@ class STBDetailsActivity : BaseActivity() {
     @Inject
     lateinit var preferences: SharedPreference
 
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy { PreferenceDataStoreHelper(applicationContext) }
-    private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
+    //Variables from datastore
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(
+            applicationContext
+        )
+    }
+    private var stbRoomNo = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,11 +110,12 @@ class STBDetailsActivity : BaseActivity() {
         if (preferences.irFrequencyModel == null)
             preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
 
+        this.initializeDatastoreParams()
         stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
-        if (!Constants.IS_API_CALLED) {
+        if (!IS_API_CALLED) {
             stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
-            Constants.IS_API_CALLED = true
+            IS_API_CALLED = true
         } else {
             finish()
         }
@@ -144,9 +155,7 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun launchMain() {
-        val intent = Intent(this, MainMenuActivity::class.java)
-        startActivity(intent)
-        finish()
+        launchNewActivity(MainMenuActivity::class.java, true)
     }
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
@@ -157,11 +166,12 @@ class STBDetailsActivity : BaseActivity() {
                     stbDetailViewModel.setWeatherResponseData(
                         it.copy(tempCondition = replaceDegreeSymbol(it.tempCondition))
                     )
-                    Log.d("DataStoreResponse", "handleWeatherResponse: $it")
                 }
+                logD("Weather Api call success")
             }
 
             else -> {
+                logE("Weather Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let {
                     stbDetailViewModel.showToastMessage(it)
@@ -177,13 +187,24 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.themeLiveData.value?.data?.let {
                     stbDetailViewModel.setThemeResponseData(it)
+                    updateDatastoreVariables(
+                        gradientStartColor = it.gradientColor,
+                        gradientEndColor = it.spotLightColor
+                    )
+                    ThemeDetails.GRADIENT_COLOR_START = it.gradientColor
+                    ThemeDetails.GRADIENT_COLOR_END = it.spotLightColor
+                    ThemeDetails.GRADIENT = null
+                    ThemeDetails.GRADIENT = getGradientColor()
+                    ThemeDetails.BG_IMAGE = it.themeBackgroundFileName
+                    ThemeDetails.LOGO_IMAGE = it.themeLogoFileName
                 }
+                logD("Theme Api call success")
             }
 
             else -> {
+                logE("Theme Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -193,16 +214,37 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {
                     stbDetailViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
-                    Constants.ACCOUNT_ID = it.accountId
-                    Constants.STB_ROOM_NO = it.roomNo
-                    Constants.EPG_CDN_URL = it.epgCdnUrl
-                    Constants.CASTING_URL = it.stbCastingPageUrl
+                    CoroutineScope(Dispatchers.Main).launch {
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
+                            it.accountId
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
+                            it.roomNo
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
+                            it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            PreferenceDataStoreConstants.CASTING_URL_KEY,
+                            it.stbCastingPageUrl
+                        )
+                        if (it.contentDetailFlag)
+                            preferenceDataStoreHelper.putPreference(
+                                PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
+                                it.httpStreamingHotelvideoUrl + it.hotelChannelList[0].fileName
+                            )
+                    }
                     scheduleClearCredentialsTask(it.checkOutTime)
-                    stbDetailViewModel.fetchHotelService()
+                    stbDetailViewModel.fetchHotelService(it.accountId)
                 }
+                logD("Account Setup Api call success")
             }
 
             else -> {
+                logE("Account Setup Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let {
                     stbDetailViewModel.showToastMessage(it)
@@ -219,9 +261,11 @@ class STBDetailsActivity : BaseActivity() {
                 status.data?.let {
                     stbDetailViewModel.setHotelServicesResponseData(it)
                 }
+                logD("Hotel Services Api call success")
             }
 
             else -> {
+                logE("Hotel Services Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
 
@@ -236,12 +280,13 @@ class STBDetailsActivity : BaseActivity() {
                 stbDetailViewModel.localAttractionLiveData.value?.data?.let {
                     stbDetailViewModel.setLocalAttractionResponseData(it)
                 }
+                logD("Local Attractions Api call success")
             }
 
             else -> {
+                logE("Local Attractions Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -251,15 +296,15 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.channelListLiveData.value?.data?.let {
                     stbDetailViewModel.setChannelListResponseData(channelListDataStore, it)
-                    Constants.CHANNEL_COUNT = it.channelLcnList!!.size
+                    updateDatastoreVariables(channelCount = it.channelLcnList.size)
                 }
+                logD("Channel List Api call success")
             }
 
             else -> {
-
+                logE("Channel List Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -272,17 +317,16 @@ class STBDetailsActivity : BaseActivity() {
                     roomRepository.removeAllChannels()
                 }
 
-                val simpleDateFormatter = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.ENGLISH)
+                val simpleDateFormatter =
+                    SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
                 status.data?.let {
-                    val startDate = simpleDateFormatter.parse(it.ST ?: "")
-                    val endDate = simpleDateFormatter.parse(it.ET ?: "")
-                    if (isEpgDataValid(startDate, endDate)) {
-                        Constants.EPG_START = it.ST ?: ""
-                        Constants.EPG_END = it.ET ?: ""
+                    if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
+                        logD("Valid EPG data found EPG Start time: ${it.ST} & EPG End time: ${it.ET}")
+                        updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
                         val channelList =
                             stbDetailViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()
-                        this.removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
+                        removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
                         for (entries in it.epgListMap?.entries!!) {
                             val iterator = entries.value.iterator()
                             val key = entries.key
@@ -442,6 +486,7 @@ class STBDetailsActivity : BaseActivity() {
                         }
                         redirectToMainMenuPage()
                     } else {
+                        logE("Invalid EPG data found")
                         fetchEPGFromServer()
                     }
                 }
@@ -460,6 +505,7 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun fetchEPGFromServer() {
         if (!isEPGServerApiCalled) {
+            logD("Fetching EPG Data from server")
             stbDetailViewModel.fetchEPGDataFromServer(UA)
             isEPGServerApiCalled = true
         } else {
@@ -468,21 +514,22 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun redirectToMainMenuPage() {
-       /* binding.root.post { binding.root.performClick() }
-        var uuid: UUID? = null
-        binding.root.setSafeOnClickListener {
-            val inputData = Data.Builder()
-                .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
-                .build()
+        scheduleEpgApiCall()
+        /* binding.root.post { binding.root.performClick() }
+         var uuid: UUID? = null
+         binding.root.setSafeOnClickListener {
+             val inputData = Data.Builder()
+                 .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
+                 .build()
 
-            val request = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
-                .setInputData(inputData)
-                .build()
-            uuid = request.id
-            Log.e(TAG, "uuid: $uuid")
-            workManager.beginUniqueWork(uuid.toString(), ExistingWorkPolicy.REPLACE, request).enqueue()
-//            workManager.enqueue(request)
-        }*/
+             val request = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
+                 .setInputData(inputData)
+                 .build()
+             uuid = request.id
+             Log.e(TAG, "uuid: $uuid")
+             workManager.beginUniqueWork(uuid.toString(), ExistingWorkPolicy.REPLACE, request).enqueue()
+ //            workManager.enqueue(request)
+         }*/
 
 
 //            workManager.getWorkInfoByIdLiveData(uuid!!).observe(this@STBDetailsActivity) { data ->
@@ -491,71 +538,14 @@ class STBDetailsActivity : BaseActivity() {
 
 //                }
         lifecycleScope.launch {
-            while (true){
-                if (isWorkDone == 3){
+            while (true) {
+                if (isWorkDone == 3) {
                     launchMain()
                     isWorkDone = 0
                 }
-                delay(1000*10)
+                delay(1000 * 10)
             }
         }
-    }
-
-    //  Removes Data Before Current Time.
-    private fun removeEarlierData(
-        iterator: MutableIterator<MutableMap.MutableEntry<String, MutableList<ChannelEpgDTO>>>?,
-        currentKey: String
-    ) {
-        while (iterator?.hasNext() == true) {
-            val entry = iterator.next()
-            if (entry.key == currentKey)
-                break
-            iterator.remove()
-        }
-    }
-
-    private fun fetchCurrentProgramKey(cal: Calendar = Calendar.getInstance()): String {
-
-        val date = cal.get(Calendar.DATE)
-        val month = cal.get(Calendar.MONTH) + 1
-        val year = cal.get(Calendar.YEAR)
-        var hour = cal.get(Calendar.HOUR)
-        val minutes = cal.get(Calendar.MINUTE)
-        val amPm = cal.get(Calendar.AM_PM)
-        val time = StringBuilder()
-
-        if (date < 10) time.append(appendZeros(date))
-        else time.append(date)
-
-        if (month < 10) time.append(appendZeros(month))
-        else time.append(month)
-
-        time.append(year)
-
-        if (hour == 0) hour = 12
-
-        if (hour < 10) time.append(appendZeros(hour))
-        else time.append(hour.toString())
-
-        if (minutes < 30) time.append("00")
-        else time.append("30")
-
-        if (amPm == 0) time.append("AM")
-        else time.append("PM")
-
-        return time.toString()
-    }
-
-    private fun appendZeros(value: Int): String {
-        val str = StringBuffer(value.toString()).reverse()
-        str.append("0")
-        return str.reverse().toString()
-    }
-
-    // Validates Cloud EPG data.
-    private fun isEpgDataValid(startDate: Date?, endDate: Date?): Boolean {
-        val currentDate = Date()
-        return !(currentDate.before(startDate) or currentDate.after(endDate))
     }
 
     private fun handleMoviesResponse(status: Resource<MoviesResponse>) {
@@ -563,17 +553,19 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.moviesLiveData.value?.data?.let {
-                    Constants.MOVIES_COUNT =
-                        it.freeContentList.size.plus(it.premiumContentList.size)
-                    Constants.C_LIST_VERSION = it.version
+                    updateDatastoreVariables(
+                        moviesCount = it.freeContentList.size.plus(it.premiumContentList.size),
+                        cListVersion = it.version
+                    )
                     stbDetailViewModel.setMoviesResponseData(moviesDataStore, it)
                 }
+                logD("Movies Api call success")
             }
 
             else -> {
+                logE("Movies Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
-
             }
         }
     }
@@ -582,10 +574,11 @@ class STBDetailsActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
-                    val sdf = SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
+                    val sdf =
+                        SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         it.tvTickerList?.removeIf { msg ->
-                            (msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(
+                            (msg.all == 0 && msg.assignedRooms?.contains(stbRoomNo) != true) || sdf.parse(
                                 msg.etStr
                             ).before(Date())
                         }
@@ -593,7 +586,7 @@ class STBDetailsActivity : BaseActivity() {
                         val iterator = it.tvTickerList?.iterator()
                         while (iterator!!.hasNext()) {
                             val msg: TvTickerDTO = iterator.next()
-                            if ((msg.all == 0 && msg.assignedRooms?.contains(Constants.STB_ROOM_NO) != true) || sdf.parse(
+                            if ((msg.all == 0 && msg.assignedRooms?.contains(stbRoomNo) != true) || sdf.parse(
                                     msg.etStr
                                 ).before(Date())
                             ) {
@@ -621,16 +614,17 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 status.data?.let {
-                    Constants.SHOWS_COUNT = it.shoContentList.size
+                    updateDatastoreVariables(showsCount = it.shoContentList.size)
                     stbDetailViewModel.setShowTimeResponseData(showTimeDataStore, it)
                 }
-//                stbDetailViewModel.accountSetupLiveData.value?.data?.let {
-//                    stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
-//                }
-                fetchEPGFromServer()
+                stbDetailViewModel.accountSetupLiveData.value?.data?.let {
+                    stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
+                }
+                logD("Showtime Api call success")
             }
 
             else -> {
+                logE("Showtime Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
             }
@@ -638,16 +632,14 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
-     /*   if (!isNetworkConnected) {
-            launchMain()
-            return
-        }*/
+        /*   if (!isNetworkConnected) {
+               launchMain()
+               return
+           }*/
         isWorkDone = 0
 
         serialNumber = serialNo
-        Constants.SERIAL_NO = serialNo
         UA = "21$serialNumber"
-        Constants.UA = UA
         stbDetailViewModel.fetchApis()
 
     }
@@ -673,5 +665,84 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {}
+
+    private fun updateDatastoreVariables(
+        moviesCount: Int? = null,
+        showsCount: Int? = null,
+        cListVersion: String? = null,
+        gradientStartColor: String? = null,
+        gradientEndColor: String? = null,
+        channelCount: Int? = null,
+        epgStartTime: String? = null,
+        epgEndTime: String? = null
+    ) {
+        lifecycleScope.launch {
+            moviesCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
+                    it
+                )
+            }
+            showsCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.SHOWS_COUNT_KEY,
+                    it
+                )
+            }
+            cListVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
+                    it
+                )
+            }
+            gradientStartColor?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+                    it
+                )
+            }
+            gradientEndColor?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+                    it
+                )
+            }
+            channelCount?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.CHANNEL_COUNT_KEY,
+                    it
+                )
+            }
+            epgStartTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
+                    it
+                )
+            }
+            epgEndTime?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
+                    it
+                )
+            }
+        }
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            stbRoomNo = getStbRoomNo()
+        }
+    }
+
+    private suspend fun getStbRoomNo(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
+            ""
+        )
+    }
+
+    companion object {
+        private var IS_API_CALLED = false
+    }
 
 }

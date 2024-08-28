@@ -1,24 +1,16 @@
 package com.diipl.moviebeam.ui.newprogramguide
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.graphics.Color
-import android.util.Log
-import android.view.KeyEvent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.core.view.get
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.NewProgramGuideItemBinding
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.setSafeOnClickListener
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
@@ -54,8 +46,7 @@ class ProgramGuideAdapter(
         val item = programList?.get(position)
         if (item != null) {
             holder.binding.layoutChannelCard.tvChannelName.text = item.CN
-            holder.binding.layoutChannelCard.tvChannelNo.text =
-                item.CNO + "${holder.bindingAdapterPosition}"
+            holder.binding.layoutChannelCard.tvChannelNo.text = item.CNO
         }
 
         if (channelFocusIndex == holder.absoluteAdapterPosition) {
@@ -81,7 +72,6 @@ class ProgramGuideAdapter(
         }
 
         holder.binding.layoutChannelCard.root.setOnFocusChangeListener { view, focused ->
-
             if (focused) {
                 onChannelFocused(item)
                 view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
@@ -142,13 +132,27 @@ class ProgramGuideAdapter(
         this.p4Dst = p4Dst
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateFocusOnSearch(channelFocusIndex: Int) {
         //focus on channel when search option is used
         this.channelFocusIndex = channelFocusIndex
-        notifyDataSetChanged()
+        logE("updateFocusOnSearch")
+        this.notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int = programList?.size ?: 0
+
+    fun updateChannelFocus(
+        focusedPosition: Int,
+        viewHolder: RecyclerView.ViewHolder
+    ) {
+        val holder = viewHolder as ProgramGuideAdapter.MyViewHolder
+        holder.binding.rvProgramGuidePrograms.apply {
+            post {
+                getChildAt(focusedPosition).requestFocus()
+            }
+        }
+    }
 
     fun updateProgramFocus(focusedPosition: Int) {
         focusedAdapter = focusedPosition

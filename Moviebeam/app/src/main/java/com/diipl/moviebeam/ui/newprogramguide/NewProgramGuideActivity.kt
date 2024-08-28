@@ -1,46 +1,55 @@
 package com.diipl.moviebeam.ui.newprogramguide
 
 import android.app.AlertDialog
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
-import android.os.Build
+import android.media.tv.TvContract
+import android.media.tv.TvInputManager
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextClock
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
-import com.bumptech.glide.ListPreloader
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
+import com.diipl.moviebeam.data.dto.program.DvbChannel
 import com.diipl.moviebeam.data.dto.remote.FrequencyModel
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityNewProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.service.IIrService
 import com.diipl.moviebeam.service.UsbIrService
 import com.diipl.moviebeam.service.isCompatibleDevice
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.DEVICE_MODEL
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
 import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
+import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
+import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO
+import com.diipl.moviebeam.utils.Constants.SEI_MB730
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
@@ -48,7 +57,10 @@ import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
+import com.diipl.moviebeam.utils.loadBg
+import com.diipl.moviebeam.utils.loadLogo
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
@@ -64,7 +76,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-
 private const val TAG = "NewProgramGuideActivity"
 
 @AndroidEntryPoint
@@ -75,12 +86,14 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private var isFScreenExit = false
 
+    private val preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+    private var epgEndTime = ""
+
     private lateinit var hotelChannel: HotelChannel
     private var hotelChannelVideo: String = ""
 
     @Inject
     lateinit var preferences: SharedPreference
-
 
     private lateinit var adapter: ProgramGuideAdapter
 
@@ -101,14 +114,26 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
+
+        adapter = ProgramGuideAdapter(
+            onChannelFocused = ::playChannelVideoBg,
+            updateProgramAndChannelData = ::onProgramFocused,
+            loadNewPrograms = ::loadNewPrograms,
+            onChannelClicked = ::launchExoPlayer
+        )
+        setAdapter()
         this.getChannelsFromRoomDB()
+        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
+            if (DEVICE_MODEL != SEI_MB730)
+                fetchTVChannels()
         fetchDetails()
     }
 
     override fun initViewBinding() {
         binding = ActivityNewProgramGuideBinding.inflate(layoutInflater)
-
         setContentView(binding.root)
+        binding.root.loadBg()
+        binding.layoutHeader.ivHotelLogo.loadLogo()
 
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
@@ -140,37 +165,26 @@ class NewProgramGuideActivity : BaseActivity() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        initializeDatastoreParams()
         initSet()
-
-        adapter = ProgramGuideAdapter(
-            onChannelFocused = ::playChannelVideoBg,
-            updateProgramAndChannelData = ::onProgramFocused,
-            loadNewPrograms = ::loadNewPrograms,
-            onChannelClicked = ::launchExoPlayer
-        )
-        setAdapter()
     }
 
     private fun loadNewPrograms(isNextOrPrevious: Int, position: Int) {
-        Log.e(TAG, "loadNewPrograms: Activity $position")
-
         if (!checkNextProgramTimeSlotExists(isNextOrPrevious)) {
-            return;
+            return
         }
         focusedPosition = position
         updateKey(isNextOrPrevious)
     }
 
     private fun checkNextProgramTimeSlotExists(nextOrPrevious: Int): Boolean {
-        if (nextOrPrevious == 1) {
+        return if (nextOrPrevious == 1) {
             //check for previous slot exists or not
-            return checkPreviousSlotExistsOrNot()
+            checkPreviousSlotExistsOrNot()
         } else {
-            return checkFutureSlotExistsOrNot()
+            checkFutureSlotExistsOrNot()
         }
     }
 
@@ -185,12 +199,9 @@ class NewProgramGuideActivity : BaseActivity() {
         var date: Date? = null
         val dateFormat = SimpleDateFormat("dd-MMM-yyyy hh:mm a", Locale.getDefault())
 
-        // Example string time
-        val timeString = time
-
         try {
             // Parse the string to a Date object
-            date = dateFormat.parse(timeString)!!
+            date = time?.let { dateFormat.parse(it) }!!
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -202,11 +213,10 @@ class NewProgramGuideActivity : BaseActivity() {
         val endDateTime = convertProgramStartOrEndTime(programDateTime.P4_ET)
 
         // Create a Calendar object with the current time
-        val epgEndTime: Date = convertProgramStartOrEndTime(Constants.EPG_END)
+        val epgEndTime: Date = convertProgramStartOrEndTime(epgEndTime)
 
         return endDateTime.compareTo(epgEndTime) == -1 //a value less than 0 if this Date is before the Date argument.
     }
-
 
     private fun updateKey(isNextOrPrevious: Int) {
         //1 for previous
@@ -226,27 +236,34 @@ class NewProgramGuideActivity : BaseActivity() {
     private fun updateChannels() {
         programGuideViewModel.getAllChannels(key).observe(this) { data ->
             if (!data.isNullOrEmpty()) {
-
                 programGuideList.clear()
-
                 loadProgramGuide(data)
                 adapter.setProgramList(programGuideList)
                 // focus to adapter position
                 adapter.updateProgramFocus(focusedPosition)
-                adapter.notifyDataSetChanged()
 
                 binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.scrollToPosition(
                     focusedPosition
                 )
+                adapter.notifyDataSetChanged()
             }
         }
     }
 
     override fun onResume() {
         super.onResume()
+
         if (isFScreenExit) {
             playChannelVideoBg(null)
         }
+
+      /*  lifecycleScope.launch {
+            delay(1600)
+            if (onPause) {
+                adapter.updateFocusOnSearch(focusedPosition)
+                onPause = false
+            }
+        }*/
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
@@ -262,7 +279,6 @@ class NewProgramGuideActivity : BaseActivity() {
 
     }
 
-
     private fun getChannelsFromRoomDB() {
         programGuideViewModel.getAllChannels(key).observe(this) { data ->
             if (!data.isNullOrEmpty()) {
@@ -270,15 +286,15 @@ class NewProgramGuideActivity : BaseActivity() {
 
                 loadProgramGuide(data)
                 adapter.setProgramList(programGuideList)
-                adapter.notifyDataSetChanged()
 
                 binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.post {
                     binding.cvProgramGuide.toVisible()
                     binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.findViewHolderForAdapterPosition(
-                        0
+                        focusedPosition
                     )?.itemView?.requestFocus()
                 }
                 //setAdapter()
+                adapter.notifyDataSetChanged()
             } else {
                 programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
             }
@@ -337,35 +353,12 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun fetchDetails() {
-        intent.extras?.getString("themeLogoFileName")?.let {
-            binding.layoutHeader.ivHotelLogo.loadImagesWithGlideExtLogo(it)
-        }
-        intent.extras?.let {
-            binding.layoutHeader.tvTitle.text = it.getString(Constants.TITLE_PARAM)
-            loadBg(it.getString("themeBackgroundFileName"))
-        }
         intent.extras?.getString("hotelChannel")?.let {
             hotelChannel = it.fromJson()
         }
         intent.extras?.getString("hotelChannelVideo")?.let {
             hotelChannelVideo = it
         }
-    }
-
-    private fun loadBg(imgUrl: String?) {
-        Glide.with(this).load(imgUrl)
-            .into(object : CustomTarget<Drawable?>() {
-                @RequiresApi(Build.VERSION_CODES.O)
-                override fun onResourceReady(
-                    resource: Drawable,
-                    transition: Transition<in Drawable?>?
-                ) {
-                    resource.alpha = 120
-                    binding.root.background = resource
-                }
-
-                override fun onLoadCleared(placeholder: Drawable?) {}
-            })
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
@@ -431,7 +424,8 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun onStop() {
         super.onStop()
-        finish()
+        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST)
+            finish()
     }
 
     override fun onDestroy() {
@@ -440,9 +434,8 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun loadProgramGuide(
-        currentPrograms: MutableList<ChannelEpgDTO>? = null
+        currentPrograms: MutableList<ChannelEpgDTO>? = null,
     ) {
-
         val currentProgram = currentPrograms?.get(0)
         binding.layoutProgramGuide.tvTime1.text = currentProgram?.P1_DST
         binding.layoutProgramGuide.tvTime2.text = currentProgram?.P2_DST
@@ -468,7 +461,7 @@ class NewProgramGuideActivity : BaseActivity() {
         if (currentPrograms != null) {
             programGuideList.addAll(currentPrograms)
         }
-        Constants.CURRENT_PROGRAMS = currentPrograms
+        CURRENT_PROGRAMS = currentPrograms
 
     }
 
@@ -512,9 +505,13 @@ class NewProgramGuideActivity : BaseActivity() {
         return time.toString()
     }
 
-
-    private fun launchExoPlayer(channelEpgDTO: ChannelEpgDTO?) {
-        switchToTV(channelEpgDTO)
+    private fun launchExoPlayer(program: ChannelEpgDTO?) {
+        when (BuildConfig.BUILD_TYPE) {
+            Constants.BUILD_TYPE_CHROMECAST -> switchToTV(program)
+            Constants.BUILD_TYPE_STB -> {
+                tuneChannels(program)
+            }
+        }
     }
 
     private fun switchToTV(program: ChannelEpgDTO?) {
@@ -589,6 +586,180 @@ class NewProgramGuideActivity : BaseActivity() {
         irService?.transmit(model.frequency, nValue)
     }
 
+    private fun hasReadTvListings(context: Context): Boolean {
+        return (context.checkSelfPermission("android.permission.READ_TV_LISTINGS")
+                == PackageManager.PERMISSION_GRANTED)
+    }
+
+    private fun loadChannelList() {
+        DTV_INPUT_ID = findDvbInput() ?: return
+
+        val projection = arrayOf(
+            TvContract.Channels._ID,
+            TvContract.Channels.COLUMN_INPUT_ID,
+            TvContract.Channels.COLUMN_SERVICE_ID,
+            TvContract.Channels.COLUMN_SERVICE_TYPE,
+            TvContract.Channels.COLUMN_DISPLAY_NAME,
+            TvContract.Channels.COLUMN_DISPLAY_NUMBER,
+            TvContract.Channels.COLUMN_TRANSPORT_STREAM_ID,
+            TvContract.Channels.COLUMN_VIDEO_FORMAT,
+            TvContract.Channels.COLUMN_ORIGINAL_NETWORK_ID,
+            TvContract.Channels.COLUMN_INTERNAL_PROVIDER_DATA
+        )
+
+        val cursor = contentResolver.query(
+            TvContract.Channels.CONTENT_URI, projection,
+            null, null,
+            "${TvContract.Channels.COLUMN_DISPLAY_NUMBER} ASC"
+        )
+
+        mChannelList.clear()
+
+        while (cursor?.moveToNext() == true) {
+            var index = 0
+            val channelId = cursor.getLong(index++)
+            val curInputId = cursor.getString(index++)
+            val serviceId = cursor.getString(index++)
+            val serviceType = cursor.getString(index++)
+            val displayName = cursor.getString(index++)
+            val displayNumber = cursor.getString(index++)
+            val streamID = cursor.getString(index++)
+            val format = cursor.getString(index++)
+            val networkID = cursor.getString(index++)
+            val blob = cursor.getBlob(index++)
+
+            // only consider dvb input
+            if (DTV_INPUT_ID != curInputId)
+                continue
+
+            // only keep AUDIO_VIDEO services
+            if (TvContract.Channels.SERVICE_TYPE_AUDIO_VIDEO != serviceType)
+                continue
+
+            // skip channels without name or number
+            if (displayName == null || displayNumber == null)
+                continue
+
+            val channelNumber = displayNumber.toInt()
+
+            val channel = DvbChannel(
+                displayName,
+                channelNumber,
+                channelId,
+                curInputId
+            )
+
+            mChannelList.add(channel)
+
+        }
+        cursor?.close()
+
+        if (mChannelList.isEmpty()) {
+            val msg = "Unable to find any dvb channels, are channel searchable?"
+            logE(msg)
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        mChannelList.sortBy { dvbChannel -> dvbChannel.number }
+    }
+
+    private fun tuneChannels(program: ChannelEpgDTO?) {
+        LiveTVActivity.programGuideList.addAll(programGuideList)
+        if (!program?.CN.equals(HOTEL_VIDEO) || !program?.CNO.equals("100")) {
+            val pos = LiveTVActivity.programGuideList.indexOf(program)
+            focusedPosition = programGuideList.indexOf(program)
+            onPause = true
+            val intent = Intent(applicationContext, LiveTVActivity::class.java)
+            intent.putExtra("currentPos", pos)
+            startActivity(intent)
+        } else {
+            showToast("Hotel Video is not available.")
+        }
+    }
+
+    private fun findDvbInput(): String? {
+        val mTvInputManager = getSystemService(Context.TV_INPUT_SERVICE) as TvInputManager
+
+        logD("============================================")
+        logD("enumerate tv input")
+        var dvbInputFound = false
+        var dtvInputComponent = ""
+        mTvInputManager.let {
+            for (tvInputInfo in it.tvInputList) {
+                if (tvInputInfo.id.startsWith("$DTV_KIT_PACKAGE_NAME/")) {
+                    dvbInputFound = true
+                    dtvInputComponent = tvInputInfo.id
+                }
+            }
+        }
+
+        logD("============================================")
+
+        if (!dvbInputFound) {
+            val msg = "Failed to find dvb input"
+            logE(msg)
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+            return null
+        }
+
+        return dtvInputComponent
+    }
+
+    private fun fetchTVChannels() {
+        if (hasReadTvListings(this)) {
+            loadChannelList()
+        } else {
+            grantPermission()
+        }
+    }
+
+    private fun initializeDatastoreParams() {
+        lifecycleScope.launch {
+            epgEndTime = getEpgEt()
+        }
+    }
+
+    private suspend fun getEpgEt(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.EPG_END_TIME_KEY,
+            ""
+        )
+    }
+
+    private fun grantPermission() {
+        try {
+            Intent(Intent.ACTION_VIEW).apply {
+                component =
+                    ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_GRANT_PERMISSION)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(this)
+            }
+            lifecycleScope.launch {
+                delay(1000)
+                fetchTVChannels()
+            }
+        } catch (e: Exception) {
+            showToast("Please grant READ_TV_LISTINGS permission!")
+            logE("grantPermission: Exception ->  ${e.localizedMessage}")
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        when (BuildConfig.BUILD_TYPE) {
+            Constants.BUILD_TYPE_STB -> {
+
+            }
+
+            else -> finish()
+        }
+
+    }
+
+    companion object {
+        var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
+        var onPause = false
+    }
+
 }
-
-

@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.1"/>
+        app:layout_constraintGuide_percent="0.1" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_65"
@@ -62,7 +62,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        app:resize_mode="fill"
         app:show_buffering="never"
         app:use_controller="false" />
 
@@ -98,8 +97,8 @@
         android:id="@+id/layout_weather_time"
         android:name="com.diipl.moviebeam.ui.dialogs.WeatherDateTimeFragment"
         android:layout_width="@dimen/dp_0"
-        android:layout_marginTop="5dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
         app:layout_constraintBottom_toBottomOf="@id/gl_horizontal_10"
         app:layout_constraintEnd_toStartOf="@id/gl_vertical_95"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_57"
@@ -136,6 +135,87 @@
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_5"
         app:layout_constraintTop_toBottomOf="@+id/tv_welcome" />
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/panel_view"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="110dp"
+        android:layout_marginTop="35dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/menu_list_bg"
+        app:cardCornerRadius="@dimen/dp_18"
+        app:cardElevation="@dimen/dp_0"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_95"
+        app:layout_constraintStart_toEndOf="@id/gl_vertical_57"
+        app:layout_constraintTop_toBottomOf="@id/gl_horizontal_10">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/gl_vertical_50"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.5" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/netflix_card_app"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dp_18"
+                android:layout_marginEnd="@dimen/dp_10"
+                app:cardBackgroundColor="@color/transparent"
+                app:cardCornerRadius="15dp"
+                app:cardElevation="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/gl_vertical_50"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints">
+
+                <ImageView
+                    android:id="@+id/netflix_app"
+                    android:layout_width="match_parent"
+                    android:layout_height="85dp"
+                    android:contentDescription="@string/netflix"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:scaleType="fitXY" />
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/prime_video_card_app"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dp_10"
+                android:layout_marginEnd="@dimen/dp_18"
+                app:cardBackgroundColor="@color/transparent"
+                app:cardCornerRadius="15dp"
+                app:cardElevation="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/gl_vertical_50"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints">
+
+                <ImageView
+                    android:id="@+id/prime_video_app"
+                    android:layout_width="match_parent"
+                    android:layout_height="85dp"
+                    android:contentDescription="@string/prime_video"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:scaleType="fitXY" />
+
+            </androidx.cardview.widget.CardView>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
     <ProgressBar
         android:id="@+id/pb_loader"
         android:layout_width="wrap_content"
@@ -153,6 +233,7 @@
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_200"
         android:layout_marginVertical="@dimen/dp_8"
+        android:visibility="invisible"
         app:cardBackgroundColor="@color/menu_list_bg"
         app:cardCornerRadius="@dimen/dp_18"
         app:cardElevation="@dimen/dp_0"
