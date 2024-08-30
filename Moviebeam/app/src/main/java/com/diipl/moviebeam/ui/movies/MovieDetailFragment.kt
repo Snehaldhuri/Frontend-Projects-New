@@ -1,6 +1,8 @@
 package com.diipl.moviebeam.ui.movies
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -22,12 +24,12 @@ import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
-import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
@@ -74,7 +76,6 @@ class MovieDetailFragment : BaseFragment() {
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
         activityStack.add(this::class.java.simpleName)
-        LoggingService.sendMessageToWebSocket("In MovieDetailPage Activity ", "05")
         return binding.root
     }
 
@@ -193,12 +194,11 @@ class MovieDetailFragment : BaseFragment() {
 
     override fun onResume() {
         super.onResume()
-
-        binding.btnRentNow.handleFocusChange()
-        binding.btnWatchTrailer.handleFocusChange()
-        binding.btnContinueWatch.handleFocusChange()
-        binding.btnWatchFromStart.handleFocusChange()
-        binding.btnAdultPlay.handleFocusChange()
+        binding.btnRentNow.setOnFocusChangeListener(::handleFocus)
+        binding.btnWatchTrailer.setOnFocusChangeListener(::handleFocus)
+        binding.btnContinueWatch.setOnFocusChangeListener(::handleFocus)
+        binding.btnWatchFromStart.setOnFocusChangeListener(::handleFocus)
+        binding.btnAdultPlay.setOnFocusChangeListener(::handleFocus)
 
         if (movie != null)
             setMovieDetails(movie!!)
@@ -309,7 +309,7 @@ class MovieDetailFragment : BaseFragment() {
             binding.btnWatchFromStart.toGone()
             binding.btnRentNow.toVisible()
             if (movie?.trailerAvailable == true) binding.btnWatchTrailer.toVisible()
-            else binding.btnWatchTrailer.toInvisible()
+            else binding.btnWatchTrailer.toGone()
             binding.btnRentNow.requestFocus()
         }
     }
@@ -333,6 +333,26 @@ class MovieDetailFragment : BaseFragment() {
             PreferenceDataStoreConstants.UA,
             ""
         )
+    }
+
+    private fun handleFocus(view: View, focused: Boolean){
+        if(focused){
+            view.background = getGradientColor()
+        }else{
+            view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+        }
+    }
+
+    private fun getGradientColor(): GradientDrawable {
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TR_BL,
+            intArrayOf(Color.parseColor(ThemeDetails.GRADIENT_COLOR_START), Color.parseColor(ThemeDetails.GRADIENT_COLOR_END))
+        )
+        gradientDrawable.cornerRadius = 20f
+        gradientDrawable.gradientType = GradientDrawable.LINEAR_GRADIENT
+
+        gradientDrawable.setGradientCenter(0.0468f, 0.6542f)
+        return gradientDrawable
     }
 
 /*    fun View.handleFocusChange() {
