@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.ui.newprogramguide
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import com.diipl.moviebeam.databinding.NewProgramGuideItemBinding
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.setSafeOnClickListener
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
@@ -70,7 +72,6 @@ class ProgramGuideAdapter(
         }
 
         holder.binding.layoutChannelCard.root.setOnFocusChangeListener { view, focused ->
-
             if (focused) {
                 onChannelFocused(item)
                 view.setBackgroundColor(Color.parseColor(Constants.COLOR_YELLOW))
@@ -131,10 +132,12 @@ class ProgramGuideAdapter(
         this.p4Dst = p4Dst
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun updateFocusOnSearch(channelFocusIndex: Int) {
         //focus on channel when search option is used
         this.channelFocusIndex = channelFocusIndex
-        notifyDataSetChanged()
+        logE("updateFocusOnSearch")
+        this.notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int = programList?.size ?: 0

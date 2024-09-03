@@ -35,6 +35,12 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.8" />
 
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_horizontal_10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.1" />
 
         <android.media.tv.TvView
             android:id="@+id/tv_view"
@@ -42,13 +48,39 @@
             android:layout_height="match_parent"
             android:background="@color/black" />
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_number"
+            android:visibility="gone"
+            android:layout_width="120dp"
+            android:layout_height="80dp"
+            android:layout_margin="@dimen/dp_16"
+            app:cardElevation="@dimen/dp_0"
+            app:cardBackgroundColor="@color/black_5"
+            app:cardCornerRadius="@dimen/dp_16"
+            app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_10"
+            app:layout_constraintEnd_toStartOf="@+id/gl_vertical_08"
+            app:layout_constraintStart_toStartOf="@+id/gl_vertical_08"
+            app:layout_constraintTop_toTopOf="@+id/gl_horizontal_10">
+
+            <TextView
+                android:padding="@dimen/dp_16"
+                android:id="@+id/tv_number"
+                android:gravity="center"
+                android:singleLine="true"
+                android:maxLength="4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_24" />
+        </androidx.cardview.widget.CardView>
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_tv"
-            android:visibility="invisible"
             android:layout_width="0dp"
             android:layout_height="120dp"
             android:elevation="@dimen/dp_16"
             android:translationZ="@dimen/dp_16"
+            android:visibility="invisible"
             app:cardBackgroundColor="@color/black_5"
             app:cardCornerRadius="@dimen/dp_16"
             app:cardElevation="@dimen/dp_0"

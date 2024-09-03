@@ -98,11 +98,6 @@ class ShowtimeActivity : BaseActivity() {
         binding.btnBack.setOnKeyListener { v, keyCode, event ->
             when (keyCode) {
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    /*if (binding.parentRecyclerView.isVisible()){
-                        binding.parentRecyclerView.getChildAt(0).requestFocus()
-                    } else {
-                        binding.fcvMovieDetail.requestFocus()
-                    }*/
                     binding.menuRecyclerView.getChildAt(0).requestFocus()
                     return@setOnKeyListener true
                 }

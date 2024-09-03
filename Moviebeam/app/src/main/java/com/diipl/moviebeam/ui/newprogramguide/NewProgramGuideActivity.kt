@@ -16,7 +16,6 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -42,12 +41,15 @@ import com.diipl.moviebeam.service.UsbIrService
 import com.diipl.moviebeam.service.isCompatibleDevice
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.DEVICE_MODEL
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
 import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
-import com.diipl.moviebeam.utils.Constants.DVB_INPUT_ID
+import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO
+import com.diipl.moviebeam.utils.Constants.SEI_MB730
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
@@ -112,9 +114,18 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
+
+        adapter = ProgramGuideAdapter(
+            onChannelFocused = ::playChannelVideoBg,
+            updateProgramAndChannelData = ::onProgramFocused,
+            loadNewPrograms = ::loadNewPrograms,
+            onChannelClicked = ::launchExoPlayer
+        )
+        setAdapter()
         this.getChannelsFromRoomDB()
         if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
-            fetchTVChannels()
+            if (DEVICE_MODEL != SEI_MB730)
+                fetchTVChannels()
         fetchDetails()
     }
 
@@ -158,14 +169,6 @@ class NewProgramGuideActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         initializeDatastoreParams()
         initSet()
-
-        adapter = ProgramGuideAdapter(
-            onChannelFocused = ::playChannelVideoBg,
-            updateProgramAndChannelData = ::onProgramFocused,
-            loadNewPrograms = ::loadNewPrograms,
-            onChannelClicked = ::launchExoPlayer
-        )
-        setAdapter()
     }
 
     private fun loadNewPrograms(isNextOrPrevious: Int, position: Int) {
@@ -238,11 +241,11 @@ class NewProgramGuideActivity : BaseActivity() {
                 adapter.setProgramList(programGuideList)
                 // focus to adapter position
                 adapter.updateProgramFocus(focusedPosition)
-                adapter.notifyDataSetChanged()
 
                 binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.scrollToPosition(
                     focusedPosition
                 )
+                adapter.notifyDataSetChanged()
             }
         }
     }
@@ -254,13 +257,13 @@ class NewProgramGuideActivity : BaseActivity() {
             playChannelVideoBg(null)
         }
 
-        lifecycleScope.launch {
-            delay(500)
+      /*  lifecycleScope.launch {
+            delay(1600)
             if (onPause) {
                 adapter.updateFocusOnSearch(focusedPosition)
                 onPause = false
             }
-        }
+        }*/
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
@@ -283,15 +286,15 @@ class NewProgramGuideActivity : BaseActivity() {
 
                 loadProgramGuide(data)
                 adapter.setProgramList(programGuideList)
-                adapter.notifyDataSetChanged()
 
                 binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.post {
                     binding.cvProgramGuide.toVisible()
                     binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.findViewHolderForAdapterPosition(
-                        0
+                        focusedPosition
                     )?.itemView?.requestFocus()
                 }
                 //setAdapter()
+                adapter.notifyDataSetChanged()
             } else {
                 programGuideViewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
             }
@@ -431,7 +434,7 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun loadProgramGuide(
-        currentPrograms: MutableList<ChannelEpgDTO>? = null
+        currentPrograms: MutableList<ChannelEpgDTO>? = null,
     ) {
         val currentProgram = currentPrograms?.get(0)
         binding.layoutProgramGuide.tvTime1.text = currentProgram?.P1_DST
@@ -505,7 +508,9 @@ class NewProgramGuideActivity : BaseActivity() {
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
         when (BuildConfig.BUILD_TYPE) {
             Constants.BUILD_TYPE_CHROMECAST -> switchToTV(program)
-            Constants.BUILD_TYPE_STB -> tuneChannels(program)
+            Constants.BUILD_TYPE_STB -> {
+                tuneChannels(program)
+            }
         }
     }
 
@@ -587,7 +592,7 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun loadChannelList() {
-        DVB_INPUT_ID = findDvbInput() ?: return
+        DTV_INPUT_ID = findDvbInput() ?: return
 
         val projection = arrayOf(
             TvContract.Channels._ID,
@@ -624,7 +629,7 @@ class NewProgramGuideActivity : BaseActivity() {
             val blob = cursor.getBlob(index++)
 
             // only consider dvb input
-            if (DVB_INPUT_ID != curInputId)
+            if (DTV_INPUT_ID != curInputId)
                 continue
 
             // only keep AUDIO_VIDEO services
@@ -650,7 +655,7 @@ class NewProgramGuideActivity : BaseActivity() {
         cursor?.close()
 
         if (mChannelList.isEmpty()) {
-            val msg = "Unable to find any dvb channels, are channel searchable ?"
+            val msg = "Unable to find any dvb channels, are channel searchable?"
             logE(msg)
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
             return
@@ -660,20 +665,14 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun tuneChannels(program: ChannelEpgDTO?) {
-        if (!program?.CN.equals("Hotel Video")) {
-            if (mChannelList.size > 0) {
-                val list = mChannelList.toList()
-                val dvb = list.filter { program?.CNO?.toInt() == it.number }
-                Log.e(TAG, "tuneChannels: ${mChannelList.size}  ${dvb.size}")
-                if (dvb.isNotEmpty()) {
-                    val pos = mChannelList.indexOf(dvb[0])
-                    focusedPosition = programGuideList.indexOf(program)
-                    onPause = true
-                    val intent = Intent(applicationContext, LiveTVActivity::class.java)
-                    intent.putExtra("currentPos", pos)
-                    startActivity(intent)
-                } else showToast("Channel No. ${program?.CNO} is not available.")
-            }
+        LiveTVActivity.programGuideList.addAll(programGuideList)
+        if (!program?.CN.equals(HOTEL_VIDEO) || !program?.CNO.equals("100")) {
+            val pos = LiveTVActivity.programGuideList.indexOf(program)
+            focusedPosition = programGuideList.indexOf(program)
+            onPause = true
+            val intent = Intent(applicationContext, LiveTVActivity::class.java)
+            intent.putExtra("currentPos", pos)
+            startActivity(intent)
         } else {
             showToast("Hotel Video is not available.")
         }

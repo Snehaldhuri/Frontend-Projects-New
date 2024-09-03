@@ -234,6 +234,7 @@ class MainMenuActivity : BaseActivity() {
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
+            Log.e("TAG", "onPlayerError: ${error.localizedMessage}")
             releaseVideoPlayer()
         }
 

@@ -324,6 +324,9 @@ object Constants {
 
 
     const val DTV_KIT_PACKAGE_NAME = "org.dtvkit.inputsource"
-    var DVB_INPUT_ID = "$DTV_KIT_PACKAGE_NAME/.DtvkitTvInput/HW19"
+    var DTV_INPUT_ID = "$DTV_KIT_PACKAGE_NAME/.DtvkitTvInput/HW19"
+
+    const val SEI_MB730 = "MB730"
+    const val HOTEL_VIDEO = "Hotel Video"
 
 }
