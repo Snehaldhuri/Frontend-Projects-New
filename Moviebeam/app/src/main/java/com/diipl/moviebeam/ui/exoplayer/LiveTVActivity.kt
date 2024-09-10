@@ -254,7 +254,7 @@ class LiveTVActivity : BaseActivity() {
         })
 
         binding.tvChannelName.text =
-            "\nChannel No.   -->  ${program.CNO}  \nChannel Name  -->  ${program.CN}"
+            "\nChannel No.   -->  ${program.CNO}  \nChannel Name  -->  ${program.CN} \nMajor  -->  ${program.param1}   Minor  --> ${program.param2}"
         binding.cardTv.toVisible()
         handler.postDelayed(changeChannelRunnable, 4000)
 
