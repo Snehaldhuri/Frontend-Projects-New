@@ -243,14 +243,13 @@ class EndlessService : Service() {
 
         val gson = GsonBuilder().setLenient().create()
 
-        fun provideOkHttpClient(): OkHttpClient = if (BuildConfig.DEBUG) {
+        private fun provideOkHttpClient(): OkHttpClient {
             val loggingInterceptor = HttpLoggingInterceptor()
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-            OkHttpClient.Builder().addInterceptor(loggingInterceptor)
+            return OkHttpClient.Builder().addInterceptor(loggingInterceptor)
                 .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
                 .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS).build()
-        } else OkHttpClient.Builder().readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
-            .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS).build()
+        }
 
         fun createRetrofitService(): LgRestApiService {
             val retrofit = Retrofit.Builder().addConverterFactory(ScalarsConverterFactory.create())
