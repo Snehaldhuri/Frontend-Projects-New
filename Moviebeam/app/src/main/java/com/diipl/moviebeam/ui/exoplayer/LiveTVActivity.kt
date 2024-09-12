@@ -84,7 +84,7 @@ class LiveTVActivity : BaseActivity() {
         const val CBT_TERRESTRIAL = "TERRESTRIAL"
         const val KEY_MAJOR = "major_number"
         const val KEY_MINOR = "minor_number"
-        val CHANNEL_URI: Uri = TvContract.buildChannelUri(0)
+        val CHANNEL_URI: Uri = TvContract.buildChannelUri(-1)
     }
 
     class Track(var infos: TvTrackInfo?, var type: Int) {
