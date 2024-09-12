@@ -406,7 +406,7 @@ class NewProgramGuideActivity : BaseActivity() {
         binding.tvPopupProgDesc.textAlignment = View.TEXT_ALIGNMENT_CENTER
     }
 
-    private fun createSpannableString(): String {
+    private fun createSpannableString(): SpannableString {
         val text = "Press + to return to the Main Menu at any time."
         val spannableString = SpannableString(text)
         val drawable: Drawable = getDrawable(R.drawable.remote_home)!!
@@ -419,7 +419,7 @@ class NewProgramGuideActivity : BaseActivity() {
             text.indexOf('+') + 1,
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-        return spannableString.toString()
+        return spannableString
     }
 
     override fun onStop() {
