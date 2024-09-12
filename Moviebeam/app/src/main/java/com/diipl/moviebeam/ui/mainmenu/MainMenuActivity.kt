@@ -23,6 +23,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -40,6 +41,7 @@ import com.diipl.moviebeam.service.kappingservice.getServiceState
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
+import com.diipl.moviebeam.ui.casting.HotspotActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
@@ -83,6 +85,7 @@ class MainMenuActivity : BaseActivity() {
     private var hotelVideoUrl = ""
     private var gradientStartColor = ""
     private var gradientEndColor = ""
+    private var castingUrl = ""
 
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
@@ -380,7 +383,19 @@ class MainMenuActivity : BaseActivity() {
                                 }
 
                                 Constants.CASTING_ID -> {
-                                    intent = Intent(this, CastingActivity::class.java)
+                                    if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB)) {
+                                        if (castingUrl.isNullOrEmpty()) {
+                                            intent = Intent(this, HotspotActivity::class.java)
+                                        } else {
+                                            intent = Intent(this, CastingActivity::class.java)
+                                        }
+                                    }else{
+                                        if (!castingUrl.isNullOrEmpty()) {
+                                            intent = Intent(this, CastingActivity::class.java)
+                                        }else{
+                                            showToast(getString(R.string.please_contact_the_front_desk_for_assistance))
+                                        }
+                                    }
                                 }
 
                                 Constants.PRG_GUIDE_ID -> {
@@ -504,6 +519,7 @@ class MainMenuActivity : BaseActivity() {
             hotelVideoUrl = getHotelVideoUrl()
             gradientStartColor = getGradientStartColor()
             gradientEndColor = getGradientEndColor()
+            castingUrl = getCastingUrl()
         }
     }
 
@@ -525,6 +541,13 @@ class MainMenuActivity : BaseActivity() {
         return preferenceDataStoreHelper.getFirstPreference(
             PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
             Constants.DEFAULTGRADIENTENDCOLOR
+        )
+    }
+
+    private suspend fun getCastingUrl(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.CASTING_URL_KEY,
+            ""
         )
     }
 

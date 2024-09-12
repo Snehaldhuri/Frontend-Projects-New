@@ -34,9 +34,11 @@ import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.logD
@@ -301,8 +303,8 @@ class RefreshingUiActivity : BaseActivity() {
                     scheduleClearCredentialsTask(it.checkOutTime)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
-                    redirectToMainMenuScreen()
                     logD("AccountSetup callback Success ")
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -323,11 +325,17 @@ class RefreshingUiActivity : BaseActivity() {
                         gradientStartColor = it.gradientColor,
                         gradientEndColor = it.spotLightColor
                     )
+                    ThemeDetails.GRADIENT_COLOR_START = it.gradientColor
+                    ThemeDetails.GRADIENT_COLOR_END = it.spotLightColor
+                    ThemeDetails.GRADIENT = null
+                    ThemeDetails.GRADIENT = getGradientColor()
+                    ThemeDetails.BG_IMAGE = it.themeBackgroundFileName
+                    ThemeDetails.LOGO_IMAGE = it.themeLogoFileName
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
-                    redirectToMainMenuScreen()
                     logD("In Theme callback Success")
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -347,8 +355,8 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_HS)
-                    redirectToMainMenuScreen()
                     logD("In Hotel Services callback Success")
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -370,8 +378,8 @@ class RefreshingUiActivity : BaseActivity() {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     startUpdateDataWorker(UpdateDataWorker.ACTION_LA)
-                    redirectToMainMenuScreen()
                     logD("In Local Attractions callback Success ")
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -394,7 +402,8 @@ class RefreshingUiActivity : BaseActivity() {
                     )
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
-                    logD("In MoviesReleasesCollection callback Success ")
+                    logD("In Movies callback Success ")
+                    redirectToMainMenuScreen()
                 }
             }
 
@@ -414,8 +423,8 @@ class RefreshingUiActivity : BaseActivity() {
                     refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
+                    logD("In Showtime callback Success ")
                     redirectToMainMenuScreen()
-                    logD("In ShowtimeReleasesCollection callback Success ")
                 }
             }
 
@@ -436,8 +445,8 @@ class RefreshingUiActivity : BaseActivity() {
                         EndlessService.kapingCmdExecutionResponse =
                             KapingConstants.EXECUTED_SUCCESSFULLY
                         updateDatastoreVariables(channelCount = it.channelLcnList.size)
-                        redirectToMainMenuScreen()
                         logD("In Channel List callback Success ")
+                        redirectToMainMenuScreen()
                     } else {
                         refreshingUiViewModel.fetchEPGData(epgCdnUrl)
                     }
@@ -470,8 +479,8 @@ class RefreshingUiActivity : BaseActivity() {
                             refreshingUiViewModel.fetchEPGDataFromServer(ua)
                             isEPGServerApiCalled = true
                         } else {
-                            redirectToMainMenuScreen()
                             isEPGServerApiCalled = false
+                            redirectToMainMenuScreen()
                         }
                     }
                 }

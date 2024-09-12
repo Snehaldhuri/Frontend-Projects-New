@@ -96,8 +96,7 @@ class SerialActivity : BaseActivity() {
         }
     }
 
-    private var resultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val intent: Intent? = result.data
                 intent?.getStringExtra(Constants.SERIAL_NO_KEY)?.let {
@@ -143,7 +142,7 @@ class SerialActivity : BaseActivity() {
         if (isStbAllocated) {
             redirectToStbDetailsActivity()
         } else {
-            redirectToRegisterStbActivity()
+            fetchSerialNo()
         }
     }
 

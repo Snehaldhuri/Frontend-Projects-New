@@ -84,7 +84,7 @@ class LiveTVActivity : BaseActivity() {
         const val CBT_TERRESTRIAL = "TERRESTRIAL"
         const val KEY_MAJOR = "major_number"
         const val KEY_MINOR = "minor_number"
-        val CHANNEL_URI: Uri = TvContract.buildChannelUri(0)
+        val CHANNEL_URI: Uri = TvContract.buildChannelUri(-1)
     }
 
     class Track(var infos: TvTrackInfo?, var type: Int) {
@@ -254,7 +254,7 @@ class LiveTVActivity : BaseActivity() {
         })
 
         binding.tvChannelName.text =
-            "\nChannel No.   -->  ${program.CNO}  \nChannel Name  -->  ${program.CN}"
+            "\nChannel No.   -->  ${program.CNO}  \nChannel Name  -->  ${program.CN} \nMajor  -->  ${program.param1}   Minor  --> ${program.param2}"
         binding.cardTv.toVisible()
         handler.postDelayed(changeChannelRunnable, 4000)
 

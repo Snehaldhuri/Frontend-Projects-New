@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.di
 
-import androidx.databinding.ktx.BuildConfig
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.EpgApiService
@@ -27,20 +26,15 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideOkHttpClient(): OkHttpClient = if (BuildConfig.DEBUG) {
+    fun provideOkHttpClient(): OkHttpClient  {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-        OkHttpClient.Builder()
+        return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
             .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
             .build()
-    } else
-        OkHttpClient
-            .Builder()
-            .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
-            .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
-            .build()
+    }
 
     @Singleton
     @Provides

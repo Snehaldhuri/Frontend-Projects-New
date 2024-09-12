@@ -28,7 +28,11 @@ import java.util.Locale
 class LoggingService : Service() {
 
     //Variables from datastore
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(
+            applicationContext
+        )
+    }
 
     private lateinit var client: OkHttpClient
     private val binder = LoggingServiceBinder()
@@ -43,9 +47,17 @@ class LoggingService : Service() {
         return binder
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        CoroutineScope(Dispatchers.Default).launch {
+            accountId = getAccountId()
+            stbRoomNo = getStbRoomNo()
+            ua = getUa()
+            ipAddress = getIpAddress()
+        }
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        this.initializeDatastoreParams()
         startWebSocket()
         return START_STICKY
     }
@@ -132,13 +144,14 @@ class LoggingService : Service() {
         }
 
         fun sendMessageToWebSocket(message: String, type: String) {
+            val hid = if (accountId.isNotEmpty()) accountId.toInteger() else 0
             if (webSocket != null) {
                 formattedDate = sdf.format(Date())
                 val msgDto = LogDTO(
                     T = type,
                     P = getPriority(type),
                     UA = ua,
-                    HID = accountId.toInteger(),
+                    HID = hid,
                     ROOMNO = stbRoomNo,
                     IP = ipAddress,
                     TSP = formattedDate,
@@ -147,7 +160,7 @@ class LoggingService : Service() {
                 )
                 val isSent = webSocket?.send(msgDto.toJson())
 //                    webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"$formattedDate\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
-//                Log.e(TAG, "sendMessageToWebSocket: $isSent  ${webSocket!!.queueSize()}")
+                Log.d(TAG, "sendMessageToWebSocket: $isSent  ${msgDto.toJson()}")
                 if (isSent == false) {
                     BaseActivity.currentActivity?.launchLogger()
                 }
@@ -157,15 +170,6 @@ class LoggingService : Service() {
                     "Websocket3 Failed to send message: WebSocket is not initialized or sending failed"
                 )
             }
-        }
-    }
-
-    private fun initializeDatastoreParams() {
-        CoroutineScope(Dispatchers.Default).launch {
-            accountId = getAccountId()
-            stbRoomNo = getStbRoomNo()
-            ua = getUa()
-            ipAddress = getIpAddress()
         }
     }
 

@@ -78,11 +78,13 @@ import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.compareVersions
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.logD
@@ -241,14 +243,13 @@ class EndlessService : Service() {
 
         val gson = GsonBuilder().setLenient().create()
 
-        fun provideOkHttpClient(): OkHttpClient = if (BuildConfig.DEBUG) {
+        private fun provideOkHttpClient(): OkHttpClient {
             val loggingInterceptor = HttpLoggingInterceptor()
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-            OkHttpClient.Builder().addInterceptor(loggingInterceptor)
+            return OkHttpClient.Builder().addInterceptor(loggingInterceptor)
                 .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
                 .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS).build()
-        } else OkHttpClient.Builder().readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
-            .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS).build()
+        }
 
         fun createRetrofitService(): LgRestApiService {
             val retrofit = Retrofit.Builder().addConverterFactory(ScalarsConverterFactory.create())
@@ -1048,6 +1049,12 @@ class EndlessService : Service() {
             val response = movieBeamRepository.getThemeDetails(ua)
             if (response != null) {
                 updateThemeData(response)
+                ThemeDetails.GRADIENT_COLOR_START = response.gradientColor
+                ThemeDetails.GRADIENT_COLOR_END = response.spotLightColor
+                ThemeDetails.GRADIENT = null
+                ThemeDetails.GRADIENT = getGradientColor()
+                ThemeDetails.BG_IMAGE = response.themeBackgroundFileName
+                ThemeDetails.LOGO_IMAGE = response.themeLogoFileName
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
 //                startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
                 logD("In Theme callback Success")

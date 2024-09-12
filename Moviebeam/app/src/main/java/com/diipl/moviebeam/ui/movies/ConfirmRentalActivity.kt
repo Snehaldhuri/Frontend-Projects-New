@@ -108,6 +108,10 @@ class ConfirmRentalActivity : BaseActivity() {
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         this.initializeDatastoreParams()
+        binding.btnConfirm.handleFocusChange()
+        binding.btnCancel.handleFocusChange()
+        binding.btnBuyNow.handleFocusChange()
+        binding.btnPassCancel.handleFocusChange()
 
         viewModel.validateSession(preferenceDataStoreHelper)
 
@@ -118,10 +122,6 @@ class ConfirmRentalActivity : BaseActivity() {
                 getString(R.string.rental_price_confirm, "", movie.price.toString())
         }
 
-        binding.btnConfirm.handleFocusChange()
-        binding.btnCancel.handleFocusChange()
-        binding.btnBuyNow.handleFocusChange()
-        binding.btnPassCancel.handleFocusChange()
 
 
         intent.getStringExtra("price")?.let {
@@ -212,6 +212,7 @@ class ConfirmRentalActivity : BaseActivity() {
                         else -> {
                             binding.progressBar.toGone()
                             binding.layoutRental.toVisible()
+                            binding.btnConfirm.requestFocus()
                         }
 
                     }
