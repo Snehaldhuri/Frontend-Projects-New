@@ -143,7 +143,7 @@ class SerialActivity : BaseActivity() {
         if (isStbAllocated) {
             redirectToStbDetailsActivity()
         } else {
-            redirectToRegisterStbActivity()
+            fetchSerialNo()
         }
     }
 
