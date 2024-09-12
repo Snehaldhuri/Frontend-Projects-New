@@ -1,6 +1,9 @@
 package com.diipl.moviebeam.ui.dialogs
 
 import android.os.Bundle
+import android.os.IBinder
+import android.os.RemoteException
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +11,8 @@ import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.android.tv.settings.aidl.regular.IDeviceNameConfigureCallback
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
@@ -17,6 +22,7 @@ import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
+import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
@@ -57,6 +63,9 @@ class WeatherDateTimeFragment : Fragment() {
     @Inject
     lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+
+    @Inject
+    lateinit var hardwareAPI: HardwareAPI
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -125,6 +134,21 @@ class WeatherDateTimeFragment : Fragment() {
             is Resource.Success -> {
                 status.data?.let {
                     CoroutineScope(Dispatchers.Default).launch {
+                        if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
+                            hardwareAPI.myService?.setDeviceName(
+                                "MBAP_${it.accountId}_${it.roomNo}",
+                                object : IDeviceNameConfigureCallback {
+                                    @Throws(RemoteException::class)
+                                    override fun onDeviceNameConfigureCallback(s: String) {
+                                        Log.e("TAG", "onDeviceNameConfigureCallback: setDeviceName $s")
+                                    }
+
+                                    override fun asBinder(): IBinder? {
+                                        return null
+                                    }
+                                }
+                            )
+                        }
                         preferenceDataStoreHelper.putPreference(
                             PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
                             it.accountId

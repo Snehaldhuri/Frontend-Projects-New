@@ -1,6 +1,9 @@
 package com.diipl.moviebeam.ui.refreshingui
 
 import android.content.Intent
+import android.os.IBinder
+import android.os.RemoteException
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.lifecycleScope
@@ -8,6 +11,8 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.android.tv.settings.aidl.regular.IDeviceNameConfigureCallback
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -27,6 +32,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
+import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
@@ -112,6 +118,9 @@ class RefreshingUiActivity : BaseActivity() {
 
     @Inject
     lateinit var roomRepository: RoomRepository
+
+    @Inject
+    lateinit var hardwareAPI: HardwareAPI
 
     override fun observeViewModel() {
         observe(refreshingUiViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
@@ -276,6 +285,21 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
+                    if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
+                        hardwareAPI.myService?.setDeviceName(
+                            "MBAP_${it.accountId}_${it.roomNo}",
+                            object : IDeviceNameConfigureCallback {
+                                @Throws(RemoteException::class)
+                                override fun onDeviceNameConfigureCallback(s: String) {
+                                    Log.e("TAG", "onDeviceNameConfigureCallback: setDeviceName $s")
+                                }
+
+                                override fun asBinder(): IBinder? {
+                                    return null
+                                }
+                            }
+                        )
+                    }
                     refreshingUiViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
                     CoroutineScope(Dispatchers.Default).launch {
                         preferenceDataStoreHelper.putPreference(

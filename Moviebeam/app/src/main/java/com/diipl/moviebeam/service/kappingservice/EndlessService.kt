@@ -15,10 +15,13 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.os.RemoteException
+import android.util.Log
 import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.android.tv.settings.aidl.regular.IDeviceNameConfigureCallback
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
@@ -50,6 +53,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
+import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -234,6 +238,9 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var updateDataStore: UpdateDataStore
+
+    @Inject
+    lateinit var hardwareAPI: HardwareAPI
 
     companion object {
         var isServiceStarted = false
@@ -1010,6 +1017,21 @@ class EndlessService : Service() {
         CoroutineScope(Dispatchers.IO).launch {
             val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
             if (response != null) {
+                if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
+                    hardwareAPI.myService?.setDeviceName(
+                        "MBAP_${response.accountId}_${response.roomNo}",
+                        object : IDeviceNameConfigureCallback {
+                            @Throws(RemoteException::class)
+                            override fun onDeviceNameConfigureCallback(s: String) {
+                                Log.e("TAG", "onDeviceNameConfigureCallback: setDeviceName $s")
+                            }
+
+                            override fun asBinder(): IBinder? {
+                                return null
+                            }
+                        }
+                    )
+                }
                 updateAccountSetupData(accountSetupDataStore, response)
                 CoroutineScope(Dispatchers.Default).launch {
                     preferenceDataStoreHelper.putPreference(
@@ -1343,12 +1365,23 @@ class EndlessService : Service() {
     }
 
     private fun handleRebootCmd() {
-        val intent = Intent()
-        intent.component =
-            ComponentName(MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(intent)
-        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+        when (BuildConfig.BUILD_TYPE) {
+            Constants.BUILD_TYPE_STB -> {
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                Log.e("TAG", "handleRebootCmd: BUILD_TYPE_STB Start", )
+                hardwareAPI.myService?.rebootDevice()
+                Log.e("TAG", "handleRebootCmd: BUILD_TYPE_STB End", )
+                Log.e("TAG", "handleRebootCmd: BUILD_TYPE_STB End1", )
+            }
+            else -> {
+                val intent = Intent()
+                intent.component =
+                    ComponentName(MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+            }
+        }
     }
 
     private fun handleTickerMsgCmd(ua: String) {

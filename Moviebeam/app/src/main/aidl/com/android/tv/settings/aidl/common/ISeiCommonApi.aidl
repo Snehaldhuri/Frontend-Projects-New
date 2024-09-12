@@ -1,8 +1,8 @@
 package com.android.tv.settings.aidl.common;
 
 
-//import com.android.tv.settings.aidl.common.IStorageCallback;
 import com.android.tv.settings.aidl.regular.ISoftAPConfigureCallback;
+import com.android.tv.settings.aidl.regular.IDeviceNameConfigureCallback;
 
 interface ISeiCommonApi {
 
@@ -48,5 +48,13 @@ interface ISeiCommonApi {
 
     String getSoftApStatus();
     //[SEI-luoyf-2024-8-9] add api }
+
+    //[SEI-luoyf-2024-9-5] add api {
+    void setSoftApName(String ssid, in ISoftAPConfigureCallback callback);
+
+    void setSoftApPwd(String pwd, in ISoftAPConfigureCallback callback);
+
+    void setDeviceName(String s, in IDeviceNameConfigureCallback callback);
+    //[SEI-luoyf-2024-9-5] add api }
 
 }
