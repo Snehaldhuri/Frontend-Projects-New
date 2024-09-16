@@ -178,6 +178,16 @@ class MainMenuActivity : BaseActivity() {
         }, 240)
 
         lifecycleScope.launch {
+            while (true){
+                if (ThemeDetails.LOGO_IMAGE != null){
+                    binding.ivHotelLogo.loadLogo()
+                    break
+                }
+                delay(1000)
+            }
+        }
+
+        lifecycleScope.launch {
             while (!player.isPlaying) {
                 if (hotelVideoUrl.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0) {
                     initializePlayer()
@@ -210,10 +220,7 @@ class MainMenuActivity : BaseActivity() {
     }
 
     private fun initializePlayer() {
-
-        if (!::player.isInitialized) {
-            init()
-        }
+        init()
 
         if (hotelVideoUrl.isNotEmpty()) {
             binding.videoView.toVisible()
@@ -389,10 +396,10 @@ class MainMenuActivity : BaseActivity() {
                                         } else {
                                             intent = Intent(this, CastingActivity::class.java)
                                         }
-                                    }else{
+                                    } else {
                                         if (!castingUrl.isNullOrEmpty()) {
                                             intent = Intent(this, CastingActivity::class.java)
-                                        }else{
+                                        } else {
                                             showToast(getString(R.string.please_contact_the_front_desk_for_assistance))
                                         }
                                     }
@@ -514,14 +521,13 @@ class MainMenuActivity : BaseActivity() {
         return false
     }
 
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
+    private fun initializeDatastoreParams() = lifecycleScope.launch {
             hotelVideoUrl = getHotelVideoUrl()
             gradientStartColor = getGradientStartColor()
             gradientEndColor = getGradientEndColor()
             castingUrl = getCastingUrl()
         }
-    }
+
 
     private suspend fun getHotelVideoUrl(): String {
         return preferenceDataStoreHelper.getFirstPreference(

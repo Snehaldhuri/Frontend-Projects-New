@@ -53,6 +53,7 @@ android {
 
     buildTypes {
         chromeCast {
+            debuggable true
             minifyEnabled true
             shrinkResources true
             buildConfigField("String", "BUILD_TYPE", "\"CHROMECAST\"")

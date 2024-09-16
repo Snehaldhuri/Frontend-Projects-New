@@ -15,6 +15,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.util.Log
 import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
@@ -301,25 +302,30 @@ class EndlessService : Service() {
         var isSwitched = false
         var count = 0
         CoroutineScope(Dispatchers.IO).launch {
-            while (activityStack.last()?.isNotEmpty() == true) {
-                if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
-                    if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
-                        preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
-                        if (!isNetworkAvailable && !isSwitched) {
-                            isSwitched = true
-                            startMainMenu()
-                            count = 0
-                        }
-                        if (isNetworkAvailable && isSwitched) {
-                            isSwitched = false
-                            if (count == 0) {
-                                startMainMenu()
-                                count++
-                            }
-                        }
-                    }
-                delay(1000 * 2)
-            }
+           try {
+               while (activityStack.last()?.isNotEmpty() == true) {
+                   if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
+                       if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
+                           preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
+                           if (!isNetworkAvailable && !isSwitched) {
+                               isSwitched = true
+                               startMainMenu()
+                               count = 0
+                           }
+                           if (isNetworkAvailable && isSwitched) {
+                               isSwitched = false
+                               if (count == 0) {
+                                   startMainMenu()
+                                   count++
+                               }
+                           }
+                       }
+                   delay(1000 * 2)
+               }
+           } catch (e: Exception){
+               Log.e("TAG", "activityStack: ${e.localizedMessage}")
+               MainMenuActivity::class.java.startActivity()
+           }
         }
 
         val notification = createNotification()
