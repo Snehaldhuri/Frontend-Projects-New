@@ -16,6 +16,7 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
+import com.diipl.moviebeam.service.BTService
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
 import com.diipl.moviebeam.utils.Constants
@@ -97,26 +98,58 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (preferences.irFrequencyModel == null)
-            preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
 
-        if (preferences.irFrequencyModel.tvBrandName == IRUtils.SAMSUNG) {
-            binding.rbSamsung.isChecked = true
-        } else {
-            binding.rbLg.isChecked = true
+        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST) {
+            binding.layoutBrand.toVisible()
+
+            updateRadio()
+
+            binding.rgType.setOnCheckedChangeListener { _, checkedId ->
+                when (checkedId) {
+                    binding.rbBT.id -> {
+                        preferences.isIRRemote = false
+                    }
+
+                    binding.rbIR.id -> {
+                        preferences.isIRRemote = true
+                    }
+                }
+                updateRadio()
+            }
+
+            binding.rgBrand.setOnCheckedChangeListener { _, checkedId ->
+                when (checkedId) {
+                    binding.rbLg.id -> {
+                        preferences.irFrequencyModel = IRUtils.lgModel
+                        preferences.btCommandModel = BTService.lgModel
+                    }
+
+                    binding.rbSamsung.id -> {
+                        preferences.irFrequencyModel = IRUtils.samsungModel
+                        preferences.btCommandModel = BTService.samsungModel
+                    }
+                }
+                requireActivity().clearCache()
+            }
         }
 
-        binding.rgBrand.setOnCheckedChangeListener { group, checkedId ->
-            when (checkedId) {
-                binding.rbLg.id -> {
-                    preferences.irFrequencyModel = IRUtils.lgModel
-                }
+    }
 
-                binding.rbSamsung.id -> {
-                    preferences.irFrequencyModel = IRUtils.samsungModel
-                }
+    private fun updateRadio() {
+        if (preferences.isIRRemote) {
+            binding.rbIR.isChecked = true
+            if (preferences.irFrequencyModel.tvBrandName == IRUtils.SAMSUNG) {
+                binding.rbSamsung.isChecked = true
+            } else {
+                binding.rbLg.isChecked = true
             }
-            requireActivity().clearCache()
+        } else {
+            binding.rbBT.isChecked = true
+            if (preferences.btCommandModel.tvBrandName == IRUtils.SAMSUNG) {
+                binding.rbSamsung.isChecked = true
+            } else {
+                binding.rbLg.isChecked = true
+            }
         }
     }
 

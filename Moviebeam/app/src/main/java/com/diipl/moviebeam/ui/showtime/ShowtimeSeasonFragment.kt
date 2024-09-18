@@ -70,7 +70,6 @@ class ShowtimeSeasonFragment : BaseFragment(), AdapterView.OnItemSelectedListene
                     KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_DOWN_RIGHT, KeyEvent.KEYCODE_DPAD_UP_RIGHT -> {
                         isListUpdated = false
                         binding.seasonListRecyclerView.getChildAt(0).requestFocus()
-//                        binding.seasonListRecyclerView.findViewHolderForAdapterPosition(0)?.itemView?.requestFocus()
                     }
                 }
             }

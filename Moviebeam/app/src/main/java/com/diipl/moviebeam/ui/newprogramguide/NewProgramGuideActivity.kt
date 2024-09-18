@@ -8,14 +8,13 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbManager
 import android.media.tv.TvContract
 import android.media.tv.TvInputManager
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -31,20 +30,20 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.DvbChannel
-import com.diipl.moviebeam.data.dto.remote.FrequencyModel
+import com.diipl.moviebeam.data.dto.remote.BTCommandModel
+import com.diipl.moviebeam.data.dto.remote.IRFrequencyModel
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityNewProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
+import com.diipl.moviebeam.service.BTService
 import com.diipl.moviebeam.service.IIrService
 import com.diipl.moviebeam.service.UsbIrService
-import com.diipl.moviebeam.service.isCompatibleDevice
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.DEVICE_MODEL
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
-import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
@@ -103,9 +102,8 @@ class NewProgramGuideActivity : BaseActivity() {
     lateinit var programDateTime: ChannelEpgDTO
 
     private var irService: IIrService? = null
-
-    private val usbManager: UsbManager by lazy { getSystemService(USB_SERVICE) as UsbManager }
-    private lateinit var usbDevice: UsbDevice
+    private lateinit var btService: BTService
+    private var switchedToTV = false
 
     override fun observeViewModel() {
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
@@ -149,26 +147,15 @@ class NewProgramGuideActivity : BaseActivity() {
         binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.adapter = adapter
     }
 
-    private fun initSet() {
-        usbManager.deviceList.values.forEach {
-            if (isCompatibleDevice(it)) {
-                usbDevice = it
-                val isOk = usbManager.hasPermission(usbDevice)
-                if (isOk) {
-                    irService = UsbIrService.getInstance(usbManager, usbDevice)
-                } else {
-                    val i = Intent(this, BlankActivity::class.java)
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    startActivity(i)
-                }
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initializeDatastoreParams()
-        initSet()
+
+        if (preferences.isIRRemote)
+            irService = UsbIrService(this).also { it.getInstance() }
+        else
+            btService = BTService(this, lifecycle).also { it.findBondedDevice() }
+
     }
 
     private fun loadNewPrograms(isNextOrPrevious: Int, position: Int) {
@@ -257,13 +244,11 @@ class NewProgramGuideActivity : BaseActivity() {
             playChannelVideoBg(null)
         }
 
-      /*  lifecycleScope.launch {
-            delay(1600)
-            if (onPause) {
-                adapter.updateFocusOnSearch(focusedPosition)
-                onPause = false
-            }
-        }*/
+        lifecycleScope.launch {
+            delay(1000)
+            binding.root.loadBg()
+            binding.layoutHeader.ivHotelLogo.loadLogo()
+        }
 
         binding.btnSearch.setOnKeyListener { view, code, keyEvent ->
             when (code) {
@@ -507,7 +492,10 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private fun launchExoPlayer(program: ChannelEpgDTO?) {
         when (BuildConfig.BUILD_TYPE) {
-            Constants.BUILD_TYPE_CHROMECAST -> switchToTV(program)
+            Constants.BUILD_TYPE_CHROMECAST -> {
+                if (preferences.isIRRemote) switchToTV(program)
+                else switchToTVWithBluetooth(program)
+            }
             Constants.BUILD_TYPE_STB -> {
                 tuneChannels(program)
             }
@@ -517,60 +505,58 @@ class NewProgramGuideActivity : BaseActivity() {
     private fun switchToTV(program: ChannelEpgDTO?) {
         clearCache()
         lifecycleScope.launch {
-            var model = preferences.irFrequencyModel
-            if (model == null) {
-                preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
-                model = preferences.irFrequencyModel
-            }
+            val model = preferences.irFrequencyModel
             irService?.let { service ->
-                val num = program?.CNO/*.plus(100)*/.toString().toCharArray().asList()
-                if (model.tvBrandName != IRUtils.LG) {
-                    service.transmit(model.frequency, model.TV)
-                    delay(model.delayMs)
+                if (service.isConnected()){
+                    val num = program?.CNO.toString().toCharArray().asList()
+                    if (model.tvBrandName != IRUtils.LG) {
+                        service.transmit(model.frequency, model.TV)
+                        delay(model.delayMs)
+                    }
+                    switchedToTV = true
+                    when (num.size) {
+                        4 -> {
+                            launch {
+                                num[num.size - 4].sendPacket(model)
+                                num[num.size - 3].sendPacket(model)
+                                num[num.size - 2].sendPacket(model)
+                                num[num.size - 1].sendPacket(model)
+//                            delay(240)
+                                service.transmit(model.frequency, model.OK)
+                            }
+                        }
+
+                        3 -> {
+                            launch {
+                                num[num.size - 3].sendPacket(model)
+                                num[num.size - 2].sendPacket(model)
+                                num[num.size - 1].sendPacket(model)
+//                            delay(240)
+                                service.transmit(model.frequency, model.OK)
+                            }
+                        }
+
+                        2 -> {
+                            launch {
+                                num[num.size - 2].sendPacket(model)
+                                num[num.size - 1].sendPacket(model)
+//                            delay(240)
+                                service.transmit(model.frequency, model.OK)
+                            }
+                        }
+
+                        1 -> {
+                            num[0].sendPacket(model)
+                            service.transmit(model.frequency, model.OK)
+                        }
+                    }
                 }
-                when (num.size) {
-                    4 -> {
-                        launch {
-                            num[num.size - 4].sendPacket(model)
-                            num[num.size - 3].sendPacket(model)
-                            num[num.size - 2].sendPacket(model)
-                            num[num.size - 1].sendPacket(model)
-                            delay(240)
-                            service.transmit(model.frequency, model.OK)
-                        }
-                    }
-
-                    3 -> {
-                        launch {
-                            num[num.size - 3].sendPacket(model)
-                            num[num.size - 2].sendPacket(model)
-                            num[num.size - 1].sendPacket(model)
-                            delay(240)
-                            service.transmit(model.frequency, model.OK)
-                        }
-                    }
-
-                    2 -> {
-                        launch {
-                            num[num.size - 2].sendPacket(model)
-                            num[num.size - 1].sendPacket(model)
-                            delay(240)
-                            service.transmit(model.frequency, model.OK)
-                        }
-                    }
-
-                    1 -> {
-                        num[0].sendPacket(model)
-                        service.transmit(model.frequency, model.OK)
-                    }
-                }
-
             }
 
         }
     }
 
-    private fun Char.sendPacket(model: FrequencyModel) {
+    private fun Char.sendPacket(model: IRFrequencyModel) {
         val nValue = when (this) {
             '1' -> model.tv1
             '2' -> model.tv2
@@ -584,6 +570,97 @@ class NewProgramGuideActivity : BaseActivity() {
             else -> model.tv0
         }
         irService?.transmit(model.frequency, nValue)
+    }
+
+    private fun switchToTVWithBluetooth(program: ChannelEpgDTO?) {
+        clearCache()
+        lifecycleScope.launch {
+            val model = preferences.btCommandModel
+            val num = program?.CNO.toString().toCharArray().asList()
+
+            Log.e(TAG, "switchToTVWithBluetooth: ${btService.isConnected()}")
+
+            if (btService.isConnected()) {
+                if (model.tvBrandName != IRUtils.LG) {
+                    btService.transmit(model.TV)
+                    delay(model.delayMs)
+                }
+                switchedToTV = true
+                when (num.size) {
+                    4 -> {
+                        launch {
+                            num[num.size - 4].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 3].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 2].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 1].sendBleCode(model)
+                        }
+                    }
+
+                    3 -> {
+                        launch {
+                            num[num.size - 3].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 2].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 1].sendBleCode(model)
+                        }
+                    }
+
+                    2 -> {
+                        launch {
+                            num[num.size - 2].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 1].sendBleCode(model)
+                        }
+                    }
+
+                    1 -> {
+                        num[0].sendBleCode(model)
+                    }
+                }
+            } else {
+                val msg = BTService.MSG_BT_NOT_CONNECTED
+                Log.e(TAG, "switchToTVWithBluetooth: $msg")
+                showToast(msg)
+            }
+
+
+        }
+    }
+
+    private fun Char.sendBleCode(model: BTCommandModel) {
+        val nValue = when (this) {
+            '1' -> model.tv1
+            '2' -> model.tv2
+            '3' -> model.tv3
+            '4' -> model.tv4
+            '5' -> model.tv5
+            '6' -> model.tv6
+            '7' -> model.tv7
+            '8' -> model.tv8
+            '9' -> model.tv9
+            else -> model.tv0
+        }
+        btService.transmit(nValue)
+    }
+
+    //    Switch from Live TV to HDMI 1 only
+    fun switchToHDMI() {
+        if (preferences.isIRRemote) {
+            val model = preferences.irFrequencyModel
+            irService?.transmit(model.frequency, model.HDMI1)
+            switchedToTV = false
+        } else {
+            if (btService.isConnected()){
+                val model = preferences.btCommandModel
+                btService.transmit(model.HDMI1)
+                switchedToTV = false
+            } else showToast(BTService.MSG_BT_NOT_CONNECTED)
+        }
+        Log.e(TAG, "switchToHDMI  $switchedToTV")
     }
 
     private fun hasReadTvListings(context: Context): Boolean {
@@ -756,6 +833,28 @@ class NewProgramGuideActivity : BaseActivity() {
         }
 
     }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_BACK -> {
+                onBackPressed()
+            }
+        }
+        return false
+    }
+
+    override fun onBackPressed() {
+        lifecycleScope.launch {
+            delay(1000)
+            if (switchedToTV) {
+                switchToHDMI()
+            } else {
+                super.onBackPressed()
+                finish()
+            }
+        }
+    }
+
 
     companion object {
         var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
