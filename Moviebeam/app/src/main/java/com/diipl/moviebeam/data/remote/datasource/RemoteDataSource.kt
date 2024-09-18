@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.data.remote.datasource
 
+import android.R.attr.data
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
@@ -35,9 +36,11 @@ import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
+import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toQueryMap
 import javax.inject.Inject
 import javax.inject.Named
+
 
 private const val TAG = "RemoteDataSource"
 
@@ -53,56 +56,74 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun getMoviesAccess(request: RentalMovieRequest): RentalMovieResponse? {
         val result = safeAPiCall { moviesAPIService.getRentalMovieAccess(request.toQueryMap()) }
-        return ApiResponseParsing().getResponseAsObject(result.data, RentalMovieResponse::class)
+
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, RentalMovieResponse::class)
+        logD("In Rental Request Callback: " + "ERROR_CODE = " + responseObject?.errorCode + " RENTALID = " + responseObject?.rentalID)
+
+        return responseObject
     }
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {
         val result = safeAPiCall {
             lgRestApiService.getWeather(ua)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, WeatherResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, WeatherResponse::class)
+        logD("In Weather Callback Success ")
+        return responseObject
     }
 
     suspend fun getHotelServiceInfo(accountId: String): HotelServiceResponse? {
         val result = safeAPiCall {
             lgRestApiService.getHotelServices(accountId)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, HotelServiceResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, HotelServiceResponse::class)
+        logD("In Hotel Services Callback: version = "+ responseObject?.version)
+        return responseObject
     }
 
     suspend fun getLocalAttractionInfo(ua: String): LocalAttractionResponse? {
         val result = safeAPiCall {
             lgRestApiService.getLocalAttraction(ua)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, LocalAttractionResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, LocalAttractionResponse::class)
+        logD("In Local Attractions Callback: version = " + responseObject?.version)
+        return responseObject
     }
 
     suspend fun getMoviesInfo(ua: String): MoviesResponse? {
         val result = safeAPiCall {
             lgRestApiService.getMovies(ua)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, MoviesResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, MoviesResponse::class)
+        logD("In Releases Callback: version = "+ responseObject?.version)
+        return responseObject
     }
 
     suspend fun getShowtimeInfo(ua: String): ShowTimeResponse? {
         val result = safeAPiCall {
             lgRestApiService.getShowtime(ua)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, ShowTimeResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, ShowTimeResponse::class)
+        logD("In Showtime Releases Callback: version = "+responseObject?.version)
+        return responseObject
     }
 
     suspend fun getThemeDetails(ua: String): ThemeResponse? {
         val result = safeAPiCall {
             lgRestApiService.getThemeDetails(ua)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, ThemeResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, ThemeResponse::class)
+        logD("In Theme Callback: version = "+responseObject?.version)
+        return responseObject
     }
 
     suspend fun getDateTimeData(ua: String): DateTimeResponse? {
         val result = safeAPiCall {
             lgRestApiService.getDateTime(ua)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, DateTimeResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, DateTimeResponse::class)
+        logD("In Date time callback")
+        return responseObject
     }
 
     suspend fun getAccountSetupDetails(
@@ -111,7 +132,9 @@ class RemoteDataSource @Inject constructor(
         val result = safeAPiCall {
             accountSetupApiService.getAccountSetupDetails(cmd, ua, mode)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, AccountSetupResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, AccountSetupResponse::class)
+        logD("In Account Setup Callback ")
+        return responseObject
     }
 
     suspend fun getFlightStatus(
@@ -120,21 +143,27 @@ class RemoteDataSource @Inject constructor(
         val result = safeAPiCall {
             assetApiService.getFlightStatus(cmd, ua, callType, apCode, mode)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, FlightStatusResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, FlightStatusResponse::class)
+        logD("In Flight Status Callback")
+        return responseObject
     }
 
     suspend fun getNewsHeader(ua: String, languageId: Int): NewsHeaderResponse? {
         val result = safeAPiCall {
             lgRestApiService.getNewsHeader(ua, languageId)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, NewsHeaderResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, NewsHeaderResponse::class)
+        logD("In News Header Callback ")
+        return responseObject
     }
 
     suspend fun getNewsDetails(newsId: Int): NewsResponse? {
         val result = safeAPiCall {
             lgRestApiService.getNewsDetails(newsId)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, NewsResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, NewsResponse::class)
+        logD("In News Callback")
+        return responseObject
     }
 
 
@@ -154,7 +183,9 @@ class RemoteDataSource @Inject constructor(
                 stbType
             )
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, StbMasterResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, StbMasterResponse::class)
+        logD("In stbMaster Request Callback: ERROR_CODE = "+ responseObject?.errorCode)
+        return responseObject
     }
 
     suspend fun sendGuestFeedback(
@@ -163,42 +194,59 @@ class RemoteDataSource @Inject constructor(
         val result = safeAPiCall {
             lgRestApiService.sendGuestFeedback(ua, feedback, stbTime)
         }
-        return ApiResponseParsing().getResponseAsObject(result.data, FeedbackResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, FeedbackResponse::class)
+        logD("In Guest Feedback Callback")
+        return responseObject
     }
 
     suspend fun laundryResponse(UA: String, serviceId: String): LaundryResponce? {
         val result = safeAPiCall { lgRestApiService.getLaundry(UA, serviceId) }
-        return ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, LaundryResponce::class)
+        logD("In Laundry Releases Callback: version = "+responseObject?.version)
+        return responseObject
     }
 
     suspend fun getChannelList(ua: String): ChannelListResponse? {
         val result = safeAPiCall { lgRestApiService.getChannelList(ua) }
-        return ApiResponseParsing().getResponseAsObject(result.data, ChannelListResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, ChannelListResponse::class)
+
+        logD("In Channel List Callback, Total Channels "+responseObject?.channelLcnList?.size)
+        return responseObject
     }
 
     suspend fun getEPGFromCloud(url: String): EPGResponse? {
         val result = safeAPiCall { epgApiService.getEPGFromCloud(url) }
+        logD("In EPGFromCloud Callback Success ")
+
         return result.data
     }
 
     suspend fun getEPGDataFromServer(ua: String): EPGResponse? {
         val result = safeAPiCall { lgRestApiService.getEPGDataFromServer(ua) }
-        return ApiResponseParsing().getResponseAsObject(result.data, EPGResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, EPGResponse::class)
+        logD("Fetching EPG data from server")
+        return responseObject
     }
 
     suspend fun setRentalReversal(request: RentalReversalRequest): RentalReversalResponse? {
         val result = safeAPiCall { moviesAPIService.setRentalReversal(request.toQueryMap()) }
-        return ApiResponseParsing().getResponseAsObject(result.data, RentalReversalResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, RentalReversalResponse::class)
+        logD("In Rental Reversal Request Callback, Error Code "+responseObject?.errorCode)
+        return responseObject
     }
 
     suspend fun buyPassRequest(request: AdultDayPassRequest): DayPassResponse? {
         val result = safeAPiCall { moviesAPIService.buyPassRequest(request.toQueryMap()) }
-        return ApiResponseParsing().getResponseAsObject(result.data, DayPassResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, DayPassResponse::class)
+        logD("In buyPassRequest Callback Success ")
+        return responseObject
     }
 
     suspend fun sendSysInfo(ua: String, body: SysInfoDTO): Int? {
         val result = safeAPiCall { sysInfoService.sendSysInfo(ua, body) }
-        return ApiResponseParsing().parseSysInfoResponse(result.data)
+        val responseObject = ApiResponseParsing().parseSysInfoResponse(result.data)
+        logD("SYSINFO Callback Success ")
+        return responseObject
     }
 
     suspend fun getSoftwareUpdateDetails(stbTypeId: Int, ua: String): SoftwareUpgradeResponse? {
@@ -208,12 +256,19 @@ class RemoteDataSource @Inject constructor(
 
     suspend fun getTvTickerMessages(ua: String): TickerResponse? {
         val result = safeAPiCall { lgRestApiService.getTvTickerMessages(ua) }
-        return ApiResponseParsing().getResponseAsObject(result.data, TickerResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, TickerResponse::class)
+        logD("In TickerModel callback Success ")
+        return responseObject
     }
 
     suspend fun getGuestMessages(ua: String, guestSessionId: String): MessageResponse? {
         val result = safeAPiCall { lgRestApiService.getGuestMessages(ua, guestSessionId) }
-        return ApiResponseParsing().getResponseAsObject(result.data, MessageResponse::class)
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, MessageResponse::class)
+        val messageCount = responseObject?.messagesList?.size ?: 0
+
+        logD("In Message Callback, new messages count = $messageCount")
+        return responseObject
+
     }
 
 }
