@@ -158,9 +158,14 @@ class LoggingService : Service() {
                     Panel = getCurrentPanelNumber().toInteger(),
                     M = message
                 )
-                val isSent = webSocket?.send(msgDto.toJson())
 //                    webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"$formattedDate\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
-                Log.d(TAG, "sendMessageToWebSocket: $isSent  ${msgDto.toJson()}")
+
+                val customJson = """{"T":"I","P":"${msgDto.P}","UA":"${msgDto.UA}","HID":${msgDto.HID},"ROOMNO":"${msgDto.ROOMNO}","IP":"${msgDto.IP}","TSP":"${msgDto.TSP}","Panel":${msgDto.Panel},"M":"${msgDto.M}"}"""
+
+                val isSent = webSocket?.send(customJson)
+
+                Log.d(TAG, "sendMessageToWebSocket: $isSent  $customJson")
+
                 if (isSent == false) {
                     BaseActivity.currentActivity?.launchLogger()
                 }
