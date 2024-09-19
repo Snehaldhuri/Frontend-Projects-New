@@ -75,6 +75,12 @@ object Constants {
     const val IN_ROOM_DINING_ID = "inRoomDining"
     const val LOCAL_ATTRACTION_ID = "lam"
     const val FOOD_DELIVERY_ID = "foodDelivery"
+    const val MAIN_WEATHER_ID = "mainWeather"
+    const val MAIN_GUEST_MSG_ID = "mainmsg"
+    const val MAIN_FEEDBACK_ID = "mainFeedback"
+    const val MAIN_NEWS_ID = "mNews"
+    const val CONCIERGE_MAIN_ID = "conm"
+
 
     //Home Page Menu Button Title
 //    const val PROGRAM_GUIDE = "Program Guide"
@@ -90,7 +96,11 @@ object Constants {
     const val IN_ROOM_DINING = "In Room Dining"
     const val LOCAL_ATTRACTION = "Local Attractions"
     const val FOOD_DELIVERY = "Food Delivery"
-
+    const val MAIN_GUEST_MSG = "Message"
+    const val MAIN_FEEDBACK = "Guest Feedback"
+    const val MAIN_CONCIERGE ="Concierge"
+    const val MAIN_WEATHER ="Weather"
+    const val MAIN_NEWS = "News"
 
     //Movies page menu button Id
     const val MOVIE_RENTALS_ID = "movieRentals"
@@ -130,7 +140,13 @@ object Constants {
         BtnModel(CRACKLE_DEFAULT_ID, R.drawable.crackle_white_icon, CRACKLE_DEFAULT),
         BtnModel(IN_ROOM_DINING_ID, R.drawable.in_room_dining_menu, IN_ROOM_DINING),
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
-        BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
+        BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY),
+        BtnModel(MAIN_WEATHER_ID, R.drawable.weather, MAIN_WEATHER),
+        BtnModel(MAIN_GUEST_MSG_ID, R.drawable.messages, MAIN_GUEST_MSG),
+        BtnModel(MAIN_FEEDBACK_ID, R.drawable.guest_feedback, MAIN_FEEDBACK) ,
+        BtnModel(MAIN_NEWS_ID, R.drawable.news, MAIN_NEWS),
+        BtnModel(CONCIERGE_MAIN_ID, R.drawable.concierge, MAIN_CONCIERGE),
+
     )
     const val APP_LIST_PARAM = "APP_LIST"
     const val CLEAR_CREDENTIALS_REQUEST_CODE = 10

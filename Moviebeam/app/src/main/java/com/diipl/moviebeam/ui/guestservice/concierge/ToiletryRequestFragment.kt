@@ -14,6 +14,8 @@ import com.diipl.moviebeam.data.dto.toiletryResponse.ToiletryResponse
 import com.diipl.moviebeam.databinding.FragmentToiletryRequestBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.ui.guestservice.GuestServiceViewModel
+import com.diipl.moviebeam.ui.guestservice.concierge.laundry.LaundryRequestErrorFragment
+import com.diipl.moviebeam.ui.guestservice.concierge.laundry.LaundryRequestSummaryFragment
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getGradientColor
@@ -117,6 +119,9 @@ class ToiletryRequestFragment(
     private fun updateSelectedItems() {
         val selectedItems =
             (binding.rvToiletryRequest.adapter as? ToiletryRequestAdapter)?.getSelectedItems()
+
+        val isConciergeVisible = requireActivity().findViewById<View>(R.id.fv_concierge)?.visibility == View.VISIBLE
+
         if (!selectedItems.isNullOrEmpty()) {
             val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
             val summaryFragment = ToiletryRequestSummaryFragment {
@@ -124,20 +129,24 @@ class ToiletryRequestFragment(
             }
             summaryFragment.setItemList(selectedItems)
 
-            fragmentTransaction.replace(
-                R.id.fv_tab_content,
-                summaryFragment
-            )
+            if (isConciergeVisible) {
+                fragmentTransaction.replace(R.id.fv_concierge, summaryFragment)
+            } else {
+                fragmentTransaction.replace(R.id.fv_tab_content, summaryFragment)
+            }
 
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
         } else {
             val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
-            val summaryFragment = ToiletryRequestErrorFragment()
-            fragmentTransaction.replace(
-                R.id.fv_tab_content,
-                summaryFragment
-            )
+            val errorFragment = ToiletryRequestErrorFragment()
+
+            if (isConciergeVisible) {
+                fragmentTransaction.replace(R.id.fv_concierge, errorFragment)
+            } else {
+                fragmentTransaction.replace(R.id.fv_tab_content, errorFragment)
+            }
+
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
         }

@@ -42,6 +42,10 @@ import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.casting.HotspotActivity
+import com.diipl.moviebeam.ui.concierge.ConciergeActivity
+import com.diipl.moviebeam.ui.guest.feedback.GuestFeedbackActivity
+import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
+import com.diipl.moviebeam.ui.guest.news.NewsActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
@@ -49,6 +53,7 @@ import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
+import com.diipl.moviebeam.ui.weather.WeatherActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.Constants.LA_ID
@@ -411,6 +416,26 @@ class MainMenuActivity : BaseActivity() {
                                     intent = Intent(this, InRoomDiningActivity::class.java)
 //                            intent = Intent(this, GuestServiceActivity::class.java)
 //                            intent.putExtra("btnId", IN_ROOM_ID)
+                                }
+
+                                Constants.CONCIERGE_MAIN_ID -> {
+                                    intent = Intent(this, ConciergeActivity::class.java)
+                                }
+
+                                Constants.MAIN_WEATHER_ID -> {
+                                    intent = Intent(this, WeatherActivity::class.java)
+                                }
+
+                                Constants.MAIN_GUEST_MSG_ID -> {
+                                    intent = Intent(this, GuestMessageActivity::class.java)
+                                }
+
+                                Constants.MAIN_FEEDBACK_ID -> {
+                                    intent = Intent(this, GuestFeedbackActivity::class.java)
+                                }
+
+                                Constants.MAIN_NEWS_ID -> {
+                                    intent = Intent(this, NewsActivity::class.java)
                                 }
 
                                 else -> {
