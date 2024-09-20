@@ -864,14 +864,14 @@ class NewProgramGuideActivity : BaseActivity() {
         finish()
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {
-                onBackPressed()
-            }
-        }
-        return false
-    }
+//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+//        when (keyCode) {
+//            KeyEvent.KEYCODE_BACK -> {
+//                onBackPressed()
+//            }
+//        }
+//        return false
+//    }
 
     override fun onBackPressed() {
         lifecycleScope.launch {
