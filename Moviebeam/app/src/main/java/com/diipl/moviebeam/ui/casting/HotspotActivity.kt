@@ -132,7 +132,9 @@ class HotspotActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
     }
-
+    fun handleBackClick() {
+        finish()
+    }
 
     data class HotSpotDetails(
         val hotSpotSwitch: Boolean,

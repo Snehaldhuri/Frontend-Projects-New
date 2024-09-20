@@ -20,6 +20,16 @@ object Constants {
     const val ADULT_LOCKED = 5
     const val PARENTAL_CONTROL = 6
 
+    //Keycodes For Remote
+    const val GUIDE_KEY = 139
+    const val APP_WORLD_KEY = 140
+    const val LIVE_TV_KEY = 116
+    const val CASTING_KEY = 121
+    const val EXIT_KEY = 133
+    const val PROGRAM_SEARCH_KEY = 136
+    const val NETFLIX_KEY = 137
+    const val YOUTUBE_KEY = 138
+
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
     const val C_TYPE_TRAILER: String = "TRAILER"
@@ -50,6 +60,8 @@ object Constants {
     const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
 
     const val NETFLIX_PACKAGE_NAME = "com.netflix.ninja"
+    const val YOUTUBE_PACKAGE_NAME = "com.google.android.youtube.tv"
+
     const val PRIME_VIDEO_PACKAGE_NAME = "com.amazon.amazonvideo.livingroom"
     const val MDM_PACKAGE_NAME = "com.diipl.mdm"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"

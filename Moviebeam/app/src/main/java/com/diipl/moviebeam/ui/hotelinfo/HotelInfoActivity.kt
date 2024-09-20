@@ -264,16 +264,6 @@ class HotelInfoActivity : BaseActivity(), HotelInfoTabAdapter.OnFocusChangeListe
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {
-                handleBackClick()
-                return true
-            }
-        }
-        return false
-    }
-
     fun handleBackClick() = lifecycleScope.launch {
         Log.e(TAG, "handleBackClick: ")
         if (binding.fragmentContainerHelpInfo.isVisible) {

@@ -350,7 +350,7 @@ class MainMenuActivity : BaseActivity() {
                             releaseVideoPlayer()
                             val bundle = Bundle()
                             ThemeDetails.TITLE = btn.title
-                            bundle.putString(
+                           /* bundle.putString(
                                 "hotelChannel",
                                 response.hotelChannelList.get(0).toJson()
                             )
@@ -358,7 +358,7 @@ class MainMenuActivity : BaseActivity() {
                                 response.httpStreamingHotelvideoUrl + response.hotelChannelList.get(
                                     0
                                 ).fileName
-                            bundle.putString("hotelChannelVideo", hotelChannelVideo)
+                            bundle.putString("hotelChannelVideo", hotelChannelVideo)*/
                             var intent: Intent? = null
                             when (btn.btnId) {
                                 Constants.HOTEL_SERVICES_ID -> {
@@ -532,12 +532,12 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {}
-        }
-        return false
-    }
+//    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
+//        when (keyCode) {
+//            KeyEvent.KEYCODE_BACK -> {}
+//        }
+//        return false
+//    }
 
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {

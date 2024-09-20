@@ -27,7 +27,10 @@ class InRoomDiningActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.btnBack.handleFocusChange()
-        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { handleBackRemoteClick() }
     }
 
+    fun handleBackRemoteClick() {
+        finish()
+    }
 }
