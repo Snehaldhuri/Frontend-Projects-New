@@ -58,6 +58,15 @@ class MainMenuBtnAdapter(
 
     override fun getItemCount(): Int = itemList.size
 
+
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
+    override fun getItemId(position: Int): Long {
+        return super.getItemId(position)
+    }
+
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 

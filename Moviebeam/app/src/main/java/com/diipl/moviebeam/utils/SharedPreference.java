@@ -9,7 +9,8 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.diipl.moviebeam.data.dto.remote.FrequencyModel;
+import com.diipl.moviebeam.data.dto.remote.BTCommandModel;
+import com.diipl.moviebeam.data.dto.remote.IRFrequencyModel;
 import com.google.gson.Gson;
 
 import java.io.File;
@@ -683,11 +684,28 @@ public class SharedPreference {
         putBoolean("rebooted", rebooted);
     }
 
-    public void setIRFrequencyModel(FrequencyModel model){
+    public void setIRFrequencyModel(IRFrequencyModel model){
         putString("IRFrequencyModel", new Gson().toJson(model));
     }
-    public FrequencyModel getIRFrequencyModel(){
+    public IRFrequencyModel getIRFrequencyModel(){
         String obj = getString("IRFrequencyModel");
-        return new Gson().fromJson(obj, FrequencyModel.class);
+        return new Gson().fromJson(obj, IRFrequencyModel.class);
     }
+
+    public void setBTCommandModel(BTCommandModel model){
+        putString("BTCommandModel", new Gson().toJson(model));
+    }
+    public BTCommandModel getBTCommandModel(){
+        String obj = getString("BTCommandModel");
+        return new Gson().fromJson(obj, BTCommandModel.class);
+    }
+
+    public boolean isIRRemote(){
+        return getBoolean("isIRRemote");
+    }
+
+    public void setIRRemote(boolean isIRRemote){
+        putBoolean("isIRRemote", isIRRemote);
+    }
+
 }

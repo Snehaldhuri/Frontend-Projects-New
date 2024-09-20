@@ -66,6 +66,15 @@ class SerialActivity : BaseActivity() {
                 PreferenceDataStoreConstants.IS_STB_ALLOCATED,
                 false
             )
+
+            val serialNo = preferenceDataStoreHelper.getFirstPreference(
+                PreferenceDataStoreConstants.SERIAL_NO,
+                ""
+            )
+            if (serialNo.lowercase() == "UNKNOWN".lowercase()){
+                fetchSerialNo()
+                return@launch
+            }
             handleStbAllocationStatusResponse(isValid)
         }
     }
@@ -107,6 +116,10 @@ class SerialActivity : BaseActivity() {
 
     private fun processSerialNo(serialNo: String) {
         logD("processSerialNo: $serialNo")
+        if (serialNo.lowercase() == "UNKNOWN".lowercase()){
+            fetchSerialNo()
+            return
+        }
         val ua = "${Constants.UA_PREFIX}${serialNo}"
         serialViewModel.setDataInDataStore(
             preferenceDataStoreHelper,

@@ -20,6 +20,8 @@ import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
 import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
+import com.diipl.moviebeam.utils.IRUtils
+import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
@@ -58,6 +60,10 @@ class WeatherDateTimeFragment : Fragment() {
     lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
+    @Inject
+    lateinit var preferences: SharedPreference
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -67,6 +73,13 @@ class WeatherDateTimeFragment : Fragment() {
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
         initializeDatastoreParams()
+
+        if (preferences.irFrequencyModel == null)
+            preferences.irFrequencyModel = IRUtils.SELECTED_IR_MODEL
+
+        if (preferences.btCommandModel == null)
+            preferences.btCommandModel = IRUtils.SELECTED_BT_MODEL
+
 
         mainMenuViewModel.getThemeResponseData(themeDataStore)
         mainMenuViewModel.getWeatherResponseData(weatherDataStore)

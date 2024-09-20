@@ -80,6 +80,7 @@ import kotlinx.coroutines.launch
 import java.util.Collections
 import javax.inject.Inject
 
+private const val TAG = "MainMenuActivity"
 @AndroidEntryPoint
 class MainMenuActivity : BaseActivity() {
 
@@ -95,6 +96,7 @@ class MainMenuActivity : BaseActivity() {
     private var isServiceStarted = false
     private lateinit var player: ExoPlayer
     private var isNetworkConnected = 0
+    private var playCount = 0
 
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
@@ -183,6 +185,16 @@ class MainMenuActivity : BaseActivity() {
         }, 240)
 
         lifecycleScope.launch {
+            while (true){
+                if (ThemeDetails.LOGO_IMAGE != null){
+                    binding.ivHotelLogo.loadLogo()
+                    break
+                }
+                delay(1000)
+            }
+        }
+
+       /* lifecycleScope.launch {
             while (!player.isPlaying) {
                 if (hotelVideoUrl.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0) {
                     initializePlayer()
@@ -190,7 +202,7 @@ class MainMenuActivity : BaseActivity() {
                 }
                 delay(5000)
             }
-        }
+        }*/
 
     }
 
@@ -214,12 +226,11 @@ class MainMenuActivity : BaseActivity() {
         anim.fillAfter = true
     }
 
+
+
     private fun initializePlayer() {
-
-        if (!::player.isInitialized) {
-            init()
-        }
-
+        init()
+        playCount++
         if (hotelVideoUrl.isNotEmpty()) {
             binding.videoView.toVisible()
             player.setMediaItem(MediaItem.fromUri(hotelVideoUrl))
@@ -228,10 +239,12 @@ class MainMenuActivity : BaseActivity() {
             player.playWhenReady = true
             player.prepare()
         } else {
-            lifecycleScope.launch {
-                delay(2000)
-                initializePlayer()
-            }
+            if (playCount <= 2){
+                lifecycleScope.launch {
+                    delay(2000)
+                    initializePlayer()
+                }
+            } else releaseVideoPlayer()
         }
     }
 
@@ -240,7 +253,7 @@ class MainMenuActivity : BaseActivity() {
         override fun onPlayerError(error: PlaybackException) {
             super.onPlayerError(error)
             Log.e("TAG", "onPlayerError: ${error.localizedMessage}")
-            releaseVideoPlayer()
+            if (error.localizedMessage!! == "Source error") releaseVideoPlayer()
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
@@ -252,15 +265,16 @@ class MainMenuActivity : BaseActivity() {
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
-            logD("onMediaItemTransition: $reason")
-            if (reason == 0) HOTEL_VIDEO_LOOP_COUNT--
+            if (reason == 0) HOTEL_VIDEO_LOOP_COUNT -= 1
         }
     }
 
     private fun releaseVideoPlayer() {
         binding.videoView.toGone()
-        if (::player.isInitialized)
+        if (::player.isInitialized) {
+            player.stop()
             player.release()
+        }
     }
 
     private fun handleTickerResponse(status: Resource<TickerResponse>) {
@@ -394,10 +408,10 @@ class MainMenuActivity : BaseActivity() {
                                         } else {
                                             intent = Intent(this, CastingActivity::class.java)
                                         }
-                                    }else{
+                                    } else {
                                         if (!castingUrl.isNullOrEmpty()) {
                                             intent = Intent(this, CastingActivity::class.java)
-                                        }else{
+                                        } else {
                                             showToast(getString(R.string.please_contact_the_front_desk_for_assistance))
                                         }
                                     }
@@ -539,14 +553,13 @@ class MainMenuActivity : BaseActivity() {
 //        return false
 //    }
 
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
+    private fun initializeDatastoreParams() = lifecycleScope.launch {
             hotelVideoUrl = getHotelVideoUrl()
             gradientStartColor = getGradientStartColor()
             gradientEndColor = getGradientEndColor()
             castingUrl = getCastingUrl()
         }
-    }
+
 
     private suspend fun getHotelVideoUrl(): String {
         return preferenceDataStoreHelper.getFirstPreference(
