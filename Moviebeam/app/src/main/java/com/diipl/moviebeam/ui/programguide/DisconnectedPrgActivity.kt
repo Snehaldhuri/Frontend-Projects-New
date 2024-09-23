@@ -470,14 +470,14 @@ class DisconnectedPrgActivity : BaseActivity() {
         Log.e(TAG, "switchToHDMI  $switchedToTV")
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {
-                onBackPressed()
-            }
-        }
-        return false
-    }
+//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+//        when (keyCode) {
+//            KeyEvent.KEYCODE_BACK -> {
+//                onBackPressed()
+//            }
+//        }
+//        return false
+//    }
 
     override fun onDestroy() {
         super.onDestroy()
