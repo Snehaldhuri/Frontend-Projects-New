@@ -2,10 +2,15 @@ package com.diipl.moviebeam.ui.stbdetail
 
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
+import android.os.RemoteException
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import com.android.tv.settings.aidl.regular.IDeviceNameConfigureCallback
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
@@ -23,6 +28,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
+import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
@@ -94,6 +100,9 @@ class STBDetailsActivity : BaseActivity() {
 
     @Inject
     lateinit var preferences: SharedPreference
+
+    @Inject
+    lateinit var hardwareAPI: HardwareAPI
 
     //Variables from datastore
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
@@ -210,6 +219,21 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {
                     stbDetailViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
+                    if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
+                        hardwareAPI.myService?.setDeviceName(
+                            "MBAP_${it.accountId}_${it.roomNo}",
+                            object : IDeviceNameConfigureCallback {
+                                @Throws(RemoteException::class)
+                                override fun onDeviceNameConfigureCallback(s: String) {
+                                    Log.e("TAG", "onDeviceNameConfigureCallback: setDeviceName $s")
+                                }
+
+                                override fun asBinder(): IBinder? {
+                                    return null
+                                }
+                            }
+                        )
+                    }
                     CoroutineScope(Dispatchers.Main).launch {
                         preferenceDataStoreHelper.putPreference(
                             PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
