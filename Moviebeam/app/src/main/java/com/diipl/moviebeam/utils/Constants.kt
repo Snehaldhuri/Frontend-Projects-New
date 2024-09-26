@@ -21,14 +21,14 @@ object Constants {
     const val PARENTAL_CONTROL = 6
 
     //Keycodes For Remote
-    const val GUIDE_KEY = 139
-    const val APP_WORLD_KEY = 140
-    const val LIVE_TV_KEY = 116
-    const val CASTING_KEY = 121
-    const val EXIT_KEY = 133
-    const val PROGRAM_SEARCH_KEY = 136
-    const val NETFLIX_KEY = 137
-    const val YOUTUBE_KEY = 138
+    const val GUIDE_KEY = 67
+    const val APP_WORLD_KEY = 68
+    const val LIVE_TV_KEY = 70
+    const val CASTING_KEY = 119
+    const val EXIT_KEY = 61
+    const val PROGRAM_SEARCH_KEY = 64
+    const val NETFLIX_KEY = 65
+    const val YOUTUBE_KEY = 66
 
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
@@ -141,6 +141,9 @@ object Constants {
     const val SHO_SERIES_ID = "shoSeries"
     const val SHO_DOCS_ID = "shoDocs"
 
+    val MENU_MESSAGE_MODEL =
+        BtnModel(MAIN_GUEST_MSG_ID, R.drawable.messages, MAIN_GUEST_MSG)
+
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),
         BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
@@ -154,12 +157,12 @@ object Constants {
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
         BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY),
         BtnModel(MAIN_WEATHER_ID, R.drawable.weather, MAIN_WEATHER),
-        BtnModel(MAIN_GUEST_MSG_ID, R.drawable.messages, MAIN_GUEST_MSG),
+        MENU_MESSAGE_MODEL,
         BtnModel(MAIN_FEEDBACK_ID, R.drawable.guest_feedback, MAIN_FEEDBACK) ,
         BtnModel(MAIN_NEWS_ID, R.drawable.news, MAIN_NEWS),
         BtnModel(CONCIERGE_MAIN_ID, R.drawable.concierge, MAIN_CONCIERGE),
 
-    )
+        )
     const val APP_LIST_PARAM = "APP_LIST"
     const val CLEAR_CREDENTIALS_REQUEST_CODE = 10
 
@@ -226,6 +229,8 @@ object Constants {
 
     val MESSAGE_MODEL =
         GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black)
+
+
     val GUEST_SERVICE_BUTTON_LIST = listOf(
         GsBtnModel(WEATHER_ID, WEATHER, R.drawable.weather, R.drawable.weather_black),
         GsBtnModel(

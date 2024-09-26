@@ -65,6 +65,9 @@ class RefreshingUiViewModel @Inject constructor(
     private val _guestMessageLiveData = MutableLiveData<Resource<MessageResponse>>()
     val guestMessageLiveData: LiveData<Resource<MessageResponse>> get() = _guestMessageLiveData
 
+
+
+
     fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _accountSetupLiveData.postValue(Resource.Loading())
@@ -467,6 +470,13 @@ class RefreshingUiViewModel @Inject constructor(
 
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
+    }
+
+    private val _mainMsgStatus = MutableLiveData<Boolean>()
+    val mainMsgStatus: LiveData<Boolean> = _mainMsgStatus
+
+    fun setMainMsgStatus(status: Boolean) {
+        _mainMsgStatus.value = status
     }
 
 }

@@ -146,7 +146,7 @@ abstract class BaseActivity : AppCompatActivity() {
             }
         }
 
-        if(keyEvent.keyCode == Constants.APP_WORLD_KEY)
+        if(keyEvent.scanCode == Constants.APP_WORLD_KEY)
         {
             //Apps
             if (currentActivity !is AppWorldActivity) {
@@ -154,7 +154,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        if(keyEvent.keyCode == Constants.LIVE_TV_KEY || keyEvent.keyCode == Constants.GUIDE_KEY)
+        if(keyEvent.scanCode == Constants.LIVE_TV_KEY || keyEvent.scanCode == Constants.GUIDE_KEY)
         {
             //program Guide
             if (currentActivity !is NewProgramGuideActivity) {
@@ -165,7 +165,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        if(keyEvent.keyCode == Constants.CASTING_KEY)
+        if(keyEvent.scanCode == Constants.CASTING_KEY)
         {
             //Casting
             if (currentActivity !is CastingActivity) {
@@ -185,22 +185,22 @@ abstract class BaseActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        if(keyEvent.keyCode == Constants.EXIT_KEY)
+        if(keyEvent.scanCode == Constants.EXIT_KEY)
         {
             //Exit
         }
-        if(keyEvent.keyCode == Constants.PROGRAM_SEARCH_KEY)
+        if(keyEvent.scanCode == Constants.PROGRAM_SEARCH_KEY)
         {
             //Search
             if (currentActivity is NewProgramGuideActivity) {
                 (currentActivity as NewProgramGuideActivity).showSearchDialog()
             }
         }
-        if (keyEvent.keyCode == Constants.NETFLIX_KEY) {
+        if (keyEvent.scanCode == Constants.NETFLIX_KEY) {
             // Netflix
             onBaseAppClicked(Constants.NETFLIX_PACKAGE_NAME)
         }
-        if(keyEvent.keyCode == Constants.YOUTUBE_KEY){
+        if(keyEvent.scanCode == Constants.YOUTUBE_KEY){
             //Youtube
             onBaseAppClicked(Constants.YOUTUBE_PACKAGE_NAME)
         }
