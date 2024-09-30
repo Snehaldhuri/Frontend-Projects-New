@@ -160,7 +160,7 @@ object Constants {
         MENU_MESSAGE_MODEL,
         BtnModel(MAIN_FEEDBACK_ID, R.drawable.guest_feedback, MAIN_FEEDBACK) ,
         BtnModel(MAIN_NEWS_ID, R.drawable.news, MAIN_NEWS),
-        BtnModel(CONCIERGE_MAIN_ID, R.drawable.concierge, MAIN_CONCIERGE),
+        BtnModel(CONCIERGE_MAIN_ID, R.drawable.concierge_icon_white, MAIN_CONCIERGE),
 
         )
     const val APP_LIST_PARAM = "APP_LIST"

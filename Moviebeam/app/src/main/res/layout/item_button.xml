@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="85dp"
     android:layout_margin="@dimen/dp_4"
-    android:background="?android:attr/selectableItemBackground"
+    android:background="@drawable/btn_bg_gradient_default"
     android:clickable="true"
     android:layout_gravity="center"
     android:focusable="true"
@@ -25,7 +25,6 @@
         android:layout_marginStart="@dimen/dp_8"
         android:layout_marginEnd="@dimen/dp_8"
         android:contentDescription="@string/menu_button_image"
-        android:src="@drawable/app_world_icon"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="@+id/gl_vertical_40"
@@ -45,5 +44,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_40"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/iv_app_icon"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/round_outline_8dp"
+        android:clipToOutline="true"
+        android:contentDescription="@string/app_icon"
+        android:scaleType="centerCrop" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

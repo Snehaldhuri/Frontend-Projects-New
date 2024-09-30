@@ -27,6 +27,7 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.accountsetup.Buttons
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -363,10 +364,8 @@ class MainMenuActivity : BaseActivity() {
                         if (guestMessages == 0) {
                             btnModelList.remove(Constants.MENU_MESSAGE_MODEL)
                         }
+                        val sortedBtnModelList = response.buttonsList.let { matchAndSortButtons(it) }
 
-                        val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
-                            btnListFromApi.indexOf(it.btnId)
-                        }
                         val height = if (sortedBtnModelList.size < 5) {
                             resources.getDimensionPixelSize(R.dimen.dp_110)
                         } else {
@@ -487,7 +486,12 @@ class MainMenuActivity : BaseActivity() {
                                 startActivity(it)
                             }
                         }
-                        adapter.itemList = sortedBtnModelList
+                        if (sortedBtnModelList != null) {
+                            adapter.itemList = sortedBtnModelList
+                            if (sortedBtnModelList.size < 5) {
+                                binding.cardView.layoutParams.height = 220
+                            }
+                        }
                         binding.rvMenuButton.adapter = adapter
 
                         binding.pbLoader.toInvisible()
@@ -501,6 +505,26 @@ class MainMenuActivity : BaseActivity() {
                 status?.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
             }
         }
+    }
+
+    private fun matchAndSortButtons(apiButtons: List<Buttons>): List<BtnModel> {
+        val btnModelList = mutableListOf<BtnModel>()
+
+        apiButtons.forEach { apiButton ->
+            Constants.HOME_PAGE_MENU_BUTTON_LIST.find {
+                it.btnId.equals(
+                    apiButton.buttonName,
+                    ignoreCase = true
+                )
+            }?.let { matchedBtn ->
+                btnModelList.add(matchedBtn)
+            }
+
+            if (apiButton.isApp == true)
+                btnModelList.add(BtnModel(isApp = true, appPackageId = apiButton.appPackageId!!))
+        }
+
+        return btnModelList
     }
 
     private fun handleGuestMessageResponse(status: Resource<MessageResponse>) {
