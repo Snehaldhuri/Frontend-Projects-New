@@ -79,7 +79,7 @@ class MainMenuBtnAdapter(
         val app = context.getInstalledAppInfo(item.appPackageId)
 
         if (item.isApp && app != null) {
-            holder.binding.root.setPadding(5)
+            holder.binding.root.setPadding(3)
             val drawable = context.packageManager.getApplicationBanner(item.appPackageId)
             holder.binding.ivAppIcon.setImageDrawable(drawable)
             holder.binding.root.setOnClickListener { onAppClicked(item.appPackageId) }
