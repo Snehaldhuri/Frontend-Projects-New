@@ -13,7 +13,7 @@
     <color name="transparent">#00000000</color>
     <color name="carousel_focused">#FFFFFF</color>
     <color name="carousel_not_focused">#C0C0C0</color>
-    <color name="menu_list_bg">#616161</color>
+    <color name="menu_list_bg">#B3616161</color>
 
     <color name="home_menu_title">#EBEBEB</color>
     <color name="home_page_greeting_text_color">#FFB81A</color>
