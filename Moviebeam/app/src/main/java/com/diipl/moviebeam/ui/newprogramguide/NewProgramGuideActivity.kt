@@ -861,7 +861,7 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     fun handleBackRemoteClick() {
-        finish()
+        onBackPressed()
     }
 
 //    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

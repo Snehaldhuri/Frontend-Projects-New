@@ -26,6 +26,7 @@ import com.diipl.moviebeam.databinding.ItemButtonBinding
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getInstalledAppInfo
 import com.diipl.moviebeam.utils.getWidthInPercent
 import com.diipl.moviebeam.utils.handleFocusChange
 import kotlinx.coroutines.CoroutineScope
@@ -75,13 +76,12 @@ class MainMenuBtnAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = itemList[position]
 
-        if (item.isApp) {
+        val app = context.getInstalledAppInfo(item.appPackageId)
+
+        if (item.isApp && app != null) {
             holder.binding.root.setPadding(5)
-            holder.binding.ivAppIcon.setImageDrawable(
-                context.packageManager.getApplicationBanner(
-                    item.appPackageId
-                )
-            )
+            val drawable = context.packageManager.getApplicationBanner(item.appPackageId)
+            holder.binding.ivAppIcon.setImageDrawable(drawable)
             holder.binding.root.setOnClickListener { onAppClicked(item.appPackageId) }
 
         } else {
