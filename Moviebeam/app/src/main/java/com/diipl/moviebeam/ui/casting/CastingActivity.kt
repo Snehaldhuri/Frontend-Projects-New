@@ -53,4 +53,8 @@ class CastingActivity : BaseActivity() {
         )
     }
 
+    fun handleBackClick() {
+        finish()
+    }
+
 }

@@ -33,7 +33,6 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.isWorkDone
-import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.ThemeDetails
@@ -115,9 +114,6 @@ class STBDetailsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        if (preferences.irFrequencyModel == null)
-            preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
 
         this.initializeDatastoreParams()
         stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)

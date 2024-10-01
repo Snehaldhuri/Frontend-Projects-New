@@ -431,7 +431,7 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
         }
     }
 
-    private fun handleBackRemoteClick() {
+    fun handleBackRemoteClick() {
         if (conciergeIndex == 1) {
             bindAdapterView(binding.root, Constants.CONCIERGE_ID)
             /*if (binding.fvTabContent.isVisible) {
@@ -444,15 +444,6 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
         } else {
             finish()
         }
-    }
-
-    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {
-                handleBackRemoteClick()
-            }
-        }
-        return false
     }
 
     override fun onItemFocused(position: Int, itemList: List<GsBtnModel>) {

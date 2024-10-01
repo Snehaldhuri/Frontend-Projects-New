@@ -19,20 +19,13 @@ class StartReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_REBOOT) {
             Log.e(TAG, "onReceive: ${intent.action}")
-//            context.showToast(intent.action!!)
-//            GLOBAL_LOOP_SEC = 30
             try {
-                /*  Intent().apply {
-                      component = ComponentName(
-                          context.packageName,
-                          SerialActivity::class.java.name
-                      )
-                      flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                      context.startActivity(this)
-                  }*/
                 val preference = SharedPreference(context)
                 if (preference.irFrequencyModel == null) {
-                    preference.irFrequencyModel = IRUtils.SELECTED_BRAND
+                    preference.irFrequencyModel = IRUtils.SELECTED_IR_MODEL
+                }
+                if (preference.btCommandModel == null) {
+                    preference.btCommandModel = IRUtils.SELECTED_BT_MODEL
                 }
                 context.clearCache()
             } catch (e: Exception) {

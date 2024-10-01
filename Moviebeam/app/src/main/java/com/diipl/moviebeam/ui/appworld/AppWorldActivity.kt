@@ -91,7 +91,7 @@ class AppWorldActivity : BaseActivity() {
 
             appWorldViewModel.validateSession(preferenceDataStoreHelper)
             binding.rvApps.layoutManager = GridLayoutManager(this, 4)
-            binding.btnBack.setOnClickListener { finish() }
+            binding.btnBack.setOnClickListener { handleBackClick() }
             binding.btnBack.handleFocusChange()
             binding.btnClearCredentials.handleFocusChange()
             binding.btnClearCredentials.setOnClickListener {
@@ -301,6 +301,10 @@ class AppWorldActivity : BaseActivity() {
             PreferenceDataStoreConstants.UA,
             ""
         )
+    }
+
+    fun handleBackClick() {
+        finish()
     }
 
     companion object {

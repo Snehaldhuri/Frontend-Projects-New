@@ -1,13 +1,8 @@
 package com.diipl.moviebeam.ui.programguide
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
-import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbManager
-import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,26 +11,23 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.inputmethod.EditorInfo
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
-import com.diipl.moviebeam.data.dto.remote.FrequencyModel
+import com.diipl.moviebeam.data.dto.remote.BTCommandModel
+import com.diipl.moviebeam.data.dto.remote.IRFrequencyModel
 import com.diipl.moviebeam.databinding.ActivityDisconnectedPrgBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
+import com.diipl.moviebeam.service.BTService
 import com.diipl.moviebeam.service.IIrService
 import com.diipl.moviebeam.service.UsbIrService
-import com.diipl.moviebeam.service.isCompatibleDevice
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.splash.BlankActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
@@ -44,7 +36,6 @@ import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadBg
-import com.diipl.moviebeam.utils.loadImagesWithGlideExtLogo
 import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
@@ -78,34 +69,24 @@ class DisconnectedPrgActivity : BaseActivity() {
     @Inject
     lateinit var channelListDataStore: DataStore<ChannelListResponse>
 
-    private var irService: IIrService? = null
-
-    private val usbManager: UsbManager by lazy { getSystemService(USB_SERVICE) as UsbManager }
-    private lateinit var usbDevice: UsbDevice
     private var hotelChannelVideo =""
     private var hotelChannelNo =""
     private var hotelChannelName =""
 
+    private var irService: IIrService? = null
+    private lateinit var btService: BTService
+    private var switchedToTV = false
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initSet()
         programGuideViewModel.getAccountSetupResponseData(accountSetupDataStore)
-    }
 
-    private fun initSet() {
-        usbManager.deviceList.values.forEach {
-            if (isCompatibleDevice(it)) {
-                usbDevice = it
-                val isOk = usbManager.hasPermission(usbDevice)
-                if (isOk) {
-                    irService = UsbIrService.getInstance(usbManager, usbDevice)
-                } else {
-                    val i = Intent(this, BlankActivity::class.java)
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    startActivity(i)
-                }
-            }
-        }
+        if (preferences.isIRRemote)
+            irService = UsbIrService(this).also { it.getInstance() }
+        else
+            btService = BTService(this, lifecycle).also { it.findBondedDevice() }
+
     }
 
     override fun observeViewModel() {
@@ -258,7 +239,15 @@ class DisconnectedPrgActivity : BaseActivity() {
             searchInAdapter(currentSearchQuery)
             binding.btnSearch.text = "Search"
         } else {
-            super.onBackPressed()
+            lifecycleScope.launch {
+                delay(1000)
+                if (switchedToTV) {
+                    switchToHDMI()
+                } else {
+                    super.onBackPressed()
+                    finish()
+                }
+            }
         }
     }
 
@@ -301,81 +290,72 @@ class DisconnectedPrgActivity : BaseActivity() {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
     }
 
-    private fun launchExoPlayer(program: ChannelEpgDTO?) {
-        switchToTV(program)
-       /* binding.layoutVideo.videoView.player?.pause()
-        val bundle = Bundle()
-        bundle.putStringArrayList(
-            Constants.CONTENT_LIST_PARAM,
-            channelContent as ArrayList<String?>?
-        )
-        if (channelListNext != null) {
-            bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelListNext?.indexOf(program) ?: 0)
-        } else {
-            bundle.putInt(Constants.SELECTED_CHANNEL_INDEX, channelList?.indexOf(program) ?: 0)
-        }
-        bundle.putString(Constants.CHANEL_NO_PARAM, program?.CNO)
-        bundle.putString(Constants.CHANNEL_NAME_PARAM, program?.CN)
-        bundle.putString(Constants.CHANNEL_LOGO_PARAM, program?.CL)
-        bundle.putString(Constants.NOW_SHOWING_PARAM, program?.liveProg1)
-        bundle.putString(Constants.NEXT_PROGRAM_PARAM, program?.liveProg2)
-        bundle.putString(Constants.PROG_1_TIME_PARAM, program?.prog1Time)
-        bundle.putString(Constants.PROG_2_TIME_PARAM, program?.prog2Time)
+    override fun onStop() {
+        super.onStop()
+        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST)
+            finish()
+    }
 
-        val intent = Intent(this, PrgGuidePlayerActivity::class.java)
-        intent.putExtras(bundle)
-        startActivity(intent)
-        this.isFScreenExit = true*/
+
+    private fun launchExoPlayer(program: ChannelEpgDTO?) {
+        when (BuildConfig.BUILD_TYPE) {
+            Constants.BUILD_TYPE_CHROMECAST -> {
+                if (preferences.isIRRemote) switchToTV(program)
+                else switchToTVWithBluetooth(program)
+            }
+            Constants.BUILD_TYPE_STB -> {
+//                tuneChannels(program)
+            }
+        }
     }
 
     private fun switchToTV(program: ChannelEpgDTO?) {
         clearCache()
         lifecycleScope.launch {
-            var model = preferences.irFrequencyModel
-            if (model == null){
-                preferences.irFrequencyModel = IRUtils.SELECTED_BRAND
-                model = preferences.irFrequencyModel
-            }
-            irService?.let { service->
-                val num = program?.CNO/*.plus(100)*/.toString().toCharArray().asList()
-                if (model.tvBrandName != IRUtils.LG) {
-                    service.transmit(model.frequency, model.TV)
-                    delay(model.delayMs)
-                }
-                when (num.size) {
-                    4 -> {
-                        launch {
-                            num[num.size - 4].sendPacket(model)
-                            num[num.size - 3].sendPacket(model)
-                            num[num.size - 2].sendPacket(model)
-                            num[num.size - 1].sendPacket(model)
-                            delay(240)
+            val model = preferences.irFrequencyModel
+            irService?.let { service ->
+                if (service.isConnected()){
+                    val num = program?.CNO.toString().toCharArray().asList()
+                    if (model.tvBrandName != IRUtils.LG) {
+                        service.transmit(model.frequency, model.TV)
+                        delay(model.delayMs)
+                    }
+                    switchedToTV = true
+                    when (num.size) {
+                        4 -> {
+                            launch {
+                                num[num.size - 4].sendPacket(model)
+                                num[num.size - 3].sendPacket(model)
+                                num[num.size - 2].sendPacket(model)
+                                num[num.size - 1].sendPacket(model)
+//                            delay(240)
+                                service.transmit(model.frequency, model.OK)
+                            }
+                        }
+
+                        3 -> {
+                            launch {
+                                num[num.size - 3].sendPacket(model)
+                                num[num.size - 2].sendPacket(model)
+                                num[num.size - 1].sendPacket(model)
+//                            delay(240)
+                                service.transmit(model.frequency, model.OK)
+                            }
+                        }
+
+                        2 -> {
+                            launch {
+                                num[num.size - 2].sendPacket(model)
+                                num[num.size - 1].sendPacket(model)
+//                            delay(240)
+                                service.transmit(model.frequency, model.OK)
+                            }
+                        }
+
+                        1 -> {
+                            num[0].sendPacket(model)
                             service.transmit(model.frequency, model.OK)
                         }
-                    }
-
-                    3 -> {
-                        launch {
-                            num[num.size - 3].sendPacket(model)
-                            num[num.size - 2].sendPacket(model)
-                            num[num.size - 1].sendPacket(model)
-                            delay(240)
-                            service.transmit(model.frequency, model.OK)
-                        }
-                    }
-
-                    2 -> {
-                        launch {
-                            num[num.size - 2].sendPacket(model)
-                            num[num.size - 1].sendPacket(model)
-                            delay(240)
-                            service.transmit(model.frequency, model.OK)
-                        }
-                    }
-
-                    1 -> {
-                        num[num.size - 1].sendPacket(model)
-                        service.transmit(model.frequency, model.OK)
                     }
                 }
             }
@@ -383,7 +363,7 @@ class DisconnectedPrgActivity : BaseActivity() {
         }
     }
 
-    private fun Char.sendPacket(model: FrequencyModel) {
+    private fun Char.sendPacket(model: IRFrequencyModel) {
         val nValue = when (this) {
             '1' -> model.tv1
             '2' -> model.tv2
@@ -398,6 +378,106 @@ class DisconnectedPrgActivity : BaseActivity() {
         }
         irService?.transmit(model.frequency, nValue)
     }
+
+    private fun switchToTVWithBluetooth(program: ChannelEpgDTO?) {
+        clearCache()
+        lifecycleScope.launch {
+            val model = preferences.btCommandModel
+            val num = program?.CNO.toString().toCharArray().asList()
+
+            Log.e(TAG, "switchToTVWithBluetooth: ${btService.isConnected()}")
+
+            if (btService.isConnected()) {
+                if (model.tvBrandName != IRUtils.LG) {
+                    btService.transmit(model.TV)
+                    delay(model.delayMs)
+                }
+                switchedToTV = true
+                when (num.size) {
+                    4 -> {
+                        launch {
+                            num[num.size - 4].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 3].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 2].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 1].sendBleCode(model)
+                        }
+                    }
+
+                    3 -> {
+                        launch {
+                            num[num.size - 3].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 2].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 1].sendBleCode(model)
+                        }
+                    }
+
+                    2 -> {
+                        launch {
+                            num[num.size - 2].sendBleCode(model)
+                            delay(1000)
+                            num[num.size - 1].sendBleCode(model)
+                        }
+                    }
+
+                    1 -> {
+                        num[0].sendBleCode(model)
+                    }
+                }
+            } else {
+                val msg = BTService.MSG_BT_NOT_CONNECTED
+                Log.e(TAG, "switchToTVWithBluetooth: $msg")
+                showToast(msg)
+            }
+
+
+        }
+    }
+
+    private fun Char.sendBleCode(model: BTCommandModel) {
+        val nValue = when (this) {
+            '1' -> model.tv1
+            '2' -> model.tv2
+            '3' -> model.tv3
+            '4' -> model.tv4
+            '5' -> model.tv5
+            '6' -> model.tv6
+            '7' -> model.tv7
+            '8' -> model.tv8
+            '9' -> model.tv9
+            else -> model.tv0
+        }
+        btService.transmit(nValue)
+    }
+
+    //    Switch from Live TV to HDMI 1 only
+    fun switchToHDMI() {
+        if (preferences.isIRRemote) {
+            val model = preferences.irFrequencyModel
+            irService?.transmit(model.frequency, model.HDMI1)
+            switchedToTV = false
+        } else {
+            if (btService.isConnected()){
+                val model = preferences.btCommandModel
+                btService.transmit(model.HDMI1)
+                switchedToTV = false
+            } else showToast(BTService.MSG_BT_NOT_CONNECTED)
+        }
+        Log.e(TAG, "switchToHDMI  $switchedToTV")
+    }
+
+//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+//        when (keyCode) {
+//            KeyEvent.KEYCODE_BACK -> {
+//                onBackPressed()
+//            }
+//        }
+//        return false
+//    }
 
     override fun onDestroy() {
         super.onDestroy()

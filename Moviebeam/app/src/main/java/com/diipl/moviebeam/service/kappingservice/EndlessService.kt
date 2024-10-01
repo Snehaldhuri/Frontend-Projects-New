@@ -67,6 +67,8 @@ import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
+import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
@@ -91,6 +93,7 @@ import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.isNotAllowed
+import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.logK
@@ -98,7 +101,6 @@ import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
-import com.diipl.moviebeam.utils.startActivity
 import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toTimestamp
@@ -308,25 +310,33 @@ class EndlessService : Service() {
         var isSwitched = false
         var count = 0
         CoroutineScope(Dispatchers.IO).launch {
-            while (activityStack.last()?.isNotEmpty() == true) {
-                if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
-                    if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
-                        preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
-                        if (!isNetworkAvailable && !isSwitched) {
-                            isSwitched = true
-                            startMainMenu()
-                            count = 0
-                        }
-                        if (isNetworkAvailable && isSwitched) {
-                            isSwitched = false
-                            if (count == 0) {
-                                startMainMenu()
-                                count++
-                            }
-                        }
-                    }
-                delay(1000 * 2)
-            }
+           try {
+               while (activityStack.last()?.isNotEmpty() == true) {
+                   if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
+                       if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
+                           preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
+                           if (!isNetworkAvailable && !isSwitched) {
+                               BaseActivity.currentActivity?.launchLogger()
+                               isSwitched = true
+                               startMainMenu()
+                               count = 0
+                           }
+                           if (isNetworkAvailable && isSwitched) {
+                               BaseActivity.currentActivity?.launchLogger()
+                               isSwitched = false
+                               if (count == 0) {
+                                   startMainMenu()
+                                   count++
+                               }
+                           }
+                       }
+                   delay(1000 * 2)
+               }
+           } catch (e: Exception){
+               Log.e("TAG", "activityStack: ${e.localizedMessage}")
+               BaseActivity.currentActivity?.launchLogger()
+               MainMenuActivity::class.java.startActivity()
+           }
         }
 
         val notification = createNotification()
@@ -361,13 +371,19 @@ class EndlessService : Service() {
                                         return
                                     }
                                 } else {
-                                    startMainMenu()
-                                    return
+                                    if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST) {
+                                        if(activityStack.last() == ProgramGuideActivity::class.java.simpleName){
+                                            (BaseActivity.currentActivity as NewProgramGuideActivity).switchToHDMI()
+                                        } else  if(activityStack.last() == DisconnectedPrgActivity::class.java.simpleName){
+                                            (BaseActivity.currentActivity as DisconnectedPrgActivity).switchToHDMI()
+                                        }
+                                        MainMenuActivity::class.java.startActivity()
+                                        return
+                                    } else {
+                                        MainMenuActivity::class.java.startActivity()
+                                        return
+                                    }
                                 }
-                                /* } else {
-                                     Log.e(TAG, "onReceive: 1")
-                                     return
-                                 }*/
                             } else {
                                 return
                             }
@@ -402,6 +418,12 @@ class EndlessService : Service() {
         })
     }
 
+    private fun <T> Class<T>.startActivity() {
+        startActivity(Intent(applicationContext, this).apply {
+            flags =
+                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        })
+    }
 
     private fun createRequestBody(roomNo: String, UA: String, accessType: Int): String {
         val netflixDetails = JSONObject().apply {

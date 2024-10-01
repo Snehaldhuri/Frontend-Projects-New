@@ -306,50 +306,97 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/layout_brand"
+                android:id="@+id/layoutBrand"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="0.4"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:theme="@style/Theme.MaterialComponents"
                 >
 
-                <TextView
-                    android:id="@+id/tv_show"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Select TV brand : "
-                    android:textColor="@color/white"
-                    android:paddingTop="@dimen/dp_13"
-                    android:layout_marginHorizontal="16dp"
-                    android:textSize="@dimen/sp_14" />
-
-                <RadioGroup
-                    android:id="@+id/rg_brand"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:visibility="gone"
                     >
-                    <RadioButton
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="SAMSUNG"
-                        android:id="@+id/rb_samsung"
+                        android:layout_marginHorizontal="16dp"
+                        android:paddingTop="@dimen/dp_10"
+                        android:text="Select Remote for :"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/sp_16"
-                        android:layout_marginHorizontal="@dimen/dp_16"
-                        android:paddingHorizontal="16dp"
-                        />
-                    <RadioButton
+                        android:textSize="@dimen/sp_14" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_type"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb_BT"
+                            android:layout_width="122dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="@dimen/dp_16"
+                            android:paddingHorizontal="16dp"
+                            android:text="BT"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/sp_12" />
+
+                        <RadioButton
+                            android:id="@+id/rb_IR"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="@dimen/dp_16"
+                            android:paddingHorizontal="16dp"
+                            android:text="IR"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/sp_12" />
+                    </RadioGroup>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    >
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="LG"
-                        android:id="@+id/rb_lg"
+                        android:layout_marginHorizontal="16dp"
+                        android:paddingTop="@dimen/dp_10"
+                        android:text="Select TV brand    : "
                         android:textColor="@color/white"
-                        android:textSize="@dimen/sp_16"
-                        android:layout_marginHorizontal="@dimen/dp_16"
-                        android:paddingHorizontal="16dp"
-                        />
-                </RadioGroup>
+                        android:textSize="@dimen/sp_14" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_brand"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rb_samsung"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="@dimen/dp_16"
+                            android:paddingHorizontal="16dp"
+                            android:text="SAMSUNG"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/sp_12" />
+
+                        <RadioButton
+                            android:id="@+id/rb_lg"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="@dimen/dp_16"
+                            android:paddingHorizontal="16dp"
+                            android:text="LG"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/sp_12" />
+                    </RadioGroup>
+
+                </LinearLayout>
 
             </LinearLayout>
 

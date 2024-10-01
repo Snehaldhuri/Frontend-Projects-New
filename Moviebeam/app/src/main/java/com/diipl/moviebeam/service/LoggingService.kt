@@ -12,7 +12,6 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.toInteger
-import com.diipl.moviebeam.utils.toJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,6 +48,12 @@ class LoggingService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+
+        initData()
+
+    }
+
+    fun initData() {
         CoroutineScope(Dispatchers.Default).launch {
             accountId = getAccountId()
             stbRoomNo = getStbRoomNo()
@@ -158,9 +163,14 @@ class LoggingService : Service() {
                     Panel = getCurrentPanelNumber().toInteger(),
                     M = message
                 )
-                val isSent = webSocket?.send(msgDto.toJson())
-//                    webSocket?.send("{\"UA\":\"${Constants.UA}\",\"HID\":\"${Constants.ACCOUNT_ID}\",\"TSP\":\"$formattedDate\",\"Msg\":\"$message\",\"Panel\":\"$panel\"}")
-                Log.d(TAG, "sendMessageToWebSocket: $isSent  ${msgDto.toJson()}")
+
+                val customJson =
+                    """{"T":"I","P":"${msgDto.P}","UA":"${msgDto.UA}","HID":${msgDto.HID},"ROOMNO":"${msgDto.ROOMNO}","IP":"${msgDto.IP}","TSP":"${msgDto.TSP}","Panel":${msgDto.Panel},"M":"${msgDto.M}"}"""
+
+                val isSent = webSocket?.send(customJson)
+
+                Log.d(TAG, "sendMessageToWebSocket: $isSent  $customJson")
+
                 if (isSent == false) {
                     BaseActivity.currentActivity?.launchLogger()
                 }

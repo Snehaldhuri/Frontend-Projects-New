@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.ui.guestservice.concierge.laundry
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -120,7 +121,12 @@ class LaundryFragment(
     }
 
     private fun updateSelectedItems() {
+
         val selectedItems = (binding.lvLaundry.adapter as? CustomAdapterLaundry)?.getSelectedItems()
+        Log.d("selectedItems", "updateSelectedItems: $selectedItems")
+
+        val isConciergeVisible = requireActivity().findViewById<View>(R.id.fv_concierge)?.visibility == View.VISIBLE
+
         if (!selectedItems.isNullOrEmpty()) {
             val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
             val summaryFragment = LaundryRequestSummaryFragment {
@@ -128,20 +134,25 @@ class LaundryFragment(
             }
             summaryFragment.setItemList(selectedItems)
 
-            fragmentTransaction.replace(
-                R.id.fv_tab_content,
-                summaryFragment
-            )
+            if (isConciergeVisible) {
+                fragmentTransaction.replace(R.id.fv_concierge, summaryFragment)
+            } else {
+                fragmentTransaction.replace(R.id.fv_tab_content, summaryFragment)
+            }
 
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
         } else {
             val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
-            val summaryFragment = LaundryRequestErrorFragment()
-            fragmentTransaction.replace(
-                R.id.fv_tab_content,
-                summaryFragment
-            )
+            val errorFragment = LaundryRequestErrorFragment()
+
+            // Conditionally replace fragment based on fv_concierge visibility
+            if (isConciergeVisible) {
+                fragmentTransaction.replace(R.id.fv_concierge, errorFragment)
+            } else {
+                fragmentTransaction.replace(R.id.fv_tab_content, errorFragment)
+            }
+
             fragmentTransaction.addToBackStack(null)
             fragmentTransaction.commit()
         }

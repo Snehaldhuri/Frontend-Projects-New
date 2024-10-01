@@ -20,6 +20,16 @@ object Constants {
     const val ADULT_LOCKED = 5
     const val PARENTAL_CONTROL = 6
 
+    //Keycodes For Remote
+    const val GUIDE_KEY = 67
+    const val APP_WORLD_KEY = 68
+    const val LIVE_TV_KEY = 70
+    const val CASTING_KEY = 119
+    const val EXIT_KEY = 61
+    const val PROGRAM_SEARCH_KEY = 64
+    const val NETFLIX_KEY = 65
+    const val YOUTUBE_KEY = 66
+
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"
     const val C_TYPE_TRAILER: String = "TRAILER"
@@ -50,6 +60,8 @@ object Constants {
     const val EPG_CLOUD_URL_SUFFIX = "/epg_v3/HotelEPG.json"
 
     const val NETFLIX_PACKAGE_NAME = "com.netflix.ninja"
+    const val YOUTUBE_PACKAGE_NAME = "com.google.android.youtube.tv"
+
     const val PRIME_VIDEO_PACKAGE_NAME = "com.amazon.amazonvideo.livingroom"
     const val MDM_PACKAGE_NAME = "com.diipl.mdm"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
@@ -75,6 +87,12 @@ object Constants {
     const val IN_ROOM_DINING_ID = "inRoomDining"
     const val LOCAL_ATTRACTION_ID = "lam"
     const val FOOD_DELIVERY_ID = "foodDelivery"
+    const val MAIN_WEATHER_ID = "mainWeather"
+    const val MAIN_GUEST_MSG_ID = "mainmsg"
+    const val MAIN_FEEDBACK_ID = "mainFeedback"
+    const val MAIN_NEWS_ID = "mNews"
+    const val CONCIERGE_MAIN_ID = "conm"
+
 
     //Home Page Menu Button Title
 //    const val PROGRAM_GUIDE = "Program Guide"
@@ -90,7 +108,11 @@ object Constants {
     const val IN_ROOM_DINING = "In Room Dining"
     const val LOCAL_ATTRACTION = "Local Attractions"
     const val FOOD_DELIVERY = "Food Delivery"
-
+    const val MAIN_GUEST_MSG = "Message"
+    const val MAIN_FEEDBACK = "Guest Feedback"
+    const val MAIN_CONCIERGE ="Concierge"
+    const val MAIN_WEATHER ="Weather"
+    const val MAIN_NEWS = "News"
 
     //Movies page menu button Id
     const val MOVIE_RENTALS_ID = "movieRentals"
@@ -119,6 +141,9 @@ object Constants {
     const val SHO_SERIES_ID = "shoSeries"
     const val SHO_DOCS_ID = "shoDocs"
 
+    val MENU_MESSAGE_MODEL =
+        BtnModel(MAIN_GUEST_MSG_ID, R.drawable.messages, MAIN_GUEST_MSG)
+
     val HOME_PAGE_MENU_BUTTON_LIST = listOf(
         BtnModel(VOD_ID, R.drawable.video_on_demand_icon, MOVIES_MORE),
         BtnModel(PRG_GUIDE_ID, R.drawable.program_guide_icon, PROGRAM_GUIDE),
@@ -130,8 +155,14 @@ object Constants {
         BtnModel(CRACKLE_DEFAULT_ID, R.drawable.crackle_white_icon, CRACKLE_DEFAULT),
         BtnModel(IN_ROOM_DINING_ID, R.drawable.in_room_dining_menu, IN_ROOM_DINING),
         BtnModel(LOCAL_ATTRACTION_ID, R.drawable.localattraction_icon, LOCAL_ATTRACTION),
-        BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY)
-    )
+        BtnModel(FOOD_DELIVERY_ID, R.drawable.fooddelivery_icon, FOOD_DELIVERY),
+        BtnModel(MAIN_WEATHER_ID, R.drawable.weather, MAIN_WEATHER),
+        MENU_MESSAGE_MODEL,
+        BtnModel(MAIN_FEEDBACK_ID, R.drawable.guest_feedback, MAIN_FEEDBACK) ,
+        BtnModel(MAIN_NEWS_ID, R.drawable.news, MAIN_NEWS),
+        BtnModel(CONCIERGE_MAIN_ID, R.drawable.concierge_icon_white, MAIN_CONCIERGE),
+
+        )
     const val APP_LIST_PARAM = "APP_LIST"
     const val CLEAR_CREDENTIALS_REQUEST_CODE = 10
 
@@ -198,6 +229,8 @@ object Constants {
 
     val MESSAGE_MODEL =
         GsBtnModel(MESSAGE_ID, MESSAGE, R.drawable.messages, R.drawable.messages_black)
+
+
     val GUEST_SERVICE_BUTTON_LIST = listOf(
         GsBtnModel(WEATHER_ID, WEATHER, R.drawable.weather, R.drawable.weather_black),
         GsBtnModel(

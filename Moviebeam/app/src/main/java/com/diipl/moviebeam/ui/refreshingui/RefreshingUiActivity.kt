@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.refreshingui
 
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import android.os.RemoteException
 import android.util.Log
 import androidx.activity.viewModels
@@ -35,8 +36,10 @@ import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants
@@ -59,6 +62,7 @@ import com.diipl.moviebeam.worker.UpdateDataWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -71,7 +75,6 @@ private const val TAG = "RefreshingUiActivity"
 class RefreshingUiActivity : BaseActivity() {
 
     private var kapingResponse: KapingResponse? = null
-
 
     //Variables from datastore
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
@@ -142,19 +145,33 @@ class RefreshingUiActivity : BaseActivity() {
         this.initializeDatastoreParams()
 
         val data = intent.getStringExtra("response")
-         data?.let {
-             kapingResponse = it.fromJson<KapingResponse>()
-         }
+        data?.let {
+            kapingResponse = it.fromJson<KapingResponse>()
+        }
 
         binding.btnOk.handleFocusChange()
+
         binding.btnOk.setOnClickListener {
-            val intent = Intent(this, GuestServiceActivity::class.java)
-            intent.putExtra("btnId", Constants.MESSAGE_ID)
-            startActivity(intent)
+            redirectToScreen()
         }
         binding.root.postDelayed({
             this.handleKaping(kapingResponse)
         }, 5000)
+    }
+
+    private fun redirectToScreen() {
+        lifecycleScope.launch {
+            val list = accountSetupDataStore.data.first().buttonsList.filter { it.buttonName == Constants.MAIN_GUEST_MSG_ID }
+            if (list.isNotEmpty()){
+                val intent = Intent(applicationContext,GuestMessageActivity::class.java)
+                intent.putExtra("btnId",Constants.MAIN_GUEST_MSG_ID)
+                startActivity(intent)
+            } else {
+                val intent = Intent(applicationContext, GuestServiceActivity::class.java)
+                intent.putExtra("btnId", Constants.MESSAGE_ID)
+                startActivity(intent)
+            }
+        }
     }
 
     private fun handleKaping(kapingResponse: KapingResponse?) {
@@ -301,6 +318,7 @@ class RefreshingUiActivity : BaseActivity() {
                         )
                     }
                     refreshingUiViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
+
                     CoroutineScope(Dispatchers.Default).launch {
                         preferenceDataStoreHelper.putPreference(
                             PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
