@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -752,6 +753,21 @@ fun Activity.launchLogger() {
 
     val serviceIntent = Intent(this, LoggingService::class.java)
     bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+}
+
+fun Context.getInstalledAppInfo(packageName: String): ApplicationInfo? {
+    return try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Use ApplicationInfoFlags in API 33 (Android 13) and above
+            packageManager.getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(0))
+        } else {
+            // Use legacy approach for versions below Android 13
+            packageManager.getApplicationInfo(packageName, 0)
+        }
+    }catch (e: Exception){
+        Log.e("TAG", "getApplicationInfo: ${e.localizedMessage}")
+        null
+    }
 }
 
 fun compareVersions(apkVersion: String?): Boolean {
