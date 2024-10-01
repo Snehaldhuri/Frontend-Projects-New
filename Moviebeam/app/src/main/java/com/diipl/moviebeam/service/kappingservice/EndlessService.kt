@@ -372,7 +372,7 @@ class EndlessService : Service() {
                                     }
                                 } else {
                                     if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST) {
-                                        if(activityStack.last() == ProgramGuideActivity::class.java.simpleName){
+                                        if(activityStack.last() == NewProgramGuideActivity::class.java.simpleName){
                                             (BaseActivity.currentActivity as NewProgramGuideActivity).switchToHDMI()
                                         } else  if(activityStack.last() == DisconnectedPrgActivity::class.java.simpleName){
                                             (BaseActivity.currentActivity as DisconnectedPrgActivity).switchToHDMI()
