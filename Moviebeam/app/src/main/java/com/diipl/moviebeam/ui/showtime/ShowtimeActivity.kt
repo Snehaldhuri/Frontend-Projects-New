@@ -256,7 +256,7 @@ class ShowtimeActivity : BaseActivity() {
         startActivity(intent)
     }
 
-    private fun handleBackClick() {
+    fun handleBackClick() {
         if (binding.fcvMovieDetail.isVisible) {
             binding.fcvMovieDetail.toInvisible()
             binding.parentRecyclerView.toVisible()
@@ -264,15 +264,6 @@ class ShowtimeActivity : BaseActivity() {
         } else {
             finish()
         }
-    }
-
-    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {
-                handleBackClick()
-            }
-        }
-        return false
     }
 
     private fun fetchDataFromDataStore() {

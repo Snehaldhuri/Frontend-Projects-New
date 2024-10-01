@@ -67,22 +67,22 @@ class PrgGuidePlayerActivity : BaseActivity(), KeyEvent.Callback {
         }
     }
 
-    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                seekToPrevious()
-            }
-
-            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                seekToNext()
-            }
-
-            KeyEvent.KEYCODE_BACK -> {
-                finish()
-            }
-        }
-        return false
-    }
+//    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent?): Boolean {
+//        when (keyCode) {
+//            KeyEvent.KEYCODE_DPAD_UP -> {
+//                seekToPrevious()
+//            }
+//
+//            KeyEvent.KEYCODE_DPAD_DOWN -> {
+//                seekToNext()
+//            }
+//
+//            KeyEvent.KEYCODE_BACK -> {
+//                finish()
+//            }
+//        }
+//        return false
+//    }
 
     private fun seekToPrevious() {
         if (player?.hasPreviousMediaItem() == true) {

@@ -211,6 +211,32 @@
             android:name=".ui.hotelinfo.HotelInfoActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.guest.feedback.GuestFeedbackActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.guest.message.GuestMessageActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.guest.news.NewsActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.weather.WeatherActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.concierge.ConciergeActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            android:exported="false" />
+
         <activity
             android:name=".ui.localattraction.LocalAttractionActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"

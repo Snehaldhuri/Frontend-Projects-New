@@ -27,7 +27,9 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.accountsetup.Buttons
 import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
@@ -42,13 +44,20 @@ import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.casting.HotspotActivity
+import com.diipl.moviebeam.ui.concierge.ConciergeActivity
+import com.diipl.moviebeam.ui.guest.feedback.GuestFeedbackActivity
+import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
+import com.diipl.moviebeam.ui.guest.news.NewsActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
+import com.diipl.moviebeam.ui.guestservice.GuestServiceViewModel
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
+import com.diipl.moviebeam.ui.refreshingui.RefreshingUiViewModel
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
+import com.diipl.moviebeam.ui.weather.WeatherActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.Constants.LA_ID
@@ -80,6 +89,14 @@ private const val TAG = "MainMenuActivity"
 class MainMenuActivity : BaseActivity() {
 
     private val mainMenuViewModel: MainMenuViewModel by viewModels()
+
+    private val guestServiceViewModel: GuestServiceViewModel by viewModels()
+
+    val refreshingUiViewModel: RefreshingUiViewModel by viewModels()
+
+    @Inject
+    lateinit var guestMessageDataStore: DataStore<MessageResponse>
+
     private lateinit var binding: ActivityMainMenuBinding
 
     //Variables from datastore
@@ -116,6 +133,7 @@ class MainMenuActivity : BaseActivity() {
         observe(mainMenuViewModel.tickerLiveData, ::handleTickerResponse)
         observe(mainMenuViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(mainMenuViewModel.guestDetailsLiveData, ::handleGuestDetailsResponse)
+        observe(guestServiceViewModel.guestMessageLiveData, ::handleGuestMessageResponse)
 
         observeSnackBarMessages(mainMenuViewModel.showSnackBar)
         observeToast(mainMenuViewModel.showToast)
@@ -139,6 +157,8 @@ class MainMenuActivity : BaseActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        guestServiceViewModel.getGuestMessageResponseData(guestMessageDataStore)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         this.initializeDatastoreParams()
@@ -189,15 +209,15 @@ class MainMenuActivity : BaseActivity() {
             }
         }
 
-       /* lifecycleScope.launch {
-            while (!player.isPlaying) {
-                if (hotelVideoUrl.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0) {
-                    initializePlayer()
-                    binding.videoView.toGone()
-                }
-                delay(5000)
-            }
-        }*/
+        /* lifecycleScope.launch {
+             while (!player.isPlaying) {
+                 if (hotelVideoUrl.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0) {
+                     initializePlayer()
+                     binding.videoView.toGone()
+                 }
+                 delay(5000)
+             }
+         }*/
 
     }
 
@@ -221,8 +241,6 @@ class MainMenuActivity : BaseActivity() {
         anim.fillAfter = true
     }
 
-
-
     private fun initializePlayer() {
         init()
         playCount++
@@ -242,7 +260,6 @@ class MainMenuActivity : BaseActivity() {
             } else releaseVideoPlayer()
         }
     }
-
 
     private val playerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
@@ -310,6 +327,15 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
+
+                        val guestMessages: Int =
+                            guestServiceViewModel.guestMessageLiveData.value?.data?.messagesList?.size
+                                ?: 0
+
+                        val containsMainMsg = response.buttonsList.find { button -> button.buttonName == "mainmsg" } != null
+                        Log.d(TAG, "handleAccountSetupResponse: $containsMainMsg")
+                        refreshingUiViewModel.setMainMsgStatus(containsMainMsg)
+
                         binding.tvGreeting.text = response.hotelInfo
                         if (response.isEnablePatchWall)
                             showPatchWall()
@@ -328,14 +354,18 @@ class MainMenuActivity : BaseActivity() {
                             }
                         }
 
-                        val btnModelList: List<BtnModel> =
+                        val btnModelList :MutableList<BtnModel> =
                             Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
                                 btnListFromApi.contains(it.btnId)
-                            }
+                            }.toMutableList()
 
-                        val sortedBtnModelList: List<BtnModel> = btnModelList.sortedBy {
-                            btnListFromApi.indexOf(it.btnId)
+                        Log.d(TAG, "handleAccountSetupResponse of message: $guestMessages")
+
+                        if (guestMessages == 0) {
+                            btnModelList.remove(Constants.MENU_MESSAGE_MODEL)
                         }
+                        val sortedBtnModelList = response.buttonsList.let { matchAndSortButtons(it) }
+
                         val height = if (sortedBtnModelList.size < 5) {
                             resources.getDimensionPixelSize(R.dimen.dp_110)
                         } else {
@@ -359,15 +389,15 @@ class MainMenuActivity : BaseActivity() {
                             releaseVideoPlayer()
                             val bundle = Bundle()
                             ThemeDetails.TITLE = btn.title
-                            bundle.putString(
-                                "hotelChannel",
-                                response.hotelChannelList.get(0).toJson()
-                            )
-                            val hotelChannelVideo =
-                                response.httpStreamingHotelvideoUrl + response.hotelChannelList.get(
-                                    0
-                                ).fileName
-                            bundle.putString("hotelChannelVideo", hotelChannelVideo)
+                            /* bundle.putString(
+                                 "hotelChannel",
+                                 response.hotelChannelList.get(0).toJson()
+                             )
+                             val hotelChannelVideo =
+                                 response.httpStreamingHotelvideoUrl + response.hotelChannelList.get(
+                                     0
+                                 ).fileName
+                             bundle.putString("hotelChannelVideo", hotelChannelVideo)*/
                             var intent: Intent? = null
                             when (btn.btnId) {
                                 Constants.HOTEL_SERVICES_ID -> {
@@ -427,6 +457,26 @@ class MainMenuActivity : BaseActivity() {
 //                            intent.putExtra("btnId", IN_ROOM_ID)
                                 }
 
+                                Constants.CONCIERGE_MAIN_ID -> {
+                                    intent = Intent(this, ConciergeActivity::class.java)
+                                }
+
+                                Constants.MAIN_WEATHER_ID -> {
+                                    intent = Intent(this, WeatherActivity::class.java)
+                                }
+
+                                Constants.MAIN_GUEST_MSG_ID -> {
+                                    intent = Intent(this, GuestMessageActivity::class.java)
+                                }
+
+                                Constants.MAIN_FEEDBACK_ID -> {
+                                    intent = Intent(this, GuestFeedbackActivity::class.java)
+                                }
+
+                                Constants.MAIN_NEWS_ID -> {
+                                    intent = Intent(this, NewsActivity::class.java)
+                                }
+
                                 else -> {
 
                                 }
@@ -436,7 +486,12 @@ class MainMenuActivity : BaseActivity() {
                                 startActivity(it)
                             }
                         }
-                        adapter.itemList = sortedBtnModelList
+                        if (sortedBtnModelList != null) {
+                            adapter.itemList = sortedBtnModelList
+                            if (sortedBtnModelList.size < 5) {
+                                binding.cardView.layoutParams.height = 220
+                            }
+                        }
                         binding.rvMenuButton.adapter = adapter
 
                         binding.pbLoader.toInvisible()
@@ -448,6 +503,47 @@ class MainMenuActivity : BaseActivity() {
 
             else -> {
                 status?.errorCode?.let { mainMenuViewModel.showToastMessage(getString(it)) }
+            }
+        }
+    }
+
+    private fun matchAndSortButtons(apiButtons: List<Buttons>): List<BtnModel> {
+        val btnModelList = mutableListOf<BtnModel>()
+
+        apiButtons.forEach { apiButton ->
+            Constants.HOME_PAGE_MENU_BUTTON_LIST.find {
+                it.btnId.equals(
+                    apiButton.buttonName,
+                    ignoreCase = true
+                )
+            }?.let { matchedBtn ->
+                btnModelList.add(matchedBtn)
+            }
+
+            if (apiButton.isApp == true)
+                btnModelList.add(BtnModel(isApp = true, appPackageId = apiButton.appPackageId!!))
+        }
+
+        return btnModelList
+    }
+
+    private fun handleGuestMessageResponse(status: Resource<MessageResponse>) {
+        when (status) {
+            is Resource.Loading -> {
+//                binding.loaderView.toVisible()
+            }
+
+            is Resource.Success -> {
+                try {
+                    guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
+//                    binding.loaderView.toInvisible()
+                } catch (e: Exception) {
+                    logE("handleGuestMessageResponse Exception in GuestServiceActivity: ${e.message}")
+                }
+            }
+
+            else -> {
+                status.errorCode?.let { guestServiceViewModel.showToastMessage(getString(it)) }
             }
         }
     }
@@ -521,19 +617,19 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {}
-        }
-        return false
-    }
+//    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
+//        when (keyCode) {
+//            KeyEvent.KEYCODE_BACK -> {}
+//        }
+//        return false
+//    }
 
     private fun initializeDatastoreParams() = lifecycleScope.launch {
-            hotelVideoUrl = getHotelVideoUrl()
-            gradientStartColor = getGradientStartColor()
-            gradientEndColor = getGradientEndColor()
-            castingUrl = getCastingUrl()
-        }
+        hotelVideoUrl = getHotelVideoUrl()
+        gradientStartColor = getGradientStartColor()
+        gradientEndColor = getGradientEndColor()
+        castingUrl = getCastingUrl()
+    }
 
 
     private suspend fun getHotelVideoUrl(): String {

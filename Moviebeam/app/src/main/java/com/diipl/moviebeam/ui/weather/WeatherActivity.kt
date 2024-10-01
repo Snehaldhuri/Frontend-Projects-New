@@ -1,7 +1,6 @@
-package com.diipl.moviebeam.ui.inroomdining
+package com.diipl.moviebeam.ui.weather
 
-import android.os.Bundle
-import com.diipl.moviebeam.databinding.ActivityInRoomDiningBinding
+import com.diipl.moviebeam.databinding.ActivityWeatherBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.handleFocusChange
@@ -10,27 +9,22 @@ import com.diipl.moviebeam.utils.loadLogo
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class InRoomDiningActivity : BaseActivity() {
+class WeatherActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityInRoomDiningBinding
+    private lateinit var binding: ActivityWeatherBinding
 
     override fun observeViewModel() {}
 
     override fun initViewBinding() {
-        binding = ActivityInRoomDiningBinding.inflate(layoutInflater)
+        binding = ActivityWeatherBinding.inflate(layoutInflater)
         binding.root.loadBg()
         binding.layoutHeader.ivHotelLogo.loadLogo()
         binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
+        binding.btnBack.handleFocusChange()
+        binding.btnBack.setOnClickListener { handleBackClick() }
         setContentView(binding.root)
     }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding.btnBack.handleFocusChange()
-        binding.btnBack.setOnClickListener { handleBackRemoteClick() }
-    }
-
-    fun handleBackRemoteClick() {
+    fun handleBackClick() {
         finish()
     }
 }

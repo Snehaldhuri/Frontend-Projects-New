@@ -12,7 +12,9 @@ import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,7 +28,10 @@ class FeedbackViewModel @Inject constructor(
     fun sendGuestFeedback(ua: String, feedback: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _feedbackLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.sendGuestFeedback(ua, feedback, Date().toString())
+            val dateFormat = SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.getDefault())
+            val formattedDate = dateFormat.format(Date())
+
+            val response = movieBeamRepository.sendGuestFeedback(ua, feedback, formattedDate)
             if (response == null) {
                 _feedbackLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {

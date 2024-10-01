@@ -23,10 +23,13 @@ import android.widget.TextClock
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.DvbChannel
@@ -53,13 +56,13 @@ import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.clearCache
-import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
+import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
@@ -93,6 +96,8 @@ class NewProgramGuideActivity : BaseActivity() {
 
     @Inject
     lateinit var preferences: SharedPreference
+    @Inject
+    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     private lateinit var adapter: ProgramGuideAdapter
 
@@ -106,12 +111,36 @@ class NewProgramGuideActivity : BaseActivity() {
     private var switchedToTV = false
 
     override fun observeViewModel() {
+        observe(programGuideViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
+
         observeSnackBarMessages(programGuideViewModel.showSnackBar)
         observeToast(programGuideViewModel.showToast)
     }
 
+    private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>) {
+        when (status) {
+            is Resource.Success -> {
+                status.data?.let { response ->
+                    hotelChannel = response.hotelChannelList[0]
+                    hotelChannelVideo = response.httpStreamingHotelvideoUrl + hotelChannel.fileName
+                    Log.e(TAG, "handleAccountSetupResponse: ${hotelChannel.channelNo}")
+
+                    this.getChannelsFromRoomDB()
+                    if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
+                        if (DEVICE_MODEL != SEI_MB730)
+                            fetchTVChannels()
+
+                }
+            }
+            else -> {
+            }
+        }
+    }
+
     override fun onStart() {
         super.onStart()
+
+        programGuideViewModel.getAccountSetupResponseData(accountSetupDataStore)
 
         adapter = ProgramGuideAdapter(
             onChannelFocused = ::playChannelVideoBg,
@@ -120,10 +149,7 @@ class NewProgramGuideActivity : BaseActivity() {
             onChannelClicked = ::launchExoPlayer
         )
         setAdapter()
-        this.getChannelsFromRoomDB()
-        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
-            if (DEVICE_MODEL != SEI_MB730)
-                fetchTVChannels()
+
         fetchDetails()
     }
 
@@ -135,7 +161,7 @@ class NewProgramGuideActivity : BaseActivity() {
 
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
-        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { handleBackRemoteClick() }
 
         binding.pbLoader.toVisible()
     }
@@ -287,7 +313,7 @@ class NewProgramGuideActivity : BaseActivity() {
         }
     }
 
-    private fun showSearchDialog() {
+    fun showSearchDialog() {
         val builder = AlertDialog.Builder(this)
         val dialogBinding =
             DialogSearchProgramBinding.inflate(LayoutInflater.from(applicationContext))
@@ -338,12 +364,12 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun fetchDetails() {
-        intent.extras?.getString("hotelChannel")?.let {
+       /* intent.extras?.getString("hotelChannel")?.let {
             hotelChannel = it.fromJson()
         }
         intent.extras?.getString("hotelChannelVideo")?.let {
             hotelChannelVideo = it
-        }
+        }*/
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
@@ -834,14 +860,18 @@ class NewProgramGuideActivity : BaseActivity() {
 
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {
-                onBackPressed()
-            }
-        }
-        return false
+    fun handleBackRemoteClick() {
+        finish()
     }
+
+//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+//        when (keyCode) {
+//            KeyEvent.KEYCODE_BACK -> {
+//                onBackPressed()
+//            }
+//        }
+//        return false
+//    }
 
     override fun onBackPressed() {
         lifecycleScope.launch {
