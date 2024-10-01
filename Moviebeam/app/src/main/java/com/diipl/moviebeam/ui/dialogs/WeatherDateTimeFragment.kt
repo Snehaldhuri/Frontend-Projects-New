@@ -70,7 +70,8 @@ class WeatherDateTimeFragment : Fragment() {
     lateinit var preferences: SharedPreference
 
     @Inject
-    lateinit var hardwareAPI: HardwareAPI
+    lateinit var hardwareAPI:HardwareAPI
+
 
     override fun onCreateView(
         inflater: LayoutInflater,

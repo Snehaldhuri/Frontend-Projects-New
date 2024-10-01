@@ -19,18 +19,27 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.77" />
 
-        <ImageView
-            android:id="@+id/iv_app_icon"
+        <androidx.cardview.widget.CardView
             android:layout_width="@dimen/dp_0"
             android:layout_height="@dimen/dp_0"
-            android:background="@drawable/round_outline_15dp"
-            android:clipToOutline="true"
-            android:contentDescription="@string/app_image"
-            android:scaleType="fitXY"
+            app:cardCornerRadius="15dp"
+            android:backgroundTint="@color/transparent"
+            app:cardElevation="0dp"
+            android:clipChildren="true"
             app:layout_constraintBottom_toTopOf="@+id/gl_horizontal_77"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_app_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:clipToOutline="true"
+                />
+
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/tv_app_name"

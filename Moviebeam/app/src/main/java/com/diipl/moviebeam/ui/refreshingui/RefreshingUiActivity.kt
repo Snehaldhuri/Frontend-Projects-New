@@ -2,8 +2,8 @@ package com.diipl.moviebeam.ui.refreshingui
 
 import android.content.Intent
 import android.os.IBinder
-import android.os.RemoteException
 import android.util.Log
+import android.os.RemoteException
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.lifecycleScope
@@ -74,7 +74,6 @@ private const val TAG = "RefreshingUiActivity"
 class RefreshingUiActivity : BaseActivity() {
 
     private var kapingResponse: KapingResponse? = null
-
 
     //Variables from datastore
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
