@@ -82,66 +82,71 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleBackKeyAndExitKey():Boolean{
+        if (currentActivity is ShowtimeActivity) {
+            (currentActivity as ShowtimeActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is MoviesActivity) {
+            (currentActivity as MoviesActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is HotelInfoActivity) {
+            (currentActivity as HotelInfoActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is GuestServiceActivity) {
+            (currentActivity as GuestServiceActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is AppWorldActivity) {
+            (currentActivity as AppWorldActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is WeatherActivity) {
+            (currentActivity as WeatherActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is NewsActivity) {
+            (currentActivity as NewsActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is ConciergeActivity) {
+            (currentActivity as ConciergeActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is GuestFeedbackActivity) {
+            (currentActivity as GuestFeedbackActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is NewProgramGuideActivity) {
+            (currentActivity as NewProgramGuideActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is GuestMessageActivity) {
+            (currentActivity as GuestMessageActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is InRoomDiningActivity) {
+            (currentActivity as InRoomDiningActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is CastingActivity) {
+            (currentActivity as CastingActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is HotspotActivity) {
+            (currentActivity as HotspotActivity).handleBackClick()
+            return true
+        }
+        return false
+    }
+
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
         Log.d("TAG", "onKeyDown: keycode: $keyCode keyEvent.keyCode ${keyEvent.keyCode} keyEvent.action ${keyEvent.action} keyEvent.displayLabel ${keyEvent.displayLabel}  keyEvent.number ${keyEvent.number} keyEvent.scanCode ${keyEvent.scanCode} keyEvent.unicodeChar ${keyEvent.unicodeChar}")
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
-                if (currentActivity is ShowtimeActivity) {
-                    (currentActivity as ShowtimeActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is MoviesActivity) {
-                    (currentActivity as MoviesActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is HotelInfoActivity) {
-                    (currentActivity as HotelInfoActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is GuestServiceActivity) {
-                    (currentActivity as GuestServiceActivity).handleBackRemoteClick()
-                    return true
-                }
-                if (currentActivity is AppWorldActivity) {
-                    (currentActivity as AppWorldActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is WeatherActivity) {
-                    (currentActivity as WeatherActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is NewsActivity) {
-                    (currentActivity as NewsActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is ConciergeActivity) {
-                    (currentActivity as ConciergeActivity).handleBackRemoteClick()
-                    return true
-                }
-                if (currentActivity is GuestFeedbackActivity) {
-                    (currentActivity as GuestFeedbackActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is NewProgramGuideActivity) {
-                    (currentActivity as NewProgramGuideActivity).handleBackRemoteClick()
-                    return true
-                }
-                if (currentActivity is GuestMessageActivity) {
-                    (currentActivity as GuestMessageActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is InRoomDiningActivity) {
-                    (currentActivity as InRoomDiningActivity).handleBackRemoteClick()
-                    return true
-                }
-                if (currentActivity is CastingActivity) {
-                    (currentActivity as CastingActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is HotspotActivity) {
-                    (currentActivity as HotspotActivity).handleBackClick()
-                    return true
-                }
+                handleBackKeyAndExitKey()
 
             }
         }
@@ -188,6 +193,7 @@ abstract class BaseActivity : AppCompatActivity() {
         if(keyEvent.scanCode == Constants.EXIT_KEY)
         {
             //Exit
+            handleBackKeyAndExitKey()
         }
         if(keyEvent.scanCode == Constants.PROGRAM_SEARCH_KEY)
         {
