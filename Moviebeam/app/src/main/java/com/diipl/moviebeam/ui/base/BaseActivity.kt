@@ -11,17 +11,23 @@ import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.accountsetup.Buttons
+import com.diipl.moviebeam.data.dto.news.News
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.casting.HotspotActivity
 import com.diipl.moviebeam.ui.concierge.ConciergeActivity
+import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guest.feedback.GuestFeedbackActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guest.news.NewsActivity
@@ -40,6 +46,7 @@ import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.setIPInfo
 import com.diipl.moviebeam.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Collections
 import java.util.concurrent.Executors
@@ -48,6 +55,7 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+private const val TAG = "BaseActivity"
 @AndroidEntryPoint
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -61,6 +69,11 @@ abstract class BaseActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreference: SharedPreference
+
+    @Inject
+    lateinit var accountSetupData: DataStore<AccountSetupResponse>
+
+    val mainMenuButtonList: MutableList<Buttons> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +92,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {
             castingUrl = getCastingUrl()
+            mainMenuButtonList.addAll(accountSetupData.data.first().buttonsList)
         }
     }
 
@@ -154,6 +168,10 @@ abstract class BaseActivity : AppCompatActivity() {
         if(keyEvent.scanCode == Constants.APP_WORLD_KEY)
         {
             //Apps
+            if(!checkMenuButtonInButtonListExists(Constants.APPS_ID)){
+                //return it: don't do anything
+                return true
+            }
             if (currentActivity !is AppWorldActivity) {
                 intent = Intent(this, AppWorldActivity::class.java)
                 startActivity(intent)
@@ -162,6 +180,11 @@ abstract class BaseActivity : AppCompatActivity() {
         if(keyEvent.scanCode == Constants.LIVE_TV_KEY || keyEvent.scanCode == Constants.GUIDE_KEY)
         {
             //program Guide
+            if(!checkMenuButtonInButtonListExists(Constants.PRG_GUIDE_ID)){
+                //return it: don't do anything
+                return true
+            }
+
             if (currentActivity !is NewProgramGuideActivity) {
                 val bundle = Bundle()
                 bundle.putString("title", "Program Guide")
@@ -173,6 +196,11 @@ abstract class BaseActivity : AppCompatActivity() {
         if(keyEvent.scanCode == Constants.CASTING_KEY)
         {
             //Casting
+            if(!checkMenuButtonInButtonListExists(Constants.CASTING_ID)){
+                //return it: don't do anything
+                return true
+            }
+
             if (currentActivity !is CastingActivity) {
                 if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB)) {
                     if (castingUrl.isNullOrEmpty()) {
@@ -231,6 +259,16 @@ abstract class BaseActivity : AppCompatActivity() {
             android.R.id.home -> finish()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun checkMenuButtonInButtonListExists(buttonName:String):Boolean{
+        if(mainMenuButtonList.isNullOrEmpty()){
+            return false
+        }
+
+        val btnList = mainMenuButtonList.filter { it.buttonName == buttonName }
+        Log.e(TAG, "checkMenuButtonInButtonListExists: ${btnList.isNotEmpty()}", )
+        return btnList.isNotEmpty()
     }
 
     private suspend fun getCastingUrl(): String {
