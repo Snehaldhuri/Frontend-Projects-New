@@ -214,6 +214,10 @@ class ExoPlayerActivity : BaseActivity() {
         finish()
     }
 
+    fun handleBackRemoteClick() {
+        onBackPressed()
+    }
+
     override fun onBackPressed() {
         try {
             releasePlayer()

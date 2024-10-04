@@ -37,6 +37,7 @@ import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
+import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.weather.WeatherActivity
 import com.diipl.moviebeam.utils.Constants
@@ -56,6 +57,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TAG = "BaseActivity"
+
 @AndroidEntryPoint
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -96,7 +98,7 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleBackKeyAndExitKey():Boolean{
+    private fun handleBackKeyAndExitKey(): Boolean {
         if (currentActivity is ShowtimeActivity) {
             (currentActivity as ShowtimeActivity).handleBackClick()
             return true
@@ -153,11 +155,22 @@ abstract class BaseActivity : AppCompatActivity() {
             (currentActivity as HotspotActivity).handleBackClick()
             return true
         }
+        if (currentActivity is ExoPlayerActivity) {
+            (currentActivity as ExoPlayerActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is DisconnectedPrgActivity) {
+            (currentActivity as DisconnectedPrgActivity).handleBackRemoteClick()
+            return true
+        }
         return false
     }
 
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-        Log.d("TAG", "onKeyDown: keycode: $keyCode keyEvent.keyCode ${keyEvent.keyCode} keyEvent.action ${keyEvent.action} keyEvent.displayLabel ${keyEvent.displayLabel}  keyEvent.number ${keyEvent.number} keyEvent.scanCode ${keyEvent.scanCode} keyEvent.unicodeChar ${keyEvent.unicodeChar}")
+        Log.d(
+            "TAG",
+            "onKeyDown: keycode: $keyCode keyEvent.keyCode ${keyEvent.keyCode} keyEvent.action ${keyEvent.action} keyEvent.displayLabel ${keyEvent.displayLabel}  keyEvent.number ${keyEvent.number} keyEvent.scanCode ${keyEvent.scanCode} keyEvent.unicodeChar ${keyEvent.unicodeChar}"
+        )
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
                 handleBackKeyAndExitKey()
@@ -165,10 +178,9 @@ abstract class BaseActivity : AppCompatActivity() {
             }
         }
 
-        if(keyEvent.scanCode == Constants.APP_WORLD_KEY)
-        {
+        if (keyEvent.scanCode == Constants.APP_WORLD_KEY) {
             //Apps
-            if(!checkMenuButtonInButtonListExists(Constants.APPS_ID)){
+            if (!checkMenuButtonInButtonListExists(Constants.APPS_ID)) {
                 //return it: don't do anything
                 return true
             }
@@ -177,10 +189,9 @@ abstract class BaseActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        if(keyEvent.scanCode == Constants.LIVE_TV_KEY || keyEvent.scanCode == Constants.GUIDE_KEY)
-        {
+        if (keyEvent.scanCode == Constants.LIVE_TV_KEY || keyEvent.scanCode == Constants.GUIDE_KEY) {
             //program Guide
-            if(!checkMenuButtonInButtonListExists(Constants.PRG_GUIDE_ID)){
+            if (!checkMenuButtonInButtonListExists(Constants.PRG_GUIDE_ID)) {
                 //return it: don't do anything
                 return true
             }
@@ -193,10 +204,9 @@ abstract class BaseActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        if(keyEvent.scanCode == Constants.CASTING_KEY)
-        {
+        if (keyEvent.scanCode == Constants.CASTING_KEY) {
             //Casting
-            if(!checkMenuButtonInButtonListExists(Constants.CASTING_ID)){
+            if (!checkMenuButtonInButtonListExists(Constants.CASTING_ID)) {
                 //return it: don't do anything
                 return true
             }
@@ -218,13 +228,11 @@ abstract class BaseActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        if(keyEvent.scanCode == Constants.EXIT_KEY)
-        {
+        if (keyEvent.scanCode == Constants.EXIT_KEY) {
             //Exit
             handleBackKeyAndExitKey()
         }
-        if(keyEvent.scanCode == Constants.PROGRAM_SEARCH_KEY)
-        {
+        if (keyEvent.scanCode == Constants.PROGRAM_SEARCH_KEY) {
             //Search
             if (currentActivity is NewProgramGuideActivity) {
                 (currentActivity as NewProgramGuideActivity).showSearchDialog()
@@ -234,7 +242,7 @@ abstract class BaseActivity : AppCompatActivity() {
             // Netflix
             onBaseAppClicked(Constants.NETFLIX_PACKAGE_NAME)
         }
-        if(keyEvent.scanCode == Constants.YOUTUBE_KEY){
+        if (keyEvent.scanCode == Constants.YOUTUBE_KEY) {
             //Youtube
             onBaseAppClicked(Constants.YOUTUBE_PACKAGE_NAME)
         }
@@ -261,13 +269,13 @@ abstract class BaseActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun checkMenuButtonInButtonListExists(buttonName:String):Boolean{
-        if(mainMenuButtonList.isNullOrEmpty()){
+    private fun checkMenuButtonInButtonListExists(buttonName: String): Boolean {
+        if (mainMenuButtonList.isNullOrEmpty()) {
             return false
         }
 
         val btnList = mainMenuButtonList.filter { it.buttonName == buttonName }
-        Log.e(TAG, "checkMenuButtonInButtonListExists: ${btnList.isNotEmpty()}", )
+        Log.e(TAG, "checkMenuButtonInButtonListExists: ${btnList.isNotEmpty()}")
         return btnList.isNotEmpty()
     }
 

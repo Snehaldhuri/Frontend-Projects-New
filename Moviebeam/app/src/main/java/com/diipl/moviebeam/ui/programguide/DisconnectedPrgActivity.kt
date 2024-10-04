@@ -226,6 +226,10 @@ class DisconnectedPrgActivity : BaseActivity() {
 
     }
 
+    fun handleBackRemoteClick() {
+        onBackPressed()
+    }
+
     override fun onBackPressed() {
         if (isSearchDialogOpen) {
             currentSearchQuery = ""
