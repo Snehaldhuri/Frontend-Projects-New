@@ -770,7 +770,6 @@ fun Context.getInstalledAppInfo(packageName: String): ApplicationInfo? {
             packageManager.getApplicationInfo(packageName, 0)
         }
     }catch (e: Exception){
-        Log.e("TAG", "getApplicationInfo: ${e.localizedMessage}")
         null
     }
 }

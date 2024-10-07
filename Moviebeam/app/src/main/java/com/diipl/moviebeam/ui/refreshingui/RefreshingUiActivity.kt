@@ -2,8 +2,8 @@ package com.diipl.moviebeam.ui.refreshingui
 
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import android.os.RemoteException
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.lifecycleScope
@@ -38,12 +38,11 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
-import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
+import com.diipl.moviebeam.utils.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.ThemeDetails
-import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getGradientColor
@@ -123,6 +122,7 @@ class RefreshingUiActivity : BaseActivity() {
 
     @Inject
     lateinit var hardwareAPI: HardwareAPI
+    private val clearCredentialsHandler : ClearCredentialsHandler by lazy { ClearCredentialsHandler(applicationContext, accountSetupDataStore) }
 
     override fun observeViewModel() {
         observe(refreshingUiViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
@@ -235,7 +235,8 @@ class RefreshingUiActivity : BaseActivity() {
             kapingResponse.cmdData?.cmdData
         )
         GuestDetails.IS_GUEST_CHECKED_IN = false
-        clearCredentials(appList)
+//        clearCredentials(appList)
+        clearCredentialsHandler.startClearCredentials(false)
         EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         redirectToMainMenuScreen()
     }
@@ -316,7 +317,7 @@ class RefreshingUiActivity : BaseActivity() {
                             }
                         )
                     }
-                    refreshingUiViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
+                    refreshingUiViewModel.setAccountSetupResponseData(it)
 
                     CoroutineScope(Dispatchers.Default).launch {
                         preferenceDataStoreHelper.putPreference(

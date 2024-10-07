@@ -218,7 +218,7 @@ class STBDetailsActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {
-                    stbDetailViewModel.setAccountSetupResponseData(accountSetupDataStore, it)
+                    stbDetailViewModel.setAccountSetupResponseData(it)
                     if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
                         hardwareAPI.myService?.setDeviceName(
                             "MBAP_${it.accountId}_${it.roomNo}",

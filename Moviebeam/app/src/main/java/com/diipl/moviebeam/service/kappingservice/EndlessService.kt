@@ -75,6 +75,7 @@ import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.utils.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.GLOBAL_LOOP_SEC
 import com.diipl.moviebeam.utils.Constants.MDM_PACKAGE_NAME
@@ -85,7 +86,6 @@ import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.ThemeDetails
-import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.compareVersions
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
@@ -243,6 +243,8 @@ class EndlessService : Service() {
 
     @Inject
     lateinit var hardwareAPI: HardwareAPI
+    private val clearCredentialsHandler : ClearCredentialsHandler by lazy { ClearCredentialsHandler(applicationContext, accountSetupDataStore) }
+
 
     companion object {
         var isServiceStarted = false
@@ -1063,7 +1065,7 @@ class EndlessService : Service() {
                         }
                     )
                 }
-                updateAccountSetupData(accountSetupDataStore, response)
+                updateAccountSetupData(response)
                 CoroutineScope(Dispatchers.Default).launch {
                     preferenceDataStoreHelper.putPreference(
                         PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
@@ -1381,7 +1383,7 @@ class EndlessService : Service() {
 
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
         CoroutineScope(Dispatchers.Default).launch {
-            appList = ArrayList(getAppList())
+//            appList = ArrayList(getAppList())
             updateGuestMessage(messageDatastore, MessageResponse())
             updateGuestSession(
                 preferenceDataStoreHelper,
@@ -1389,7 +1391,8 @@ class EndlessService : Service() {
                 false,
                 kapingResponse.cmdData?.cmdData
             )
-            clearCredentials(appList)
+//            clearCredentials(appList)
+            clearCredentialsHandler.startClearCredentials(false)
             GuestDetails.IS_GUEST_CHECKED_IN = false
             kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
         }
@@ -1484,110 +1487,9 @@ class EndlessService : Service() {
     }
 
 
-    private fun updateAccountSetupData(
-        dataStore: DataStore<AccountSetupResponse>, data: AccountSetupResponse
-    ) {
+    private fun updateAccountSetupData(data: AccountSetupResponse) {
         CoroutineScope(Dispatchers.IO).launch {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    accountId = data.accountId,
-                    address = data.address,
-                    adultContent = data.adultContent,
-                    airportCode = data.airportCode,
-                    amenityPasscodeStatus = data.amenityPasscodeStatus,
-                    analogService = data.analogService,
-                    appsList = data.appsList,
-                    appsVisible = data.appsVisible,
-                    appsWorld = data.appsWorld,
-                    blankChannelBroadcastType = data.blankChannelBroadcastType,
-                    blankChannelLcn = data.blankChannelLcn,
-                    blankChannelMajor = data.blankChannelMajor,
-                    blankChannelMinor = data.blankChannelMinor,
-                    blankTvChannelBroadcastType = data.blankTvChannelBroadcastType,
-                    buttonsList = data.buttonsList,
-                    castingVisible = data.castingVisible,
-                    cityCode = data.cityCode,
-                    clipType = data.clipType,
-                    cloudEnabled = data.cloudEnabled,
-                    companyName = data.companyName,
-                    conciergeList = data.conciergeList,
-                    contactNo = data.contactNo,
-                    contentDetailFlag = data.contentDetailFlag,
-                    customerCareNo = data.customerCareNo,
-                    defaultLanguage = data.defaultLanguage,
-                    email = data.email,
-                    enableInroomDining = data.enableInroomDining,
-                    enableNdvr = data.enableNdvr,
-                    enableShowtime = data.enableShowtime,
-                    enableShowtimeStatus = data.enableShowtimeStatus,
-                    enableStbLogging = data.enableStbLogging,
-                    enableWebRemote = data.enableWebRemote,
-                    epgCdnUrl = data.epgCdnUrl,
-                    epgDuration = data.epgDuration,
-                    feedBackVisible = data.feedBackVisible,
-                    fetchServerIp = data.fetchServerIp,
-                    fetchServerPort = data.fetchServerPort,
-                    flightStatusDisclaimer = data.flightStatusDisclaimer,
-                    gatewayIpAddress = data.gatewayIpAddress,
-                    gsButtonsList = data.gsButtonsList,
-                    guestServicesVisible = data.guestServicesVisible,
-                    hotelChannelList = data.hotelChannelList,
-                    hotelDetailFlag = data.hotelDetailFlag,
-                    hotelDisplayName = data.hotelDisplayName,
-                    hotelInfo = data.hotelInfo,
-                    hotelModel = data.hotelModel,
-                    hotelPlan = data.hotelPlan,
-                    hotelPlanId = data.hotelPlanId,
-                    hotelServicesVisible = data.hotelServicesVisible,
-                    httpStreamingCdnUrl = data.httpStreamingCdnUrl,
-                    httpStreamingHotelvideoUrl = data.httpStreamingHotelvideoUrl,
-                    id = data.id,
-                    itemMenuList = data.itemMenuList,
-                    languageWiseHotelInfoList = data.languageWiseHotelInfoList,
-                    languagesList = data.languagesList,
-                    liveTVVisible = data.liveTVVisible,
-                    mainCastingHdmi = data.mainCastingHdmi,
-                    mbloggerCloudUrl = data.mbloggerCloudUrl,
-                    multiLingual = data.multiLingual,
-                    ndvrIp = data.ndvrIp,
-                    ndvrPort = data.ndvrPort,
-                    pairDeviceVisible = data.pairDeviceVisible,
-                    prgGuideVisible = data.prgGuideVisible,
-                    proxyIp = data.proxyIp,
-                    proxyPort = data.proxyPort,
-                    proxyVodIp = data.proxyVodIp,
-                    proxyVodPort = data.proxyVodPort,
-                    roomNo = data.roomNo,
-                    samsungBroadcastType = data.samsungBroadcastType,
-                    samsungChannelType = data.samsungChannelType,
-                    samsungMainmenuAccessText = data.samsungMainmenuAccessText,
-                    samsungModulationType = data.samsungModulationType,
-                    selectedAppsList = data.selectedAppsList,
-                    showToiletryPriceColumn = data.showToiletryPriceColumn,
-                    showVegNonVegImg = data.showVegNonVegImg,
-                    showtimesVisible = data.showtimesVisible,
-                    softwareDownloadIp = data.softwareDownloadIp,
-                    softwareDownloadPort = data.softwareDownloadPort,
-                    stbCastingImageUrl = data.stbCastingImageUrl,
-                    stbZoneId = data.stbZoneId,
-                    streamingChannelBroadcastType = data.streamingChannelBroadcastType,
-                    streamingIp = data.streamingIp,
-                    streamingPort = data.streamingPort,
-                    streamingType = data.streamingType,
-                    streamingTypeId = data.streamingTypeId,
-                    temperatureUnit = data.temperatureUnit,
-                    timeZoneCode = data.timeZoneCode,
-                    tvBroadcastType = data.tvBroadcastType,
-                    tvSerialControl = data.tvSerialControl,
-                    tvVodTuningType = data.tvVodTuningType,
-                    type = data.type,
-                    vodMgrIp = data.vodMgrIp,
-                    vodMgrPort = data.vodMgrPort,
-                    vodVisible = data.vodVisible,
-                    welcomeScreenVisible = data.welcomeScreenVisible,
-                    isEnablePatchWall = data.isEnablePatchWall
-                )
-            }
+            updateDataStore.updateAccountData(data)
         }
     }
 
@@ -2028,7 +1930,7 @@ class EndlessService : Service() {
             epgStartTime = getEpgSt()
             epgEndTime = getEpgEt()
             channelCount = getChannelCount()
-            appList = ArrayList(getAppList())
+//            appList = ArrayList(getAppList())
         }
     }
 

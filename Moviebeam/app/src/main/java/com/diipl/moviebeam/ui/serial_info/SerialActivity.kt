@@ -60,6 +60,10 @@ class SerialActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
+    }
+
+    override fun onStart() {
+        super.onStart()
 
         lifecycleScope.launch {
             val isValid = preferenceDataStoreHelper.getFirstPreference(
@@ -77,8 +81,8 @@ class SerialActivity : BaseActivity() {
             }
             handleStbAllocationStatusResponse(isValid)
         }
-    }
 
+    }
 
     override fun onPause() {
         super.onPause()

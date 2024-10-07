@@ -1,10 +1,13 @@
 package com.diipl.moviebeam.ui.mainmenu
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -58,6 +61,7 @@ import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiViewModel
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.weather.WeatherActivity
+import com.diipl.moviebeam.utils.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.Constants.LA_ID
@@ -84,6 +88,7 @@ import java.util.Collections
 import javax.inject.Inject
 
 private const val TAG = "MainMenuActivity"
+
 @AndroidEntryPoint
 class MainMenuActivity : BaseActivity() {
 
@@ -126,6 +131,13 @@ class MainMenuActivity : BaseActivity() {
     @Inject
     lateinit var preference: SharedPreference
 
+    private val clearCredentialsHandler: ClearCredentialsHandler by lazy {
+        ClearCredentialsHandler(
+            applicationContext,
+            accountSetupDataStore
+        )
+    }
+    private lateinit var borderAnimator: ObjectAnimator
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
@@ -154,6 +166,25 @@ class MainMenuActivity : BaseActivity() {
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
     }
 
+    private fun startBorderAnimation() {
+        val borderAnimator = ObjectAnimator.ofArgb(
+            binding.cardClearCredentials,
+            "strokeColor",
+            Color.RED,
+            Color.TRANSPARENT
+        )
+        borderAnimator.duration = 2000
+        borderAnimator.repeatMode = ValueAnimator.REVERSE
+        borderAnimator.repeatCount = ValueAnimator.INFINITE
+        borderAnimator.start()
+    }
+
+    private fun stopBorderAnimation() {
+        if (::borderAnimator.isInitialized) {
+            borderAnimator.cancel()
+        }
+    }
+
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -176,7 +207,7 @@ class MainMenuActivity : BaseActivity() {
         if (!isServiceStarted) {
             actionOnService(Actions.START)
         }
-
+        startBorderAnimation()
     }
 
     private fun init() {
@@ -200,8 +231,8 @@ class MainMenuActivity : BaseActivity() {
         }, 240)
 
         lifecycleScope.launch {
-            while (true){
-                if (ThemeDetails.LOGO_IMAGE != null){
+            while (true) {
+                if (ThemeDetails.LOGO_IMAGE != null) {
                     binding.ivHotelLogo.loadLogo()
                     break
                 }
@@ -252,7 +283,7 @@ class MainMenuActivity : BaseActivity() {
             player.playWhenReady = true
             player.prepare()
         } else {
-            if (playCount <= 2){
+            if (playCount <= 2) {
                 lifecycleScope.launch {
                     delay(2000)
                     initializePlayer()
@@ -332,14 +363,17 @@ class MainMenuActivity : BaseActivity() {
                             guestServiceViewModel.guestMessageLiveData.value?.data?.messagesList?.size
                                 ?: 0
 
-                        val containsMainMsg = response.buttonsList.find { button -> button.buttonName == "mainmsg" } != null
+                        val containsMainMsg =
+                            response.buttonsList.find { button -> button.buttonName == "mainmsg" } != null
                         Log.d(TAG, "handleAccountSetupResponse: $containsMainMsg")
                         refreshingUiViewModel.setMainMsgStatus(containsMainMsg)
 
                         binding.tvGreeting.text = response.hotelInfo
+
                         if (response.isEnablePatchWall)
                             showPatchWall()
-
+                        if (response.enableClearCredentialsPatchwall)
+                            showClearCredentialsPatchWall()
 
                         var btnListFromApi = listOf<String>()
                         when (isNetworkConnected) {
@@ -354,7 +388,7 @@ class MainMenuActivity : BaseActivity() {
                             }
                         }
 
-                        val btnModelList :MutableList<BtnModel> =
+                        val btnModelList: MutableList<BtnModel> =
                             Constants.HOME_PAGE_MENU_BUTTON_LIST.filter {
                                 btnListFromApi.contains(it.btnId)
                             }.toMutableList()
@@ -364,7 +398,8 @@ class MainMenuActivity : BaseActivity() {
                         if (guestMessages == 0) {
                             btnModelList.remove(Constants.MENU_MESSAGE_MODEL)
                         }
-                        val sortedBtnModelList = response.buttonsList.let { matchAndSortButtons(it) }
+                        val sortedBtnModelList =
+                            response.buttonsList.let { matchAndSortButtons(it) }
 
                         val height = if (sortedBtnModelList.size < 5) {
                             resources.getDimensionPixelSize(R.dimen.dp_110)
@@ -716,6 +751,41 @@ class MainMenuActivity : BaseActivity() {
         binding.rvMenuButton.setItemFocused()
         binding.panelView.toVisible()
     }
+
+    private fun showClearCredentialsPatchWall() = lifecycleScope.launch {
+        binding.clearCredentialsPanelView.toVisible()
+        startBorderAnimation()
+        binding.cardClearCredentials.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                animateScale(binding.cardClearCredentials, R.anim.scale_in_animation)
+                stopBorderAnimation()
+                view?.setOnKeyListener { _, keycode, keyEvent ->
+                    if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                        when (keycode) {
+                            KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                                binding.rvMenuButton.requestFocus()
+                                true
+                            }
+
+                            else -> false
+                        }
+                    } else {
+                        false
+                    }
+                }
+            } else {
+                animateScale(binding.cardClearCredentials, R.anim.scale_out_animation)
+                startBorderAnimation()
+            }
+        }
+        binding.cardClearCredentials.setOnClickListener {
+            clearCredentialsHandler.startClearCredentials()
+        }
+        delay(500)
+        binding.rvMenuButton.setItemFocused()
+        binding.clearCredentialsPanelView.toVisible()
+    }
+
 
     private fun handleClick(packageName: String) {
         if (GuestDetails.IS_GUEST_CHECKED_IN) {

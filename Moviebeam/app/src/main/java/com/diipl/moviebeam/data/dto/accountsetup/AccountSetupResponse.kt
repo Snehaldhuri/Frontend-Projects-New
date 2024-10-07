@@ -101,5 +101,8 @@ data class AccountSetupResponse(
     val vodVisible: Int = 0,
     val welcomeScreenVisible: Int = 0,
     val stbCastingPageUrl: String = "",
-    val isEnablePatchWall: Boolean = false
+    val isEnablePatchWall: Boolean = false,
+    val isNetflixCheckin: Boolean = false,
+    val isPlayBoxTv: Boolean = false,
+    val enableClearCredentialsPatchwall : Boolean = false
 )

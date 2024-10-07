@@ -163,4 +163,8 @@
     <string name="prime_video">Prime Video</string>
     <string name="channel_no_is_not_available">Channel No. %1$s is not available!</string>
     <string name="app_icon">App Icon</string>
+
+    <string name="clear_credentials_menu_text">Please clear your app credentials before checkout.</string>
+
+
 </resources>

@@ -25,10 +25,10 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.databinding.PopupLayoutBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.utils.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.ThemeDetails
-import com.diipl.moviebeam.utils.clearCredentials
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadBg
@@ -68,6 +68,7 @@ class AppWorldActivity : BaseActivity() {
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
+    private val clearCredentialsHandler : ClearCredentialsHandler by lazy { ClearCredentialsHandler(applicationContext, accountSetupDataStore) }
 
     override fun observeViewModel() {
         observe(appWorldViewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
@@ -95,8 +96,9 @@ class AppWorldActivity : BaseActivity() {
             binding.btnBack.handleFocusChange()
             binding.btnClearCredentials.handleFocusChange()
             binding.btnClearCredentials.setOnClickListener {
-                clearCredentials(appList)
-                showPopup()
+                clearCredentialsHandler.startClearCredentials()
+//                clearCredentials(appList)
+//                showPopup()
             }
         } catch (e: Exception) {
             e.printStackTrace()

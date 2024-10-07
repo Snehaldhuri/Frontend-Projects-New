@@ -216,6 +216,97 @@
 
     </androidx.cardview.widget.CardView>
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/clear_credentials_panel_view"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="110dp"
+        android:layout_marginTop="35dp"
+        app:cardBackgroundColor="@color/menu_list_bg"
+        app:cardCornerRadius="@dimen/dp_18"
+        android:visibility="gone"
+        app:cardElevation="@dimen/dp_0"
+        app:layout_constraintEnd_toStartOf="@id/gl_vertical_95"
+        app:layout_constraintStart_toEndOf="@id/gl_vertical_57"
+        app:layout_constraintTop_toBottomOf="@id/gl_horizontal_10">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:theme="@style/Theme.MaterialComponents">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/gl_vertical_51"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.41" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/clear_credentials_text_card_app"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/dp_18"
+                android:layout_marginEnd="@dimen/dp_8"
+                app:cardBackgroundColor="@color/transparent"
+                app:cardCornerRadius="15dp"
+                app:cardElevation="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/gl_vertical_51"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints">
+
+                <TextView
+                    android:id="@+id/clear_credentials_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="@font/manrope_bold_700"
+                    android:gravity="center_vertical"
+                    android:text="@string/clear_credentials_menu_text"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+
+            </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_clear_credentials"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dp_8"
+                android:layout_marginEnd="@dimen/dp_24"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                app:cardCornerRadius="15dp"
+                app:cardElevation="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/gl_vertical_51"
+                app:layout_constraintTop_toTopOf="parent"
+                app:strokeColor="@color/transparent"
+                app:strokeWidth="1dp"
+                tools:ignore="MissingConstraints">
+
+                <TextView
+                    android:id="@+id/tv_clear_credentials"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/clear_btn_bg_gradient"
+                    android:fontFamily="@font/manrope_bold_700"
+                    android:paddingVertical="20dp"
+                    android:text="Clear Credentials"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+
     <ProgressBar
         android:id="@+id/pb_loader"
         android:layout_width="wrap_content"
