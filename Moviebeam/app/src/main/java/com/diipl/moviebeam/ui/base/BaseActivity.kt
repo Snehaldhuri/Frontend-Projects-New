@@ -11,17 +11,23 @@ import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.accountsetup.Buttons
+import com.diipl.moviebeam.data.dto.news.News
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.casting.HotspotActivity
 import com.diipl.moviebeam.ui.concierge.ConciergeActivity
+import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guest.feedback.GuestFeedbackActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guest.news.NewsActivity
@@ -31,6 +37,7 @@ import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
+import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.weather.WeatherActivity
 import com.diipl.moviebeam.utils.Constants
@@ -40,6 +47,7 @@ import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.setIPInfo
 import com.diipl.moviebeam.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Collections
 import java.util.concurrent.Executors
@@ -47,6 +55,8 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+
+private const val TAG = "BaseActivity"
 
 @AndroidEntryPoint
 abstract class BaseActivity : AppCompatActivity() {
@@ -61,6 +71,11 @@ abstract class BaseActivity : AppCompatActivity() {
 
     @Inject
     lateinit var sharedPreference: SharedPreference
+
+    @Inject
+    lateinit var accountSetupData: DataStore<AccountSetupResponse>
+
+    val mainMenuButtonList: MutableList<Buttons> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,87 +94,108 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {
             castingUrl = getCastingUrl()
+            mainMenuButtonList.addAll(accountSetupData.data.first().buttonsList)
         }
     }
 
+    private fun handleBackKeyAndExitKey(): Boolean {
+        if (currentActivity is ShowtimeActivity) {
+            (currentActivity as ShowtimeActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is MoviesActivity) {
+            (currentActivity as MoviesActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is HotelInfoActivity) {
+            (currentActivity as HotelInfoActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is GuestServiceActivity) {
+            (currentActivity as GuestServiceActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is AppWorldActivity) {
+            (currentActivity as AppWorldActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is WeatherActivity) {
+            (currentActivity as WeatherActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is NewsActivity) {
+            (currentActivity as NewsActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is ConciergeActivity) {
+            (currentActivity as ConciergeActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is GuestFeedbackActivity) {
+            (currentActivity as GuestFeedbackActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is NewProgramGuideActivity) {
+            (currentActivity as NewProgramGuideActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is GuestMessageActivity) {
+            (currentActivity as GuestMessageActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is InRoomDiningActivity) {
+            (currentActivity as InRoomDiningActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is CastingActivity) {
+            (currentActivity as CastingActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is HotspotActivity) {
+            (currentActivity as HotspotActivity).handleBackClick()
+            return true
+        }
+        if (currentActivity is ExoPlayerActivity) {
+            (currentActivity as ExoPlayerActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is DisconnectedPrgActivity) {
+            (currentActivity as DisconnectedPrgActivity).handleBackRemoteClick()
+            return true
+        }
+        return false
+    }
+
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-        Log.d("TAG", "onKeyDown: keycode: $keyCode keyEvent.keyCode ${keyEvent.keyCode} keyEvent.action ${keyEvent.action} keyEvent.displayLabel ${keyEvent.displayLabel}  keyEvent.number ${keyEvent.number} keyEvent.scanCode ${keyEvent.scanCode} keyEvent.unicodeChar ${keyEvent.unicodeChar}")
+        Log.d(
+            "TAG",
+            "onKeyDown: keycode: $keyCode keyEvent.keyCode ${keyEvent.keyCode} keyEvent.action ${keyEvent.action} keyEvent.displayLabel ${keyEvent.displayLabel}  keyEvent.number ${keyEvent.number} keyEvent.scanCode ${keyEvent.scanCode} keyEvent.unicodeChar ${keyEvent.unicodeChar}"
+        )
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
-                if (currentActivity is ShowtimeActivity) {
-                    (currentActivity as ShowtimeActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is MoviesActivity) {
-                    (currentActivity as MoviesActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is HotelInfoActivity) {
-                    (currentActivity as HotelInfoActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is GuestServiceActivity) {
-                    (currentActivity as GuestServiceActivity).handleBackRemoteClick()
-                    return true
-                }
-                if (currentActivity is AppWorldActivity) {
-                    (currentActivity as AppWorldActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is WeatherActivity) {
-                    (currentActivity as WeatherActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is NewsActivity) {
-                    (currentActivity as NewsActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is ConciergeActivity) {
-                    (currentActivity as ConciergeActivity).handleBackRemoteClick()
-                    return true
-                }
-                if (currentActivity is GuestFeedbackActivity) {
-                    (currentActivity as GuestFeedbackActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is NewProgramGuideActivity) {
-                    (currentActivity as NewProgramGuideActivity).handleBackRemoteClick()
-                    return true
-                }
-                if (currentActivity is GuestMessageActivity) {
-                    (currentActivity as GuestMessageActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is InRoomDiningActivity) {
-                    (currentActivity as InRoomDiningActivity).handleBackRemoteClick()
-                    return true
-                }
-                if (currentActivity is CastingActivity) {
-                    (currentActivity as CastingActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is HotspotActivity) {
-                    (currentActivity as HotspotActivity).handleBackClick()
-                    return true
-                }
-                if (currentActivity is MainMenuActivity) {
-                    return true
-                }
+                handleBackKeyAndExitKey()
 
             }
         }
 
-        if(keyEvent.scanCode == Constants.APP_WORLD_KEY)
-        {
+        if (keyEvent.scanCode == Constants.APP_WORLD_KEY) {
             //Apps
+            if (!checkMenuButtonInButtonListExists(Constants.APPS_ID)) {
+                //return it: don't do anything
+                return true
+            }
             if (currentActivity !is AppWorldActivity) {
                 intent = Intent(this, AppWorldActivity::class.java)
                 startActivity(intent)
             }
         }
-        if(keyEvent.scanCode == Constants.LIVE_TV_KEY || keyEvent.scanCode == Constants.GUIDE_KEY)
-        {
+        if (keyEvent.scanCode == Constants.LIVE_TV_KEY || keyEvent.scanCode == Constants.GUIDE_KEY) {
             //program Guide
+            if (!checkMenuButtonInButtonListExists(Constants.PRG_GUIDE_ID)) {
+                //return it: don't do anything
+                return true
+            }
+
             if (currentActivity !is NewProgramGuideActivity) {
                 val bundle = Bundle()
                 bundle.putString("title", "Program Guide")
@@ -168,9 +204,13 @@ abstract class BaseActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        if(keyEvent.scanCode == Constants.CASTING_KEY)
-        {
+        if (keyEvent.scanCode == Constants.CASTING_KEY) {
             //Casting
+            if (!checkMenuButtonInButtonListExists(Constants.CASTING_ID)) {
+                //return it: don't do anything
+                return true
+            }
+
             if (currentActivity !is CastingActivity) {
                 if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB)) {
                     if (castingUrl.isNullOrEmpty()) {
@@ -188,12 +228,11 @@ abstract class BaseActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-        if(keyEvent.scanCode == Constants.EXIT_KEY)
-        {
+        if (keyEvent.scanCode == Constants.EXIT_KEY) {
             //Exit
+            handleBackKeyAndExitKey()
         }
-        if(keyEvent.scanCode == Constants.PROGRAM_SEARCH_KEY)
-        {
+        if (keyEvent.scanCode == Constants.PROGRAM_SEARCH_KEY) {
             //Search
             if (currentActivity is NewProgramGuideActivity) {
                 (currentActivity as NewProgramGuideActivity).showSearchDialog()
@@ -203,7 +242,7 @@ abstract class BaseActivity : AppCompatActivity() {
             // Netflix
             onBaseAppClicked(Constants.NETFLIX_PACKAGE_NAME)
         }
-        if(keyEvent.scanCode == Constants.YOUTUBE_KEY){
+        if (keyEvent.scanCode == Constants.YOUTUBE_KEY) {
             //Youtube
             onBaseAppClicked(Constants.YOUTUBE_PACKAGE_NAME)
         }
@@ -228,6 +267,16 @@ abstract class BaseActivity : AppCompatActivity() {
             android.R.id.home -> finish()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun checkMenuButtonInButtonListExists(buttonName: String): Boolean {
+        if (mainMenuButtonList.isNullOrEmpty()) {
+            return false
+        }
+
+        val btnList = mainMenuButtonList.filter { it.buttonName == buttonName }
+        Log.e(TAG, "checkMenuButtonInButtonListExists: ${btnList.isNotEmpty()}")
+        return btnList.isNotEmpty()
     }
 
     private suspend fun getCastingUrl(): String {
