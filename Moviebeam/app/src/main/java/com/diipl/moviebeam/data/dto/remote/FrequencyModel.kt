@@ -65,6 +65,8 @@ data class BTCommandModel(
     var frequency: Int = 0,
     var delayMs: Long = 1000,
     var HDMI1: ByteArray = byteArrayOf(),
+    var HDMI2: ByteArray = byteArrayOf(),
+    var HDMI3: ByteArray = byteArrayOf(),
     var OK: ByteArray = byteArrayOf(),
     var TV: ByteArray = byteArrayOf(),
     var tv0: ByteArray = byteArrayOf(),

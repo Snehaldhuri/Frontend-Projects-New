@@ -93,7 +93,6 @@ import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.isNotAllowed
-import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.logK
@@ -110,6 +109,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -316,13 +316,11 @@ class EndlessService : Service() {
                        if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
                            preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
                            if (!isNetworkAvailable && !isSwitched) {
-                               BaseActivity.currentActivity?.launchLogger()
                                isSwitched = true
                                startMainMenu()
                                count = 0
                            }
                            if (isNetworkAvailable && isSwitched) {
-                               BaseActivity.currentActivity?.launchLogger()
                                isSwitched = false
                                if (count == 0) {
                                    startMainMenu()
@@ -333,8 +331,6 @@ class EndlessService : Service() {
                    delay(1000 * 2)
                }
            } catch (e: Exception){
-               Log.e("TAG", "activityStack: ${e.localizedMessage}")
-               BaseActivity.currentActivity?.launchLogger()
                MainMenuActivity::class.java.startActivity()
            }
         }
@@ -352,7 +348,6 @@ class EndlessService : Service() {
                         Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
                             val reason = it.getStringExtra("reason")
                             if (reason == "homekey") {
-//                                if (BaseActivity.currentActivity?.javaClass?.simpleName?.isNotAllowed() == true) {
                                 if (activityStack.last() == AppWorldActivity::class.java.simpleName) {
                                     if (AppWorldActivity.NETFLIX_LAUNCHED) {
                                         val sessionId = GuestDetails.SESSION_ID
@@ -775,10 +770,24 @@ class EndlessService : Service() {
         }
     }
 
+    private var updateJob: Job? = null
+
+    private fun updateParams(){
+        updateJob?.cancel()
+        updateJob = CoroutineScope(Dispatchers.IO).launch {
+            while (true){
+                if (ua.isNotEmpty()){
+                    updateJob?.cancel()
+                } else {
+                    initializeDatastoreParams()
+                }
+                delay(5000)
+            }
+        }
+    }
+
     private fun handleKaping(kapingResponse: KapingResponse?) {
-
-//        Log.e(TAG, "handleKaping: ${kapingResponse?.cmdData?.cmd}")
-
+        updateParams()
         when (kapingResponse?.cmdData?.cmd) {
 
             KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {

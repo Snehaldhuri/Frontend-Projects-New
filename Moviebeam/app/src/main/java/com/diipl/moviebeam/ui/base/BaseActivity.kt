@@ -142,6 +142,9 @@ abstract class BaseActivity : AppCompatActivity() {
                     (currentActivity as HotspotActivity).handleBackClick()
                     return true
                 }
+                if (currentActivity is MainMenuActivity) {
+                    return true
+                }
 
             }
         }

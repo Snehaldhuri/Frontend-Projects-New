@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.dto.logs.LogDTO
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
@@ -14,6 +16,8 @@ import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.toInteger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -35,6 +39,7 @@ class LoggingService : Service() {
 
     private lateinit var client: OkHttpClient
     private val binder = LoggingServiceBinder()
+    var updateJob: Job? = null
 
     inner class LoggingServiceBinder : Binder() {
         fun getService(): LoggingService {
@@ -50,10 +55,25 @@ class LoggingService : Service() {
         super.onCreate()
 
         initData()
+        updateData()
 
     }
 
-    fun initData() {
+    private fun updateData() {
+        updateJob?.cancel()
+        updateJob = CoroutineScope(Dispatchers.Default).launch {
+            while (true){
+                if (accountId == ""){
+                    initData()
+                } else {
+                    updateJob?.cancel()
+                }
+                delay(1000*15)
+            }
+        }
+    }
+
+    private fun initData() {
         CoroutineScope(Dispatchers.Default).launch {
             accountId = getAccountId()
             stbRoomNo = getStbRoomNo()
@@ -63,32 +83,48 @@ class LoggingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (!isServiceStarted)
+            startForegroundService()
+        else {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            startForegroundService()
+        }
         startWebSocket()
         return START_STICKY
     }
 
+    private fun startForegroundService() {
+        val notification = NotificationCompat.Builder(this, "LoggingServiceChannel")
+            .setContentTitle("Logging Service")
+            .setContentText("Service is running")
+            .setOngoing(true)
+            .build()
+
+        startForeground(1, notification)
+    }
+
     fun startWebSocket() {
-        Log.e(TAG, "startWebSocket: Trying to Start")
+        Log.e(TAG, "startWebSocket: Trying to Start --> ${BaseActivity.activityStack.last()}")
         if (!isServiceStarted) {
             isServiceStarted = true
             Log.e(TAG, "startWebSocket: Starting")
             client = OkHttpClient.Builder()
                 .build()
 
-            //TODO change url for release
             val request = Request.Builder()
-                .url("ws://mblog.moviebeam.com:20000")
+                .url(BuildConfig.WS_URL)
                 .build()
 
             webSocket = client.newWebSocket(request, object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     isServiceStarted = true
                     Log.e(TAG, "WebSocket connection opened")
+                    updateNetworkStatus(true)
                 }
 
                 override fun onMessage(webSocket: WebSocket, text: String) {
                     Log.e(TAG, "WebSocket Received message: $text")
-
+                    updateNetworkStatus(true)
                 }
 
                 override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
@@ -99,6 +135,12 @@ class LoggingService : Service() {
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                     isServiceStarted = false
                     Log.e(TAG, "WebSocket connection failure: ${t.message}")
+                    if (!t.message.equals(NO_INTERNET_MSG))
+                        startWebSocket()
+                    else {
+                        updateNetworkStatus(false)
+                        onDestroy()
+                    }
                 }
             })
         } else {
@@ -107,22 +149,36 @@ class LoggingService : Service() {
 
     }
 
+    private fun updateNetworkStatus(isAvailable: Boolean) {
+        CoroutineScope(Dispatchers.IO).launch {
+            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.NETWORK_STATUS, isAvailable)
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         Log.e(TAG, "websocket onDestroy called")
+        stopWebSocket()
     }
 
     private fun stopWebSocket() {
+        Log.e(TAG, "stopWebSocket called")
+        isServiceStarted = false
         webSocket?.cancel()
         webSocket = null
+        client.dispatcher.executorService.shutdown()
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     companion object {
         private const val TAG = "LoggingService"
+
+        const val NO_INTERNET_MSG = "Unable to resolve host \"mblog.moviebeam.com\": No address associated with hostname"
+
         private var webSocket: WebSocket? = null
         private val sdf = SimpleDateFormat("EEE. MMM d, yyyy hh:mm:ss a", Locale.ENGLISH)
         private var formattedDate = sdf.format(Date())
-        private var isServiceStarted = false
+        var isServiceStarted = false
 
         private var accountId: String = ""
         private var stbRoomNo: String = ""
@@ -150,7 +206,7 @@ class LoggingService : Service() {
 
         fun sendMessageToWebSocket(message: String, type: String) {
             val hid = if (accountId.isNotEmpty()) accountId.toInteger() else 0
-            if (webSocket != null) {
+            if (webSocket != null && isServiceStarted) {
                 formattedDate = sdf.format(Date())
                 val msgDto = LogDTO(
                     T = type,
@@ -164,8 +220,7 @@ class LoggingService : Service() {
                     M = message
                 )
 
-                val customJson =
-                    """{"T":"I","P":"${msgDto.P}","UA":"${msgDto.UA}","HID":${msgDto.HID},"ROOMNO":"${msgDto.ROOMNO}","IP":"${msgDto.IP}","TSP":"${msgDto.TSP}","Panel":${msgDto.Panel},"M":"${msgDto.M}"}"""
+                val customJson = """{"T":"I","P":"${msgDto.P}","UA":"${msgDto.UA}","HID":${msgDto.HID},"ROOMNO":"${msgDto.ROOMNO}","IP":"${msgDto.IP}","TSP":"${msgDto.TSP}","Panel":${msgDto.Panel},"M":"${msgDto.M}"}"""
 
                 val isSent = webSocket?.send(customJson)
 
@@ -175,10 +230,10 @@ class LoggingService : Service() {
                     BaseActivity.currentActivity?.launchLogger()
                 }
             } else {
-                Log.e(
-                    TAG,
-                    "Websocket3 Failed to send message: WebSocket is not initialized or sending failed"
-                )
+                isServiceStarted = false
+                webSocket?.cancel()
+                webSocket = null
+                Log.e(TAG, "Websocket3 Failed to send message: WebSocket is not initialized or sending failed")
             }
         }
     }

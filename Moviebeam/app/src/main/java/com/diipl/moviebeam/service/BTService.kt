@@ -202,6 +202,9 @@ class BTService(private val context: Context, lifecycle: Lifecycle) : IBtService
 
         private val LG_TV = byteArrayOf(0x48, 0x4C, 0x0C, 0x02, 0x1B)
         private val LG_HDMI1 = byteArrayOf(0x48, 0x4C, 0x0C, 0x02, 0XCE.toByte())
+        private val LG_HDMI2 = byteArrayOf(0x48, 0x4C, 0x0C, 0x02, 0XCC.toByte())
+        private val LG_HDMI3 = byteArrayOf(0x48, 0x4C, 0x0C, 0x02, 0xE9.toByte())
+        private val LG_HDMI4 = byteArrayOf(0x48, 0x4C, 0x0C, 0x02, 0xDA.toByte())
         private val LG_OK = byteArrayOf()
         private val LG_TV0 = byteArrayOf(0x48, 0x4C, 0x0C, 0x02, 0X10)
         private val LG_TV1 = byteArrayOf(0x48, 0x4C, 0x0C, 0x02, 0X11)
@@ -216,6 +219,9 @@ class BTService(private val context: Context, lifecycle: Lifecycle) : IBtService
 
         private val sam_TV = byteArrayOf(0x48, 0x4C, 0x0C, 0x01, 0x1B)
         private val sam_HDMI1 = byteArrayOf(0x48, 0x4C, 0x0C, 0x01, 0xE9.toByte())
+        private val sam_HDMI2 = byteArrayOf(0x48, 0x4C, 0x0C, 0x01, 0xBE.toByte())
+        private val sam_HDMI3 = byteArrayOf(0x48, 0x4C, 0x0C, 0x01, 0xC2.toByte())
+        private val sam_HDMI4 = byteArrayOf(0x48, 0x4C, 0x0C, 0x01, 0xC2.toByte())
         private val sam_OK = byteArrayOf(0x48, 0x4C, 0x0C, 0x01, 0x68)
         private val sam_TV0 = byteArrayOf(0x48, 0x4C, 0x0C, 0x01, 0x11)
         private val sam_TV1 = byteArrayOf(0x48, 0x4C, 0x0C, 0x01, 0x04)
@@ -234,6 +240,8 @@ class BTService(private val context: Context, lifecycle: Lifecycle) : IBtService
             FREQ_38_KHZ,
             LG_DELAY,
             LG_HDMI1,
+            LG_HDMI2,
+            LG_HDMI3,
             LG_OK,
             LG_TV,
             LG_TV0,
@@ -253,6 +261,8 @@ class BTService(private val context: Context, lifecycle: Lifecycle) : IBtService
             FREQ_40_KHZ,
             SAM_DELAY,
             sam_HDMI1,
+            sam_HDMI2,
+            sam_HDMI3,
             sam_OK,
             sam_TV,
             sam_TV0,

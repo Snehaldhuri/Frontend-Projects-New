@@ -11,11 +11,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
@@ -28,7 +24,6 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getInstalledAppInfo
 import com.diipl.moviebeam.utils.getWidthInPercent
-import com.diipl.moviebeam.utils.handleFocusChange
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -83,7 +78,6 @@ class MainMenuBtnAdapter(
             val drawable = context.packageManager.getApplicationBanner(item.appPackageId)
             holder.binding.ivAppIcon.setImageDrawable(drawable)
             holder.binding.root.setOnClickListener { onAppClicked(item.appPackageId) }
-
         } else {
             holder.binding.ivMenuIcon.setImageResource(item.imageResId)
             holder.binding.tvMenuTitle.text = item.title

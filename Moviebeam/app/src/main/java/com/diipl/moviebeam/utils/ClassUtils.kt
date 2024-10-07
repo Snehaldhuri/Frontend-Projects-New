@@ -89,6 +89,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaField
 
+private const val TAG = "ClassUtils"
 
 fun <T : Any> T.toQueryMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>()
@@ -612,7 +613,7 @@ suspend fun saveThemeImageServer(imgUrl: String?) = saveImageServer(imgUrl, THEM
 suspend fun saveImage(imgUrl: String?, filePath: String): String? {
     var path: String? = null
     if (imgUrl == null) {
-        currentActivity?.logE("saveImage: Image URL is null")
+        currentActivity?.logW("saveImage: Image URL is null")
         return path
     }
     try {
@@ -623,7 +624,7 @@ suspend fun saveImage(imgUrl: String?, filePath: String): String? {
                 readTimeout = 20_000 // 20 seconds
                 connect()
             }
-            currentActivity?.logD("saveImage: Connection established with $imgUrl")
+            currentActivity?.logW("saveImage: Connection established with $imgUrl")
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 throw IOException("Failed to connect: ${connection.responseMessage}")
             }
@@ -631,14 +632,14 @@ suspend fun saveImage(imgUrl: String?, filePath: String): String? {
                 val imageData = inputStream.readBytes()
                 val extension = "." + url.path.substringAfterLast(".").lowercase()
                 path = "$filePath${System.currentTimeMillis()}$extension"
-                currentActivity?.logD("saveImage: Saving image to $path")
+                currentActivity?.logW("saveImage: Saving image to $path")
                 path?.let {
                     writeByteArrayToFile(it, imageData)
                 }
             }
         }
     } catch (e: Exception) {
-        currentActivity?.logE("saveImage: Exception: ${e.localizedMessage}")
+        currentActivity?.logW("saveImage: Exception: ${e.localizedMessage}")
         path = imgUrl
     }
     return path
@@ -650,12 +651,12 @@ private fun writeByteArrayToFile(filePath: String, byteArray: ByteArray) {
         val parentDir = file.parentFile
         if (parentDir != null && !parentDir.exists()) {
             parentDir.mkdirs()
-            currentActivity?.logD("writeByteArrayToFile: Created directories for $filePath")
+            currentActivity?.logW("writeByteArrayToFile: Created directories for $filePath")
         }
         FileOutputStream(file).use { it.write(byteArray) }
-        currentActivity?.logD("writeByteArrayToFile: Successfully wrote data to $filePath")
+        currentActivity?.logW("writeByteArrayToFile: Successfully wrote data to $filePath")
     } catch (e: IOException) {
-        currentActivity?.logE("writeByteArrayToFile: IOException: ${e.message}")
+        currentActivity?.logW("writeByteArrayToFile: IOException: ${e.message}")
         e.printStackTrace()
     }
 }
@@ -751,8 +752,12 @@ fun Activity.launchLogger() {
         }
     }
 
-    val serviceIntent = Intent(this, LoggingService::class.java)
-    bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+    if (!LoggingService.isServiceStarted){
+        Log.e(TAG, "launchLogger: starting logger -> ${LoggingService.isServiceStarted}")
+        val serviceIntent = Intent(this, LoggingService::class.java)
+        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+    } else  Log.e(TAG, "launchLogger: logger is running -> ${LoggingService.isServiceStarted}")
+
 }
 
 fun Context.getInstalledAppInfo(packageName: String): ApplicationInfo? {
@@ -773,7 +778,7 @@ fun Context.getInstalledAppInfo(packageName: String): ApplicationInfo? {
 fun compareVersions(apkVersion: String?): Boolean {
     val a = apkVersion?.replace(".", "")?.toInteger()
     val b = BuildConfig.VERSION_NAME.replace(".", "").toInt()
-    return a != b
+    return apkVersion!! != BuildConfig.VERSION_NAME
 }
 
 fun Context.showToast(message: String) {
@@ -821,6 +826,10 @@ fun Context.scheduleEpgApiCall() {
         myWork
     )
     logD("scheduleEpgApiCall: Scheduling Api Call Done")
+}
+
+fun Any.logW(msg: String) {
+    Log.d(this::class.java.simpleName, msg)
 }
 
 fun Any.logD(msg: String) {

@@ -31,6 +31,8 @@ android {
         versionCode 1
         versionName chromeCastVersion
 
+        buildConfigField("String", "WS_URL", "\"ws://mblog.moviebeam.com:20000\"")
+
     }
 
     applicationVariants.configureEach { variant ->

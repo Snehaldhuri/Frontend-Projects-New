@@ -109,8 +109,8 @@ class IRUtils {
         )
 
 
-        var SELECTED_IR_MODEL = samsungModel
-        val SELECTED_BT_MODEL = BTService.samsungModel
+        var SELECTED_IR_MODEL = lgModel
+        val SELECTED_BT_MODEL = BTService.lgModel
 
     }
 

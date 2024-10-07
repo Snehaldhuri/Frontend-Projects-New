@@ -75,7 +75,6 @@ import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
-import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -126,6 +125,7 @@ class MainMenuActivity : BaseActivity() {
 
     @Inject
     lateinit var preference: SharedPreference
+
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
@@ -449,6 +449,7 @@ class MainMenuActivity : BaseActivity() {
                                         //Intent(this, ProgramGuideActivity::class.java)
                                         Intent(this, NewProgramGuideActivity::class.java)
                                     }
+
                                 }
 
                                 Constants.IN_ROOM_DINING_ID -> {
