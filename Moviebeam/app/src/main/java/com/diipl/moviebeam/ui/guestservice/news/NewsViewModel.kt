@@ -68,6 +68,18 @@ class NewsViewModel @Inject constructor(
         }
     }
 
+    fun fetchNewsDetails(ua: String, newsId: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _newsLiveData.postValue(Resource.Loading())
+            val response = movieBeamRepository.getNewsDetails(ua,newsId)
+            if (response == null) {
+                _newsLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
+            } else {
+                _newsLiveData.postValue(Resource.Success(response))
+            }
+        }
+    }
+
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
     val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
 

@@ -165,6 +165,7 @@
     <string name="app_icon">App Icon</string>
 
     <string name="clear_credentials_menu_text">Please clear your app credentials before checkout.</string>
+    <string name="no_news_found">No news found!</string>
 
 
 </resources>

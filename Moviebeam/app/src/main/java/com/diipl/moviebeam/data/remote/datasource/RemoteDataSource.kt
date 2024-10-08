@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.data.remote.datasource
 
-import android.R.attr.data
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
@@ -161,6 +160,16 @@ class RemoteDataSource @Inject constructor(
         val result = safeAPiCall {
             lgRestApiService.getNewsDetails(newsId)
         }
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, NewsResponse::class)
+        logD("In News Callback")
+        return responseObject
+    }
+
+    suspend fun getNewsDetails(ua: String,newsId: Int): NewsResponse? {
+        val result = safeAPiCall {
+            lgRestApiService.getNewsDetails(ua,newsId)
+        }
+
         val responseObject = ApiResponseParsing().getResponseAsObject(result.data, NewsResponse::class)
         logD("In News Callback")
         return responseObject

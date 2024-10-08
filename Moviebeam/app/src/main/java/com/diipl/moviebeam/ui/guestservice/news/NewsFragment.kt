@@ -6,15 +6,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentNewsBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
+import com.diipl.moviebeam.utils.getCurrentDateTime
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
+import kotlinx.coroutines.launch
 
 class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
 
@@ -27,13 +32,28 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
 
     private var newsHeaderPosition: Int = 0
     private var headerView: View? = null
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(this.requireContext())
+    }
+    private var ua = ""
 
     override fun observeViewModel() {
         observe(newsViewModel.newsHeaderLiveData, ::handleNewsHeaderResponse)
         observe(newsViewModel.newsLiveData, ::handleNewsDetailsResponse)
     }
 
-    override fun initViewBinding() {}
+    override fun initViewBinding() {
+        lifecycleScope.launch {
+            ua = getUa()
+        }
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
+    }
 
     private fun handleNewsHeaderResponse(status: Resource<NewsHeaderResponse>) {
         when (status) {
@@ -102,14 +122,21 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
                         }
                     }
                 })
-                newsDetails?.newsList?.let {
-                    adapter.setNewsList(it)
-                }
-                binding.rvNews.adapter = adapter
-                newsDetails?.newsList?.get(0)?.let {
-                    binding.tvTitle.text = it.title
-                    binding.tvDescription.text = it.description
-                    binding.tvPublishDate.text = it.publishDate
+                if (newsDetails != null) {
+                    if (newsDetails.newsList.isNotEmpty()){
+                        newsDetails.newsList.let {
+                            adapter.setNewsList(it)
+                        }
+                        newsDetails.newsList[0].let {
+                            binding.tvDescription.text = it.description
+                            binding.tvPublishDate.text = it.publishDate
+                        }
+                    } else {
+                        adapter.setNewsList(emptyList())
+                        binding.tvDescription.text = "No news found!\n\n"
+                        binding.tvPublishDate.text = getCurrentDateTime()
+                    }
+                    binding.rvNews.adapter = adapter
                 }
                 binding.pbLoader.toInvisible()
             }

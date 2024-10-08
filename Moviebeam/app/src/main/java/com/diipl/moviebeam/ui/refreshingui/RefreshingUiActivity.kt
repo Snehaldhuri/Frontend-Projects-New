@@ -55,6 +55,7 @@ import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInteger
+import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.diipl.moviebeam.worker.UpdateDataWorker
 import dagger.hilt.android.AndroidEntryPoint
@@ -155,7 +156,12 @@ class RefreshingUiActivity : BaseActivity() {
         }
         binding.root.postDelayed({
             this.handleKaping(kapingResponse)
-        }, 5000)
+        }, 1000*5)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        finish()
     }
 
     private fun redirectToScreen() {
@@ -174,6 +180,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleKaping(kapingResponse: KapingResponse?) {
+        Log.e(TAG, "handleKaping: ${kapingResponse.toJson()}")
         when (kapingResponse?.cmdData?.cmd) {
             KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE -> {
                 handleAccountActivateCmd()

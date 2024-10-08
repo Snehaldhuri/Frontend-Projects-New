@@ -27,11 +27,11 @@ import okhttp3.internal.toImmutableList
 import javax.inject.Inject
 
 class UpdateDataStore @Inject constructor(
-    val weatherDataStore: DataStore<WeatherResponse>,
-    val localAttractionDataStore: DataStore<LocalAttractionResponse>,
-    val themeDataStore: DataStore<ThemeResponse>,
-    val accountDataStore: DataStore<AccountSetupResponse>,
-    val hotelServiceDataStore: DataStore<HotelServiceResponse>
+    private val weatherDataStore: DataStore<WeatherResponse>,
+    private val localAttractionDataStore: DataStore<LocalAttractionResponse>,
+    private val themeDataStore: DataStore<ThemeResponse>,
+    private val accountDataStore: DataStore<AccountSetupResponse>,
+    private val hotelServiceDataStore: DataStore<HotelServiceResponse>
 ) {
 
     private val TAG = "UpdateDataStore"

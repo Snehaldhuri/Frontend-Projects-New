@@ -53,6 +53,12 @@ interface LgRestApiService {
         @Query("newsId") newsId: Int
     ): Response<String>
 
+    @GET("content/news")
+    suspend fun getNewsDetails(
+        @Query("UA") ua: String,
+        @Query("newsId") newsId: Int
+    ): Response<String>
+
     @GET("process/stbMaster")
     suspend fun processStbMaster(
         @Query("UA") ua: String,

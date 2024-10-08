@@ -863,3 +863,9 @@ fun <T> Class<T>.startActivity() {
         it.startActivity(Intent(it, this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP))
     }
 }
+
+fun getCurrentDateTime(): String {
+    val time = System.currentTimeMillis()
+    val format = SimpleDateFormat("dd-MMM-YYYY hh:mm aa")
+    return format.format(time)
+}
