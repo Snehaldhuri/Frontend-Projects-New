@@ -362,4 +362,8 @@ object Constants {
     const val SEI_MB730 = "MB730"
     const val HOTEL_VIDEO = "Hotel Video"
 
+    const val PLAY_MEDIA_BACKWARD= 168
+    const val MEDIA_PLAY_PAUSE= 164
+    const val PLAY_MEDIA_FORWARD= 208
+
 }

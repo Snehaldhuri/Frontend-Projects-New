@@ -469,6 +469,7 @@ class MainMenuActivity : BaseActivity() {
                                             intent = Intent(this, CastingActivity::class.java)
                                         }
                                     } else {
+                                        Log.e(TAG, "handleAccountSetupResponse: $castingUrl", )
                                         if (!castingUrl.isNullOrEmpty()) {
                                             intent = Intent(this, CastingActivity::class.java)
                                         } else {
@@ -665,6 +666,7 @@ class MainMenuActivity : BaseActivity() {
         gradientStartColor = getGradientStartColor()
         gradientEndColor = getGradientEndColor()
         castingUrl = getCastingUrl()
+        Log.e(TAG, "initializeDatastoreParams: $castingUrl", )
     }
 
 
