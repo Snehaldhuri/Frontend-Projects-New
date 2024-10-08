@@ -2,6 +2,7 @@ package com.diipl.moviebeam.ui.exoplayer
 
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -287,6 +288,26 @@ class ExoPlayerActivity : BaseActivity() {
             Log.e("ExoPlayer state", "changed state to $stateString")
         }
 
+    }
+    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
+        if(keyCode==0){
+            when(keyEvent.scanCode){
+                Constants.PLAY_MEDIA_BACKWARD->{
+                    player?.seekBack()
+                }
+                Constants.PLAY_MEDIA_FORWARD->{
+                    player?.seekForward()
+                }
+                Constants.MEDIA_PLAY_PAUSE->{
+                    if(player?.isPlaying == true) {
+                        player?.pause()
+                    }else{
+                        player?.play()
+                    }
+                }
+            }
+        }
+        return false
     }
 
     private fun apiCall(seekType: Int, a: Int) {
