@@ -1,19 +1,21 @@
 package com.diipl.moviebeam.ui.guest.news
 
-import android.view.KeyEvent
 import android.view.View
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityNewsBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.news.NewsHeaderTabAdapter
 import com.diipl.moviebeam.ui.guestservice.news.NewsTabAdapter
 import com.diipl.moviebeam.ui.guestservice.news.NewsViewModel
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.getCurrentDateTime
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadLogo
@@ -21,7 +23,9 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
+private const val TAG = "NewsActivity"
 @AndroidEntryPoint
 class NewsActivity() : BaseActivity() {
 
@@ -33,6 +37,10 @@ class NewsActivity() : BaseActivity() {
 
     private var newsHeaderPosition: Int = 0
     private var headerView: View? = null
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+        PreferenceDataStoreHelper(this)
+    }
+    private var ua = ""
 
     override fun observeViewModel() {
         observe(newsViewModel.newsHeaderLiveData, ::handleNewsHeaderResponse)
@@ -47,7 +55,18 @@ class NewsActivity() : BaseActivity() {
         binding.btnBack.handleFocusChange()
         binding.btnBack.setOnClickListener { handleBackClick() }
 
+        lifecycleScope.launch {
+            ua = getUa()
+        }
+
         setContentView(binding.root)
+    }
+
+    private suspend fun getUa(): String {
+        return preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.UA,
+            ""
+        )
     }
 
     private fun handleNewsHeaderResponse(status: Resource<NewsHeaderResponse>) {
@@ -116,13 +135,21 @@ class NewsActivity() : BaseActivity() {
                         }
                     }
                 })
-                newsDetails?.newsList?.let {
-                    adapter.setNewsList(it)
-                }
-                binding.rvNews.adapter = adapter
-                newsDetails?.newsList?.get(0)?.let {
-                    binding.tvDescription.text = it.description
-                    binding.tvPublishDate.text = it.publishDate
+                if (newsDetails != null) {
+                    if (newsDetails.newsList.isNotEmpty()){
+                        newsDetails.newsList.let {
+                            adapter.setNewsList(it)
+                        }
+                        newsDetails.newsList[0].let {
+                            binding.tvDescription.text = it.description
+                            binding.tvPublishDate.text = it.publishDate
+                        }
+                    } else {
+                        adapter.setNewsList(emptyList())
+                        binding.tvDescription.text = "No news found!\n\n"
+                        binding.tvPublishDate.text = getCurrentDateTime()
+                    }
+                    binding.rvNews.adapter = adapter
                 }
                 binding.pbLoader.toInvisible()
             }

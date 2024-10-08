@@ -5,8 +5,9 @@
     android:layout_height="wrap_content"
     android:layout_marginVertical="@dimen/dp_2"
     android:focusable="true"
+    app:cardElevation="@dimen/dp_1"
     android:focusableInTouchMode="true"
-    app:cardCornerRadius="@dimen/dp_10">
+    app:cardCornerRadius="@dimen/dp_12">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_card"

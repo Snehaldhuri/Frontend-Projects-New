@@ -91,6 +91,10 @@ class MovieBeamRepository @Inject constructor(
         return remoteDataSource.getNewsDetails(newsId)
     }
 
+    suspend fun getNewsDetails(ua: String, newsId: Int): NewsResponse? {
+        return remoteDataSource.getNewsDetails(ua,newsId)
+    }
+
     suspend fun processStbMaster(
         ua: String,
         srNo: String,
