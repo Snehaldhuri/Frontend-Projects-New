@@ -93,6 +93,7 @@ import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.isNotAllowed
+import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.logK
@@ -110,6 +111,8 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -794,26 +797,31 @@ class EndlessService : Service() {
 
             KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
                 CoroutineScope(Dispatchers.Default).launch {
-                    val response = movieBeamRepository.getSoftwareUpdateDetails(
+                    val api = async { movieBeamRepository.getSoftwareUpdateDetails(
                         BuildConfig.BUILD_TYPE_ID,
                         ua
-                    )
-                    if (response != null) {
-                        val isUpgradeable = compareVersions(response.softwareVersion)
-                        if (isUpgradeable) {
-                            logD("handleKaping: isUpgradable: $isUpgradeable  ${BuildConfig.VERSION_NAME} $response")
-                            val intent = Intent(Intent.ACTION_VIEW)
-                            intent.component =
-                                ComponentName(
-                                    MDM_PACKAGE_NAME,
-                                    KapingConstants.MDM_SOFTWARE_ACTIVITY
-                                )
-                            intent.putExtra("softwareData", response.toJson())
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            startActivity(intent)
-                        }
-                        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                    }
+                    ) }
+                    val data = awaitAll(api)
+                   if (data[0] != null){
+                       data[0]?.let {response->
+                           if (response.fileName.isNotEmptyOrNull()) {
+                               val isUpgradeable = compareVersions(response.softwareVersion)
+                               if (isUpgradeable) {
+                                   logD("softwareData: isUpgradable: $isUpgradeable  ${BuildConfig.VERSION_NAME} $response")
+                                   val intent = Intent(Intent.ACTION_VIEW)
+                                   intent.component =
+                                       ComponentName(
+                                           MDM_PACKAGE_NAME,
+                                           KapingConstants.MDM_SOFTWARE_ACTIVITY
+                                       )
+                                   intent.putExtra("softwareData", response.toJson())
+                                   intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                   startActivity(intent)
+                               }
+                               kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                           }
+                       }
+                   }
                 }
 
             }

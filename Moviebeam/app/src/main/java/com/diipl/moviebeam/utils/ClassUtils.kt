@@ -774,10 +774,10 @@ fun Context.getInstalledAppInfo(packageName: String): ApplicationInfo? {
     }
 }
 
-fun compareVersions(apkVersion: String?): Boolean {
-    val a = apkVersion?.replace(".", "")?.toInteger()
+fun compareVersions(apkVersion: String): Boolean {
+    val a = apkVersion.replace(".", "")?.toInteger()
     val b = BuildConfig.VERSION_NAME.replace(".", "").toInt()
-    return apkVersion!! != BuildConfig.VERSION_NAME
+    return apkVersion != BuildConfig.VERSION_NAME
 }
 
 fun Context.showToast(message: String) {
@@ -868,4 +868,8 @@ fun getCurrentDateTime(): String {
     val time = System.currentTimeMillis()
     val format = SimpleDateFormat("dd-MMM-YYYY hh:mm aa")
     return format.format(time)
+}
+
+fun String?.isNotEmptyOrNull(): Boolean {
+    return !this.isNullOrEmpty() && this != "null"
 }

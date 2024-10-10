@@ -1,12 +1,20 @@
 package com.diipl.moviebeam.data.dto.sysInfo
 
+import com.google.gson.annotations.SerializedName
+
 data class SoftwareUpgradeResponse(
-    val accountId: Int? = null,
-    val fileCrc: String? = null,
-    val fileName: String? = null,
-    val fileSize: Int? = null,
-    val isCurrent: Boolean = false,
-    val softwareDownloadFtpUrl: String? = null,
-    val softwareVersion: String? = null,
-    val stbType: String? = null
+    @SerializedName("fileCrc")
+    var fileCrc: String = "",
+    @SerializedName("fileName")
+    var fileName: String = "",
+    @SerializedName("fileSize")
+    var fileSize: String = "",
+    @SerializedName("isCurrent")
+    var isCurrent: Boolean = false,
+    @SerializedName("softwareDownloadFtpUrl")
+    var softwareDownloadFtpUrl: String = "",
+    @SerializedName("softwareVersion")
+    var softwareVersion: String = "",
+    @SerializedName("stbType")
+    var stbType: String = ""
 )
