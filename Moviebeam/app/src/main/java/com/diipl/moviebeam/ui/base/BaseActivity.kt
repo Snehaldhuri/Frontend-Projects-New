@@ -11,7 +11,6 @@ import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.MenuItem
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import androidx.fragment.app.Fragment
@@ -20,7 +19,6 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.Buttons
-import com.diipl.moviebeam.data.dto.news.News
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
@@ -161,6 +159,10 @@ abstract class BaseActivity : AppCompatActivity() {
         }
         if (currentActivity is DisconnectedPrgActivity) {
             (currentActivity as DisconnectedPrgActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is MainMenuActivity) {
+//            (currentActivity as DisconnectedPrgActivity).handleBackRemoteClick()
             return true
         }
         return false

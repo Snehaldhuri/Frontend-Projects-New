@@ -97,8 +97,6 @@ class AppWorldActivity : BaseActivity() {
             binding.btnClearCredentials.handleFocusChange()
             binding.btnClearCredentials.setOnClickListener {
                 clearCredentialsHandler.startClearCredentials()
-//                clearCredentials(appList)
-//                showPopup()
             }
         } catch (e: Exception) {
             e.printStackTrace()
