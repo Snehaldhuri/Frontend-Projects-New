@@ -69,6 +69,7 @@ import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.logD
@@ -207,7 +208,6 @@ class MainMenuActivity : BaseActivity() {
         if (!isServiceStarted) {
             actionOnService(Actions.START)
         }
-        startBorderAnimation()
     }
 
     private fun init() {
@@ -240,16 +240,6 @@ class MainMenuActivity : BaseActivity() {
             }
         }
 
-        /* lifecycleScope.launch {
-             while (!player.isPlaying) {
-                 if (hotelVideoUrl.isNotEmpty() && HOTEL_VIDEO_LOOP_COUNT > 0) {
-                     initializePlayer()
-                     binding.videoView.toGone()
-                 }
-                 delay(5000)
-             }
-         }*/
-
     }
 
     override fun initViewBinding() {
@@ -260,9 +250,7 @@ class MainMenuActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
-        overridePendingTransition(0, 0)
-        player.stop()
-        player.release()
+        releaseVideoPlayer()
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
@@ -314,6 +302,7 @@ class MainMenuActivity : BaseActivity() {
 
     private fun releaseVideoPlayer() {
         binding.videoView.toGone()
+        binding.root.loadBg()
         if (::player.isInitialized) {
             player.stop()
             player.release()
@@ -469,7 +458,7 @@ class MainMenuActivity : BaseActivity() {
                                             intent = Intent(this, CastingActivity::class.java)
                                         }
                                     } else {
-                                        Log.e(TAG, "handleAccountSetupResponse: $castingUrl", )
+                                        Log.e(TAG, "handleAccountSetupResponse: $castingUrl")
                                         if (!castingUrl.isNullOrEmpty()) {
                                             intent = Intent(this, CastingActivity::class.java)
                                         } else {
@@ -666,7 +655,7 @@ class MainMenuActivity : BaseActivity() {
         gradientStartColor = getGradientStartColor()
         gradientEndColor = getGradientEndColor()
         castingUrl = getCastingUrl()
-        Log.e(TAG, "initializeDatastoreParams: $castingUrl", )
+        Log.e(TAG, "initializeDatastoreParams: $castingUrl")
     }
 
 
@@ -748,7 +737,6 @@ class MainMenuActivity : BaseActivity() {
             }
         }
         binding.primeVideoApp.setOnClickListener { handleClick(Constants.PRIME_VIDEO_PACKAGE_NAME) }
-//        binding.rvMenuButton.post { binding.rvMenuButton.requestFocus() }
         delay(500)
         binding.rvMenuButton.setItemFocused()
         binding.panelView.toVisible()
@@ -756,11 +744,11 @@ class MainMenuActivity : BaseActivity() {
 
     private fun showClearCredentialsPatchWall() = lifecycleScope.launch {
         binding.clearCredentialsPanelView.toVisible()
-        startBorderAnimation()
         binding.cardClearCredentials.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
+                binding.cardClearCredentials.strokeWidth = 0
+                binding.tvClearCredentials.background = getGradientColor()
                 animateScale(binding.cardClearCredentials, R.anim.scale_in_animation)
-                stopBorderAnimation()
                 view?.setOnKeyListener { _, keycode, keyEvent ->
                     if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                         when (keycode) {
@@ -776,8 +764,9 @@ class MainMenuActivity : BaseActivity() {
                     }
                 }
             } else {
+                binding.cardClearCredentials.strokeWidth = 0
+                binding.tvClearCredentials.setBackgroundResource(R.drawable.btn_bg_gradient_default)
                 animateScale(binding.cardClearCredentials, R.anim.scale_out_animation)
-                startBorderAnimation()
             }
         }
         binding.cardClearCredentials.setOnClickListener {

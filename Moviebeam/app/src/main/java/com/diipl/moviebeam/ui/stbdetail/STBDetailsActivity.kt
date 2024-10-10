@@ -54,6 +54,7 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -62,6 +63,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
+private const val TAG = "STBDetailsActivity"
 @AndroidEntryPoint
 class STBDetailsActivity : BaseActivity() {
 
@@ -111,6 +113,7 @@ class STBDetailsActivity : BaseActivity() {
         )
     }
     private var stbRoomNo = ""
+    private var networkJob : Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -153,15 +156,24 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     private fun handleNetworkResponse(isConnected: Boolean) {
-//        isNetworkConnected = isConnected
-        /*if (!isConnected) {
+        if (!isConnected) {
             launchMain()
-        }*/
+        } else {
+            Log.e(TAG, "handleNetworkResponse: launch Main cancelled")
+            networkJob?.cancel()
+        }
     }
 
     private fun launchMain() {
-        launchNewActivity(MainMenuActivity::class.java, true)
+        networkJob?.cancel()
+        Log.e(TAG, "launchMain: networkJob ")
+        networkJob = lifecycleScope.launch {
+            delay(1000*15)
+            Log.e(TAG, "launchMain: networkJob start MainMenu")
+            launchNewActivity(MainMenuActivity::class.java, true)
+        }
     }
+
 
     private fun handleWeatherResponse(status: Resource<WeatherResponse>) {
         when (status) {
@@ -535,28 +547,6 @@ class STBDetailsActivity : BaseActivity() {
 
     private fun redirectToMainMenuPage() {
         scheduleEpgApiCall()
-        /* binding.root.post { binding.root.performClick() }
-         var uuid: UUID? = null
-         binding.root.setSafeOnClickListener {
-             val inputData = Data.Builder()
-                 .putString(UpdateDataWorker.ACTION, UpdateDataWorker.ACTION_ALL)
-                 .build()
-
-             val request = OneTimeWorkRequest.Builder(UpdateDataWorker::class.java)
-                 .setInputData(inputData)
-                 .build()
-             uuid = request.id
-             Log.e(TAG, "uuid: $uuid")
-             workManager.beginUniqueWork(uuid.toString(), ExistingWorkPolicy.REPLACE, request).enqueue()
- //            workManager.enqueue(request)
-         }*/
-
-
-//            workManager.getWorkInfoByIdLiveData(uuid!!).observe(this@STBDetailsActivity) { data ->
-//                val isDone = data.state == WorkInfo.State.SUCCEEDED
-//                if (isDone) {
-
-//                }
         lifecycleScope.launch {
             while (true) {
                 if (isWorkDone == 3) {

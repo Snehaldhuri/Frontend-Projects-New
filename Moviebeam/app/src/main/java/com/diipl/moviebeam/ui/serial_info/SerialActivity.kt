@@ -18,6 +18,7 @@ import com.diipl.moviebeam.service.kappingservice.Actions
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
+import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.launchNewActivity
@@ -164,7 +165,9 @@ class SerialActivity : BaseActivity() {
     }
 
     private fun redirectToStbDetailsActivity() {
-        launchNewActivity(STBDetailsActivity::class.java, true)
+        val direct = false
+        val classz = if (direct) MainMenuActivity::class.java else STBDetailsActivity::class.java
+        launchNewActivity(classz, true)
     }
 
     private fun redirectToRegisterStbActivity() {
