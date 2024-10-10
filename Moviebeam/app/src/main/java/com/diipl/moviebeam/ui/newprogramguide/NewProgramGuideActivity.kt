@@ -55,6 +55,7 @@ import com.diipl.moviebeam.utils.Constants.SEI_MB730
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
@@ -158,7 +159,7 @@ class NewProgramGuideActivity : BaseActivity() {
         setContentView(binding.root)
         binding.root.loadBg()
         binding.layoutHeader.ivHotelLogo.loadLogo()
-
+        binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
         binding.btnBack.handleFocusChange()
         binding.btnSearch.handleFocusChange()
         binding.btnBack.setOnClickListener { handleBackRemoteClick() }
