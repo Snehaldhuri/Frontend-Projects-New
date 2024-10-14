@@ -270,6 +270,11 @@ class LiveTVActivity : BaseActivity() {
         }
     }
 
+    fun handleBackRemoteClick() {
+        Log.e(TAG, "handleBackRemoteClick: ")
+        onBackPressed()
+    }
+
     override fun onBackPressed() {
         super.onBackPressed()
         binding.tvView.reset()
