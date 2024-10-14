@@ -9,6 +9,7 @@ import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -39,7 +40,10 @@ import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.weather.WeatherActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.APPS
+import com.diipl.moviebeam.utils.Constants.PROGRAM_GUIDE
 import com.diipl.moviebeam.utils.SharedPreference
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.setIPInfo
@@ -171,8 +175,11 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
         Log.d(
             "TAG",
-            "onKeyDown: keycode: $keyCode keyEvent.keyCode ${keyEvent.keyCode} keyEvent.action ${keyEvent.action} keyEvent.displayLabel ${keyEvent.displayLabel}  keyEvent.number ${keyEvent.number} keyEvent.scanCode ${keyEvent.scanCode} keyEvent.unicodeChar ${keyEvent.unicodeChar}"
+            "onKeyDown: keycode: $keyCode keyEvent.keyCode ${keyEvent.keyCode} keyEvent.action ${keyEvent.action} keyEvent.displayLabel ${keyEvent.displayLabel}  keyEvent.number ${keyEvent.number} keyEvent.scanCode ${keyEvent.scanCode} keyEvent.unicodeChar ${keyEvent.unicodeChar} source: ${keyEvent.source}"
         )
+        if (keyEvent.source == InputDevice.SOURCE_HDMI)
+            return true
+
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
                 handleBackKeyAndExitKey()
@@ -187,6 +194,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 return true
             }
             if (currentActivity !is AppWorldActivity) {
+                ThemeDetails.TITLE = APPS
                 intent = Intent(this, AppWorldActivity::class.java)
                 startActivity(intent)
             }
@@ -200,7 +208,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
             if (currentActivity !is NewProgramGuideActivity) {
                 val bundle = Bundle()
-                bundle.putString("title", "Program Guide")
+                ThemeDetails.TITLE = PROGRAM_GUIDE
                 val intent = Intent(this, NewProgramGuideActivity::class.java)
                 intent.putExtras(bundle)
                 startActivity(intent)
@@ -237,6 +245,7 @@ abstract class BaseActivity : AppCompatActivity() {
         if (keyEvent.scanCode == Constants.PROGRAM_SEARCH_KEY) {
             //Search
             if (currentActivity is NewProgramGuideActivity) {
+                ThemeDetails.TITLE = PROGRAM_GUIDE
                 (currentActivity as NewProgramGuideActivity).showSearchDialog()
             }
         }

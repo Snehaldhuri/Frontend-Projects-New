@@ -151,7 +151,6 @@ class NewProgramGuideActivity : BaseActivity() {
         )
         setAdapter()
 
-        fetchDetails()
     }
 
     override fun initViewBinding() {
@@ -362,15 +361,6 @@ class NewProgramGuideActivity : BaseActivity() {
         //focus on channel with searched value
         adapter.updateFocusOnSearch(focusIndex)
 
-    }
-
-    private fun fetchDetails() {
-       /* intent.extras?.getString("hotelChannel")?.let {
-            hotelChannel = it.fromJson()
-        }
-        intent.extras?.getString("hotelChannelVideo")?.let {
-            hotelChannelVideo = it
-        }*/
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
