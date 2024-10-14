@@ -309,10 +309,10 @@ class ExoPlayerActivity : BaseActivity() {
                             player?.play()
                         }
                     }
+                    Constants.EXIT_KEY->{
+                        handleBackRemoteClick()
+                    }
                 }
-            }
-            else -> {
-                if (keyEvent.scanCode == Constants.EXIT_KEY) handleBackRemoteClick()
             }
         }
         return false
