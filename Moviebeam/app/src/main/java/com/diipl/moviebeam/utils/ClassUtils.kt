@@ -22,6 +22,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
 import android.os.SystemClock
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -872,4 +873,13 @@ fun getCurrentDateTime(): String {
 
 fun String?.isNotEmptyOrNull(): Boolean {
     return !this.isNullOrEmpty() && this != "null"
+}
+
+fun Context.launchSettingsApp() {
+    val intent = Intent(Intent.ACTION_VIEW)
+    intent.action = Settings.ACTION_SETTINGS
+    intent.flags =
+        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    startActivity(intent)
+    clickCount = 0
 }

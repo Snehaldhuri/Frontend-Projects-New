@@ -8,8 +8,6 @@ import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.provider.Settings
-import android.util.Log
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.setPadding
@@ -24,6 +22,7 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getInstalledAppInfo
 import com.diipl.moviebeam.utils.getWidthInPercent
+import com.diipl.moviebeam.utils.openSettingsPattern
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +36,6 @@ class MainMenuBtnAdapter(
     RecyclerView.Adapter<MainMenuBtnAdapter.MyViewHolder>() {
     var itemList: List<BtnModel> = emptyList()
     lateinit var context: Context
-    var count = 0
 
     //Variables from datastore
     private val preferenceDataStoreHelper = PreferenceDataStoreHelper(currentActivity!!)
@@ -93,33 +91,7 @@ class MainMenuBtnAdapter(
             }
         }
 
-        holder.itemView.setOnKeyListener { view, i, keyEvent ->
-            if (i == KeyEvent.KEYCODE_TV_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_TV_INPUT")
-            if (i == KeyEvent.KEYCODE_NAVIGATE_IN) Log.e(
-                TAG,
-                "onBindViewHolder: KEYCODE_NAVIGATE_IN"
-            )
-            if (i == KeyEvent.KEYCODE_AVR_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_AVR_INPUT")
-            if (i == KeyEvent.KEYCODE_STB_INPUT) Log.e(TAG, "onBindViewHolder: KEYCODE_STB_INPUT")
-            if (holder.absoluteAdapterPosition == 0) {
-                if (i == KeyEvent.KEYCODE_DPAD_LEFT) {
-                    count++
-                    Log.e(TAG, "KEYCODE_DPAD_LEFT: $count")
-                    if (count == 20) {
-                        val intent = Intent(Intent.ACTION_VIEW)
-                        intent.action = Settings.ACTION_SETTINGS
-                        intent.flags =
-                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        view.context.startActivity(intent)
-                        count = 0
-                    }
-                }
-            }
-            if (i == KeyEvent.KEYCODE_DPAD_RIGHT || i == KeyEvent.KEYCODE_DPAD_DOWN || i == KeyEvent.KEYCODE_DPAD_UP) {
-                count = 0
-            }
-            false
-        }
+        holder.itemView.openSettingsPattern()
 
     }
 
