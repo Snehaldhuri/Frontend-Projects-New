@@ -38,6 +38,7 @@ import com.diipl.moviebeam.ui.guestservice.weather.WeatherFragment
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadLogo
@@ -75,6 +76,7 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
         binding = ActivityGuestServiceBinding.inflate(layoutInflater)
         binding.root.loadBg()
         binding.layoutHeader.ivHotelLogo.loadLogo()
+        binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
         setContentView(binding.root)
     }
 
@@ -261,8 +263,7 @@ class GuestServiceActivity : BaseActivity(), GuestServiceTabAdapter.OnFocusChang
                         }
 
                         4 -> {
-                            binding.layoutHeader.tvTitle.text =
-                                getString(R.string.toiletry_requests)
+
                             val fragment = ToiletryRequestFragment {
                                 requestFocus()
                                 handleBackRemoteClick()

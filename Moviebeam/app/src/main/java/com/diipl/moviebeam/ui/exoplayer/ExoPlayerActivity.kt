@@ -37,7 +37,6 @@ import kotlinx.coroutines.launch
 
 
 private const val TAG = "ExoPlayerActivity"
-
 @AndroidEntryPoint
 class ExoPlayerActivity : BaseActivity() {
 
@@ -216,6 +215,7 @@ class ExoPlayerActivity : BaseActivity() {
     }
 
     fun handleBackRemoteClick() {
+        Log.e(TAG, "handleBackRemoteClick: ")
         onBackPressed()
     }
 
@@ -223,8 +223,10 @@ class ExoPlayerActivity : BaseActivity() {
         try {
             releasePlayer()
             super.onBackPressed()
+            Log.e(TAG, "onBackPressed: ")
             finish()
         } catch (e: Exception) {
+            Log.e(TAG, "onBackPressed: Exception ${e.localizedMessage}")
             LoggingService.sendMessageToWebSocket("onBackPressed Exception: ${e.message}", "")
         }
     }
@@ -290,21 +292,27 @@ class ExoPlayerActivity : BaseActivity() {
 
     }
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-        if(keyCode==0){
-            when(keyEvent.scanCode){
-                Constants.PLAY_MEDIA_BACKWARD->{
-                    player?.seekBack()
-                }
-                Constants.PLAY_MEDIA_FORWARD->{
-                    player?.seekForward()
-                }
-                Constants.MEDIA_PLAY_PAUSE->{
-                    if(player?.isPlaying == true) {
-                        player?.pause()
-                    }else{
-                        player?.play()
+        Log.e(TAG, "onKeyDown:  keyCode == $keyCode  scanCode --> ${keyEvent.scanCode}", )
+        when(keyCode){
+            KeyEvent.KEYCODE_BACK -> handleBackRemoteClick()
+
+            0 -> {
+                when(keyEvent.scanCode){
+                    Constants.PLAY_MEDIA_BACKWARD-> player?.seekBack()
+
+                    Constants.PLAY_MEDIA_FORWARD-> player?.seekForward()
+
+                    Constants.MEDIA_PLAY_PAUSE->{
+                        if(player?.isPlaying == true) {
+                            player?.pause()
+                        }else{
+                            player?.play()
+                        }
                     }
                 }
+            }
+            else -> {
+                if (keyEvent.scanCode == Constants.EXIT_KEY) handleBackRemoteClick()
             }
         }
         return false

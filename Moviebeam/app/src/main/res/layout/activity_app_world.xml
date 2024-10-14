@@ -79,7 +79,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/btn_bg_gradient_default"
-        android:paddingHorizontal="@dimen/dp_5"
+        android:fontFamily="@font/manrope_bold_700"
+        android:padding="@dimen/dp_8"
+        android:textAllCaps="false"
         android:text="@string/clear_credentials"
         app:layout_constraintEnd_toStartOf="@+id/gl_vertical_95"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
