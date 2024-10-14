@@ -11,7 +11,6 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
@@ -69,12 +68,14 @@ import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.animateScale
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.openSettingsPattern
 import com.diipl.moviebeam.utils.setItemFocused
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
@@ -97,7 +98,7 @@ class MainMenuActivity : BaseActivity() {
 
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
 
-    val refreshingUiViewModel: RefreshingUiViewModel by viewModels()
+    private val refreshingUiViewModel: RefreshingUiViewModel by viewModels()
 
     @Inject
     lateinit var guestMessageDataStore: DataStore<MessageResponse>
@@ -693,8 +694,8 @@ class MainMenuActivity : BaseActivity() {
 
         binding.netflixApp.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                animateScale(binding.netflixCardApp, R.anim.scale_in_animation)
-                view?.setOnKeyListener { _, keycode, keyEvent ->
+                binding.cardClearCredentials.animateScale()
+               /* view?.setOnKeyListener { _, keycode, keyEvent ->
                     if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                         when (keycode) {
                             KeyEvent.KEYCODE_DPAD_DOWN -> {
@@ -709,16 +710,16 @@ class MainMenuActivity : BaseActivity() {
                     } else {
                         false
                     }
-                }
+                }*/
             } else {
-                animateScale(binding.netflixCardApp, R.anim.scale_out_animation)
+                binding.cardClearCredentials.animateScale(false)
             }
         }
         binding.netflixApp.setOnClickListener { handleClick(Constants.NETFLIX_PACKAGE_NAME) }
         binding.primeVideoApp.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                animateScale(binding.primeVideoCardApp, R.anim.scale_in_animation)
-                view?.setOnKeyListener { _, keycode, keyEvent ->
+                binding.cardClearCredentials.animateScale()
+               /* view?.setOnKeyListener { _, keycode, keyEvent ->
                     if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                         when (keycode) {
                             KeyEvent.KEYCODE_DPAD_DOWN -> {
@@ -731,25 +732,28 @@ class MainMenuActivity : BaseActivity() {
                     } else {
                         false
                     }
-                }
+                }*/
             } else {
-                animateScale(binding.primeVideoCardApp, R.anim.scale_out_animation)
+                binding.cardClearCredentials.animateScale(false)
             }
         }
         binding.primeVideoApp.setOnClickListener { handleClick(Constants.PRIME_VIDEO_PACKAGE_NAME) }
+
+        binding.netflixApp.openSettingsPattern()
+        binding.primeVideoApp.openSettingsPattern()
+
         delay(500)
         binding.rvMenuButton.setItemFocused()
         binding.panelView.toVisible()
     }
 
     private fun showClearCredentialsPatchWall() = lifecycleScope.launch {
-        binding.clearCredentialsPanelView.toVisible()
         binding.cardClearCredentials.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 binding.cardClearCredentials.strokeWidth = 0
                 binding.tvClearCredentials.background = getGradientColor()
-                animateScale(binding.cardClearCredentials, R.anim.scale_in_animation)
-                view?.setOnKeyListener { _, keycode, keyEvent ->
+                binding.cardClearCredentials.animateScale()
+               /* view?.setOnKeyListener { _, keycode, keyEvent ->
                     if (keyEvent.action == KeyEvent.ACTION_DOWN) {
                         when (keycode) {
                             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
@@ -757,21 +761,23 @@ class MainMenuActivity : BaseActivity() {
                                 true
                             }
 
-                            else -> false
+                            else -> true
                         }
                     } else {
                         false
                     }
-                }
+                }*/
             } else {
                 binding.cardClearCredentials.strokeWidth = 0
                 binding.tvClearCredentials.setBackgroundResource(R.drawable.btn_bg_gradient_default)
-                animateScale(binding.cardClearCredentials, R.anim.scale_out_animation)
+                binding.cardClearCredentials.animateScale(false)
             }
         }
         binding.cardClearCredentials.setOnClickListener {
             clearCredentialsHandler.startClearCredentials()
         }
+        binding.cardClearCredentials.openSettingsPattern()
+
         delay(500)
         binding.rvMenuButton.setItemFocused()
         binding.clearCredentialsPanelView.toVisible()

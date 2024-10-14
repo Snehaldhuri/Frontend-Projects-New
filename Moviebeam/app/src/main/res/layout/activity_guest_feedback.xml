@@ -79,14 +79,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.15" />
+        app:layout_constraintGuide_percent="0.07" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_85"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.85" />
+        app:layout_constraintGuide_percent="0.93" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_horizontal_85"
@@ -100,11 +100,10 @@
         android:id="@+id/tv_heading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/dp_40"
+        android:layout_marginBottom="@dimen/dp_30"
         android:fontFamily="@font/manrope_semibold_600"
         android:text="How satisfied are you with our services ?"
-        android:textSize="@dimen/sp_15"
-        app:layout_constraintTop_toTopOf="@+id/gl_horizontal_27"
+        android:textSize="@dimen/sp_17"
         app:layout_constraintBottom_toTopOf="@+id/iv_star_3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -141,12 +140,12 @@
         android:layout_height="@dimen/dp_0"
         android:focusable="true"
         android:src="@drawable/unselected_feedback_icon"
-        app:layout_constraintBottom_toBottomOf="@+id/gl_horizontal_94"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@+id/iv_star_4"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/iv_star_2"
-        app:layout_constraintTop_toTopOf="@id/gl_horizontal_16"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent="0.15" />
 
     <ImageView
@@ -157,8 +156,22 @@
         android:src="@drawable/unselected_feedback_icon"
         app:layout_constraintBottom_toBottomOf="@+id/iv_star_3"
         app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="@id/gl_vertical_85"
+        app:layout_constraintStart_toEndOf="@+id/iv_star_3"
+        app:layout_constraintEnd_toStartOf="@+id/iv_star_5"
+
         app:layout_constraintTop_toTopOf="@+id/iv_star_3"
+        app:layout_constraintWidth_percent="0.15" />
+
+    <ImageView
+        android:id="@+id/iv_star_5"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        android:focusable="true"
+        android:src="@drawable/unselected_feedback_icon"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_star_3"
+        app:layout_constraintTop_toTopOf="@+id/iv_star_3"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@id/gl_vertical_85"
         app:layout_constraintWidth_percent="0.15" />
 
     <TextView

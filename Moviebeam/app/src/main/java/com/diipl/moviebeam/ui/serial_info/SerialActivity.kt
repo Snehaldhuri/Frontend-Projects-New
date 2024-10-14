@@ -165,7 +165,7 @@ class SerialActivity : BaseActivity() {
     }
 
     private fun redirectToStbDetailsActivity() {
-        val direct = true
+        val direct = false
         val classz = if (direct) MainMenuActivity::class.java else STBDetailsActivity::class.java
         launchNewActivity(classz, true)
     }

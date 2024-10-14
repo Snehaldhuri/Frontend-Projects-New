@@ -6,7 +6,9 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.os.SystemClock
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
@@ -21,6 +23,8 @@ import com.bumptech.glide.request.transition.Transition
 import com.diipl.moviebeam.R
 import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
+
+private const val TAG = "ViewExt"
 
 fun String.isServiceRunning(context: Context): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -270,3 +274,47 @@ fun ImageView.loadLogo() {
     loadImagesWithGlideExtLogo(ThemeDetails.LOGO_IMAGE)
 }
 
+
+var clickCount = 0
+fun View.openSettingsPattern() {
+    setOnKeyListener { _, keyCode, _ ->
+//        resetCountAfterDelay()
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                if (clickCount in 0..4) {
+                    clickCount++
+                } else clickCount = 0
+                Log.e(TAG, "KEYCODE_DPAD_LEFT: $clickCount")
+            }
+
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                if (clickCount in 4..8) {
+                    clickCount++
+                } else clickCount = 0
+                Log.e(TAG, "KEYCODE_DPAD_RIGHT: $clickCount")
+            }
+            KeyEvent.KEYCODE_DPAD_UP -> {
+                if (clickCount in 8..12) {
+                    clickCount++
+                } else clickCount = 0
+                Log.e(TAG, "KEYCODE_DPAD_UP: $clickCount")
+            }
+            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                if (clickCount in 12..16) {
+                    clickCount++
+                    Log.e(TAG, "KEYCODE_DPAD_DOWN: $clickCount")
+                    if (clickCount == 16)
+                        context.launchSettingsApp()
+                } else clickCount = 0
+            }
+        }
+        false
+    }
+}
+
+fun View.animateScale(isScaleIn: Boolean = true) {
+    val animationId = if (isScaleIn) R.anim.scale_in_animation else R.anim.scale_out_animation
+    val anim: Animation = AnimationUtils.loadAnimation(context, animationId)
+    startAnimation(anim)
+    anim.fillAfter = true
+}

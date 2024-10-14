@@ -21,6 +21,7 @@ import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.openSettingsPattern
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.google.android.material.snackbar.Snackbar
@@ -46,6 +47,8 @@ class RegisterSTBActivity : BaseActivity() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         this.initializeDatastoreParams()
         registerSTBViewModel.getSerialNoFromDataStore(preferenceDataStoreHelper)
+
+        binding.root.openSettingsPattern()
 
         binding.tvIp.text = ipAddress
         binding.tvNetMask.text = netmask

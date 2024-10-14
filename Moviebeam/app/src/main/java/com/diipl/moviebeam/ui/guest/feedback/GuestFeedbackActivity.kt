@@ -35,6 +35,7 @@ class GuestFeedbackActivity : BaseActivity() {
 
     private lateinit var binding: ActivityGuestFeedbackBinding
     private val feedbackViewModel: FeedbackViewModel by viewModels()
+    private var lastFocusedStar: ImageView? = null
 
     // Variables from datastore
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
@@ -53,6 +54,21 @@ class GuestFeedbackActivity : BaseActivity() {
         binding.layoutHeader.tvTitle.text = ThemeDetails.TITLE
         binding.btnBack.handleFocusChange()
         binding.btnBack.setOnClickListener { handleBackClick() }
+
+        binding.btnBack.setOnKeyListener { _, keyCode, keyEvent ->
+            if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_DOWN -> {
+                        lastFocusedStar?.requestFocus()
+                    }
+                    KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                        return@setOnKeyListener true
+                    }
+                }
+            }
+            false
+        }
+
         setContentView(binding.root)
         this.initializeDatastoreParams()
         setupUI()
@@ -61,6 +77,10 @@ class GuestFeedbackActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.ivStar1.requestFocus()
+        binding.ivStar2.requestFocus()
+        binding.ivStar3.requestFocus()
+        binding.ivStar4.requestFocus()
+        binding.ivStar5.requestFocus()
     }
 
     private fun setupUI() {
@@ -71,11 +91,19 @@ class GuestFeedbackActivity : BaseActivity() {
                     Constants.UNACCEPTABLE,
                     Color.parseColor(Constants.FEEDBACK_NEGATIVE_COLOR)
                 )
+                lastFocusedStar = view
             } else {
+                view.setOnKeyListener { _, keycode, keyEvent ->
+                    if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+                        when (keycode) {
+                            KeyEvent.KEYCODE_DPAD_LEFT -> binding.btnBack.requestFocus()
+                        }
+                    }
+                    false
+                }
             }
             animate(view, isFocused)
         }
-        binding.ivStar1.requestFocus()
         binding.ivStar2.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 setFocus(
@@ -83,6 +111,7 @@ class GuestFeedbackActivity : BaseActivity() {
                     Constants.DISAPPOINTING,
                     Color.parseColor(Constants.FEEDBACK_NEGATIVE_COLOR)
                 )
+                lastFocusedStar = view
             } else {
                 setLeftKeyListener(view)
             }
@@ -92,9 +121,11 @@ class GuestFeedbackActivity : BaseActivity() {
             if (isFocused) {
                 setFocus(
                     (view as ImageView),
-                    Constants.GOOD,
-                    Color.parseColor(Constants.FEEDBACK_POSITIVE_COLOR)
+                    Constants.AVERAGE,
+                    Color.parseColor(Constants.FEEDBACK_NEGATIVE_COLOR)
                 )
+                lastFocusedStar = view
+
             } else {
                 setLeftKeyListener(view)
             }
@@ -104,30 +135,47 @@ class GuestFeedbackActivity : BaseActivity() {
             if (isFocused) {
                 setFocus(
                     (view as ImageView),
-                    Constants.EXCELLENT,
+                    Constants.GOOD,
                     Color.parseColor(Constants.FEEDBACK_POSITIVE_COLOR)
                 )
+                lastFocusedStar = view
+
             } else {
-                removeFocus(view as ImageView)
+                setLeftKeyListener(view)
             }
             animate(view, isFocused)
         }
-
-        binding.ivStar1.setOnClickListener { sendFeedback(Constants.UNACCEPTABLE) }
-        binding.ivStar2.setOnClickListener { sendFeedback(Constants.DISAPPOINTING) }
-        binding.ivStar3.setOnClickListener { sendFeedback(Constants.GOOD) }
-        binding.ivStar4.setOnClickListener { sendFeedback(Constants.EXCELLENT) }
+        binding.ivStar5.setOnFocusChangeListener { view, isFocused ->
+            if (isFocused) {
+                setFocus(
+                    (view as ImageView),
+                    Constants.EXCELLENT,
+                    Color.parseColor(Constants.FEEDBACK_NEGATIVE_COLOR)
+                )
+                lastFocusedStar = view
+                setLeftKeyListener(view)
+            } else {
+                setLeftKeyListener(view)
+            }
+            animate(view, isFocused)
+        }
+        binding.ivStar5.setOnClickListener {
+            sendFeedback(Constants.EXCELLENT)
+        }
+        binding.ivStar4.setOnClickListener {
+            sendFeedback(Constants.GOOD)
+        }
+        binding.ivStar3.setOnClickListener {
+            sendFeedback(Constants.AVERAGE)
+        }
+        binding.ivStar2.setOnClickListener {
+            sendFeedback(Constants.DISAPPOINTING)
+        }
+        binding.ivStar1.setOnClickListener {
+            sendFeedback(Constants.UNACCEPTABLE)
+        }
 
         binding.btnBack.setOnClickListener { finish() }
-    }
-
-    private fun handleFocus(imageView: ImageView, isFocused: Boolean, feedback: String, color: String) {
-        if (isFocused) {
-            setFocus(imageView, feedback, Color.parseColor(color))
-        } else {
-            removeFocus(imageView)
-        }
-        animate(imageView, isFocused)
     }
 
     private fun setFocus(imageView: ImageView, feedback: String, feedbackColor: Int) {
@@ -139,6 +187,7 @@ class GuestFeedbackActivity : BaseActivity() {
     private fun removeFocus(imageView: ImageView) {
         imageView.setImageResource(R.drawable.unselected_feedback_icon)
     }
+
     private fun setLeftKeyListener(view: View) {
         view.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -151,6 +200,7 @@ class GuestFeedbackActivity : BaseActivity() {
             false
         }
     }
+
     private fun animate(view: View, isFocused: Boolean) {
         val anim: Animation = if (isFocused) {
             AnimationUtils.loadAnimation(this, R.anim.scale_in_animation_feedback)

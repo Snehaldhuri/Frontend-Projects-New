@@ -43,6 +43,7 @@ import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
+import com.diipl.moviebeam.utils.openSettingsPattern
 import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleEpgApiCall
@@ -127,6 +128,8 @@ class STBDetailsActivity : BaseActivity() {
         } else {
             finish()
         }
+
+        binding.root.openSettingsPattern()
 
     }
 
