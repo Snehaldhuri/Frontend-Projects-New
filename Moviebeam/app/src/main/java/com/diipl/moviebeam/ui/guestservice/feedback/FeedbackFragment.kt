@@ -51,7 +51,11 @@ class FeedbackFragment(
 
     override fun onResume() {
         super.onResume()
-        lastFocusedStar?.requestFocus() ?: binding.ivStar5.requestFocus()
+        binding.ivStar1.requestFocus()
+        binding.ivStar2.requestFocus()
+        binding.ivStar3.requestFocus()
+        binding.ivStar4.requestFocus()
+        binding.ivStar5.requestFocus()
     }
 
     override fun onCreateView(
@@ -61,12 +65,12 @@ class FeedbackFragment(
         _binding = FragmentFeedbackBinding.inflate(inflater, container, false)
         this.initializeDatastoreParams()
 
-        binding.ivStar1.requestFocus()
-        binding.ivStar2.requestFocus()
-        binding.ivStar3.requestFocus()
-        binding.ivStar4.requestFocus()
-        binding.ivStar5.requestFocus()
+        setupUI()
 
+        return binding.root
+    }
+
+    private fun setupUI() {
         binding.ivStar1.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 setFocus(
@@ -157,7 +161,7 @@ class FeedbackFragment(
         binding.ivStar1.setOnClickListener {
             sendFeedback(Constants.UNACCEPTABLE)
         }
-        return binding.root
+
     }
 
     private fun setFocus(imageView: ImageView, feedback: String, feedbackColor: Int) {
