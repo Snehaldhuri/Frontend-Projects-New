@@ -319,6 +319,7 @@ object Constants {
     //Guest Feedback
     const val UNACCEPTABLE = "Unacceptable"
     const val DISAPPOINTING = "Disappointing"
+    const val AVERAGE = "Average"
     const val GOOD = "Good"
     const val EXCELLENT = "Excellent"
 

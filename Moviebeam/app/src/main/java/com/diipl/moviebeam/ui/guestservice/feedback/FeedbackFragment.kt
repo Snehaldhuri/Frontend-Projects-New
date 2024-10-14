@@ -30,9 +30,10 @@ class FeedbackFragment(
     private val onLeftKeyPressed: () -> Unit
 ) : BaseFragment() {
 
-    private var _binding: FragmentFeedbackBinding? = null
-    val binding get() = _binding!!
+    private lateinit var _binding: FragmentFeedbackBinding
+    val binding get() = _binding
     private val feedbackViewModel: FeedbackViewModel by activityViewModels()
+    private var lastFocusedStar: ImageView? = null
 
     //Variables from datastore
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
@@ -48,12 +49,24 @@ class FeedbackFragment(
 
     override fun initViewBinding() {}
 
+    override fun onResume() {
+        super.onResume()
+        lastFocusedStar?.requestFocus() ?: binding.ivStar5.requestFocus()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFeedbackBinding.inflate(inflater, container, false)
         this.initializeDatastoreParams()
+
+        binding.ivStar1.requestFocus()
+        binding.ivStar2.requestFocus()
+        binding.ivStar3.requestFocus()
+        binding.ivStar4.requestFocus()
+        binding.ivStar5.requestFocus()
+
         binding.ivStar1.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 setFocus(
@@ -61,6 +74,7 @@ class FeedbackFragment(
                     Constants.UNACCEPTABLE,
                     Color.parseColor(Constants.FEEDBACK_NEGATIVE_COLOR)
                 )
+                lastFocusedStar = view
             } else {
                 view.setOnKeyListener { _, keycode, keyEvent ->
                     if (keyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -73,7 +87,6 @@ class FeedbackFragment(
             }
             animate(view, isFocused)
         }
-        binding.ivStar1.requestFocus()
         binding.ivStar2.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
                 setFocus(
@@ -81,6 +94,7 @@ class FeedbackFragment(
                     Constants.DISAPPOINTING,
                     Color.parseColor(Constants.FEEDBACK_NEGATIVE_COLOR)
                 )
+                lastFocusedStar = view
             } else {
                 setLeftKeyListener(view)
             }
@@ -90,9 +104,11 @@ class FeedbackFragment(
             if (isFocused) {
                 setFocus(
                     (view as ImageView),
-                    Constants.GOOD,
-                    Color.parseColor(Constants.FEEDBACK_POSITIVE_COLOR)
+                    Constants.AVERAGE,
+                    Color.parseColor(Constants.FEEDBACK_NEGATIVE_COLOR)
                 )
+                lastFocusedStar = view
+
             } else {
                 setLeftKeyListener(view)
             }
@@ -102,25 +118,44 @@ class FeedbackFragment(
             if (isFocused) {
                 setFocus(
                     (view as ImageView),
-                    Constants.EXCELLENT,
+                    Constants.GOOD,
                     Color.parseColor(Constants.FEEDBACK_POSITIVE_COLOR)
                 )
+                lastFocusedStar = view
+
             } else {
-                removeFocus(view as ImageView)
+                setLeftKeyListener(view)
             }
             animate(view, isFocused)
         }
-        binding.ivStar1.setOnClickListener {
-            sendFeedback(Constants.UNACCEPTABLE)
+        binding.ivStar5.setOnFocusChangeListener { view, isFocused ->
+            if (isFocused) {
+                setFocus(
+                    (view as ImageView),
+                    Constants.EXCELLENT,
+                    Color.parseColor(Constants.FEEDBACK_NEGATIVE_COLOR)
+                )
+                lastFocusedStar = view
+                setLeftKeyListener(view)
+            } else {
+                setLeftKeyListener(view)
+            }
+            animate(view, isFocused)
+        }
+        binding.ivStar5.setOnClickListener {
+            sendFeedback(Constants.EXCELLENT)
+        }
+        binding.ivStar4.setOnClickListener {
+            sendFeedback(Constants.GOOD)
+        }
+        binding.ivStar3.setOnClickListener {
+            sendFeedback(Constants.AVERAGE)
         }
         binding.ivStar2.setOnClickListener {
             sendFeedback(Constants.DISAPPOINTING)
         }
-        binding.ivStar3.setOnClickListener {
-            sendFeedback(Constants.GOOD)
-        }
-        binding.ivStar4.setOnClickListener {
-            sendFeedback(Constants.EXCELLENT)
+        binding.ivStar1.setOnClickListener {
+            sendFeedback(Constants.UNACCEPTABLE)
         }
         return binding.root
     }
@@ -147,7 +182,6 @@ class FeedbackFragment(
             false
         }
     }
-
     private fun animate(view: View, isFocused: Boolean) {
         var anim: Animation =
             AnimationUtils.loadAnimation(context, R.anim.scale_out_animation_feedback)
