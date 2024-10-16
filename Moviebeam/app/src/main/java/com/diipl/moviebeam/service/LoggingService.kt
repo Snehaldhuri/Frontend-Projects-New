@@ -104,7 +104,6 @@ class LoggingService : Service() {
     }
 
     fun startWebSocket() {
-        Log.e(TAG, "startWebSocket: Trying to Start --> ${BaseActivity.activityStack.last()}")
         if (!isServiceStarted) {
             isServiceStarted = true
             Log.e(TAG, "startWebSocket: Starting")

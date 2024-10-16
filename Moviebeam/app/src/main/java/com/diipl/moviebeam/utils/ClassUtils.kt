@@ -10,6 +10,7 @@ import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -882,4 +883,13 @@ fun Context.launchSettingsApp() {
         Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
     startActivity(intent)
     clickCount = 0
+}
+
+fun Context.isPackageExists(targetPackage: String): Boolean {
+    return try {
+        val packageInfo: PackageInfo = packageManager.getPackageInfo(targetPackage, 0)
+        targetPackage == packageInfo.packageName
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
+    }
 }

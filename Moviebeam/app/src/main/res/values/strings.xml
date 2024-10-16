@@ -166,6 +166,7 @@
 
     <string name="clear_credentials_menu_text">Please clear your app credentials before checkout.</string>
     <string name="no_news_found">No news found!</string>
+    <string name="app_not_available">App is not available.</string>
 
 
 </resources>
