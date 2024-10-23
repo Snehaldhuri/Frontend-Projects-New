@@ -172,14 +172,6 @@ class UpdateDataStore @Inject constructor(
     }
 
     suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
-        /*hotelServiceDataStore.updateData { currentPreferences ->
-            currentPreferences.copy(
-                id = data.id,
-                servicesList = data.servicesList,
-                type = data.type,
-                version = data.version
-            )
-        }*/
 
         Log.e(TAG, "updateHSData: Downloading HS Images  ${Constants.isWorkDone}" )
         deleteHSFolder()
@@ -243,7 +235,7 @@ class UpdateDataStore @Inject constructor(
                         version = data.version
                     )
                 }
-                Constants.isWorkDone++
+                if (Constants.isWorkDone == 2)Constants.isWorkDone=3
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
@@ -328,7 +320,7 @@ class UpdateDataStore @Inject constructor(
                         version = data.version
                     )
                 }
-                Constants.isWorkDone++
+                if (Constants.isWorkDone == 1)Constants.isWorkDone=2
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to update DataStore: ${e.message}")
             }
@@ -375,7 +367,7 @@ class UpdateDataStore @Inject constructor(
                         version = data.version
                     )
                 }
-                Constants.isWorkDone++
+                if (Constants.isWorkDone == 0)Constants.isWorkDone=1
             } else {
 
             }

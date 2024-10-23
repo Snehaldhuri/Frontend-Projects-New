@@ -86,6 +86,7 @@ import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.callNetflixAPI
 import com.diipl.moviebeam.utils.compareVersions
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
@@ -347,66 +348,48 @@ class EndlessService : Service() {
 
     private val homePressReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (BaseActivity.currentActivity?.javaClass?.simpleName?.isNotAllowed() == true) {
-                intent.let {
-                    when (it.action) {
-                        Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
-                            val reason = it.getStringExtra("reason")
-                            if (reason == "homekey") {
-                                if (activityStack.last() == AppWorldActivity::class.java.simpleName) {
-                                    if (AppWorldActivity.NETFLIX_LAUNCHED) {
-                                        val sessionId = GuestDetails.SESSION_ID
-                                        val url =
-                                            "${Constants.BASE_URL_LG_REST}content/netflixAccess/enter?sessionId=$sessionId"
+            val action = intent.action ?: return
 
-                                        val requestBody = createRequestBody(
-                                            stbRoomNo, ua, 2
-                                        )
-
-                                        postRequest(url, requestBody)
-                                        AppWorldActivity.NETFLIX_LAUNCHED = false
-                                        return
-                                    } else {
-                                        startMainMenu()
-                                        return
-                                    }
-                                } else {
-                                    if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST) {
-                                        if(activityStack.last() == NewProgramGuideActivity::class.java.simpleName){
-                                            (BaseActivity.currentActivity as NewProgramGuideActivity).switchToHDMI()
-                                        } else  if(activityStack.last() == DisconnectedPrgActivity::class.java.simpleName){
-                                            (BaseActivity.currentActivity as DisconnectedPrgActivity).switchToHDMI()
-                                        }
-                                        MainMenuActivity::class.java.startActivity()
-                                        return
-                                    } else {
-                                        MainMenuActivity::class.java.startActivity()
-                                        return
-                                    }
-                                }
-                            } else {
-                                return
-                            }
+            if (activityStack.last()?.isNotAllowed() == true) {
+                when (action) {
+                    Intent.ACTION_CLOSE_SYSTEM_DIALOGS -> {
+                        val reason = intent.getStringExtra("reason")
+                        if (reason == "homekey") {
+                            handleHomeKeyPress()
                         }
-
-                        Intent.ACTION_SCREEN_OFF -> {
-
-                        }
-
-                        Intent.ACTION_SCREEN_ON -> {
-                            CoroutineScope(Dispatchers.Default).launch {
-                                delay(10000)
-                                startMainMenu()
-                            }
-                        }
-
-                        Intent.ACTION_MEDIA_BUTTON -> {
-                        }
-
-                        else -> {
+                    }
+                    Intent.ACTION_SCREEN_ON -> {
+                        CoroutineScope(Dispatchers.Default).launch {
+                            delay(10000)
+                            MainMenuActivity::class.java.startActivity()
                         }
                     }
                 }
+            } else return
+        }
+    }
+
+    private fun handleHomeKeyPress() {
+        when (activityStack.last()) {
+            AppWorldActivity::class.java.simpleName -> {
+                if (AppWorldActivity.NETFLIX_LAUNCHED) {
+
+                    callNetflixAPI(stbRoomNo, ua, 2)
+                    AppWorldActivity.NETFLIX_LAUNCHED = false
+                } else {
+                    startMainMenu()
+                }
+            }
+            NewProgramGuideActivity::class.java.simpleName, DisconnectedPrgActivity::class.java.simpleName -> {
+                if(activityStack.last() == NewProgramGuideActivity::class.java.simpleName){
+                    (BaseActivity.currentActivity as NewProgramGuideActivity).switchToHDMI()
+                } else  if(activityStack.last() == DisconnectedPrgActivity::class.java.simpleName){
+                    (BaseActivity.currentActivity as DisconnectedPrgActivity).switchToHDMI()
+                }
+                startMainMenu()
+            }
+            else -> {
+                startMainMenu()
             }
         }
     }
