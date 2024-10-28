@@ -25,10 +25,6 @@ import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.BuildConfig
@@ -46,9 +42,9 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
-import com.diipl.moviebeam.service.BTService
-import com.diipl.moviebeam.service.IIrService
-import com.diipl.moviebeam.service.UsbIrService
+import com.diipl.moviebeam.service.remote.BTService
+import com.diipl.moviebeam.service.remote.IIrService
+import com.diipl.moviebeam.service.remote.UsbIrService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
@@ -74,6 +70,10 @@ import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.DefaultRenderersFactory
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers

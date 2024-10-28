@@ -39,13 +39,14 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityNewProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
-import com.diipl.moviebeam.service.BTService
-import com.diipl.moviebeam.service.IIrService
-import com.diipl.moviebeam.service.UsbIrService
+import com.diipl.moviebeam.service.remote.BTService
+import com.diipl.moviebeam.service.remote.IIrService
+import com.diipl.moviebeam.service.remote.UsbIrService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.DEVICE_MODEL
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
+import com.diipl.moviebeam.ui.exoplayer.PlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
@@ -111,6 +112,8 @@ class NewProgramGuideActivity : BaseActivity() {
     private lateinit var btService: BTService
     private var switchedToTV = false
 
+    private var broadCastType = ""
+
     override fun observeViewModel() {
         observe(programGuideViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
 
@@ -124,8 +127,8 @@ class NewProgramGuideActivity : BaseActivity() {
                 status.data?.let { response ->
                     hotelChannel = response.hotelChannelList[0]
                     hotelChannelVideo = response.httpStreamingHotelvideoUrl + hotelChannel.fileName
-                    Log.e(TAG, "handleAccountSetupResponse: ${hotelChannel.channelNo}")
-
+                    broadCastType = response.tvBroadcastType
+                    Log.e(TAG, "handleAccountSetupResponse: ${hotelChannel.channelNo}  $broadCastType")
                     this.getChannelsFromRoomDB()
                     if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
                         if (DEVICE_MODEL != SEI_MB730)
@@ -514,7 +517,9 @@ class NewProgramGuideActivity : BaseActivity() {
                 else switchToTVWithBluetooth(program)
             }
             Constants.BUILD_TYPE_STB -> {
-                tuneChannels(program)
+                if (broadCastType.equals("IP"))
+                    tuneIPChannels(program)
+                else tuneChannels(program)
             }
         }
     }
@@ -756,6 +761,20 @@ class NewProgramGuideActivity : BaseActivity() {
         }
 
         mChannelList.sortBy { dvbChannel -> dvbChannel.number }
+    }
+
+    private fun tuneIPChannels(program: ChannelEpgDTO?) {
+        PlayerActivity.programGuideList.addAll(programGuideList)
+        if (!program?.CN.equals(HOTEL_VIDEO) || !program?.CNO.equals("100")) {
+            val pos = PlayerActivity.programGuideList.indexOf(program)
+            focusedPosition = programGuideList.indexOf(program)
+            onPause = true
+            val intent = Intent(applicationContext, PlayerActivity::class.java)
+            intent.putExtra("currentPos", pos)
+            startActivity(intent)
+        } else {
+            showToast("Hotel Video is not available.")
+        }
     }
 
     private fun tuneChannels(program: ChannelEpgDTO?) {

@@ -16,7 +16,7 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
-import com.diipl.moviebeam.service.BTService
+import com.diipl.moviebeam.service.remote.BTService
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
 import com.diipl.moviebeam.utils.Constants

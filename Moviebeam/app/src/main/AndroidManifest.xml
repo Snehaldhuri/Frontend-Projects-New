@@ -5,9 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
@@ -16,8 +14,6 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.READ" />
-    <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.WRITE" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
@@ -27,8 +23,6 @@
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- Request legacy Bluetooth permissions on older devices. -->
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -57,9 +51,6 @@
     <uses-feature
         android:name="android.software.leanback"
         android:required="true" />
-    <uses-feature
-        android:name="android.hardware.location.gps"
-        android:required="false" />
 
     <uses-configuration android:reqFiveWayNav="true" />
 
@@ -67,6 +58,8 @@
     <uses-permission android:name="com.android.providers.tv.permission.ACCESS_ALL_EPG_DATA" />
     <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
+    <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.READ" />
+    <uses-permission android:name="com.nes.dtvkit.tvsetting.permission.WRITE" />
 
     <application
         android:name=".di.App"
@@ -82,6 +75,7 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".ui.casting.HotspotActivity"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
             android:name=".ui.exoplayer.LiveTVActivity"

@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.service
+package com.diipl.moviebeam.service.remote
 
 import android.Manifest
 import android.annotation.SuppressLint

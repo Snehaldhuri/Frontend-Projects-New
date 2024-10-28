@@ -26,7 +26,7 @@ android {
 
     defaultConfig {
         applicationId "com.diipl.moviebeam"
-        minSdk 24
+        minSdk 29
         targetSdk 33
         versionCode 1
         versionName chromeCastVersion
@@ -47,7 +47,7 @@ android {
     }
 
     buildFeatures {
-        buildConfig true
+        buildConfig = true
         viewBinding = true
         dataBinding = true
         aidl = true
@@ -64,6 +64,7 @@ android {
             signingConfig signingConfigs.release
         }
         stb {
+            debuggable true
             minifyEnabled true
             shrinkResources true
             buildConfigField("String", "BUILD_TYPE", "\"STB\"")
@@ -84,6 +85,10 @@ android {
 }
 
 dependencies {
+
+    api 'com.google.guava:guava:31.0.1-android'
+    implementation files('libs/libplayerapi-release.aar')
+    implementation files("libs/libseiplayer-release.aar")
 
     implementation(libs.androidx.core.ktx)
     implementation libs.androidx.annotation
@@ -141,10 +146,10 @@ dependencies {
     implementation libs.kotlinx.serialization.json
 
     // ExoPlayer
-    implementation libs.androidx.media3.exoplayer
-    implementation libs.androidx.media3.exoplayer.dash
-    implementation libs.androidx.media3.ui
-    implementation libs.androidx.media3.exoplayer.hls
+//    implementation libs.androidx.media3.exoplayer
+//    implementation libs.androidx.media3.exoplayer.dash
+//    implementation libs.androidx.media3.ui
+//    implementation libs.androidx.media3.exoplayer.hls
 
     implementation(libs.zxing.core)
     implementation libs.kotlin.reflect

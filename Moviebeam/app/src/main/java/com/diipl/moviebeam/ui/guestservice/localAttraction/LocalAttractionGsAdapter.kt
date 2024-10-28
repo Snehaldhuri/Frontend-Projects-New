@@ -53,7 +53,7 @@ class LocalAttractionGsAdapter(
         if (selectedPosition == -1) {
             onItemClicked(holder.itemView, item)
             holder.itemView.isSelected = true
-            selectedPosition = holder.absoluteAdapterPosition
+            selectedPosition = holder.adapterPosition
         }
         updateFocus(holder)
 
@@ -78,7 +78,7 @@ class LocalAttractionGsAdapter(
                         KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
                             onItemClicked(view, item)
                             holder.itemView.isSelected = true
-                            selectedPosition = holder.absoluteAdapterPosition
+                            selectedPosition = holder.adapterPosition
                             updateFocus(holder)
                             notifyUI()
                         }
@@ -103,7 +103,7 @@ class LocalAttractionGsAdapter(
     }
 
     private fun updateFocus(holder: MyViewHolder) {
-        if (selectedPosition == holder.absoluteAdapterPosition && holder.itemView.isSelected) {
+        if (selectedPosition == holder.adapterPosition && holder.itemView.isSelected) {
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
             holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
         } else {

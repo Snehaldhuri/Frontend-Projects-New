@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.animation.Animation
@@ -15,8 +14,9 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.databinding.AppCardBinding
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
+import com.diipl.moviebeam.utils.getHeightInPercent
+import com.diipl.moviebeam.utils.getWidthInPercent
 import com.diipl.moviebeam.utils.showToast
-
 
 class AppAdapter(
     private val onItemClicked: (ApplicationInfo) -> Unit
@@ -32,6 +32,10 @@ class AppAdapter(
         binding.root.isFocusable = true
         binding.root.isFocusableInTouchMode = true
         binding.root.setBackgroundResource(R.color.transparent)
+
+        val params = binding.root.layoutParams
+        params.width = getWidthInPercent(parent.context, 19)
+        params.height = getHeightInPercent(parent.context, 24)
 
         binding.cardApp.setOnFocusChangeListener { _, isFocused ->
             var anim: Animation = AnimationUtils.loadAnimation(parent.context, R.anim.scale_out_animation)
@@ -51,12 +55,12 @@ class AppAdapter(
         val context = holder.binding.root.context
 
         holder.binding.cardApp.post{
-            if (holder.absoluteAdapterPosition == 0) {
+            if (holder.adapterPosition == 0) {
                 holder.binding.cardApp.requestFocus()
             }
         }
         holder.binding.tvAppName.text = context.packageManager.getApplicationLabel(item)
-        Log.e("TAG", "onBindViewHolder: " + context.packageManager.getApplicationBanner(item))
+
         //var banner: Drawable = app.activityInfo.loadBanner(mPackageManager)
         //if (banner == null) {
         //    banner = app.activityInfo.applicationInfo.loadBanner(mPackageManager)
@@ -66,10 +70,11 @@ class AppAdapter(
             addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER)
         }
         val apps: List<ResolveInfo> = context.packageManager.queryIntentActivities(appsIntent, 0)
-        Log.e("TAG" , "onBindViewHolder: ${apps.size} $apps", )
+
+
         getBanner(context,item.packageName)
         if(context.packageManager.getApplicationBanner(item)==null){
-            var icon=getBanner(context,item.packageName)
+            val icon=getBanner(context,item.packageName)
             if(icon!=null) {
                 holder.binding.ivAppIcon.setImageDrawable(icon)
             }else{

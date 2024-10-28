@@ -29,7 +29,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -68,6 +67,7 @@ import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken

@@ -49,11 +49,11 @@ class ProgramGuideAdapter(
             holder.binding.layoutChannelCard.tvChannelNo.text = item.CNO
         }
 
-        if (channelFocusIndex == holder.absoluteAdapterPosition) {
+        if (channelFocusIndex == holder.adapterPosition) {
             holder.binding.root.requestFocus()
         } else holder.binding.root.clearFocus()
 
-        if (focusedAdapter != -1 && focusedAdapter == holder.bindingAdapterPosition)
+        if (focusedAdapter != -1 && focusedAdapter == holder.adapterPosition)
             holder.binding.rvProgramGuidePrograms.post {
                 holder.binding.rvProgramGuidePrograms.getChildAt(0).requestFocus()
             }
@@ -103,7 +103,7 @@ class ProgramGuideAdapter(
                 onProgramFocused = ::onProgramFocused,
                 onProgramClicked = ::onProgramClicked,
                 loadNewPrograms = {
-                    loadNextPrograms(it, holder.bindingAdapterPosition)
+                    loadNextPrograms(it, holder.adapterPosition)
                 }
             )
         adapter.setProgramDto(item)

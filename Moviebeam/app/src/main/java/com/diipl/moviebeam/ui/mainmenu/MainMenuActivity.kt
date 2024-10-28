@@ -20,10 +20,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
@@ -82,6 +78,10 @@ import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.Player
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -215,7 +215,7 @@ class MainMenuActivity : BaseActivity() {
         player = ExoPlayer.Builder(this).build()
         player.trackSelectionParameters = player.trackSelectionParameters
             .buildUpon()
-            .setMaxVideoSize(1920, 1080)
+            .setMaxVideoSizeSd()
             .build()
         binding.videoView.player = player
     }
@@ -265,6 +265,7 @@ class MainMenuActivity : BaseActivity() {
         init()
         playCount++
         if (hotelVideoUrl.isNotEmpty()) {
+            Log.e(TAG, "initializePlayer: $hotelVideoUrl")
             binding.videoView.toVisible()
             player.setMediaItem(MediaItem.fromUri(hotelVideoUrl))
             player.repeatMode = Player.REPEAT_MODE_ALL
@@ -286,6 +287,7 @@ class MainMenuActivity : BaseActivity() {
             super.onPlayerError(error)
             Log.e("TAG", "onPlayerError: ${error.localizedMessage}")
             if (error.localizedMessage!! == "Source error") releaseVideoPlayer()
+            if (error.localizedMessage!!.contains("MediaCodecAudioRenderer error")) releaseVideoPlayer()
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
@@ -312,7 +314,6 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleTickerResponse(status: Resource<TickerResponse>) {
         when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
@@ -344,7 +345,6 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>?) {
         when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
@@ -414,15 +414,6 @@ class MainMenuActivity : BaseActivity() {
                             releaseVideoPlayer()
                             val bundle = Bundle()
                             ThemeDetails.TITLE = btn.title
-                            /* bundle.putString(
-                                 "hotelChannel",
-                                 response.hotelChannelList.get(0).toJson()
-                             )
-                             val hotelChannelVideo =
-                                 response.httpStreamingHotelvideoUrl + response.hotelChannelList.get(
-                                     0
-                                 ).fileName
-                             bundle.putString("hotelChannelVideo", hotelChannelVideo)*/
                             var intent: Intent? = null
                             when (btn.btnId) {
                                 Constants.HOTEL_SERVICES_ID -> {
@@ -556,10 +547,6 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleGuestMessageResponse(status: Resource<MessageResponse>) {
         when (status) {
-            is Resource.Loading -> {
-//                binding.loaderView.toVisible()
-            }
-
             is Resource.Success -> {
                 try {
                     guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
@@ -591,7 +578,6 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleGuestDetailsResponse(status: Resource<CmdDataDto>) {
         when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let {

@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.newprogramguide
 
 import android.content.Context
 import android.graphics.Color
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -11,11 +10,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.NewProgramCardBinding
-import com.diipl.moviebeam.databinding.ProgramCardBinding
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -193,14 +190,14 @@ class NewProgramAdapter(
 
         holder.binding.root.setOnKeyListener { _, keycode, keyEvent ->
             if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-                if (holder.bindingAdapterPosition == 0) {
+                if (holder.adapterPosition == 0) {
                     if (programs == 1) {
                         handleLeftNavigation(keycode)
                         handleRightNavigation(keycode)
                     } else {
                         handleLeftNavigation(keycode)
                     }
-                } else if (holder.bindingAdapterPosition == programs - 1) {
+                } else if (holder.adapterPosition == programs - 1) {
                     handleRightNavigation(keycode)
                 }
             }

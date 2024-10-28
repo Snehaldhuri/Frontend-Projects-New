@@ -1,7 +1,7 @@
 package com.diipl.moviebeam.utils
 
 import com.diipl.moviebeam.data.dto.remote.IRFrequencyModel
-import com.diipl.moviebeam.service.BTService
+import com.diipl.moviebeam.service.remote.BTService
 
 class IRUtils {
 
