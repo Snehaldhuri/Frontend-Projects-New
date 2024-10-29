@@ -300,6 +300,7 @@ class MainMenuActivity : BaseActivity() {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItem, reason)
             if (reason == 0) HOTEL_VIDEO_LOOP_COUNT -= 1
+            Log.e(TAG, "onMediaItemTransition: $HOTEL_VIDEO_LOOP_COUNT")
         }
     }
 
@@ -308,7 +309,7 @@ class MainMenuActivity : BaseActivity() {
         binding.root.loadBg()
         if (::player.isInitialized) {
             player.stop()
-            player.release()
+//            player.release()
         }
     }
 
