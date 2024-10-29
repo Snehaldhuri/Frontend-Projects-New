@@ -35,6 +35,7 @@ class EpgWorker @AssistedInject constructor(
     private val movieBeamRepository: MovieBeamRepository,
     private val roomRepository: RoomRepository,
     private val channelListDataStore: DataStore<ChannelListResponse>,
+    private val preferenceHandler: PreferenceHandler,
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
@@ -285,19 +286,11 @@ class EpgWorker @AssistedInject constructor(
     }
 
     private fun updateEpgStandEt(epgStartTime: String?, epgEndTime: String?) {
-        CoroutineScope(Dispatchers.Default).launch {
-            epgStartTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
-                    it
-                )
-            }
-            epgEndTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
-                    it
-                )
-            }
+        epgStartTime?.let {
+            preferenceHandler.updateDatastoreVariables(epgStartTime = it)
+        }
+        epgEndTime?.let {
+            preferenceHandler.updateDatastoreVariables(epgEndTime = it)
         }
     }
 

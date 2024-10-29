@@ -47,6 +47,7 @@ import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.ClearCredentialsReceiver
 import com.diipl.moviebeam.service.EpgWorker
 import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.service.TickerMsgReceiver
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -347,7 +348,7 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
         netMask = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
 
         currentActivity?.let {
-            val preferenceDataStoreHelper = PreferenceDataStoreHelper(it)
+            val preferenceHandler = PreferenceHandler(it)
             connectivity = getConnectivityType(it)
             val connectivityManager =
                 it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -362,12 +363,11 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
                 gateway = defaultGateway
             }
 
-            updateDatastoreVariables(
-                preferenceDataStoreHelper,
-                ipAddress,
-                netMask,
-                gateway,
-                connectivity
+            preferenceHandler.updateDatastoreVariables(
+                ipAddress = ipAddress,
+                netMask = netMask,
+                gateway = gateway,
+                connectivity = connectivity
             )
 
             // WIFI DETAILS
@@ -390,41 +390,6 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
     val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
     val uptime = System.currentTimeMillis() - uptimeMillis
 
-}
-
-private fun updateDatastoreVariables(
-    preferenceDataStoreHelper: PreferenceDataStoreHelper,
-    ipAddress: String? = null,
-    netMask: String? = null,
-    gateway: String? = null,
-    connectivity: String? = null
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        ipAddress?.let {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IP_ADDRESS_KEY,
-                it
-            )
-        }
-        netMask?.let {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IP_NET_MASK_KEY,
-                it
-            )
-        }
-        gateway?.let {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IP_GATEWAY_KEY,
-                it
-            )
-        }
-        connectivity?.let {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.CONNECTIVITY_KEY,
-                it
-            )
-        }
-    }
 }
 
 private fun getNetmaskFromPrefixLength(prefixLength: Int): String {

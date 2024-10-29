@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.movies
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
@@ -22,6 +21,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
@@ -68,6 +68,9 @@ class MoviesActivity : BaseActivity() {
 
     @Inject
     lateinit var preference: SharedPreference
+
+    @Inject
+    lateinit var preferenceHandler: PreferenceHandler
 
     private var selectedView: View? = null
     private var itemView: View? = null
@@ -255,7 +258,7 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 lifecycleScope.launch {
                     status.data?.let { response ->
-                        updateMoviesCount(
+                        preferenceHandler.updateDatastoreVariables(
                             moviesCount = response.freeContentList.size.plus(response.premiumContentList.size),
                             cListVersion = response.version
                         )
@@ -537,23 +540,6 @@ class MoviesActivity : BaseActivity() {
             activityStack.add(this::class.java.simpleName)
         } else {
             finish()
-        }
-    }
-
-    private fun updateMoviesCount(moviesCount: Int? = null, cListVersion: String? = null) {
-        lifecycleScope.launch {
-            moviesCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
-                    it
-                )
-            }
-            cListVersion?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
-                    it
-                )
-            }
         }
     }
 

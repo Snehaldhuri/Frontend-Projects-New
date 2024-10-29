@@ -24,6 +24,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.databinding.PopupLayoutBinding
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
@@ -55,6 +56,9 @@ class AppWorldActivity : BaseActivity() {
     private var stbRoomNo = ""
     private var ua = ""
     private var appList = ArrayList<String>()
+
+    @Inject
+    lateinit var preferenceHandler: PreferenceHandler
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -118,7 +122,7 @@ class AppWorldActivity : BaseActivity() {
             adapter.setAppList(list)
             binding.rvApps.adapter = adapter
             appList = ArrayList(apiApps)
-            updateAppList(apiApps)
+            preferenceHandler.updateDatastoreVariables(appList = apiApps)
         } catch (e: Exception) {
             logE("getInstalledApps Exception in AppWorldMain activity ${e.message}")
         }
@@ -220,15 +224,6 @@ class AppWorldActivity : BaseActivity() {
         }
 
         popupBinding.tvPopupText.text = getString(R.string.app_world_clear_credentials_message)
-    }
-
-    private fun updateAppList(appList: Set<String>) {
-        lifecycleScope.launch {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.APP_LIST_KEY,
-                appList
-            )
-        }
     }
 
     private fun initializeDatastoreParams() {

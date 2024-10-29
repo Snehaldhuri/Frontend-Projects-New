@@ -9,8 +9,14 @@ import com.diipl.moviebeam.data.dto.hotelservice.Services
 import com.diipl.moviebeam.data.dto.localattraction.LAService
 import com.diipl.moviebeam.data.dto.localattraction.LAServices
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
+import com.diipl.moviebeam.data.dto.message.MessageResponse
+import com.diipl.moviebeam.data.dto.movies.MoviesResponse
+import com.diipl.moviebeam.data.dto.program.ChannelListResponse
+import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
+import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
+import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.deleteHSFolder
 import com.diipl.moviebeam.utils.deleteLAFolder
@@ -19,10 +25,12 @@ import com.diipl.moviebeam.utils.saveHSImage
 import com.diipl.moviebeam.utils.saveLAImage
 import com.diipl.moviebeam.utils.saveThemeImage
 import com.diipl.moviebeam.utils.saveThemeImageServer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import okhttp3.internal.toImmutableList
 import javax.inject.Inject
 
@@ -31,10 +39,231 @@ class UpdateDataStore @Inject constructor(
     private val localAttractionDataStore: DataStore<LocalAttractionResponse>,
     private val themeDataStore: DataStore<ThemeResponse>,
     private val accountDataStore: DataStore<AccountSetupResponse>,
-    private val hotelServiceDataStore: DataStore<HotelServiceResponse>
+    private val hotelServiceDataStore: DataStore<HotelServiceResponse>,
+    private val channelListDataStore: DataStore<ChannelListResponse>,
+    private val tickerDataStore: DataStore<TickerResponse>,
+    private val moviesDataStore: DataStore<MoviesResponse>,
+    private val showTimeDataStore: DataStore<ShowTimeResponse>,
+    private val guestDetailsDatastore: DataStore<CmdDataDto>,
+    private val guestMessageDataStore: DataStore<MessageResponse>,
 ) {
 
     private val TAG = "UpdateDataStore"
+
+    suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
+
+        Log.e(TAG, "updateHSData: Downloading HS Images  ${Constants.isWorkDone}")
+        deleteHSFolder()
+        val servicesList = mutableListOf<Services>()
+        val resp = async(Dispatchers.IO) {
+            data.servicesList.forEach { services ->
+                val serv = mutableListOf<Service>()
+                services.serviceList.forEach { service ->
+                    val list = mutableListOf<String>()
+                    val newList = mutableListOf<String>()
+
+                    val deferredImages = service.serviceImageListCloud.map { imageUrl ->
+                        async(Dispatchers.IO) {
+                            try {
+                                saveHSImage(imageUrl)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to save image: ${e.message}")
+                                null
+                            }
+                        }
+                    }
+
+                    list.addAll(deferredImages.awaitAll().filterNotNull())
+
+                    val newImages = service.serviceImageListNewCloud.map { imageUrl ->
+                        async(Dispatchers.IO) {
+                            try {
+                                saveHSImage(imageUrl)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to save image: ${e.message}")
+                                null
+                            }
+                        }
+                    }
+
+                    newList.addAll(newImages.awaitAll().filterNotNull())
+
+                    val updatedService = service.copy(
+                        serviceImageListCloud = list.toImmutableList(),
+                        serviceImageListNewCloud = newList.toImmutableList()
+                    )
+                    serv.add(updatedService)
+                }
+                val updatedServices = services.copy(
+                    serviceList = serv.toImmutableList()
+                )
+                servicesList.add(updatedServices)
+            }
+
+        }
+
+        val res = awaitAll(resp)
+        Log.e(TAG, "updateHSData: ${res.isNotEmpty()}")
+        if (res.isNotEmpty()) {
+            try {
+                hotelServiceDataStore.updateData { currentPreferences ->
+                    currentPreferences.copy(
+                        id = data.id,
+                        servicesList = servicesList.toImmutableList(),
+                        type = data.type,
+                        version = data.version
+                    )
+                }
+                if (Constants.isWorkDone == 2) Constants.isWorkDone = 3
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to update DataStore: ${e.message}")
+            }
+        }
+        Log.e(TAG, "updateHSData: Downloading HS Images Done  ${Constants.isWorkDone}")
+    }
+
+    suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
+        /*localAttractionDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                id = data.id,
+                servicesList = data.servicesList,
+                type = data.type,
+                version = data.version
+            )
+        }*/
+
+        Log.e(TAG, "updateLAData: Downloading LA Images  ${Constants.isWorkDone}")
+        deleteLAFolder()
+        val servicesList = mutableListOf<LAServices>()
+        val resp = async(Dispatchers.IO) {
+            data.servicesList.forEach { services ->
+                val serv = mutableListOf<LAService>()
+                services.serviceList.forEach { service ->
+                    val list = mutableListOf<String>()
+                    val newList = mutableListOf<String>()
+                    val deferredImages = service.serviceImageListCloud.map { imageUrl ->
+                        async(Dispatchers.IO) {
+                            try {
+                                saveLAImage(imageUrl)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to save image: ${e.message}")
+                                null
+                            }
+                        }
+                    }
+
+                    list.addAll(deferredImages.awaitAll().filterNotNull())
+
+                    val newImages = service.serviceImageListNewCloud.map { imageUrl ->
+                        async(Dispatchers.IO) {
+                            try {
+                                saveLAImage(imageUrl)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to save image: ${e.message}")
+                                null
+                            }
+                        }
+                    }
+
+                    newList.addAll(newImages.awaitAll().filterNotNull())
+
+                    val imagePathPosterCloud = saveLAImage(service.imagePathPosterCloud)
+                    val imagePathPosterNewCloud = saveLAImage(service.imagePathPosterNewCloud)
+                    val imagePathSushiCloud = saveLAImage(service.imagePathSushiCloud)
+
+                    val updatedService = service.copy(
+                        imagePathPosterCloud = imagePathPosterCloud,
+                        imagePathPosterNewCloud = imagePathPosterNewCloud,
+                        imagePathSushiCloud = imagePathSushiCloud,
+                        serviceImageListCloud = list.toImmutableList(),
+                        serviceImageListNewCloud = newList.toImmutableList()
+                    )
+                    serv.add(updatedService)
+                }
+                val updatedServices = services.copy(
+                    serviceList = serv.toImmutableList()
+                )
+                servicesList.add(updatedServices)
+            }
+        }
+
+        val res = awaitAll(resp)
+        Log.e(TAG, "updateLAData: ${res.isNotEmpty()}")
+        if (res.isNotEmpty()) {
+            try {
+                localAttractionDataStore.updateData { currentPreferences ->
+                    currentPreferences.copy(
+                        id = data.id,
+                        servicesList = servicesList.toImmutableList(),
+                        type = data.type,
+                        version = data.version
+                    )
+                }
+                if (Constants.isWorkDone == 1) Constants.isWorkDone = 2
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to update DataStore: ${e.message}")
+            }
+        }
+        Log.e(TAG, "updateLAData: Downloading LA Images Done  ${Constants.isWorkDone}")
+    }
+
+    suspend fun updateThemeData(data: ThemeResponse) = coroutineScope {
+        Log.e(TAG, "updateThemeData: Downloading Theme Images   $${Constants.isWorkDone}")
+        try {
+            deleteThemeFolder()
+            val themeBackgroundFileName = async {
+                getThemeFileName(
+                    data.themeBackgroundFileNameCloud,
+                    data.themeBackgroundFileName
+                )
+            }
+            val themeLogoFileName = async {
+                getThemeFileName(
+                    data.themeLogoFileNameCloud,
+                    data.themeLogoFileName
+                )
+            }
+
+            val result = awaitAll(
+                themeBackgroundFileName, themeLogoFileName
+            )
+            if (result[0] != null && result[1] != null) {
+                themeDataStore.updateData { currentPreferences ->
+                    currentPreferences.copy(
+                        accountId = data.accountId,
+                        spotLightColor = data.spotLightColor,
+                        fontCss = data.fontCss,
+                        gradientColor = data.gradientColor,
+                        themeBackgroundFileName = result[0],
+                        themeLogoFileName = result[1],
+                        id = data.id,
+                        themeBgFileName = data.themeBgFileName,
+                        themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
+                        themeCss = data.themeCss,
+                        themeBgFileNameCloud = data.themeBgFileNameCloud,
+                        themeLogoFileNameCloud = data.themeLogoFileNameCloud,
+                        type = data.type,
+                        version = data.version
+                    )
+                }
+                if (Constants.isWorkDone == 0) Constants.isWorkDone = 1
+            } else {
+
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update DataStore: ${e.message}")
+        }
+        Log.e(TAG, "updateThemeData: Downloading Theme Images Done  ${Constants.isWorkDone}")
+
+    }
+
+    private suspend fun getThemeFileName(cloudFileName: String?, localFileName: String?): String? {
+        return if (cloudFileName != null) {
+            saveThemeImage(cloudFileName)
+        } else {
+            saveThemeImageServer(localFileName)
+        }
+    }
 
     suspend fun updateAccountData(data: AccountSetupResponse) {
         accountDataStore.updateData { currentPreferences ->
@@ -171,219 +400,80 @@ class UpdateDataStore @Inject constructor(
         }
     }
 
-    suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
-
-        Log.e(TAG, "updateHSData: Downloading HS Images  ${Constants.isWorkDone}" )
-        deleteHSFolder()
-        val servicesList = mutableListOf<Services>()
-        val resp = async(Dispatchers.IO) {
-            data.servicesList.forEach { services ->
-                val serv = mutableListOf<Service>()
-                services.serviceList.forEach { service ->
-                    val list = mutableListOf<String>()
-                    val newList = mutableListOf<String>()
-
-                    val deferredImages = service.serviceImageListCloud.map { imageUrl ->
-                        async(Dispatchers.IO) {
-                            try {
-                                saveHSImage(imageUrl)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to save image: ${e.message}")
-                                null
-                            }
-                        }
-                    }
-
-                    list.addAll(deferredImages.awaitAll().filterNotNull())
-
-                    val newImages = service.serviceImageListNewCloud.map { imageUrl ->
-                        async(Dispatchers.IO) {
-                            try {
-                                saveHSImage(imageUrl)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to save image: ${e.message}")
-                                null
-                            }
-                        }
-                    }
-
-                    newList.addAll(newImages.awaitAll().filterNotNull())
-
-                    val updatedService = service.copy(
-                        serviceImageListCloud = list.toImmutableList(),
-                        serviceImageListNewCloud = newList.toImmutableList()
-                    )
-                    serv.add(updatedService)
-                }
-                val updatedServices = services.copy(
-                    serviceList = serv.toImmutableList()
-                )
-                servicesList.add(updatedServices)
-            }
-
-        }
-
-        val res = awaitAll(resp)
-        Log.e(TAG, "updateHSData: ${res.isNotEmpty()}")
-        if (res.isNotEmpty()) {
-            try {
-                hotelServiceDataStore.updateData { currentPreferences ->
-                    currentPreferences.copy(
-                        id = data.id,
-                        servicesList = servicesList.toImmutableList(),
-                        type = data.type,
-                        version = data.version
-                    )
-                }
-                if (Constants.isWorkDone == 2)Constants.isWorkDone=3
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to update DataStore: ${e.message}")
-            }
-        }
-        Log.e(TAG, "updateHSData: Downloading HS Images Done  ${Constants.isWorkDone}", )
-    }
-
-    suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
-        /*localAttractionDataStore.updateData { currentPreferences ->
+    fun updateChannelListData(data: ChannelListResponse) = CoroutineScope(Dispatchers.IO).launch {
+        channelListDataStore.updateData { currentPreferences ->
             currentPreferences.copy(
                 id = data.id,
-                servicesList = data.servicesList,
+                channelLcnList = data.channelLcnList,
+                type = data.type,
+            )
+        }
+    }
+
+    fun updateMoviesData(data: MoviesResponse) = CoroutineScope(Dispatchers.IO).launch {
+        moviesDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                accountId = data.accountId,
+                adultDayPassPrice = data.adultDayPassPrice,
+                freeGenreList = data.freeGenreList,
+                freeContentList = data.freeContentList,
+                premiumContentList = data.premiumContentList,
+                premiumGenreList = data.premiumGenreList,
+                id = data.id,
                 type = data.type,
                 version = data.version
             )
-        }*/
-
-        Log.e(TAG, "updateLAData: Downloading LA Images  ${Constants.isWorkDone}" )
-        deleteLAFolder()
-        val servicesList = mutableListOf<LAServices>()
-        val resp = async(Dispatchers.IO) {
-            data.servicesList.forEach { services ->
-                val serv = mutableListOf<LAService>()
-                services.serviceList.forEach { service ->
-                    val list = mutableListOf<String>()
-                    val newList = mutableListOf<String>()
-                    val deferredImages = service.serviceImageListCloud.map { imageUrl ->
-                        async(Dispatchers.IO) {
-                            try {
-                                saveLAImage(imageUrl)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to save image: ${e.message}")
-                                null
-                            }
-                        }
-                    }
-
-                    list.addAll(deferredImages.awaitAll().filterNotNull())
-
-                    val newImages = service.serviceImageListNewCloud.map { imageUrl ->
-                        async(Dispatchers.IO) {
-                            try {
-                                saveLAImage(imageUrl)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to save image: ${e.message}")
-                                null
-                            }
-                        }
-                    }
-
-                    newList.addAll(newImages.awaitAll().filterNotNull())
-
-                    val imagePathPosterCloud = saveLAImage(service.imagePathPosterCloud)
-                    val imagePathPosterNewCloud = saveLAImage(service.imagePathPosterNewCloud)
-                    val imagePathSushiCloud = saveLAImage(service.imagePathSushiCloud)
-
-                    val updatedService = service.copy(
-                        imagePathPosterCloud = imagePathPosterCloud,
-                        imagePathPosterNewCloud = imagePathPosterNewCloud,
-                        imagePathSushiCloud = imagePathSushiCloud,
-                        serviceImageListCloud = list.toImmutableList(),
-                        serviceImageListNewCloud = newList.toImmutableList()
-                    )
-                    serv.add(updatedService)
-                }
-                val updatedServices = services.copy(
-                    serviceList = serv.toImmutableList()
-                )
-                servicesList.add(updatedServices)
-            }
         }
-
-        val res = awaitAll(resp)
-        Log.e(TAG, "updateLAData: ${res.isNotEmpty()}")
-        if (res.isNotEmpty()) {
-            try {
-                localAttractionDataStore.updateData { currentPreferences ->
-                    currentPreferences.copy(
-                        id = data.id,
-                        servicesList = servicesList.toImmutableList(),
-                        type = data.type,
-                        version = data.version
-                    )
-                }
-                if (Constants.isWorkDone == 1)Constants.isWorkDone=2
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to update DataStore: ${e.message}")
-            }
-        }
-        Log.e(TAG, "updateLAData: Downloading LA Images Done  ${Constants.isWorkDone}", )
     }
 
-    suspend fun updateThemeData(data: ThemeResponse) = coroutineScope {
-        Log.e(TAG, "updateThemeData: Downloading Theme Images   $${Constants.isWorkDone}" )
-        try {
-            deleteThemeFolder()
-            val themeBackgroundFileName = async {
-                getThemeFileName(
-                    data.themeBackgroundFileNameCloud,
-                    data.themeBackgroundFileName
-                )
-            }
-            val themeLogoFileName = async {
-                getThemeFileName(
-                    data.themeLogoFileNameCloud,
-                    data.themeLogoFileName
-                )
-            }
-
-            val result = awaitAll(
-                themeBackgroundFileName, themeLogoFileName
+    fun updateTickerData(data: TickerResponse) = CoroutineScope(Dispatchers.IO).launch {
+        tickerDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                id = data.id,
+                tvTickerList = data.tvTickerList,
+                type = data.type,
+                version = data.version
             )
-            if (result[0] != null && result[1] != null) {
-                themeDataStore.updateData { currentPreferences ->
-                    currentPreferences.copy(
-                        accountId = data.accountId,
-                        spotLightColor = data.spotLightColor,
-                        fontCss = data.fontCss,
-                        gradientColor = data.gradientColor,
-                        themeBackgroundFileName = result[0],
-                        themeLogoFileName = result[1],
-                        id = data.id,
-                        themeBgFileName = data.themeBgFileName,
-                        themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
-                        themeCss = data.themeCss,
-                        themeBgFileNameCloud = data.themeBgFileNameCloud,
-                        themeLogoFileNameCloud = data.themeLogoFileNameCloud,
-                        type = data.type,
-                        version = data.version
-                    )
-                }
-                if (Constants.isWorkDone == 0)Constants.isWorkDone=1
-            } else {
-
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to update DataStore: ${e.message}")
-        }
-        Log.e(TAG, "updateThemeData: Downloading Theme Images Done  ${Constants.isWorkDone}" )
-
-    }
-
-    private suspend fun getThemeFileName(cloudFileName: String?, localFileName: String?): String? {
-        return if (cloudFileName != null) {
-            saveThemeImage(cloudFileName)
-        } else {
-            saveThemeImageServer(localFileName)
         }
     }
+
+    fun updateShowTimeData(data: ShowTimeResponse) = CoroutineScope(Dispatchers.IO).launch {
+        showTimeDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                accountId = data.accountId,
+                id = data.id,
+                shoContentList = data.shoContentList,
+                shoGenreList = data.shoGenreList,
+                type = data.type,
+                version = data.version
+            )
+        }
+    }
+
+    fun updateGuestData(data: CmdDataDto) = CoroutineScope(Dispatchers.IO).launch {
+        guestDetailsDatastore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                sessionId = data.sessionId,
+                parentSessionId = data.parentSessionId,
+                adultContentDisabled = data.adultContentDisabled,
+                message = data.message,
+                guestFirstName = data.guestFirstName,
+                guestLastName = data.guestLastName,
+                adultLocked = data.adultLocked,
+                passcode = data.passcode
+            )
+        }
+    }
+
+    fun updateGuestMessageData(data: MessageResponse) = CoroutineScope(Dispatchers.IO).launch {
+        guestMessageDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                id = data.id,
+                messagesList = data.messagesList,
+                type = data.type,
+            )
+        }
+    }
+
 
 }

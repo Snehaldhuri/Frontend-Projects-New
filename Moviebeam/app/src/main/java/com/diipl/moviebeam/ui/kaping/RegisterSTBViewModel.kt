@@ -49,10 +49,7 @@ class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: 
         isStbRegistered: Boolean,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IS_STB_REGISTERED,
-                isStbRegistered
-            )
+            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.IS_STB_REGISTERED, isStbRegistered)
         }
     }
 

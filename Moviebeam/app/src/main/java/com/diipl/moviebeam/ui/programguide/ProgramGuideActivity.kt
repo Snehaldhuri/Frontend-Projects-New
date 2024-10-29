@@ -42,6 +42,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.service.remote.BTService
 import com.diipl.moviebeam.service.remote.IIrService
 import com.diipl.moviebeam.service.remote.UsbIrService
@@ -120,6 +121,9 @@ class ProgramGuideActivity : BaseActivity() {
 
     @Inject
     lateinit var preferences: SharedPreference
+
+    @Inject
+    lateinit var preferenceHandler: PreferenceHandler
 
     @Inject
     lateinit var channelListDataStore: DataStore<ChannelListResponse>
@@ -774,7 +778,7 @@ class ProgramGuideActivity : BaseActivity() {
                     SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
                 status.data?.let {
                     if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
-                        updateEpgStAndEt(it.ST, it.ET)
+                        preferenceHandler.updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
                         val channelList =
                             programGuideViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()
@@ -1073,23 +1077,6 @@ class ProgramGuideActivity : BaseActivity() {
             startActivity(intent)
         } else {
             showToast("Not Available")
-        }
-    }
-
-    private fun updateEpgStAndEt(epgStartTime: String?, epgEndTime: String?) {
-        lifecycleScope.launch {
-            epgStartTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
-                    it
-                )
-            }
-            epgEndTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
-                    it
-                )
-            }
         }
     }
 

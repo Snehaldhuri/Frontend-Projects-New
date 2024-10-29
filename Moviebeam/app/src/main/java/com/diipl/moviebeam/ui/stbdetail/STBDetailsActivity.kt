@@ -6,7 +6,6 @@ import android.os.IBinder
 import android.os.RemoteException
 import android.util.Log
 import androidx.activity.viewModels
-import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.android.tv.settings.aidl.regular.IDeviceNameConfigureCallback
@@ -29,6 +28,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
 import com.diipl.moviebeam.di.HardwareAPI
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
@@ -53,7 +53,6 @@ import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toInteger
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -75,30 +74,6 @@ class STBDetailsActivity : BaseActivity() {
     private var isEPGServerApiCalled = false
 
     @Inject
-    lateinit var themeDataStore: DataStore<ThemeResponse>
-
-    @Inject
-    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
-
-    @Inject
-    lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
-
-    @Inject
-    lateinit var localAttractionDataStore: DataStore<LocalAttractionResponse>
-
-    @Inject
-    lateinit var channelListDataStore: DataStore<ChannelListResponse>
-
-    @Inject
-    lateinit var tickerDataStore: DataStore<TickerResponse>
-
-    @Inject
-    lateinit var moviesDataStore: DataStore<MoviesResponse>
-
-    @Inject
-    lateinit var showTimeDataStore: DataStore<ShowTimeResponse>
-
-    @Inject
     lateinit var roomRepository: RoomRepository
 
     @Inject
@@ -106,6 +81,9 @@ class STBDetailsActivity : BaseActivity() {
 
     @Inject
     lateinit var hardwareAPI: HardwareAPI
+
+    @Inject
+    lateinit var preferenceHandler: PreferenceHandler
 
     //Variables from datastore
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
@@ -207,7 +185,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.themeLiveData.value?.data?.let {
                     stbDetailViewModel.setThemeResponseData(it)
-                    updateDatastoreVariables(
+                    preferenceHandler.updateDatastoreVariables(
                         gradientStartColor = it.gradientColor,
                         gradientEndColor = it.spotLightColor
                     )
@@ -249,29 +227,8 @@ class STBDetailsActivity : BaseActivity() {
                             }
                         )
                     }
-                    CoroutineScope(Dispatchers.Main).launch {
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-                            it.accountId
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
-                            it.roomNo
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
-                            it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.CASTING_URL_KEY,
-                            it.stbCastingPageUrl
-                        )
-                        if (it.contentDetailFlag)
-                            preferenceDataStoreHelper.putPreference(
-                                PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
-                                it.httpStreamingHotelvideoUrl + it.hotelChannelList[0].fileName
-                            )
-                    }
+                    preferenceHandler.updateAccountData(it)
+
                     scheduleClearCredentialsTask(it.checkOutTime)
                     stbDetailViewModel.fetchHotelService(it.accountId)
                 }
@@ -330,8 +287,8 @@ class STBDetailsActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 stbDetailViewModel.channelListLiveData.value?.data?.let {
-                    stbDetailViewModel.setChannelListResponseData(channelListDataStore, it)
-                    updateDatastoreVariables(channelCount = it.channelLcnList.size)
+                    stbDetailViewModel.setChannelListResponseData(it)
+                    preferenceHandler.updateDatastoreVariables(channelCount = it.channelLcnList.size)
                 }
                 logD("Channel List Api call success")
             }
@@ -357,7 +314,7 @@ class STBDetailsActivity : BaseActivity() {
                 status.data?.let {
                     if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
                         logD("Valid EPG data found EPG Start time: ${it.ST} & EPG End time: ${it.ET}")
-                        updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
+                        preferenceHandler.updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
                         val channelList =
                             stbDetailViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()
@@ -566,11 +523,11 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 stbDetailViewModel.moviesLiveData.value?.data?.let {
-                    updateDatastoreVariables(
+                    preferenceHandler.updateDatastoreVariables(
                         moviesCount = it.freeContentList.size.plus(it.premiumContentList.size),
                         cListVersion = it.version
                     )
-                    stbDetailViewModel.setMoviesResponseData(moviesDataStore, it)
+                    stbDetailViewModel.setMoviesResponseData(it)
                 }
                 logD("Movies Api call success")
             }
@@ -607,7 +564,7 @@ class STBDetailsActivity : BaseActivity() {
                             }
                         }
                     }
-                    stbDetailViewModel.setTickerResponseData(tickerDataStore, it)
+                    stbDetailViewModel.setTickerResponseData(it)
                     it.tvTickerList?.forEach { msg ->
                         applicationContext.scheduleMsgEndTask(msg)
                     }
@@ -627,8 +584,8 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Loading -> {}
             is Resource.Success -> {
                 status.data?.let {
-                    updateDatastoreVariables(showsCount = it.shoContentList.size)
-                    stbDetailViewModel.setShowTimeResponseData(showTimeDataStore, it)
+                    preferenceHandler.updateDatastoreVariables(showsCount = it.shoContentList.size)
+                    stbDetailViewModel.setShowTimeResponseData(it)
                 }
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {
                     stbDetailViewModel.fetchEpgData(it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
@@ -678,68 +635,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {}
-
-    private fun updateDatastoreVariables(
-        moviesCount: Int? = null,
-        showsCount: Int? = null,
-        cListVersion: String? = null,
-        gradientStartColor: String? = null,
-        gradientEndColor: String? = null,
-        channelCount: Int? = null,
-        epgStartTime: String? = null,
-        epgEndTime: String? = null
-    ) {
-        lifecycleScope.launch {
-            moviesCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
-                    it
-                )
-            }
-            showsCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.SHOWS_COUNT_KEY,
-                    it
-                )
-            }
-            cListVersion?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
-                    it
-                )
-            }
-            gradientStartColor?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-                    it
-                )
-            }
-            gradientEndColor?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-                    it
-                )
-            }
-            channelCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.CHANNEL_COUNT_KEY,
-                    it
-                )
-            }
-            epgStartTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
-                    it
-                )
-            }
-            epgEndTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
-                    it
-                )
-            }
-        }
-    }
 
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {

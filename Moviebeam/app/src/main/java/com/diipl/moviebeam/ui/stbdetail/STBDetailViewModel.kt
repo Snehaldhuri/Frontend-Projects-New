@@ -1,7 +1,6 @@
 package com.diipl.moviebeam.ui.stbdetail
 
 import android.content.Context
-import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -41,7 +40,7 @@ class STBDetailViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val updateDataStore: UpdateDataStore,
     private val networkUtils: NetworkUtils,
-    private val movieBeamRepository: MovieBeamRepository
+    private val movieBeamRepository: MovieBeamRepository,
 ) : ViewModel() {
 
     //Variables from datastore
@@ -142,7 +141,7 @@ class STBDetailViewModel @Inject constructor(
         }
     }
 
-    private fun fetchAllApi(cmd: String, ua: String, mode: String, accountId: String) {
+    private fun fetchAllApi(cmd: String, ua: String, mode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val weatherApiResponse = async { movieBeamRepository.getWeatherData(ua) }
             val themeApiResponse = async { movieBeamRepository.getThemeDetails(ua) }
@@ -230,42 +229,24 @@ class STBDetailViewModel @Inject constructor(
 //                .collect {
 //                    _serialNoLiveData.postValue(it)
 //                }
-            preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SERIAL_NO, "").let {
-                _serialNoLiveData.postValue(it)
-            }
+            preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SERIAL_NO, "")
+                .let {
+                    _serialNoLiveData.postValue(it)
+                }
         }
     }
 
     fun setThemeResponseData(
-        data: ThemeResponse
+        data: ThemeResponse,
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            /*dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    accountId = data.accountId,
-                    fontCss = data.fontCss,
-                    gradientColor = data.gradientColor,
-                    id = data.id,
-                    spotLightColor = data.spotLightColor,
-                    themeBackgroundFileName = data.themeBackgroundFileName,
-                    themeLogoFileNameCloud = data.themeLogoFileNameCloud,
-                    themeBgFileName = data.themeBgFileName,
-                    themeBgFileNameCloud = data.themeBgFileNameCloud,
-                    themeCss = data.themeCss,
-                    type = data.type,
-                    version = data.version,
-                    themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
-                    themeLogoFileName = data.themeLogoFileName
-                )
-
-            }*/
             updateDataStore.updateThemeData(data)
         }
     }
 
     fun setWeatherResponseData(
-        data: WeatherResponse
+        data: WeatherResponse,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             updateDataStore.updateWeatherData(data)
@@ -279,7 +260,7 @@ class STBDetailViewModel @Inject constructor(
     }
 
     fun setHotelServicesResponseData(
-        data: HotelServiceResponse
+        data: HotelServiceResponse,
     ) {
         var run = true
         viewModelScope.launch(Dispatchers.IO) {
@@ -294,7 +275,7 @@ class STBDetailViewModel @Inject constructor(
     }
 
     fun setLocalAttractionResponseData(
-        data: LocalAttractionResponse
+        data: LocalAttractionResponse,
     ) {
         var run = true
         viewModelScope.launch(Dispatchers.IO) {
@@ -309,74 +290,27 @@ class STBDetailViewModel @Inject constructor(
     }
 
     fun setChannelListResponseData(
-        dataStore: DataStore<ChannelListResponse>,
-        data: ChannelListResponse
+        data: ChannelListResponse,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    channelLcnList = data.channelLcnList,
-                    type = data.type,
-                )
-            }
-        }
-
+        updateDataStore.updateChannelListData(data)
     }
 
     fun setMoviesResponseData(
-        dataStore: DataStore<MoviesResponse>,
-        data: MoviesResponse
+        data: MoviesResponse,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    accountId = data.accountId,
-                    adultDayPassPrice = data.adultDayPassPrice,
-                    freeGenreList = data.freeGenreList,
-                    freeContentList = data.freeContentList,
-                    premiumContentList = data.premiumContentList,
-                    premiumGenreList = data.premiumGenreList,
-                    id = data.id,
-                    type = data.type,
-                    version = data.version
-                )
-            }
-        }
+        updateDataStore.updateMoviesData(data)
     }
 
     fun setTickerResponseData(
-        dataStore: DataStore<TickerResponse>,
-        data: TickerResponse
+        data: TickerResponse,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    tvTickerList = data.tvTickerList,
-                    type = data.type,
-                    version = data.version
-                )
-            }
-        }
+        updateDataStore.updateTickerData(data)
     }
 
     fun setShowTimeResponseData(
-        dataStore: DataStore<ShowTimeResponse>,
-        data: ShowTimeResponse
+        data: ShowTimeResponse,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    accountId = data.accountId,
-                    id = data.id,
-                    shoContentList = data.shoContentList,
-                    shoGenreList = data.shoGenreList,
-                    type = data.type,
-                    version = data.version
-                )
-            }
-        }
+        updateDataStore.updateShowTimeData(data)
     }
 
     fun showToastMessage(error: String) {
@@ -392,8 +326,7 @@ class STBDetailViewModel @Inject constructor(
                 fetchAllApi(
                     Constants.ACTIVATE,
                     ua,
-                    Constants.MODE,
-                    accountId
+                    Constants.MODE
                 )
             } else {
                 delay(5000)
