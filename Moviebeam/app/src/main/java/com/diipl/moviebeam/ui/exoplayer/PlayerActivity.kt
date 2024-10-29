@@ -10,7 +10,6 @@ import androidx.databinding.DataBindingUtil
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ActivityPlayerBinding
-import com.diipl.moviebeam.service.udp.UDPPlayer
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
@@ -35,7 +34,7 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
     private val timeHandler = Handler(Looper.getMainLooper())
     private var playerApi: PlayerApi = SeiPlayerImpl<AbstractVideoPlayer>()
 
-    private lateinit var player: UDPPlayer
+    private var isFirst = true
 
     private val changeChannelRunnable = Runnable {
         binding.cardTv.toGone()
@@ -86,16 +85,17 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
         playerApi.setLooping(true)
         playerApi.subTitleViewGroup = binding.frameLayout
 
-        val program = programGuideList[currentPos]
-        val udpUrl = program.setupUrl()
-        playerApi.url = udpUrl
+        /* val program = programGuideList[currentPos]
+         val udpUrl = program.setupUrl()
+         playerApi.url = udpUrl*/
+
+        startPlayback()
 
         setupSurface()
 
     }
 
-    private fun startPlayback(index: Int) {
-        currentPos = index
+    private fun startPlayback() {
         handler.removeCallbacks(changeChannelRunnable)
         timeHandler.removeCallbacks(runnable)
 
@@ -105,7 +105,9 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
         val udpUrl = program.setupUrl()
 
         playerApi.url = udpUrl
-        playerApi.start()
+
+        if (isFirst) isFirst = false
+        else playerApi.start()
 
         Log.e(TAG, "startPlayback: udpUrl ->> ${program.CNO} -- $udpUrl")
 
@@ -116,10 +118,7 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
 
     }
 
-    private fun ChannelEpgDTO.setupUrl(): String {
-        val udpUrl = "udp://@${this.param1}:${this.param2}"
-        return udpUrl
-    }
+    private fun ChannelEpgDTO.setupUrl() = "udp://@${this.param1}:${this.param2}"
 
     fun setupSurface() {
         binding.surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
@@ -185,7 +184,7 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
         if (currentPos == programGuideList.count())
             currentPos = 0
 
-        startPlayback(currentPos)
+        startPlayback()
     }
 
     private fun channelDown() {
@@ -195,20 +194,20 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
         if (currentPos < 0)
             currentPos = programGuideList.count() - 1
 
-        startPlayback(currentPos)
+        startPlayback()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_LEFT -> {
-                seekBackward(30)
-            }
+            /* KeyEvent.KEYCODE_DPAD_LEFT -> {
+                 seekBackward(30)
+             }
 
-            KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                seekForward(30)
-            }
+             KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                 seekForward(30)
+             }
 
-            KeyEvent.KEYCODE_DPAD_CENTER -> playPause()
+             KeyEvent.KEYCODE_DPAD_CENTER -> playPause()*/
 
             KeyEvent.KEYCODE_CHANNEL_DOWN,
             KeyEvent.KEYCODE_DPAD_DOWN,
@@ -276,14 +275,16 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
             ConstantKeys.CurrentState.STATE_START_ABORT -> state = "START_ABORT"
         }
         //binding.tvNumber.text = state
-        Log.e(TAG, "onPlayStateChanged: $state")
-
-        if (i == -1) {
+        Log.e(TAG, "onPlayStateChanged: $state  ${playerApi.isPlaying}")
+        binding.progressBar.toVisible()
+        if (i == ConstantKeys.CurrentState.STATE_ERROR) {
+            binding.progressBar.toGone()
             binding.cardError.toVisible()
             binding.tvError.text = "Unable to tune, please try later..."
         } else {
             binding.cardError.toGone()
             binding.tvError.text = ""
+            if (i == ConstantKeys.CurrentState.STATE_PLAYING) binding.progressBar.toGone()
         }
 
     }
