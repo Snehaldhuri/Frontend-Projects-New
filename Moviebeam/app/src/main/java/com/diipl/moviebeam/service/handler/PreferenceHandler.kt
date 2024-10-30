@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.service
+package com.diipl.moviebeam.service.handler
 
 import android.content.Context
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -55,10 +55,14 @@ class PreferenceHandler(val context: Context) {
         UA = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.UA, "")
         ipAddress = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IP_ADDRESS_KEY, CONSTANT_IP)
         hotelVideoUrl = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY, "")
-        gradientStartColor = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-            Constants.DEFAULTGRADIENTSTARTCOLOR)
-        gradientEndColor = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-            Constants.DEFAULTGRADIENTENDCOLOR)
+        gradientStartColor = preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+            Constants.DEFAULTGRADIENTSTARTCOLOR
+        )
+        gradientEndColor = preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+            Constants.DEFAULTGRADIENTENDCOLOR
+        )
         castingUrl = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CASTING_URL_KEY, "")
         epgCDNUrl = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.EPG_CDN_URL_KEY, "")
         epgStartTime = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.EPG_START_TIME_KEY, "")
@@ -197,7 +201,7 @@ class PreferenceHandler(val context: Context) {
 
             appList?.let {
                 preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.APP_LIST_KEY,
+                    PreferenceDataStoreConstants.APP_LIST_KEY,
                 it)
             }
 
@@ -227,31 +231,5 @@ class PreferenceHandler(val context: Context) {
             }
         }
     }
-
-
-   /* fun getAllPreferences() = CoroutineScope(Dispatchers.IO).launch {
-        preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.ACCOUNT_ID_KEY, "").collect {
-            _accountID.postValue(it)
-        }
-        preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.STB_ROOM_NO_KEY, "").collect {
-            _roomNo.postValue(it)
-        }
-        preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.SERIAL_NO, "").collect {
-            _serialNo.postValue(it)
-        }
-        preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.UA, "").collect {
-            _UA.postValue(it)
-        }
-        preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.IP_ADDRESS_KEY, CONSTANT_IP).collect {
-            _ipAddress.postValue(it)
-        }
-        preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.NETWORK_STATUS, false).collect {
-            _networkStatus.postValue(it)
-        }
-        preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.MOVIES_COUNT_KEY, 0).let {
-            _movieCount.postValue(it)
-        }
-    }*/
-
 
 }

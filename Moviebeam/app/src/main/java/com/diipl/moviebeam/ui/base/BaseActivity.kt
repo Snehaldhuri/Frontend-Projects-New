@@ -20,7 +20,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.Buttons
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
-import com.diipl.moviebeam.service.PreferenceHandler
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.casting.HotspotActivity

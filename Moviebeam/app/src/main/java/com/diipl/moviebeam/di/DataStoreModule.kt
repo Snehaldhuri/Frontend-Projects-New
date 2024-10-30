@@ -19,7 +19,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
-import com.diipl.moviebeam.service.PreferenceHandler
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

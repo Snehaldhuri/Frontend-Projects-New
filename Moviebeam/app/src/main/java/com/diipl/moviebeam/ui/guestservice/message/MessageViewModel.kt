@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
-import com.diipl.moviebeam.service.PreferenceHandler
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.SingleEvent
