@@ -22,6 +22,7 @@ import com.diipl.moviebeam.databinding.ActivityLiveTvactivityBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
+import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
@@ -51,7 +52,7 @@ class LiveTVActivity : BaseActivity() {
         val program = programGuideList[currentPos]
 
         if (DEVICE_MODEL == Constants.SEI_MB730) {
-            if (!program.param1.isNullOrEmpty()) {
+            if (program.param1.isNotEmptyOrNull()) {
                 val majorNumber = program.param1?.toInt()!!
                 val minorNumber = program.param2?.toInt()!!
                 val bundle = Bundle().apply {
@@ -288,6 +289,7 @@ class LiveTVActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mChannelList.clear()
         programGuideList.clear()
     }
 

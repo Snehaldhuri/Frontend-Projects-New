@@ -19,7 +19,6 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
 import com.diipl.moviebeam.di.HardwareAPI
@@ -71,7 +70,7 @@ class WeatherDateTimeFragment : Fragment() {
     lateinit var preferences: SharedPreference
 
     @Inject
-    lateinit var hardwareAPI:HardwareAPI
+    lateinit var hardwareAPI: HardwareAPI
 
     @Inject
     lateinit var preferenceHandler: PreferenceHandler
@@ -80,11 +79,12 @@ class WeatherDateTimeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = ViewWeatherTimeDateRowBinding.inflate(inflater, container, false)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
+
         initializeDatastoreParams()
 
         if (preferences.irFrequencyModel == null)
@@ -151,13 +151,16 @@ class WeatherDateTimeFragment : Fragment() {
             is Resource.Success -> {
                 status.data?.let {
                     CoroutineScope(Dispatchers.Default).launch {
-                        if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
+                        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB) {
                             hardwareAPI.myService?.setDeviceName(
                                 "MBAP_${it.accountId}_${it.roomNo}",
                                 object : IDeviceNameConfigureCallback {
                                     @Throws(RemoteException::class)
                                     override fun onDeviceNameConfigureCallback(s: String) {
-                                        Log.e("TAG", "onDeviceNameConfigureCallback: setDeviceName $s")
+                                        Log.e(
+                                            "TAG",
+                                            "onDeviceNameConfigureCallback: setDeviceName $s"
+                                        )
                                     }
 
                                     override fun asBinder(): IBinder? {
@@ -247,24 +250,9 @@ class WeatherDateTimeFragment : Fragment() {
     }
 
     private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            GuestDetails.IS_GUEST_CHECKED_IN = getSession()
-            GuestDetails.SESSION_ID = getSessionId()
-        }
+        GuestDetails.IS_GUEST_CHECKED_IN = preferenceHandler.isGuestCheckedIn
+        GuestDetails.SESSION_ID = preferenceHandler.sessionId
     }
 
-    private suspend fun getSession(): Boolean {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY,
-            false
-        )
-    }
-
-    private suspend fun getSessionId(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.SESSION_ID_KEY,
-            ""
-        )
-    }
 
 }

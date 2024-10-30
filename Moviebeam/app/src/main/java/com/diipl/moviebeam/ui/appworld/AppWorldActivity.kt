@@ -20,11 +20,9 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.databinding.PopupLayoutBinding
-import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
@@ -56,9 +54,6 @@ class AppWorldActivity : BaseActivity() {
     private var stbRoomNo = ""
     private var ua = ""
     private var appList = ArrayList<String>()
-
-    @Inject
-    lateinit var preferenceHandler: PreferenceHandler
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -227,24 +222,8 @@ class AppWorldActivity : BaseActivity() {
     }
 
     private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            stbRoomNo = getStbRoomNo()
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getStbRoomNo(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
+            stbRoomNo = preferenceHandler.roomNo
+            ua = preferenceHandler.UA
     }
 
     fun handleBackClick() {

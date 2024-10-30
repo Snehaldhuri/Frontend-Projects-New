@@ -41,8 +41,6 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.ClearCredentialsReceiver
 import com.diipl.moviebeam.service.EpgWorker
@@ -233,20 +231,6 @@ fun View.handleFocusChange() {
             setBackgroundResource(R.drawable.btn_bg_gradient_default)
         }
     }
-}
-
-private suspend fun getGradientStartColor(preferenceDataStoreHelper: PreferenceDataStoreHelper): String {
-    return preferenceDataStoreHelper.getFirstPreference(
-        PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-        Constants.DEFAULTGRADIENTSTARTCOLOR
-    )
-}
-
-private suspend fun getGradientEndColor(preferenceDataStoreHelper: PreferenceDataStoreHelper): String {
-    return preferenceDataStoreHelper.getFirstPreference(
-        PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-        Constants.DEFAULTGRADIENTENDCOLOR
-    )
 }
 
 fun RecyclerView.setItemFocused() {

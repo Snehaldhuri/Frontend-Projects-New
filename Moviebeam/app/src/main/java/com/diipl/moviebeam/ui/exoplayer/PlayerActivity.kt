@@ -17,7 +17,6 @@ import com.nes.libplayerapi.PlayerApi
 import com.nes.libplayerapi.bean.TrackBean
 import com.nes.libplayerapi.constant.ConstantKeys
 import com.nes.libplayerapi.listener.OnFingerPrintListener
-import com.nes.libplayerapi.listener.OnVideoSizeListener
 import com.nes.libplayerapi.listener.OnVideoStateListener
 import com.nes.libseiplayer.AbstractVideoPlayer
 import com.nes.libseiplayer.SeiPlayerImpl
@@ -81,13 +80,9 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
 
         currentPos = intent.getIntExtra("currentPos", 0)
 
-        playerApi.init(context)
+        playerApi.init(this)
         playerApi.setLooping(true)
         playerApi.subTitleViewGroup = binding.frameLayout
-
-        /* val program = programGuideList[currentPos]
-         val udpUrl = program.setupUrl()
-         playerApi.url = udpUrl*/
 
         startPlayback()
 
@@ -167,14 +162,18 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
             override fun onNagraFingerPrintEvent(mFingerPrint: String) {}
         })
         playerApi.addOnStateChangeListener(this)
-        playerApi.addOnVideoSizeChangeListeners(OnVideoSizeListener { i, i1 -> })
+        playerApi.addOnVideoSizeChangeListeners { i, i1 -> }
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
         playerApi.stop()
-        programGuideList.clear()
         finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        programGuideList.clear()
     }
 
     private fun channelUp() {

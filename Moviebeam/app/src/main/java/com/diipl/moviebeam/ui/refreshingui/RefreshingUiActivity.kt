@@ -26,12 +26,9 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.di.HardwareAPI
-import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
@@ -74,7 +71,6 @@ class RefreshingUiActivity : BaseActivity() {
     private var kapingResponse: KapingResponse? = null
 
     //Variables from datastore
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private var accountId = ""
     private var epgCdnUrl = ""
     private var ua = ""
@@ -85,9 +81,6 @@ class RefreshingUiActivity : BaseActivity() {
     private val workManager: WorkManager by lazy { WorkManager.getInstance(applicationContext) }
 
     private var isEPGServerApiCalled = false
-
-    @Inject
-    lateinit var preferenceHandler: PreferenceHandler
 
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
@@ -118,7 +111,6 @@ class RefreshingUiActivity : BaseActivity() {
         binding = ActivityRefreshingUiBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         this.initializeDatastoreParams()
 
         val data = intent.getStringExtra("response")
@@ -712,41 +704,13 @@ class RefreshingUiActivity : BaseActivity() {
         startActivity(i)
     }
 
-    private fun initializeDatastoreParams() {
+    private fun initializeDatastoreParams() =
         lifecycleScope.launch {
-            accountId = getAccountId()
-            epgCdnUrl = getEpgCdUrl()
-            ua = getUa()
-            appList = ArrayList(getAppList())
-        }
-    }
+            accountId = preferenceHandler.accountID
+            epgCdnUrl = preferenceHandler.epgCDNUrl
+            ua = preferenceHandler.UA
+            appList = preferenceHandler.appList
 
-    private suspend fun getAccountId(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getEpgCdUrl(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
-
-    private suspend fun getAppList(): Set<String> {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.APP_LIST_KEY,
-            emptySet()
-        )
     }
 
 }

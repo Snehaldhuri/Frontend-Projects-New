@@ -17,11 +17,9 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.service.LoggingService
-import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
@@ -68,9 +66,6 @@ class MoviesActivity : BaseActivity() {
 
     @Inject
     lateinit var preference: SharedPreference
-
-    @Inject
-    lateinit var preferenceHandler: PreferenceHandler
 
     private var selectedView: View? = null
     private var itemView: View? = null
@@ -182,10 +177,7 @@ class MoviesActivity : BaseActivity() {
         binding.dialogContainer.toGone()
 
         lifecycleScope.launch {
-            val isFree = preferenceDataStoreHelper.getFirstPreference(
-                PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS,
-                false
-            )
+            val isFree = preferenceHandler.isAdultDayPass
             if (isFree && activityStack.contains(C_TYPE_MOVIE)) {
                 if (preference.isAdultPassCodeEmpty)
                     setAdultData(adultResponse)

@@ -20,40 +20,68 @@ class PreferenceHandler(val context: Context) {
 
     private val CONSTANT_IP = "0.0.0.0"
 
-    /*private var _accountID = MutableLiveData<String>()
-    private var _roomNo = MutableLiveData<String>()
-    private var _serialNo = MutableLiveData<String>()
-    private var _UA = MutableLiveData<String>()
-    private var _ipAddress = MutableLiveData<String>()
-    private var _networkStatus = MutableLiveData<Boolean>()
-    private var _movieCount = MutableLiveData<Int>()
-    val accountID: LiveData<String> get() = _accountID
-    val roomNo: LiveData<String> get() = _roomNo
-    val serialNo: LiveData<String> get() = _serialNo
-    val UA: LiveData<String> get() = _UA
-    val ipAddress: LiveData<String> get() = _ipAddress
-    val networkStatus: LiveData<Boolean> get() = _networkStatus
-    private var _movieCount = MutableLiveData<Int>()
-    val movieCount : LiveData<Int> get() = _movieCount*/
-
     var accountID = ""
     var roomNo = ""
     var serialNo = ""
     var UA = ""
     var ipAddress = ""
+    var hotelVideoUrl = ""
+    var gradientStartColor = ""
+    var gradientEndColor = ""
+    var castingUrl = ""
+    var epgCDNUrl = ""
+    var epgStartTime = ""
+    var epgEndTime = ""
+    var netMask = ""
+    var gatewayIP = ""
+    var sessionId = ""
+    var cListVersion = ""
+    var connectivity = ""
+
     var networkStatus = true
+    var isGuestCheckedIn = true
+    var isAdultDayPass = true
+
     var movieCount = 0
+    var showsCount = 0
+    var channelCount = 0
 
-    var testString = ""
+    var appList = ArrayList<String>()
 
-    fun getString() = CoroutineScope(Dispatchers.IO).launch {
+    fun loadAllData() = CoroutineScope(Dispatchers.IO).launch {
         accountID = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.ACCOUNT_ID_KEY, "")
         roomNo = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.STB_ROOM_NO_KEY, "")
         serialNo = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SERIAL_NO, "0")
         UA = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.UA, "")
-        ipAddress = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IP_ADDRESS_KEY, "")
+        ipAddress = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IP_ADDRESS_KEY, CONSTANT_IP)
+        hotelVideoUrl = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY, "")
+        gradientStartColor = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
+            Constants.DEFAULTGRADIENTSTARTCOLOR)
+        gradientEndColor = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
+            Constants.DEFAULTGRADIENTENDCOLOR)
+        castingUrl = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CASTING_URL_KEY, "")
+        epgCDNUrl = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.EPG_CDN_URL_KEY, "")
+        epgStartTime = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.EPG_START_TIME_KEY, "")
+        epgEndTime = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.EPG_END_TIME_KEY, "")
+        netMask = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IP_NET_MASK_KEY, CONSTANT_IP)
+        gatewayIP = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IP_GATEWAY_KEY, CONSTANT_IP)
+        sessionId = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SESSION_ID_KEY, "")
+        cListVersion = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.C_LIST_VERSION_KEY, "")
+        connectivity = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CONNECTIVITY_KEY, "NO INTERNET")
+
         networkStatus = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.NETWORK_STATUS, false)
+        isGuestCheckedIn = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY, false)
+        isAdultDayPass = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS, false)
+
         movieCount = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.MOVIES_COUNT_KEY, 0)
+        channelCount = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CHANNEL_COUNT_KEY, 0)
+        showsCount = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SHOWS_COUNT_KEY, 0)
+
+        appList = ArrayList(preferenceDataStoreHelper.getFirstPreference(
+            PreferenceDataStoreConstants.APP_LIST_KEY,
+            emptySet()
+        ))
+
     }
 
     fun updateAccountData(data : AccountSetupResponse){

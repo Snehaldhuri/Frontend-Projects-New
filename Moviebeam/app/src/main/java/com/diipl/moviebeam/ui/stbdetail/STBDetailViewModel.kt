@@ -21,6 +21,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.NETWORK_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SingleEvent
@@ -41,6 +42,7 @@ class STBDetailViewModel @Inject constructor(
     private val updateDataStore: UpdateDataStore,
     private val networkUtils: NetworkUtils,
     private val movieBeamRepository: MovieBeamRepository,
+    private val preferenceHandler: PreferenceHandler,
 ) : ViewModel() {
 
     //Variables from datastore
@@ -222,20 +224,6 @@ class STBDetailViewModel @Inject constructor(
         }
     }
 
-    // Get Response From DataStore
-    fun getDataFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
-        viewModelScope.launch {
-//            preferenceDataStoreHelper.getPreference(PreferenceDataStoreConstants.SERIAL_NO, "")
-//                .collect {
-//                    _serialNoLiveData.postValue(it)
-//                }
-            preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SERIAL_NO, "")
-                .let {
-                    _serialNoLiveData.postValue(it)
-                }
-        }
-    }
-
     fun setThemeResponseData(
         data: ThemeResponse,
     ) {
@@ -335,25 +323,12 @@ class STBDetailViewModel @Inject constructor(
         }
     }
 
-    private fun initializeDatastoreParams() {
-        viewModelScope.launch {
-            accountId = getAccountId()
-            ua = getUa()
-        }
+    private fun initializeDatastoreParams() = viewModelScope.launch {
+        preferenceHandler.loadAllData()
+        delay(200)
+        accountId = preferenceHandler.accountID
+        ua = preferenceHandler.UA
     }
 
-    private suspend fun getAccountId(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
 
 }

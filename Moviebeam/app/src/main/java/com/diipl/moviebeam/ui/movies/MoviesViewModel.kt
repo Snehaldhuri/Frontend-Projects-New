@@ -24,6 +24,7 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.SingleEvent
@@ -31,6 +32,7 @@ import com.diipl.moviebeam.utils.getRentalDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,19 +43,15 @@ private const val TAG = "MoviesViewModel"
 class MoviesViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val movieBeamRepository: MovieBeamRepository,
+    private val preferenceHandler: PreferenceHandler,
     private val roomRepository: RoomRepository
 ) : ViewModel() {
-
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper =
-        PreferenceDataStoreHelper(context)
-    private var ua = ""
 
     private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
     val moviesLiveData: LiveData<Resource<MoviesResponse>> get() = _moviesLiveData
 
     init {
-        initializeDatastoreParams()
+        preferenceHandler.loadAllData()
     }
 
     // Get Response From DataStore
@@ -187,10 +185,12 @@ class MoviesViewModel @Inject constructor(
     val rentalReversal: LiveData<Resource<RentalReversalResponse>> get() = _rentalReversal
     fun setRentalReversal(rentalMovieModel: RentalMovieModel) {
         viewModelScope.launch {
+            preferenceHandler.loadAllData()
+            delay(100)
             if (rentalMovieModel.rentalID != 0) {
                 val request = RentalReversalRequest()
-                request.reversalDetails = rentalMovieModel.getRentalDetails(ua)
-                request.UA = ua
+                request.reversalDetails = rentalMovieModel.getRentalDetails(preferenceHandler.UA)
+                request.UA = preferenceHandler.UA
                 val result = movieBeamRepository.setRentalReversal(request)
                 if (result == null) {
                     _rentalReversal.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Rental Reversal Services Api"))
@@ -231,19 +231,6 @@ class MoviesViewModel @Inject constructor(
                 _purchaseResponse.postValue(Resource.Success(result))
             }
         }
-    }
-
-    private fun initializeDatastoreParams() {
-        viewModelScope.launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
 }

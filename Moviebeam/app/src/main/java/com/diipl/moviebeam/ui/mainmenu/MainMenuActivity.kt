@@ -25,10 +25,8 @@ import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
-import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.service.kappingservice.Actions
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.service.kappingservice.ServiceState
@@ -134,9 +132,6 @@ class MainMenuActivity : BaseActivity() {
             accountSetupDataStore
         )
     }
-
-    @Inject
-    lateinit var preferenceHandler: PreferenceHandler
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
@@ -598,48 +593,11 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-//    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-//        when (keyCode) {
-//            KeyEvent.KEYCODE_BACK -> {}
-//        }
-//        return false
-//    }
-
     private fun initializeDatastoreParams() = lifecycleScope.launch {
-        hotelVideoUrl = getHotelVideoUrl()
-        gradientStartColor = getGradientStartColor()
-        gradientEndColor = getGradientEndColor()
-        castingUrl = getCastingUrl()
-        Log.e(TAG, "initializeDatastoreParams: $castingUrl")
-    }
-
-
-    private suspend fun getHotelVideoUrl(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getGradientStartColor(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-            Constants.DEFAULTGRADIENTSTARTCOLOR
-        )
-    }
-
-    private suspend fun getGradientEndColor(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-            Constants.DEFAULTGRADIENTENDCOLOR
-        )
-    }
-
-    private suspend fun getCastingUrl(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.CASTING_URL_KEY,
-            ""
-        )
+        hotelVideoUrl = preferenceHandler.hotelVideoUrl
+        gradientStartColor = preferenceHandler.gradientStartColor
+        gradientEndColor = preferenceHandler.gradientEndColor
+        castingUrl = preferenceHandler.castingUrl
     }
 
     private fun showPatchWall() = lifecycleScope.launch {

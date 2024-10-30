@@ -14,7 +14,6 @@ import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_FINISH_TIME
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
@@ -44,7 +43,6 @@ class ConfirmRentalActivity : BaseActivity() {
     private val viewModel: MoviesViewModel by viewModels()
     private var isCheckedIn = false
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-    private var ua = ""
     private lateinit var passPrice: String
 
     @Inject
@@ -107,7 +105,7 @@ class ConfirmRentalActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        this.initializeDatastoreParams()
+
         binding.btnConfirm.handleFocusChange()
         binding.btnCancel.handleFocusChange()
         binding.btnBuyNow.handleFocusChange()
@@ -142,7 +140,7 @@ class ConfirmRentalActivity : BaseActivity() {
 
         binding.btnConfirm.setOnClickListener {
             val request = RentalMovieRequest()
-            request.UA = ua
+            request.UA = preferenceHandler.UA
             request.productId = movie.productId
             request.releaseID = movie.releaseId
             request.price = movie.price
@@ -157,9 +155,7 @@ class ConfirmRentalActivity : BaseActivity() {
         binding.btnBuyNow.setOnClickListener {
             val request = AdultDayPassRequest()
             lifecycleScope.launch {
-                request.UA = preferenceDataStoreHelper.getFirstPreference(
-                    PreferenceDataStoreConstants.UA, ""
-                )
+                request.UA = preferenceHandler.UA
             }
             request.price = (passPrice.toInt() * 100)
             if (isCheckedIn) {
@@ -255,19 +251,6 @@ class ConfirmRentalActivity : BaseActivity() {
         intent.putExtras(bundle)
         startActivity(intent)
         finish()
-    }
-
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
 }

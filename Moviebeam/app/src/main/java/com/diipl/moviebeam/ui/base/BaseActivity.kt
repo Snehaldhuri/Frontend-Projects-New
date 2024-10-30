@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.base
 
 import android.app.Activity
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
@@ -20,8 +19,8 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.Buttons
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.casting.HotspotActivity
@@ -66,7 +65,6 @@ abstract class BaseActivity : AppCompatActivity() {
     abstract fun observeViewModel()
     protected abstract fun initViewBinding()
 
-    lateinit var context: Context
     private var castingUrl = ""
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
@@ -77,13 +75,17 @@ abstract class BaseActivity : AppCompatActivity() {
     @Inject
     lateinit var accountSetupData: DataStore<AccountSetupResponse>
 
+    @Inject
+    lateinit var preferenceHandler: PreferenceHandler
+
     val mainMenuButtonList: MutableList<Buttons> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentActivity = this
-        context = this
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+
+        preferenceHandler.loadAllData()
 
         launchLogger()
         initViewBinding()
@@ -95,7 +97,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {
-            castingUrl = getCastingUrl()
+            castingUrl = preferenceHandler.castingUrl
             mainMenuButtonList.addAll(accountSetupData.data.first().buttonsList)
         }
     }
@@ -353,13 +355,6 @@ abstract class BaseActivity : AppCompatActivity() {
         return btnList.isNotEmpty()
     }
 
-    private suspend fun getCastingUrl(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.CASTING_URL_KEY,
-            ""
-        )
-    }
-
     protected open fun fragmentTransaction(
         transactionType: Int,
         fragment: Fragment,
@@ -416,7 +411,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     private fun onBaseAppClicked(packageName: String) {
         if (isPackageExists(packageName)) {
-            if (context.packageManager.getLaunchIntentForPackage(packageName) == null) {
+            if (packageManager.getLaunchIntentForPackage(packageName) == null) {
                 launchAppSecured(packageName)
             } else {
                 launchApp(packageName)
@@ -425,8 +420,8 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun launchApp(packageName: String) {
-        context.startActivity(
-            context.packageManager.getLaunchIntentForPackage(packageName)?.addFlags(
+        startActivity(
+            packageManager.getLaunchIntentForPackage(packageName)?.addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP
             )
@@ -436,7 +431,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun launchAppSecured(packageName: String?) {
         val intent = Intent()
         intent.setPackage(packageName)
-        val pm = context.packageManager
+        val pm = packageManager
         val resolveInfoList = pm.queryIntentActivities(intent, PackageManager.GET_META_DATA)
         Collections.sort(resolveInfoList, ResolveInfo.DisplayNameComparator(pm))
         if (resolveInfoList.isNotEmpty()) {
@@ -456,7 +451,7 @@ abstract class BaseActivity : AppCompatActivity() {
             }
             i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-            context.startActivity(i)
+            startActivity(i)
         }
     }
 

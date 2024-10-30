@@ -8,14 +8,14 @@ import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,23 +23,15 @@ import javax.inject.Inject
 class WeatherViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val updateDataStore: UpdateDataStore,
+    private val preferenceHandler: PreferenceHandler,
     private val movieBeamRepository: MovieBeamRepository
 ) : ViewModel() {
 
     private val _weatherLiveData = MutableLiveData<Resource<WeatherResponse>>()
     val weatherLiveData: LiveData<Resource<WeatherResponse>> get() = _weatherLiveData
 
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(
-            context
-        )
-    }
-    private var ua = ""
-
     init {
         initializeDatastoreParams()
-        fetchWeatherData(ua)
     }
 
     private fun fetchWeatherData(ua: String) {
@@ -74,15 +66,11 @@ class WeatherViewModel @Inject constructor(
 
     private fun initializeDatastoreParams() {
         viewModelScope.launch {
-            ua = getUa()
+            preferenceHandler.loadAllData()
+            delay(100)
+            fetchWeatherData(preferenceHandler.UA)
         }
     }
 
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
 
 }

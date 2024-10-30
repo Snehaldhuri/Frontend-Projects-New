@@ -42,7 +42,6 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
-import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.service.remote.BTService
 import com.diipl.moviebeam.service.remote.IIrService
 import com.diipl.moviebeam.service.remote.UsbIrService
@@ -121,9 +120,6 @@ class ProgramGuideActivity : BaseActivity() {
 
     @Inject
     lateinit var preferences: SharedPreference
-
-    @Inject
-    lateinit var preferenceHandler: PreferenceHandler
 
     @Inject
     lateinit var channelListDataStore: DataStore<ChannelListResponse>
@@ -1082,15 +1078,8 @@ class ProgramGuideActivity : BaseActivity() {
 
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {
-            ua = getUa()
+            ua = preferenceHandler.UA
         }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
     companion object {

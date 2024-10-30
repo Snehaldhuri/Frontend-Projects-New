@@ -35,8 +35,6 @@ import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.DvbChannel
 import com.diipl.moviebeam.data.dto.remote.BTCommandModel
 import com.diipl.moviebeam.data.dto.remote.IRFrequencyModel
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityNewProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
 import com.diipl.moviebeam.service.remote.BTService
@@ -90,14 +88,12 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private var isFScreenExit = false
 
-    private val preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-    private var epgEndTime = ""
-
     private lateinit var hotelChannel: HotelChannel
     private var hotelChannelVideo: String = ""
 
     @Inject
     lateinit var preferences: SharedPreference
+
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
@@ -128,7 +124,6 @@ class NewProgramGuideActivity : BaseActivity() {
                     hotelChannel = response.hotelChannelList[0]
                     hotelChannelVideo = response.httpStreamingHotelvideoUrl + hotelChannel.fileName
                     broadCastType = response.tvBroadcastType
-                    Log.e(TAG, "handleAccountSetupResponse: ${hotelChannel.channelNo}  $broadCastType")
                     this.getChannelsFromRoomDB()
                     if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
                         if (DEVICE_MODEL != SEI_MB730)
@@ -178,12 +173,13 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initializeDatastoreParams()
 
-        if (preferences.isIRRemote)
-            irService = UsbIrService(this).also { it.getInstance() }
-        else
-            btService = BTService(this, lifecycle).also { it.findBondedDevice() }
+        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST) {
+            if (preferences.isIRRemote)
+                irService = UsbIrService(this).also { it.getInstance() }
+            else
+                btService = BTService(this, lifecycle).also { it.findBondedDevice() }
+        }
 
     }
 
@@ -229,7 +225,7 @@ class NewProgramGuideActivity : BaseActivity() {
         val endDateTime = convertProgramStartOrEndTime(programDateTime.P4_ET)
 
         // Create a Calendar object with the current time
-        val epgEndTime: Date = convertProgramStartOrEndTime(epgEndTime)
+        val epgEndTime: Date = convertProgramStartOrEndTime(preferenceHandler.epgEndTime)
 
         return endDateTime.compareTo(epgEndTime) == -1 //a value less than 0 if this Date is before the Date argument.
     }
@@ -471,7 +467,7 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun setEpgDate(epgDate: TextClock, p1St: String?) {
-        var startTime: Date = convertProgramStartOrEndTime(p1St)
+        val startTime: Date = convertProgramStartOrEndTime(p1St)
 
         val formattedDate = SimpleDateFormat("MMM dd, yyyy").format(startTime)
         epgDate.text = formattedDate
@@ -516,10 +512,12 @@ class NewProgramGuideActivity : BaseActivity() {
                 if (preferences.isIRRemote) switchToTV(program)
                 else switchToTVWithBluetooth(program)
             }
+
             Constants.BUILD_TYPE_STB -> {
-                if (broadCastType.equals("IP"))
+                if (broadCastType == IP_BROADCAST_TYPE)
                     tuneIPChannels(program)
-                else tuneChannels(program)
+                if (broadCastType == RF_BROADCAST_TYPE)
+                    tuneChannels(program)
             }
         }
     }
@@ -529,7 +527,7 @@ class NewProgramGuideActivity : BaseActivity() {
         lifecycleScope.launch {
             val model = preferences.irFrequencyModel
             irService?.let { service ->
-                if (service.isConnected()){
+                if (service.isConnected()) {
                     val num = program?.CNO.toString().toCharArray().asList()
                     if (model.tvBrandName != IRUtils.LG) {
                         service.transmit(model.frequency, model.TV)
@@ -676,7 +674,7 @@ class NewProgramGuideActivity : BaseActivity() {
             irService?.transmit(model.frequency, model.HDMI1)
             switchedToTV = false
         } else {
-            if (btService.isConnected()){
+            if (btService.isConnected()) {
                 val model = preferences.btCommandModel
                 btService.transmit(model.HDMI1)
                 switchedToTV = false
@@ -827,19 +825,6 @@ class NewProgramGuideActivity : BaseActivity() {
         }
     }
 
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            epgEndTime = getEpgEt()
-        }
-    }
-
-    private suspend fun getEpgEt(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.EPG_END_TIME_KEY,
-            ""
-        )
-    }
-
     private fun grantPermission() {
         try {
             Intent(Intent.ACTION_VIEW).apply {
@@ -889,6 +874,10 @@ class NewProgramGuideActivity : BaseActivity() {
     companion object {
         var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
         var onPause = false
+
+        const val IP_BROADCAST_TYPE = "IP"
+        const val RF_BROADCAST_TYPE = "RF"
+
     }
 
 }

@@ -11,12 +11,9 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentFeedbackBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.ui.guestservice.feedback.thankyou.ThankYouActivity
@@ -24,7 +21,6 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
-import kotlinx.coroutines.launch
 
 class FeedbackFragment(
     private val onLeftKeyPressed: () -> Unit
@@ -34,14 +30,6 @@ class FeedbackFragment(
     val binding get() = _binding
     private val feedbackViewModel: FeedbackViewModel by activityViewModels()
     private var lastFocusedStar: ImageView? = null
-
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(
-            requireContext()
-        )
-    }
-    private var ua = ""
 
     override fun observeViewModel() {
         observe(feedbackViewModel.feedbackLiveData, ::handleFeedbackResponse)
@@ -63,7 +51,6 @@ class FeedbackFragment(
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFeedbackBinding.inflate(inflater, container, false)
-        this.initializeDatastoreParams()
 
         setupUI()
 
@@ -213,20 +200,7 @@ class FeedbackFragment(
     }
 
     private fun sendFeedback(feedback: String) {
-        feedbackViewModel.sendGuestFeedback(ua, feedback)
-    }
-
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
+        feedbackViewModel.sendGuestFeedback(preferenceHandler.UA, feedback)
     }
 
 }

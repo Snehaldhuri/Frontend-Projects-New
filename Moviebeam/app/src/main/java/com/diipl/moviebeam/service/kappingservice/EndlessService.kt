@@ -44,7 +44,6 @@ import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.kaping.CmdDto
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_CONTENT_STATUS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_FINISH_TIME
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
@@ -139,6 +138,7 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+private const val TAG = "EndlessService"
 @AndroidEntryPoint
 class EndlessService : Service() {
 
@@ -320,7 +320,8 @@ class EndlessService : Service() {
         var isSwitched = false
         var count = 0
         CoroutineScope(Dispatchers.IO).launch {
-           try {
+            delay(1000*5)
+           if (activityStack.isNotEmpty()) {
                while (activityStack.last()?.isNotEmpty() == true) {
                    if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
                        if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
@@ -340,8 +341,6 @@ class EndlessService : Service() {
                        }
                    delay(1000 * 2)
                }
-           } catch (e: Exception){
-               MainMenuActivity::class.java.startActivity()
            }
         }
 
@@ -475,10 +474,10 @@ class EndlessService : Service() {
             while (isServiceStarted) {
                 launch(Dispatchers.IO) {
                     setIPInfo()
+                    preferenceHandler.loadAllData()
+                    delay(100)
+                    UA = preferenceHandler.UA
 
-                    UA = preferenceDataStoreHelper.getFirstPreference(
-                        PreferenceDataStoreConstants.UA, ""
-                    )
                     _accountSetupLiveData.postValue(accountSetupDataStore.data.first())
                     _themeLiveData.postValue(themeDataStore.data.first())
                     _localAttractionLiveData.postValue(localAttractionsDataStore.data.first())
@@ -486,9 +485,8 @@ class EndlessService : Service() {
                     _showtimeLiveData.postValue(showtimeDataStore.data.first())
                     _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())
                     _channelListLiveData.postValue(channelListDatastore.data.first())
-                    isGuestCheckedIn = preferenceDataStoreHelper.getFirstPreference(
-                        PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY, false
-                    )
+                    isGuestCheckedIn = preferenceHandler.isGuestCheckedIn
+
                     logD("UA -> $UA")
                     if (UA.isNotBlank()) {
                         pingFakeServer()
@@ -643,6 +641,7 @@ class EndlessService : Service() {
                         true
                     } else {
                         preferenceHandler.updateDatastoreVariables(isStbAllocated = false)
+                        handleRebootCmd()
                         if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                             RegisterSTBActivity::class.java.startActivity()
                         }
@@ -971,7 +970,7 @@ class EndlessService : Service() {
             KapingConstants.KAP_CMD_GET_GUEST_MESSAGES -> {
                 when (activityStack.last()) {
                     SerialActivity::class.java.simpleName, STBDetailsActivity::class.java.simpleName, RegisterSTBActivity::class.java.simpleName -> {
-                        getGuestMessages(preferenceDataStoreHelper)
+                        getGuestMessages()
                     }
 
                     else -> {
@@ -1280,7 +1279,7 @@ class EndlessService : Service() {
         }
     }
 
-    private suspend fun handleSysInfoCmd() {
+    private fun handleSysInfoCmd() {
         val accountSetupData = accountSetupLiveData.value
         val dateFormatter = SimpleDateFormat("EEE. MMM dd, yyyy hh:mm:ss a", Locale.ENGLISH)
         val body = SysInfoDTO()
@@ -1294,9 +1293,9 @@ class EndlessService : Service() {
         body.streamingType = accountSetupData?.streamingType
         body.UA = ua
         body.SRNO = serialNo
-        body.stbIp = getIpAddress()
-        body.netMask = getNetMask()
-        body.route = getGateway()
+        body.stbIp = preferenceHandler.ipAddress
+        body.netMask = preferenceHandler.netMask
+        body.route = preferenceHandler.gatewayIP
         body.connectivityType = networkUtils.getConnectivityType()
         body.VOD_MANAGER_IP = accountSetupData?.vodMgrIp
         body.VOD_MANAGER_PORT = accountSetupData?.vodMgrPort
@@ -1388,13 +1387,11 @@ class EndlessService : Service() {
         fetchTickerMessage(ua)
     }
 
-    private fun getGuestMessages(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+    private fun getGuestMessages() {
         CoroutineScope(Dispatchers.IO).launch {
-            if (preferenceDataStoreHelper.getFirstPreference(
-                    PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY,
-                    false
-                )
-            ) {
+            preferenceHandler.loadAllData()
+            delay(100)
+            if (preferenceHandler.isGuestCheckedIn) {
                 getGuestDetails(guestDetailsDatastore)
             }
         }
@@ -1739,91 +1736,16 @@ class EndlessService : Service() {
 
     private fun initializeDatastoreParams() {
         CoroutineScope(Dispatchers.Default).launch {
-            accountId = getAccountId()
-            serialNo = getSerialNo()
-            ua = getUa()
-            stbRoomNo = getStbRoomNo()
-            epgStartTime = getEpgSt()
-            epgEndTime = getEpgEt()
-            channelCount = getChannelCount()
+            preferenceHandler.loadAllData()
+            delay(100)
+            accountId = preferenceHandler.accountID
+            serialNo = preferenceHandler.serialNo
+            ua = preferenceHandler.UA
+            stbRoomNo = preferenceHandler.roomNo
+            epgStartTime = preferenceHandler.epgStartTime
+            epgEndTime = preferenceHandler.epgEndTime
+            channelCount = preferenceHandler.channelCount
         }
-    }
-
-    private suspend fun getAccountId(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getStbRoomNo(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getSerialNo(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.SERIAL_NO,
-            ""
-        )
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
-
-    private suspend fun getIpAddress(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_ADDRESS_KEY,
-            "0.0.0.0"
-        )
-    }
-
-    private suspend fun getNetMask(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_NET_MASK_KEY,
-            "0.0.0.0"
-        )
-    }
-
-    private suspend fun getGateway(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_GATEWAY_KEY,
-            "0.0.0.0"
-        )
-    }
-
-    private suspend fun getEpgSt(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.EPG_START_TIME_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getEpgEt(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.EPG_END_TIME_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getChannelCount(): Int {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.CHANNEL_COUNT_KEY,
-            0
-        )
-    }
-
-    private suspend fun getAppList(): Set<String> {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.APP_LIST_KEY,
-            emptySet()
-        )
     }
 
 }

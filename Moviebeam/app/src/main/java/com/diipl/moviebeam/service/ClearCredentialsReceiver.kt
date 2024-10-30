@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.datastore.core.DataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.utils.ClearCredentialsHandler
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -21,16 +19,6 @@ class ClearCredentialsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         clearCredentialsHandler = ClearCredentialsHandler(context, accountSetupDataStore)
         clearCredentialsHandler.startClearCredentials(false)
-        /*CoroutineScope(Dispatchers.Default).launch {
-            context.clearCredentials(ArrayList(getAppList(PreferenceDataStoreHelper(context))))
-        }*/
-    }
-
-    private suspend fun getAppList(preferenceDataStoreHelper: PreferenceDataStoreHelper): Set<String> {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.APP_LIST_KEY,
-            emptySet()
-        )
     }
 
 }

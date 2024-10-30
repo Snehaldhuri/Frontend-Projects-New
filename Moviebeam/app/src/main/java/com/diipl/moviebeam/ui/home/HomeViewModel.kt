@@ -9,14 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
-import com.diipl.moviebeam.data.datastore.UpdateDataStore
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +23,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,6 +31,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val updateDataStore: UpdateDataStore,
+    private val preferenceHandler: PreferenceHandler,
     private val movieBeamRepository: MovieBeamRepository,
 ) : ViewModel() {
 
@@ -46,19 +47,8 @@ class HomeViewModel @Inject constructor(
     private val _dateTimeLiveData = MutableLiveData<Resource<DateTimeResponse>>()
     val dateTimeLiveData: LiveData<Resource<DateTimeResponse>> get() = _dateTimeLiveData
 
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(
-            context
-        )
-    }
-    private var ua = ""
-
     init {
-        /* fetchAccountSetupDetails("ACTIVATE", "17205KKXLKF626", "JSON")
-         fetchThemeDetails("17205KKXLKF626")*/
         initializeDatastoreParams()
-        fetchAllApi("ACTIVATE", ua, "JSON")
     }
 
     fun fetchAllApi(cmd: String, ua: String, mode: String) {
@@ -334,15 +324,11 @@ class HomeViewModel @Inject constructor(
 
     private fun initializeDatastoreParams() {
         viewModelScope.launch {
-            ua = getUa()
+            preferenceHandler.loadAllData()
+            delay(100)
+            fetchAllApi("ACTIVATE", preferenceHandler.UA, "JSON")
         }
     }
 
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
 
 }

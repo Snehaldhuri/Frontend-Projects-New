@@ -7,12 +7,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
+import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,14 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HotelInfoViewModel @Inject constructor(
     @ApplicationContext context: Context,
-    private val updateDataStore: UpdateDataStore
+    private val preferenceHandler: PreferenceHandler
 ) : ViewModel() {
-
-    //Variables from datastore
-    private var preferenceDataStoreHelper: PreferenceDataStoreHelper =
-        PreferenceDataStoreHelper(context)
-    private var accountId: String = ""
-    private var ua: String = ""
 
     private val _hotelServiceLiveData = MutableLiveData<Resource<HotelServiceResponse>>()
     val hotelServiceLiveData: LiveData<Resource<HotelServiceResponse>> get() = _hotelServiceLiveData
@@ -50,7 +42,7 @@ class HotelInfoViewModel @Inject constructor(
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
     init {
-        this.initializeDatastoreParams()
+        preferenceHandler.loadAllData()
     }
 
     // Get Response from DataStore
@@ -90,27 +82,6 @@ class HotelInfoViewModel @Inject constructor(
 
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
-    }
-
-    private fun initializeDatastoreParams() {
-        viewModelScope.launch {
-            accountId = getAccountId()
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getAccountId(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
 }

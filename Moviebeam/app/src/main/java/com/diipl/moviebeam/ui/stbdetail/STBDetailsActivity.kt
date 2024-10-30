@@ -23,12 +23,10 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityStbdetailsBinding
 import com.diipl.moviebeam.di.HardwareAPI
-import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.utils.Constants
@@ -64,6 +62,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 private const val TAG = "STBDetailsActivity"
+
 @AndroidEntryPoint
 class STBDetailsActivity : BaseActivity() {
 
@@ -82,9 +81,6 @@ class STBDetailsActivity : BaseActivity() {
     @Inject
     lateinit var hardwareAPI: HardwareAPI
 
-    @Inject
-    lateinit var preferenceHandler: PreferenceHandler
-
     //Variables from datastore
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
         PreferenceDataStoreHelper(
@@ -92,16 +88,17 @@ class STBDetailsActivity : BaseActivity() {
         )
     }
     private var stbRoomNo = ""
-    private var networkJob : Job? = null
+    private var networkJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        this.initializeDatastoreParams()
         stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
+        stbRoomNo = preferenceHandler.roomNo
+        handleSerialNumberResponse()
+
         if (!IS_API_CALLED) {
-            stbDetailViewModel.getDataFromDataStore(preferenceDataStoreHelper)
             IS_API_CALLED = true
         } else {
             finish()
@@ -114,7 +111,7 @@ class STBDetailsActivity : BaseActivity() {
     //observe class
     override fun observeViewModel() {
         observe(stbDetailViewModel.networkStatus, ::handleNetworkResponse)
-        observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
+//        observe(stbDetailViewModel.serialNoLiveData, ::handleSerialNumberResponse)
         observe(stbDetailViewModel.weatherLiveData, ::handleWeatherResponse)
         observe(stbDetailViewModel.themeLiveData, ::handleThemeResponse)
         observe(stbDetailViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
@@ -149,7 +146,7 @@ class STBDetailsActivity : BaseActivity() {
         networkJob?.cancel()
         Log.e(TAG, "launchMain: networkJob ")
         networkJob = lifecycleScope.launch {
-            delay(1000*15)
+            delay(1000 * 15)
             Log.e(TAG, "launchMain: networkJob start MainMenu")
             launchNewActivity(MainMenuActivity::class.java, true)
         }
@@ -212,7 +209,7 @@ class STBDetailsActivity : BaseActivity() {
             is Resource.Success -> {
                 stbDetailViewModel.accountSetupLiveData.value?.data?.let {
                     stbDetailViewModel.setAccountSetupResponseData(it)
-                    if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
+                    if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB) {
                         hardwareAPI.myService?.setDeviceName(
                             "MBAP_${it.accountId}_${it.roomNo}",
                             object : IDeviceNameConfigureCallback {
@@ -314,7 +311,10 @@ class STBDetailsActivity : BaseActivity() {
                 status.data?.let {
                     if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
                         logD("Valid EPG data found EPG Start time: ${it.ST} & EPG End time: ${it.ET}")
-                        preferenceHandler.updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
+                        preferenceHandler.updateDatastoreVariables(
+                            epgStartTime = it.ST,
+                            epgEndTime = it.ET
+                        )
                         val channelList =
                             stbDetailViewModel.channelListLiveData.value?.data?.channelLcnList
                         val currentKey = fetchCurrentProgramKey()
@@ -601,14 +601,14 @@ class STBDetailsActivity : BaseActivity() {
         }
     }
 
-    private fun handleSerialNumberResponse(serialNo: String) {
+    private fun handleSerialNumberResponse(serialNo: String = "") {
         /*   if (!isNetworkConnected) {
                launchMain()
                return
            }*/
         isWorkDone = 0
 
-        serialNumber = serialNo
+        serialNumber = preferenceHandler.serialNo
         UA = "21$serialNumber"
         stbDetailViewModel.fetchApis()
 
@@ -635,19 +635,6 @@ class STBDetailsActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {}
-
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            stbRoomNo = getStbRoomNo()
-        }
-    }
-
-    private suspend fun getStbRoomNo(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
-            ""
-        )
-    }
 
     companion object {
         private var IS_API_CALLED = false

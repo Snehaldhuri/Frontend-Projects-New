@@ -19,7 +19,6 @@ import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.service.LoggingService
-import com.diipl.moviebeam.service.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.utils.Constants
@@ -40,10 +39,6 @@ import javax.inject.Inject
 class ShowtimeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityShowtimeBinding
-
-    //Variables from datastore
-    @Inject
-    lateinit var preferenceHandler: PreferenceHandler
 
     @Inject
     lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
