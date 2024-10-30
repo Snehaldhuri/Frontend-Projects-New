@@ -66,15 +66,6 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        if (programGuideList[0].CNO.equals("100") || programGuideList[0].CN?.contains("Hotel") == true) {
-            programGuideList.removeAt(0)
-            currentPos -= 1
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

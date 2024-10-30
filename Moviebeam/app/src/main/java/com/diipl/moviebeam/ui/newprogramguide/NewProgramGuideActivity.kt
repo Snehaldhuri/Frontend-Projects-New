@@ -49,7 +49,6 @@ import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
-import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO
 import com.diipl.moviebeam.utils.Constants.SEI_MB730
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
@@ -450,10 +449,18 @@ class NewProgramGuideActivity : BaseActivity() {
         }
 
         currentPrograms?.remove(currentProgram)
+
+        val param1 =
+            if (hotelChannel.tvChannelBroadcastType == IP_BROADCAST_TYPE) hotelChannel.ip else if (hotelChannel.tvChannelBroadcastType == RF_BROADCAST_TYPE) hotelChannel.major else ""
+        val param2 =
+            if (hotelChannel.tvChannelBroadcastType == IP_BROADCAST_TYPE) hotelChannel.port else if (hotelChannel.tvChannelBroadcastType == RF_BROADCAST_TYPE) hotelChannel.minor else ""
+
         val hotelVideoProgram = ChannelEpgDTO(
             CN = hotelChannel.channelName,
             VP = hotelChannelVideo,
             CNO = hotelChannel.channelNo,
+            param1 = param1,
+            param2 = param2,
             P1_PT = hotelChannel.channelName,
             P1_CLS = "80",
             C = "1"
@@ -763,30 +770,22 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private fun tuneIPChannels(program: ChannelEpgDTO?) {
         PlayerActivity.programGuideList.addAll(programGuideList)
-        if (!program?.CN.equals(HOTEL_VIDEO) || !program?.CNO.equals("100")) {
-            val pos = PlayerActivity.programGuideList.indexOf(program)
-            focusedPosition = programGuideList.indexOf(program)
-            onPause = true
-            val intent = Intent(applicationContext, PlayerActivity::class.java)
-            intent.putExtra("currentPos", pos)
-            startActivity(intent)
-        } else {
-            showToast("Hotel Video is not available.")
-        }
+        val pos = PlayerActivity.programGuideList.indexOf(program)
+        focusedPosition = programGuideList.indexOf(program)
+        onPause = true
+        val intent = Intent(applicationContext, PlayerActivity::class.java)
+        intent.putExtra("currentPos", pos)
+        startActivity(intent)
     }
 
     private fun tuneChannels(program: ChannelEpgDTO?) {
         LiveTVActivity.programGuideList.addAll(programGuideList)
-        if (!program?.CN.equals(HOTEL_VIDEO) || !program?.CNO.equals("100")) {
-            val pos = LiveTVActivity.programGuideList.indexOf(program)
-            focusedPosition = programGuideList.indexOf(program)
-            onPause = true
-            val intent = Intent(applicationContext, LiveTVActivity::class.java)
-            intent.putExtra("currentPos", pos)
-            startActivity(intent)
-        } else {
-            showToast("Hotel Video is not available.")
-        }
+        val pos = LiveTVActivity.programGuideList.indexOf(program)
+        focusedPosition = programGuideList.indexOf(program)
+        onPause = true
+        val intent = Intent(applicationContext, LiveTVActivity::class.java)
+        intent.putExtra("currentPos", pos)
+        startActivity(intent)
     }
 
     private fun findDvbInput(): String? {

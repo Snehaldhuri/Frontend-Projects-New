@@ -260,16 +260,6 @@ class LiveTVActivity : BaseActivity() {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        if (programGuideList[0].CNO.equals("100")) {
-            programGuideList.removeAt(0)
-            currentPos -= 1
-            Log.e(TAG, "onResume: $currentPos")
-        }
-    }
-
     fun handleBackRemoteClick() {
         Log.e(TAG, "handleBackRemoteClick: ")
         onBackPressed()
