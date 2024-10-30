@@ -150,8 +150,6 @@ class ExoPlayerActivity : BaseActivity() {
                             Constants.BASE_PLAYBACK_URL + releaseId + Constants.CONTENT_EXTENSION
                     }
 
-                    Log.e(TAG, "initializePlayer: $playbackUrl")
-
                     if (playbackUrl.isNotEmpty()) {
                         val mediaItem = MediaItem.Builder()
                             .setUri(playbackUrl)
@@ -283,7 +281,10 @@ class ExoPlayerActivity : BaseActivity() {
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> handleBackRemoteClick()
 
+            KeyEvent.KEYCODE_DPAD_DOWN -> binding.playerView.showController()
+
             0 -> {
+                binding.playerView.showController()
                 when (keyEvent.scanCode) {
                     Constants.PLAY_MEDIA_BACKWARD -> player?.seekBack()
 
