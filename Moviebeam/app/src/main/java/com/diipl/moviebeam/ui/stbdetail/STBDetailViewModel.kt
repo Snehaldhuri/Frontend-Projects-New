@@ -226,7 +226,7 @@ class STBDetailViewModel @Inject constructor(
     fun setThemeResponseData(
         data: ThemeResponse,
     ) {
-
+        Constants.isWorkDone = 0
         viewModelScope.launch(Dispatchers.IO) {
             updateDataStore.updateThemeData(data)
         }
@@ -250,6 +250,7 @@ class STBDetailViewModel @Inject constructor(
         data: HotelServiceResponse,
     ) {
         var run = true
+        Constants.isWorkDone = 2
         viewModelScope.launch(Dispatchers.IO) {
             while (run) {
                 if (Constants.isWorkDone == 2) {
@@ -265,6 +266,7 @@ class STBDetailViewModel @Inject constructor(
         data: LocalAttractionResponse,
     ) {
         var run = true
+        Constants.isWorkDone = 1
         viewModelScope.launch(Dispatchers.IO) {
             while (run) {
                 if (Constants.isWorkDone == 1) {

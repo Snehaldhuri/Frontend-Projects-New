@@ -55,6 +55,7 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.clearCache
+import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadBg
@@ -101,7 +102,7 @@ class NewProgramGuideActivity : BaseActivity() {
     private var focusedPosition: Int = 0
     private var programGuideList = mutableListOf<ChannelEpgDTO>()
     private var key: String? = fetchCurrentProgramKey()
-    lateinit var programDateTime: ChannelEpgDTO
+    private lateinit var programDateTime: ChannelEpgDTO
 
     private var irService: IIrService? = null
     private lateinit var btService: BTService
@@ -240,7 +241,7 @@ class NewProgramGuideActivity : BaseActivity() {
         } else {
             cal.add(Calendar.HOUR_OF_DAY, 2)
         }
-        key = fetchCurrentProgramKey(cal.time)
+        key = fetchCurrentProgramKey(cal)
         updateChannels()
     }
 
@@ -478,39 +479,6 @@ class NewProgramGuideActivity : BaseActivity() {
 
         val formattedDate = SimpleDateFormat("MMM dd, yyyy").format(startTime)
         epgDate.text = formattedDate
-    }
-
-    private fun fetchCurrentProgramKey(currentDate: Date = Date()): String {
-        val cal = Calendar.getInstance()
-        cal.time = currentDate
-        val date = cal.get(Calendar.DATE)
-        val month = cal.get(Calendar.MONTH) + 1
-        val year = cal.get(Calendar.YEAR)
-        var hour = cal.get(Calendar.HOUR)
-        val minutes = cal.get(Calendar.MINUTE)
-        val amPm = cal.get(Calendar.AM_PM)
-        val time = StringBuilder()
-
-        if (date < 10) time.append(appendZeros(date))
-        else time.append(date)
-
-        if (month < 10) time.append(appendZeros(month))
-        else time.append(month)
-
-        time.append(year)
-
-        if (hour == 0) hour = 12
-
-        if (hour < 10) time.append(appendZeros(hour))
-        else time.append(hour.toString())
-
-        if (minutes < 30) time.append("00")
-        else time.append("30")
-
-        if (amPm == 0) time.append("AM")
-        else time.append("PM")
-
-        return time.toString()
     }
 
     private fun launchExoPlayer(program: ChannelEpgDTO?) {

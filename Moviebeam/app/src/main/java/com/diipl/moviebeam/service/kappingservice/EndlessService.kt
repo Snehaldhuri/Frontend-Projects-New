@@ -27,7 +27,6 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
@@ -54,6 +53,7 @@ import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.service.handler.EPGHandler
 import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -88,17 +88,14 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.callNetflixAPI
 import com.diipl.moviebeam.utils.compareVersions
-import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.getGradientColor
-import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.logK
-import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.scheduleMsgEndTask
 import com.diipl.moviebeam.utils.setIPInfo
@@ -132,7 +129,6 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.io.IOException
 import java.lang.Integer.parseInt
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -253,6 +249,7 @@ class EndlessService : Service() {
     lateinit var hardwareAPI: HardwareAPI
     private val clearCredentialsHandler : ClearCredentialsHandler by lazy { ClearCredentialsHandler(applicationContext, accountSetupDataStore) }
 
+    private val epgHandler by lazy { EPGHandler(this, roomRepository) }
 
     companion object {
         var isServiceStarted = false
@@ -1228,30 +1225,38 @@ class EndlessService : Service() {
             val response =
                 movieBeamRepository.getEPGFromCloud(accountSetupLiveData.value?.epgCdnUrl + accountSetupLiveData.value?.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
             if (response != null) {
-
-                val simpleDateFormatter =
-                    SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
-                response.let {
-                    if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
-                        logD("In Get EPG Data callback Success")
-                        logD("Valid EPG Data Found")
-                        processEPGData(response)
-                        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                    } else {
-                        logE("Invalid EPG Data found")
-                        isEPGServerApiCalled = if (!isEPGServerApiCalled) {
-                            fetchEPGDataFromServer(UA)
-                            true
-                        } else {
-                            false
-                        }
-                    }
-                }
-
+                processEPGData(response)
             } else {
                 logE("In Get EPG Data callback Fail")
             }
         }
+    }
+
+    private fun processEPGData(response: EPGResponse) {
+        channelListLiveData.value?.channelLcnList?.let { epgHandler.parseEPG(response, it) }
+
+        epgHandler.epgStatus.observeForever {
+            Log.e(TAG, "processEPGData: $it")
+            when(it){
+                EPGHandler.STATUS_FAIL -> {
+                    logE("Invalid EPG Data found")
+                    logD("Fetching EPG Data from server")
+                    isEPGServerApiCalled = if (!isEPGServerApiCalled) {
+                        fetchEPGDataFromServer(UA)
+                        true
+                    } else {
+                        false
+                    }
+
+                }
+                EPGHandler.STATUS_OK -> {
+                    logD("In Get EPG Data callback Success")
+                    logD("Valid EPG Data Found")
+                    kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                }
+            }
+        }
+
     }
 
     private fun fetchEPGDataFromServer(ua: String) {
@@ -1497,180 +1502,6 @@ class EndlessService : Service() {
         data: MessageResponse
     ) {
         updateDataStore.updateGuestMessageData(data)
-    }
-
-    private fun processEPGData(epgResponse: EPGResponse) {
-
-        //Removing all Epg Channels From RoomDB.
-        CoroutineScope(Dispatchers.IO).launch {
-            roomRepository.removeAllChannels()
-
-            val simpleDateFormatter = SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
-            epgResponse.let {
-                if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
-                    logD("EPG Start Time: ${it.ST} & EPG End Time: ${it.ET}")
-                    it.ST?.let { st -> epgStartTime = st }
-                    it.ET?.let { et -> epgEndTime = et }
-                    preferenceHandler.updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
-                    val channelList = channelListLiveData.value?.channelLcnList
-                    val currentKey = fetchCurrentProgramKey()
-                    removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
-                    for (entries in it.epgListMap?.entries!!) {
-                        val iterator = entries.value.iterator()
-                        val key = entries.key
-                        val ciMap = HashMap<Int, Boolean>()
-                        while (iterator.hasNext()) {
-                            val channel = iterator.next()
-                            channel.key = key
-                            if (channel.CI != null) {
-                                var isFound = false
-                                for (channelApi in channelList!!) {
-                                    if (channelApi.CI == channel.CI) {
-                                        isFound = true
-                                        //Mapping EpgMap with Channel List Api
-                                        channel.AR = channelApi.AR
-                                        channel.CN = channelApi.CN
-                                        channel.CNO = channelApi.CNO
-                                        channel.CBT = channelApi.CBT
-                                        channel.CL = channelApi.CL
-                                        channel.CLCloud = channelApi.CLCloud
-                                        if (channelApi.httpStreaming == true) channel.VP =
-                                            channelApi.httpStreamingUrl
-                                        else channel.VP = channelApi.VP
-                                        channel.param1 = channelApi.param1
-                                        channel.param2 = channelApi.param2
-                                        channel.httpStreamingUrl = channelApi.httpStreamingUrl
-                                        channel.httpStreaming = channelApi.httpStreaming
-                                        channel.recordable = channelApi.recordable
-
-                                        channel.channelNameNo =
-                                            "${channelApi.CNO}   ${channelApi.CN}"
-                                        channel.lastProg = channel.C
-                                        channel.prog1Time = "${channel.P1_ST} - ${channel.P1_ET}"
-
-                                        //Mapping EpgMap with Program Map Api
-                                        if (channel.P1_ID != null) {
-                                            val program1 = it.programsListMap?.get(channel.P1_ID)
-                                            if (program1 != null) {
-                                                channel.P1_PT = program1.PT
-                                                channel.P1_SY = program1.SY
-                                                channel.progInfo = program1.PT
-                                                channel.progSynopsis = program1.SY
-                                                channel.liveProg1 = program1.PT
-                                                channel.progInfo1 =
-                                                    "${channel.CNO} - ${program1.PT}"
-                                            } else {
-                                                channel.P1_PT = Constants.NO_INFORMATION_AVAILABLE
-                                                channel.P1_SY = Constants.NO_INFORMATION_AVAILABLE
-                                                channel.progInfo =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                                channel.progSynopsis =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                                channel.liveProg1 =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                            }
-                                        }
-                                        // for live tv and full screen (Next)
-                                        if (channel.C?.toInteger()!! > 1) {
-                                            if (channel.P2_ID != null) {
-                                                val program2 =
-                                                    it.programsListMap?.get(channel.P2_ID)
-                                                channel.P2_PT = program2?.PT
-                                                channel.P2_SY = program2?.SY
-                                                channel.liveProg2 = program2?.PT
-                                                channel.progInfo2 =
-                                                    "${channel.CNO} - ${program2?.PT}"
-                                                channel.prog2Time =
-                                                    "${channel.P2_ST} - ${channel.P2_ET}"
-                                            }
-                                            if (channel.P3_ID != null) {
-                                                val program3 =
-                                                    it.programsListMap?.get(channel.P3_ID)
-                                                channel.P3_PT = program3?.PT
-                                                channel.P3_SY = program3?.SY
-                                            }
-                                            if (channel.P4_ID != null) {
-                                                val program4 =
-                                                    it.programsListMap?.get(channel.P4_ID)
-                                                channel.P4_PT = program4?.PT
-                                                channel.P4_SY = program4?.SY
-                                            }
-                                            if (channel.P5_ID != null) {
-                                                val program5 =
-                                                    it.programsListMap?.get(channel.P5_ID)
-                                                channel.P5_PT = program5?.PT
-                                                channel.P5_SY = program5?.SY
-                                            }
-                                            if (channel.P6_ID != null) {
-                                                val program6 =
-                                                    it.programsListMap?.get(channel.P6_ID)
-                                                channel.P6_PT = program6?.PT
-                                                channel.P6_SY = program6?.SY
-                                            }
-                                            if (channel.P7_ID != null) {
-                                                val program7 =
-                                                    it.programsListMap?.get(channel.P7_ID)
-                                                channel.P7_PT = program7?.PT
-                                                channel.P7_SY = program7?.SY
-                                            }
-                                            if (channel.P8_ID != null) {
-                                                val program8 =
-                                                    it.programsListMap?.get(channel.P8_ID)
-                                                channel.P8_PT = program8?.PT
-                                                channel.P8_SY = program8?.SY
-                                            }
-                                        } else {
-                                            //Calculating next Program Time from program1 end Time when Only One Program is Available
-                                            val nextProgramTime = Calendar.getInstance()
-                                            nextProgramTime.time = channel.P1_DET?.let { it1 ->
-                                                simpleDateFormatter.parse(
-                                                    it1
-                                                )
-                                            }!!
-                                            val nextProgramKey =
-                                                fetchCurrentProgramKey(nextProgramTime)
-                                            val nextProgram: ChannelEpgDTO? =
-                                                it.epgListMap[nextProgramKey]?.first {
-                                                    it.CI == channelApi.CI
-                                                }
-                                            when (nextProgramTime.get(Calendar.MINUTE)) {
-                                                0, 30 -> {
-                                                    channel.prog2Time =
-                                                        "${nextProgram?.P1_ST} - ${channel.P1_ET}"
-                                                    channel.liveProg2 =
-                                                        it.programsListMap?.get(nextProgram?.P1_ID)?.PT
-                                                }
-
-                                                else -> {
-                                                    channel.prog2Time =
-                                                        "${channel.P2_ST} - ${channel.P2_ET}"
-                                                    channel.liveProg2 =
-                                                        it.programsListMap?.get(nextProgram?.P2_ID)?.PT
-                                                }
-                                            }
-                                        }
-                                        break
-                                    }
-                                }
-                                if (!isFound) iterator.remove()
-                                else {
-                                    //Removing Duplicate Channels
-                                    if (ciMap[channel.CI] != null) iterator.remove()
-                                    else ciMap[channel.CI] = true
-                                }
-                            }
-                        }
-                        //Sorting Channels by Channel No
-                        entries.value.sortBy { it.CNO?.toInteger() }
-                        //Adding Channels to RoomDB.
-                        roomRepository.insertChannels(entries.value)
-                    }
-                } else {
-                    //TODO EPG DATA INVALID
-                }
-            }
-        }
-
     }
 
     private fun getVersionNumber(): String {

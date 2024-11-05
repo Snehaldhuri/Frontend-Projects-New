@@ -85,6 +85,7 @@ object Constants {
     const val MDM_CLEAR_CREDENTIALS_ACTION =
         "$MDM_PACKAGE_NAME.services.START_CLEAR_CREDENTIALS_RECEIVER"
     const val MDM_GRANT_PERMISSION = "$MDM_PACKAGE_NAME.ui.GrantPermission"
+    const val MDM_UPDATE_DATA = "$MDM_PACKAGE_NAME.ui.UpdateData"
     const val SERIAL_NO_KEY = "SERIAL_NO_KEY"
 
     const val ASSET = "ASSET"

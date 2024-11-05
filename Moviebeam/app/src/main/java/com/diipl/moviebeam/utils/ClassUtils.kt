@@ -45,8 +45,8 @@ import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.ClearCredentialsReceiver
 import com.diipl.moviebeam.service.EpgWorker
 import com.diipl.moviebeam.service.LoggingService
-import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.service.TickerMsgReceiver
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
@@ -60,6 +60,7 @@ import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
+import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
 import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
@@ -295,6 +296,7 @@ fun getCurrentPanelNumber(): String {
             HotelInfoActivity::class.java.simpleName -> return PanelConstants.HOTEL_SERVICES
             //TODO Live services
             MovieDetailFragment::class.java.simpleName -> return PanelConstants.MOVIE_DETAIL_PAGE
+            NewProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
             ProgramGuideActivity::class.java.simpleName -> return PanelConstants.PROGRAM_GUIDE
             HelpInfoFragment::class.java.simpleName -> return PanelConstants.HELP_AND_INFO
             GuestServiceActivity::class.java.simpleName -> return PanelConstants.GUEST_SERVICES

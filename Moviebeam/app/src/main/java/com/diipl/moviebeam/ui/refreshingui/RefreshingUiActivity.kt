@@ -16,7 +16,6 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
@@ -29,6 +28,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.di.HardwareAPI
+import com.diipl.moviebeam.service.handler.EPGHandler
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
@@ -39,28 +39,20 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.ThemeDetails
-import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.handleFocusChange
-import com.diipl.moviebeam.utils.isEpgDataValid
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
-import com.diipl.moviebeam.utils.removeEarlierData
 import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
 import com.diipl.moviebeam.utils.toGone
-import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.diipl.moviebeam.worker.UpdateDataWorker
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 import javax.inject.Inject
 
 private const val TAG = "RefreshingUiActivity"
@@ -93,7 +85,13 @@ class RefreshingUiActivity : BaseActivity() {
 
     @Inject
     lateinit var hardwareAPI: HardwareAPI
-    private val clearCredentialsHandler : ClearCredentialsHandler by lazy { ClearCredentialsHandler(applicationContext, accountSetupDataStore) }
+    private val clearCredentialsHandler: ClearCredentialsHandler by lazy {
+        ClearCredentialsHandler(
+            applicationContext,
+            accountSetupDataStore
+        )
+    }
+    private val epgHandler by lazy { EPGHandler(this, roomRepository) }
 
     override fun observeViewModel() {
         observe(refreshingUiViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
@@ -125,7 +123,7 @@ class RefreshingUiActivity : BaseActivity() {
         }
         binding.root.postDelayed({
             this.handleKaping(kapingResponse)
-        }, 1000*5)
+        }, 1000 * 5)
     }
 
     override fun onPause() {
@@ -135,10 +133,11 @@ class RefreshingUiActivity : BaseActivity() {
 
     private fun redirectToScreen() {
         lifecycleScope.launch {
-            val list = accountSetupDataStore.data.first().buttonsList.filter { it.buttonName == Constants.MAIN_GUEST_MSG_ID }
-            if (list.isNotEmpty()){
-                val intent = Intent(applicationContext,GuestMessageActivity::class.java)
-                intent.putExtra("btnId",Constants.MAIN_GUEST_MSG_ID)
+            val list =
+                accountSetupDataStore.data.first().buttonsList.filter { it.buttonName == Constants.MAIN_GUEST_MSG_ID }
+            if (list.isNotEmpty()) {
+                val intent = Intent(applicationContext, GuestMessageActivity::class.java)
+                intent.putExtra("btnId", Constants.MAIN_GUEST_MSG_ID)
                 startActivity(intent)
             } else {
                 val intent = Intent(applicationContext, GuestServiceActivity::class.java)
@@ -273,7 +272,7 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
-                    if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
+                    if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB) {
                         hardwareAPI.myService?.setDeviceName(
                             "MBAP_${it.accountId}_${it.roomNo}",
                             object : IDeviceNameConfigureCallback {
@@ -456,23 +455,10 @@ class RefreshingUiActivity : BaseActivity() {
     private fun handleEPGDataResponse(status: Resource<EPGResponse>) {
         when (status) {
             is Resource.Success -> {
-                refreshingUiViewModel.epgLiveData.value?.data?.let {
-                    val simpleDateFormatter =
-                        SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
-                    if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
-                        processEPGData(it)
-                        EndlessService.kapingCmdExecutionResponse =
-                            KapingConstants.EXECUTED_SUCCESSFULLY
-                        logD("In Get EPG data callback Success ")
-                        redirectToMainMenuScreen()
-                    } else {
-                        if (!isEPGServerApiCalled) {
-                            refreshingUiViewModel.fetchEPGDataFromServer(ua)
-                            isEPGServerApiCalled = true
-                        } else {
-                            isEPGServerApiCalled = false
-                            redirectToMainMenuScreen()
-                        }
+                status.data?.let {
+                    refreshingUiViewModel.channelListLiveData.value?.data?.channelLcnList?.let { list ->
+                        epgHandler.parseEPG(it, list)
+                        processEPGData()
                     }
                 }
             }
@@ -511,177 +497,25 @@ class RefreshingUiActivity : BaseActivity() {
         }
     }
 
-    private fun processEPGData(epgResponse: EPGResponse) {
-        //Removing all Epg Channels From RoomDB.
-        lifecycleScope.launch(Dispatchers.IO) {
-            roomRepository.removeAllChannels()
-
-            val simpleDateFormatter = SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
-            epgResponse.let {
-                if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
-                    preferenceHandler.updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
-                    val channelList =
-                        refreshingUiViewModel.channelListLiveData.value?.data?.channelLcnList
-                    val currentKey = fetchCurrentProgramKey()
-                    removeEarlierData(it.epgListMap?.entries?.iterator(), currentKey)
-                    for (entries in it.epgListMap?.entries!!) {
-                        val iterator = entries.value.iterator()
-                        val key = entries.key
-                        val ciMap = HashMap<Int, Boolean>()
-                        while (iterator.hasNext()) {
-                            val channel = iterator.next()
-                            channel.key = key
-                            if (channel.CI != null) {
-                                var isFound = false
-                                for (channelApi in channelList!!) {
-                                    if (channelApi.CI == channel.CI) {
-                                        isFound = true
-                                        //Mapping EpgMap with Channel List Api
-                                        channel.AR = channelApi.AR
-                                        channel.CN = channelApi.CN
-                                        channel.CNO = channelApi.CNO
-                                        channel.CBT = channelApi.CBT
-                                        channel.CL = channelApi.CL
-                                        channel.CLCloud = channelApi.CLCloud
-                                        if (channelApi.httpStreaming == true)
-                                            channel.VP = channelApi.httpStreamingUrl
-                                        else
-                                            channel.VP = channelApi.VP
-                                        channel.param1 = channelApi.param1
-                                        channel.param2 = channelApi.param2
-                                        channel.httpStreamingUrl = channelApi.httpStreamingUrl
-                                        channel.httpStreaming = channelApi.httpStreaming
-                                        channel.recordable = channelApi.recordable
-
-                                        channel.channelNameNo =
-                                            "${channelApi.CNO}   ${channelApi.CN}"
-                                        channel.lastProg = channel.C
-                                        channel.prog1Time =
-                                            "${channel.P1_ST} - ${channel.P1_ET}"
-
-                                        //Mapping EpgMap with Program Map Api
-                                        if (channel.P1_ID != null) {
-                                            val program1 =
-                                                it.programsListMap?.get(channel.P1_ID)
-                                            if (program1 != null) {
-                                                channel.P1_PT = program1.PT
-                                                channel.P1_SY = program1.SY
-                                                channel.progInfo = program1.PT
-                                                channel.progSynopsis = program1.SY
-                                                channel.liveProg1 = program1.PT
-                                                channel.progInfo1 =
-                                                    "${channel.CNO} - ${program1.PT}"
-                                            } else {
-                                                channel.P1_PT =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                                channel.P1_SY =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                                channel.progInfo =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                                channel.progSynopsis =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                                channel.liveProg1 =
-                                                    Constants.NO_INFORMATION_AVAILABLE
-                                            }
-                                        }
-                                        // for live tv and full screen (Next)
-                                        if (channel.C?.toInteger()!! > 1) {
-                                            if (channel.P2_ID != null) {
-                                                val program2 =
-                                                    it.programsListMap?.get(channel.P2_ID)
-                                                channel.P2_PT = program2?.PT
-                                                channel.P2_SY = program2?.SY
-                                                channel.liveProg2 = program2?.PT
-                                                channel.progInfo2 =
-                                                    "${channel.CNO} - ${program2?.PT}"
-                                                channel.prog2Time =
-                                                    "${channel.P2_ST} - ${channel.P2_ET}"
-                                            }
-                                            if (channel.P3_ID != null) {
-                                                val program3 =
-                                                    it.programsListMap?.get(channel.P3_ID)
-                                                channel.P3_PT = program3?.PT
-                                                channel.P3_SY = program3?.SY
-                                            }
-                                            if (channel.P4_ID != null) {
-                                                val program4 =
-                                                    it.programsListMap?.get(channel.P4_ID)
-                                                channel.P4_PT = program4?.PT
-                                                channel.P4_SY = program4?.SY
-                                            }
-                                            if (channel.P5_ID != null) {
-                                                val program5 =
-                                                    it.programsListMap?.get(channel.P5_ID)
-                                                channel.P5_PT = program5?.PT
-                                                channel.P5_SY = program5?.SY
-                                            }
-                                            if (channel.P6_ID != null) {
-                                                val program6 =
-                                                    it.programsListMap?.get(channel.P6_ID)
-                                                channel.P6_PT = program6?.PT
-                                                channel.P6_SY = program6?.SY
-                                            }
-                                            if (channel.P7_ID != null) {
-                                                val program7 =
-                                                    it.programsListMap?.get(channel.P7_ID)
-                                                channel.P7_PT = program7?.PT
-                                                channel.P7_SY = program7?.SY
-                                            }
-                                            if (channel.P8_ID != null) {
-                                                val program8 =
-                                                    it.programsListMap?.get(channel.P8_ID)
-                                                channel.P8_PT = program8?.PT
-                                                channel.P8_SY = program8?.SY
-                                            }
-                                        } else {
-                                            //Calculating next Program Time from program1 end Time when Only One Program is Available
-                                            val nextProgramTime = Calendar.getInstance()
-                                            nextProgramTime.time =
-                                                simpleDateFormatter.parse(channel.P1_DET)
-                                            val nextProgramKey =
-                                                fetchCurrentProgramKey(nextProgramTime)
-                                            val nextProgram: ChannelEpgDTO? =
-                                                it.epgListMap[nextProgramKey]?.first {
-                                                    it.CI == channelApi.CI
-                                                }
-                                            when (nextProgramTime.get(Calendar.MINUTE)) {
-                                                0, 30 -> {
-                                                    channel.prog2Time =
-                                                        "${nextProgram?.P1_ST} - ${channel.P1_ET}"
-                                                    channel.liveProg2 =
-                                                        it.programsListMap?.get(nextProgram?.P1_ID)?.PT
-                                                }
-
-                                                else -> {
-                                                    channel.prog2Time =
-                                                        "${channel.P2_ST} - ${channel.P2_ET}"
-                                                    channel.liveProg2 =
-                                                        it.programsListMap?.get(nextProgram?.P2_ID)?.PT
-                                                }
-                                            }
-                                        }
-                                        break
-                                    }
-                                }
-                                if (!isFound)
-                                    iterator.remove()
-                                else {
-                                    //Removing Duplicate Channels
-                                    if (ciMap[channel.CI] != null)
-                                        iterator.remove()
-                                    else
-                                        ciMap[channel.CI] = true
-                                }
-                            }
-                        }
-                        //Sorting Channels by Channel No
-                        entries.value.sortBy { it.CNO?.toInteger() }
-                        //Adding Channels to RoomDB.
-                        roomRepository.insertChannels(entries.value)
+    private fun processEPGData() {
+        epgHandler.epgStatus.observe(this) {
+            when (it) {
+                EPGHandler.STATUS_FAIL -> {
+                    if (!isEPGServerApiCalled) {
+                        refreshingUiViewModel.fetchEPGDataFromServer(ua)
+                        isEPGServerApiCalled = true
+                    } else {
+                        isEPGServerApiCalled = false
+                        redirectToMainMenuScreen()
                     }
-                } else {
-                    //TODO EPG DATA INVALID
                 }
+
+                EPGHandler.STATUS_OK -> {
+                    EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                    logD("In Get EPG data callback Success ")
+                    redirectToMainMenuScreen()
+                }
+
             }
         }
     }
@@ -711,6 +545,6 @@ class RefreshingUiActivity : BaseActivity() {
             ua = preferenceHandler.UA
             appList = preferenceHandler.appList
 
-    }
+        }
 
 }
