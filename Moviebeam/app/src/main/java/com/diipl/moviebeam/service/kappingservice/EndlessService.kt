@@ -111,6 +111,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -1234,29 +1235,31 @@ class EndlessService : Service() {
 
     private fun processEPGData(response: EPGResponse) {
         channelListLiveData.value?.channelLcnList?.let { epgHandler.parseEPG(response, it) }
-
-        epgHandler.epgStatus.observeForever {
-            Log.e(TAG, "processEPGData: $it")
-            when(it){
-                EPGHandler.STATUS_FAIL -> {
-                    logE("Invalid EPG Data found")
-                    logD("Fetching EPG Data from server")
-                    isEPGServerApiCalled = if (!isEPGServerApiCalled) {
-                        fetchEPGDataFromServer(UA)
-                        true
-                    } else {
-                        false
+        GlobalScope.launch(Dispatchers.Main) {
+            epgHandler.epgStatus.observeForever {
+                Log.e(TAG, "processEPGData: $it")
+                when (it) {
+                    EPGHandler.STATUS_FAIL -> {
+                        logE("Invalid EPG Data found")
+                        logD("Fetching EPG Data from server")
+                        isEPGServerApiCalled = if (!isEPGServerApiCalled) {
+                            fetchEPGDataFromServer(UA)
+                            true
+                        } else {
+                            false
+                        }
+                        this.cancel()
                     }
 
-                }
-                EPGHandler.STATUS_OK -> {
-                    logD("In Get EPG Data callback Success")
-                    logD("Valid EPG Data Found")
-                    kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                    EPGHandler.STATUS_OK -> {
+                        logD("In Get EPG Data callback Success")
+                        logD("Valid EPG Data Found")
+                        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                        this.cancel()
+                    }
                 }
             }
         }
-
     }
 
     private fun fetchEPGDataFromServer(ua: String) {

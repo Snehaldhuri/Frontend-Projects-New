@@ -18,6 +18,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -74,20 +76,24 @@ class EpgWorker @AssistedInject constructor(
         }
     }
 
-    private fun handleEpgResponse(response: EPGResponse?, isCDN : Boolean = false) {
+    private fun handleEpgResponse(response: EPGResponse?, isCDN : Boolean = false)  {
        response?.let { data ->
            epgHandler.parseEPG(data, channelList)
 
-           epgHandler.epgStatus.observeForever {
-               when(it){
-                   EPGHandler.STATUS_FAIL -> {
-                       if (!isCDN){
-                           fetchEPGDataFromServer()
+           GlobalScope.launch(Dispatchers.Main) {
+               epgHandler.epgStatus.observeForever {
+                   when (it) {
+                       EPGHandler.STATUS_FAIL -> {
+                           if (!isCDN) {
+                               fetchEPGDataFromServer()
+                           }
+                           this.cancel()
                        }
+
+                       EPGHandler.STATUS_OK -> this.cancel()
                    }
                }
            }
-
        }
     }
 
