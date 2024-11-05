@@ -16,7 +16,7 @@ import com.diipl.moviebeam.data.dto.showtime.Season
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeContent
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.FragmentShowtimeSeasonBinding
-import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.service.receiver.LoggingService
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.handleFocusChange

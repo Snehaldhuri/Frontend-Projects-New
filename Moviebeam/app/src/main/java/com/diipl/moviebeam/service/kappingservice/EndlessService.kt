@@ -75,7 +75,7 @@ import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
-import com.diipl.moviebeam.utils.ClearCredentialsHandler
+import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.GLOBAL_LOOP_SEC
 import com.diipl.moviebeam.utils.Constants.MDM_PACKAGE_NAME
@@ -86,7 +86,7 @@ import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.ThemeDetails
-import com.diipl.moviebeam.utils.callNetflixAPI
+import com.diipl.moviebeam.service.handler.callNetflixAPI
 import com.diipl.moviebeam.utils.compareVersions
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getCurrentPanelNumber

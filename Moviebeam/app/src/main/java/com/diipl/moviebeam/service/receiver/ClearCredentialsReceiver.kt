@@ -1,11 +1,11 @@
-package com.diipl.moviebeam.service
+package com.diipl.moviebeam.service.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.datastore.core.DataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.utils.ClearCredentialsHandler
+import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

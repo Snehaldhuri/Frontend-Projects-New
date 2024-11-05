@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.service
+package com.diipl.moviebeam.service.receiver
 
 import android.app.Service
 import android.content.Intent

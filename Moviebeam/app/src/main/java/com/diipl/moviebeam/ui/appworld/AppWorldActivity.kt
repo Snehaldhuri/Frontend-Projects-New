@@ -24,10 +24,10 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.databinding.PopupLayoutBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.utils.ClearCredentialsHandler
+import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.ThemeDetails
-import com.diipl.moviebeam.utils.callNetflixAPI
+import com.diipl.moviebeam.service.handler.callNetflixAPI
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadBg

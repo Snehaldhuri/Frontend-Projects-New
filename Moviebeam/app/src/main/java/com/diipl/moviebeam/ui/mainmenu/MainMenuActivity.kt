@@ -49,7 +49,7 @@ import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiViewModel
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.weather.WeatherActivity
-import com.diipl.moviebeam.utils.ClearCredentialsHandler
+import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.ALL_SERVICES
 import com.diipl.moviebeam.utils.Constants.LA_ID

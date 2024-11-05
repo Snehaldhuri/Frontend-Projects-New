@@ -34,7 +34,7 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
-import com.diipl.moviebeam.utils.ClearCredentialsHandler
+import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants

@@ -33,7 +33,7 @@ import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.NetworkHandler
+import com.diipl.moviebeam.service.handler.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toQueryMap

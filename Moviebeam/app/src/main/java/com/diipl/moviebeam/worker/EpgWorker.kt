@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.service
+package com.diipl.moviebeam.worker
 
 import android.content.Context
 import androidx.datastore.core.DataStore

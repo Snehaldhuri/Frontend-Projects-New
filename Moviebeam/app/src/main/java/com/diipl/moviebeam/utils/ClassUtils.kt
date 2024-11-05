@@ -42,10 +42,10 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.room.models.RentalMovieModel
-import com.diipl.moviebeam.service.ClearCredentialsReceiver
-import com.diipl.moviebeam.service.EpgWorker
-import com.diipl.moviebeam.service.LoggingService
-import com.diipl.moviebeam.service.TickerMsgReceiver
+import com.diipl.moviebeam.service.receiver.ClearCredentialsReceiver
+import com.diipl.moviebeam.worker.EpgWorker
+import com.diipl.moviebeam.service.receiver.LoggingService
+import com.diipl.moviebeam.service.receiver.TickerMsgReceiver
 import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity

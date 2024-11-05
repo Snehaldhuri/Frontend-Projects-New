@@ -1,6 +1,11 @@
-package com.diipl.moviebeam.utils
+package com.diipl.moviebeam.service.handler
 
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.GuestDetails
+import com.diipl.moviebeam.utils.NetworkUtils
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -18,12 +23,11 @@ open class NetworkHandler @Inject constructor(
     inline fun <reified T> safeAPiCall(api: () -> Response<T>): Resource<T> {
         try {
             val result = api()
+            runCatching { logD("API call status: ${result.code()},  URL: ${result.raw().request.url}, Message: ${result.message()}") }
             if (result.isSuccessful) {
                 val body = result.body()
-                body.runCatching {  }
                 return Resource.Success(body)
             }
-            logE(result.message())
             return Resource.DataError(msg = result.message(), code = result.code())
         } catch (e: Exception) {
             e.message?.let { logE(it) }

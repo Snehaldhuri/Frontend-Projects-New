@@ -260,7 +260,7 @@
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".service.LoggingService"
+            android:name=".service.receiver.LoggingService"
             android:exported="false"
             android:foregroundServiceType="dataSync|location" />
 
@@ -280,8 +280,8 @@
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".service.ClearCredentialsReceiver" />
-        <receiver android:name=".service.TickerMsgReceiver" />
+        <receiver android:name=".service.receiver.ClearCredentialsReceiver" />
+        <receiver android:name=".service.receiver.TickerMsgReceiver" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

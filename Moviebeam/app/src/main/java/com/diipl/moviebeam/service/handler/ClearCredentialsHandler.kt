@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.utils
+package com.diipl.moviebeam.service.handler
 
 import android.app.Activity
 import android.content.Context
@@ -10,8 +10,10 @@ import androidx.datastore.core.DataStore
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.databinding.PopupLayoutBinding
-import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.utils.clearCredentials
+import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.toVisible
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
