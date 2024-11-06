@@ -1,7 +1,5 @@
 package com.diipl.moviebeam.ui.stbdetail
 
-import android.content.ComponentName
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -295,6 +293,7 @@ class STBDetailsActivity : BaseActivity() {
                 logE("Channel List Api call fail")
                 status.errorCode?.let { stbDetailViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { stbDetailViewModel.showToastMessage(it) }
+                redirectToMainMenuPage()
             }
         }
     }

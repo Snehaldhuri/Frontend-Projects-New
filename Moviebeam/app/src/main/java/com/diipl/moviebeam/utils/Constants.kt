@@ -8,6 +8,8 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
+    const val CONFIG_DATA_KEY = "configData"
+
     var isWorkDone = 0
     const val GLOBAL_LOOP_SEC = 60
 
@@ -56,11 +58,12 @@ object Constants {
     const val BASE_URL_ACCOUNT_SETUP = "https://stb.moviebeam.com:1926/"
     const val BASE_URL_MOVIE_RENTAL = "https://stb.moviebeam.com:1927/"
     const val BASE_URL_ASSET = "https://stb.moviebeam.com:1928/Asset/"
-    const val API_TIME_OUT_IN_SEC = 60L
+    const val API_TIME_OUT_IN_SEC = 30L
     const val INTERNET_ERROR_MESSAGE = "Internet Connection Not Available"
     const val SERVER_ERROR = "Server Error"
     const val LG_REST = "LG_REST"
     const val ACCOUNT_SETUP = "ACCOUNT_SETUP"
+    const val ALL_SETUP = "ALL_SETUP"
     const val HELP_INFO = "Help & Info"
     const val SYSTEM_INFO = "System Info"
     const val TAB_PARENTAL_CONTROL = "Parental Control"

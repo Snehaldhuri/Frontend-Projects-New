@@ -5,14 +5,18 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
+import com.diipl.moviebeam.utils.logE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,12 +37,32 @@ class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: 
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
+    private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
+    val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
+
+    fun fetchAccountAPI(ua: String) = viewModelScope.launch(Dispatchers.IO) {
+        _accountSetupLiveData.postValue(Resource.Loading())
+
+        val accountSetupApiResponse = async { movieBeamRepository.getAccountSetupDetails(Constants.ACTIVATE, ua, Constants.MODE) }
+        val result = awaitAll(accountSetupApiResponse)
+
+        if (result[0] == null) {
+            logE(Constants.SERVER_ERROR + " in Account Setup Api")
+            _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Account Setup Api"))
+        } else {
+            _accountSetupLiveData.postValue(Resource.Success(result[0] as AccountSetupResponse))
+        }
+    }
+
     fun updateStbStatus(
         preferenceDataStoreHelper: PreferenceDataStoreHelper,
         isStbRegistered: Boolean,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.IS_STB_REGISTERED, isStbRegistered)
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.IS_STB_REGISTERED,
+                isStbRegistered
+            )
         }
     }
 
@@ -47,11 +71,12 @@ class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: 
         srNo: String,
         macAddress: String,
         wifiMacAddress: String,
-        stbType: String
+        stbType: String,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             _stbMasterLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.processStbMaster(ua, srNo, macAddress, wifiMacAddress, stbType)
+            val response =
+                movieBeamRepository.processStbMaster(ua, srNo, macAddress, wifiMacAddress, stbType)
             if (response == null) {
                 _stbMasterLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {

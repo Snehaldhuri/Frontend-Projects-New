@@ -42,11 +42,10 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.room.models.RentalMovieModel
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.service.receiver.ClearCredentialsReceiver
-import com.diipl.moviebeam.worker.EpgWorker
 import com.diipl.moviebeam.service.receiver.LoggingService
 import com.diipl.moviebeam.service.receiver.TickerMsgReceiver
-import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
@@ -67,12 +66,15 @@ import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.worker.EpgWorker
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -733,8 +735,9 @@ fun compareVersions(apkVersion: String): Boolean {
     return apkVersion != BuildConfig.VERSION_NAME
 }
 
-fun Context.showToast(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+fun Context.showToast(message: String) = GlobalScope.launch(Dispatchers.Main) {
+    Toast.makeText(this@showToast, message, Toast.LENGTH_LONG).show()
+    this.cancel()
 }
 
 fun isEpgDataValid(

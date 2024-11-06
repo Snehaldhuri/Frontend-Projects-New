@@ -1,20 +1,27 @@
 package com.diipl.moviebeam.ui.kaping
 
+import android.content.ComponentName
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityKapingBinding
+import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.CONFIG_DATA_KEY
+import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.getConnectivityType
 import com.diipl.moviebeam.utils.launchNewActivity
@@ -29,9 +36,12 @@ import com.google.zxing.qrcode.QRCodeWriter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class RegisterSTBActivity : BaseActivity() {
+
+    private val TAG = "RegisterSTBActivity"
 
     private val registerSTBViewModel: RegisterSTBViewModel by viewModels()
     private lateinit var binding: ActivityKapingBinding
@@ -41,12 +51,15 @@ class RegisterSTBActivity : BaseActivity() {
     private var netmask = "0.0.0.0"
     private var gateway = "0.0.0.0"
 
+    @Inject
+    lateinit var hardwareAPI: HardwareAPI
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        this.initializeDatastoreParams()
-
         binding.root.openSettingsPattern()
+
+        initializeDatastoreParams()
 
         binding.tvIp.text = ipAddress
         binding.tvNetMask.text = netmask
@@ -63,7 +76,7 @@ class RegisterSTBActivity : BaseActivity() {
             //checking as flag
             if (EndlessService.AS_FLAG) {
                 logD("AS Flag is True")
-                launchNewActivity(STBDetailsActivity::class.java, true)
+                registerSTBViewModel.fetchAccountAPI(preferenceHandler.UA)
             } else {
                 delay(60 * 1000)
                 validateAsFlag()
@@ -77,10 +90,64 @@ class RegisterSTBActivity : BaseActivity() {
     }
 
     override fun observeViewModel() {
-//        observe(registerSTBViewModel.serialNoLiveData, ::handleSerialNumberResponse)
+        observe(registerSTBViewModel.accountSetupLiveData, ::handleAccountResponse)
         observe(registerSTBViewModel.stbMasterLiveData, ::handleStbMasterResponse)
         observeSnackBarMessages(registerSTBViewModel.showSnackBar)
         observeToast(registerSTBViewModel.showToast)
+    }
+
+    private fun handleAccountResponse(resource: Resource<AccountSetupResponse>) {
+        when (resource) {
+            is Resource.Success -> {
+                resource.data?.let { sendDataMDM(it) }
+            }
+
+            is Resource.DataError -> {
+                handleRebootCmd()
+            }
+
+            else -> {}
+        }
+    }
+
+    private fun sendDataMDM(response: AccountSetupResponse) = lifecycleScope.launch {
+        val configData =
+            "${preferenceHandler.serialNo}, ${response.accountId}, ${response.roomNo}, ${response.mdmServerUrl}, ${response.mdmServerUsername}, ${response.mdmServerPassword}"
+        Log.e(TAG, "sendDataMDM: $configData")
+
+        Intent(Intent.ACTION_VIEW).apply {
+            component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_UPDATE_DATA)
+            putExtra(CONFIG_DATA_KEY, configData)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(this)
+        }
+
+        delay(1000 * 10L)
+
+        launchNewActivity(STBDetailsActivity::class.java, true)
+    }
+
+    private fun handleRebootCmd() {
+        showToast("Account API call failed.")
+
+        preferenceHandler.updateDatastoreVariables(isStbAllocated = false)
+
+        when (BuildConfig.BUILD_TYPE) {
+            Constants.BUILD_TYPE_STB -> {
+                hardwareAPI.myService?.rebootDevice()
+            }
+
+            else -> {
+                val intent = Intent()
+                intent.component =
+                    ComponentName(
+                        Constants.MDM_PACKAGE_NAME,
+                        KapingConstants.MDM_RESTART_ACTIVITY_NAME
+                    )
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
+        }
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {

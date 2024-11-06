@@ -104,5 +104,8 @@ data class AccountSetupResponse(
     val isEnablePatchWall: Boolean = false,
     val isNetflixCheckin: Boolean = false,
     val isPlayBoxTv: Boolean = false,
-    val enableClearCredentialsPatchwall : Boolean = false
+    val enableClearCredentialsPatchwall: Boolean = false,
+    val mdmServerUrl: String = "",
+    val mdmServerUsername: String = "",
+    val mdmServerPassword: String = "",
 )

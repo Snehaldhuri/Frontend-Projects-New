@@ -367,7 +367,10 @@ class UpdateDataStore @Inject constructor(
                 isEnablePatchWall = data.isEnablePatchWall,
                 isNetflixCheckin = data.isNetflixCheckin,
                 isPlayBoxTv = data.isPlayBoxTv,
-                enableClearCredentialsPatchwall = data.enableClearCredentialsPatchwall
+                enableClearCredentialsPatchwall = data.enableClearCredentialsPatchwall,
+                mdmServerUrl = data.mdmServerUrl,
+                mdmServerUsername = data.mdmServerUsername,
+                mdmServerPassword = data.mdmServerPassword
             )
         }
     }

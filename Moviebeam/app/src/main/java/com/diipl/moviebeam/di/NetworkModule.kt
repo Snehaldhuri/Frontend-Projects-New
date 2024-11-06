@@ -1,15 +1,18 @@
 package com.diipl.moviebeam.di
 
+import android.content.Context
 import com.diipl.moviebeam.data.remote.services.AccountSetupApiService
 import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
+import com.diipl.moviebeam.service.handler.RetryInterceptor
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.JsonOrStringConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -26,6 +29,7 @@ object NetworkModule {
 
     @Singleton
     @Provides
+    @Named(Constants.ALL_SETUP)
     fun provideOkHttpClient(): OkHttpClient  {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
@@ -38,8 +42,22 @@ object NetworkModule {
 
     @Singleton
     @Provides
+    @Named(Constants.ACCOUNT_SETUP)
+    fun provideAccountOkHttpClient(@ApplicationContext appContext: Context): OkHttpClient  {
+        val loggingInterceptor = HttpLoggingInterceptor()
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        return OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(RetryInterceptor(context = appContext))
+            .readTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
+            .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
+            .build()
+    }
+
+    @Singleton
+    @Provides
     @Named(Constants.LG_REST)
-    fun provideRetrofitLGREST(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+    fun provideRetrofitLGREST(@Named(Constants.ALL_SETUP) okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .addConverterFactory(ScalarsConverterFactory.create())
         .baseUrl(Constants.BASE_URL_LG_REST)
         .client(okHttpClient)
@@ -48,7 +66,7 @@ object NetworkModule {
     @Singleton
     @Provides
     @Named(Constants.ACCOUNT_SETUP)
-    fun provideRetrofitAccountSetup(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+    fun provideRetrofitAccountSetup(@Named(Constants.ACCOUNT_SETUP) okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .addConverterFactory(ScalarsConverterFactory.create())
         .baseUrl(Constants.BASE_URL_ACCOUNT_SETUP)
         .client(okHttpClient)
@@ -57,7 +75,7 @@ object NetworkModule {
     @Singleton
     @Provides
     @Named(Constants.ASSET)
-    fun provideRetrofitAsset(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+    fun provideRetrofitAsset(@Named(Constants.ALL_SETUP) okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .addConverterFactory(ScalarsConverterFactory.create())
         .baseUrl(Constants.BASE_URL_ASSET)
         .client(okHttpClient)
@@ -66,7 +84,7 @@ object NetworkModule {
     @Singleton
     @Provides
     @Named(Constants.MOVIE_ACCESS)
-    fun provideRetrofitMovie(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+    fun provideRetrofitMovie(@Named(Constants.ALL_SETUP) okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .addConverterFactory(ScalarsConverterFactory.create())
         .baseUrl(Constants.BASE_URL_MOVIE_RENTAL)
         .client(okHttpClient)
@@ -75,7 +93,7 @@ object NetworkModule {
     @Singleton
     @Provides
     @Named(Constants.EPG)
-    fun provideRetrofitEpg(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+    fun provideRetrofitEpg(@Named(Constants.ALL_SETUP) okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(Constants.BASE_URL_LG_REST)
         .client(okHttpClient)
@@ -84,7 +102,7 @@ object NetworkModule {
     @Singleton
     @Provides
     @Named(Constants.SYS_INFO)
-    fun provideRetrofitSysInfo(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+    fun provideRetrofitSysInfo(@Named(Constants.ALL_SETUP) okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
         .addConverterFactory(JsonOrStringConverterFactory())
         .baseUrl(Constants.BASE_URL_ASSET)
         .client(okHttpClient)
