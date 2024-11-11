@@ -22,7 +22,9 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.clearCache
+import com.diipl.moviebeam.utils.getAppVersion
 import com.diipl.moviebeam.utils.handleFocusChange
+import com.diipl.moviebeam.utils.isPackageExists
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
@@ -217,6 +219,19 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : BaseFragment
     }
 
     private fun setHotelInfo() {
+
+        context?.apply {
+            if (isPackageExists(Constants.MDM_PACKAGE_NAME)){
+                binding.tvMdmVersion.text = "MDM Version: ${getAppVersion(Constants.MDM_PACKAGE_NAME)}"
+                binding.tvMdmVersion.toVisible()
+            } else binding.tvMdmVersion.toGone()
+            if (isPackageExists(Constants.PBTV_PACKAGE_NAME)){
+                binding.tvPbtvVersion.text = "PBTV Version: ${getAppVersion(Constants.PBTV_PACKAGE_NAME)}"
+                binding.tvPbtvVersion.toVisible()
+            } else binding.tvPbtvVersion.toGone()
+        }
+
+
         binding.tvAccountId.text = "Hotel Code: " + accountId
         binding.tvRoomNo.text = "Room No: " + stbRoomNo
         binding.tvUa.text = "UA: " + ua

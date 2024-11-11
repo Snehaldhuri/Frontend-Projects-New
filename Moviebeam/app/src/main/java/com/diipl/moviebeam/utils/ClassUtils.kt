@@ -847,3 +847,12 @@ fun Context.isPackageExists(targetPackage: String): Boolean {
         false
     }
 }
+
+fun Context.getAppVersion(targetPackage: String): String {
+    return try {
+        val packageInfo: PackageInfo = packageManager.getPackageInfo(targetPackage, 0)
+        packageInfo.versionName
+    } catch (e: PackageManager.NameNotFoundException) {
+        ""
+    }
+}

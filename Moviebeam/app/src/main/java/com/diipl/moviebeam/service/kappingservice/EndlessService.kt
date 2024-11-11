@@ -115,19 +115,14 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
-import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
-import java.io.IOException
 import java.lang.Integer.parseInt
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -252,6 +247,8 @@ class EndlessService : Service() {
 
     private val epgHandler by lazy { EPGHandler(this, roomRepository) }
 
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
     companion object {
         var isServiceStarted = false
         var AS_FLAG = false
@@ -317,7 +314,7 @@ class EndlessService : Service() {
         // TODO
         var isSwitched = false
         var count = 0
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             delay(1000*5)
            if (activityStack.isNotEmpty()) {
                while (activityStack.last()?.isNotEmpty() == true) {
@@ -409,40 +406,6 @@ class EndlessService : Service() {
         })
     }
 
-    private fun createRequestBody(roomNo: String, UA: String, accessType: Int): String {
-        val netflixDetails = JSONObject().apply {
-            put("stbRoomNo", roomNo)
-            put("ua", UA)
-            put("accessType", accessType)
-        }
-        return netflixDetails.toString()
-    }
-
-    private fun postRequest(url: String, requestBody: String) {
-        val client = OkHttpClient()
-
-        val request = Request.Builder().url(url)
-            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody)).build()
-
-        client.newCall(request).enqueue(object : okhttp3.Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                e.printStackTrace()
-                logE("Network error: ${e.message}")
-            }
-
-            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                if (response.isSuccessful) {
-                    logD("netflixDataModel url success")
-                } else {
-                    val responseBody = response.body?.string() ?: "No response body"
-                    val responseCode = response.code
-                    logE("netflixDataModel url failed. Response code: $responseCode, Response body: $responseBody")
-                }
-            }
-        })
-    }
-
-
     override fun onDestroy() {
         super.onDestroy()
         logD("The service has been destroyed".uppercase(Locale.ROOT))
@@ -528,7 +491,7 @@ class EndlessService : Service() {
         counter++
         logD(counter.toString())
 
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             preferenceDataStoreHelper.getFirstPreference(ADULT_DAY_PASS_FINISH_TIME, 0).let {
                 if (it <= System.currentTimeMillis()) {
                     preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, false)
@@ -634,16 +597,19 @@ class EndlessService : Service() {
                     result?.CMD?.let { cmd -> logCmdSignal(cmd) }
                     kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
 
-                    AS_FLAG = if (result?.AS.isNullOrEmpty()) {
-                        preferenceHandler.updateDatastoreVariables(isStbAllocated = true)
-                        true
-                    } else {
-                        preferenceHandler.updateDatastoreVariables(isStbAllocated = false)
-                        handleRebootCmd()
-                        if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
-                            RegisterSTBActivity::class.java.startActivity()
+                    coroutineScope.launch {
+                        AS_FLAG = if (result?.AS.isNullOrEmpty()) {
+                            preferenceHandler.updateDatastoreVariables(isStbAllocated = true)
+                            true
+                        } else {
+                            preferenceHandler.updateDatastoreVariables(isStbAllocated = false)
+                            handleRebootCmd()
+                            delay(1000)
+                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+                                RegisterSTBActivity::class.java.startActivity()
+                            }
+                            false
                         }
-                        false
                     }
 
                     handleKaping(result)
@@ -753,7 +719,7 @@ class EndlessService : Service() {
     }
 
     private fun updateParentalPassCode(passCode: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             sharedPreference.adultPassCode = passCode
         }
     }
@@ -762,7 +728,7 @@ class EndlessService : Service() {
 
     private fun updateParams(){
         updateJob?.cancel()
-        updateJob = CoroutineScope(Dispatchers.IO).launch {
+        updateJob = coroutineScope.launch {
             while (true){
                 if (ua.isNotEmpty()){
                     updateJob?.cancel()
@@ -895,7 +861,7 @@ class EndlessService : Service() {
             }
 
             KapingConstants.KAP_CMD_SYNC_RECENT_VIEWED -> {
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch {
                     kapingResponse.CMD?.let { str ->
                         val data = str.substring(19, str.length)
                         val syncResponse = data.fromJson<RentalSyncResponse>()
@@ -920,7 +886,7 @@ class EndlessService : Service() {
             }
 
             KapingConstants.KAP_CMD_SYNC_ADULT_DAYPASS -> {
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch {
                     kapingResponse.CMD?.let { str ->
                         val data = str.substring(19, str.length)
                         val syncResponse = data.fromJson<AdultDayPassSync>()
@@ -939,7 +905,7 @@ class EndlessService : Service() {
             }
 
             KapingConstants.KAP_CMD_ENABLE_DISABLE_ADULT_CONTENT -> {
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch {
                     kapingResponse.CMD?.let { str ->
                         val isEnabled = str[19] == '1'
                         updateAdultContent(isEnabled)
@@ -948,19 +914,19 @@ class EndlessService : Service() {
             }
 
             KapingConstants.KAP_CMD_SEND_SYS_INFO -> {
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch {
                     handleSysInfoCmd()
                 }
             }
 
             KapingConstants.KAP_CMD_REBOOT -> {
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch {
                     handleRebootCmd()
                 }
             }
 
             KapingConstants.KAP_CMD_GET_TICKER_MESSAGES -> {
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch {
                     handleTickerMsgCmd(UA)
                 }
             }
@@ -1038,7 +1004,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
             if (response != null) {
                 if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
@@ -1069,7 +1035,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchThemeDetails(ua: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getThemeDetails(ua)
             if (response != null) {
                 updateThemeData(response)
@@ -1090,7 +1056,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchTickerMessage(ua: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getTvTickerMessages(ua)
             if (response != null) {
                 val sdf = SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
@@ -1124,7 +1090,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchGuestMessage(ua: String, guestSessionId: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getGuestMessages(ua, guestSessionId)
             if (response != null) {
                 updateGuestMessage(response)
@@ -1136,20 +1102,20 @@ class EndlessService : Service() {
     }
 
     private fun updateAdultContent(enabled: Boolean) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             sharedPreference.isAdultContentEnabled = enabled
             preferenceDataStoreHelper.putPreference(ADULT_CONTENT_STATUS, enabled)
         }
     }
 
     private fun removeAdultData() {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, false)
         }
     }
 
     private fun fetchHotelServiceInfo(accountId: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getHotelServiceInfo(accountId)
             if (response != null) {
                 updateHotelServices(response)
@@ -1164,7 +1130,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchLocalAttractionInfo(ua: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getLocalAttractionInfo(ua)
             if (response != null) {
                 updateLocalAttractions(response)
@@ -1179,7 +1145,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchSyncList(ua: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getMoviesInfo(ua)
             if (response != null) {
                 setMoviesResponseData(response)
@@ -1193,7 +1159,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchShowtimeData(ua: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getShowtimeInfo(ua)
             if (response != null) {
                 updateShowTimeData(response)
@@ -1207,7 +1173,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchChannelList(ua: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getChannelList(ua)
             if (response != null) {
                 updateChannelList(response)
@@ -1222,7 +1188,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchEPGData() {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response =
                 movieBeamRepository.getEPGFromCloud(accountSetupLiveData.value?.epgCdnUrl + accountSetupLiveData.value?.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
             if (response != null) {
@@ -1263,7 +1229,7 @@ class EndlessService : Service() {
     }
 
     private fun fetchEPGDataFromServer(ua: String) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.getEPGDataFromServer(ua)
             if (response != null) {
                 processEPGData(response)
@@ -1276,7 +1242,7 @@ class EndlessService : Service() {
     }
 
     private fun sendSysInfo(ua: String, body: SysInfoDTO) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             val response = movieBeamRepository.sendSysInfo(ua, body)
             if (response != null && response == 0) {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
@@ -1382,8 +1348,7 @@ class EndlessService : Service() {
             }
             else -> {
                 val intent = Intent()
-                intent.component =
-                    ComponentName(MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
+                intent.component = ComponentName(MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
@@ -1396,7 +1361,7 @@ class EndlessService : Service() {
     }
 
     private fun getGuestMessages() {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             preferenceHandler.loadAllData()
             delay(100)
             if (preferenceHandler.isGuestCheckedIn) {
@@ -1406,7 +1371,7 @@ class EndlessService : Service() {
     }
 
     private fun getGuestDetails(dataStore: DataStore<CmdDataDto>) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             dataStore.data.collect {
                 it.sessionId?.let {
                     fetchGuestMessage(ua, it)
@@ -1419,7 +1384,7 @@ class EndlessService : Service() {
         isCheckedIn: Boolean,
         guestDetails: CmdDataDto?
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             preferenceHandler.updateDatastoreVariables(sessionId = guestDetails?.sessionId, isCheckedIn = isCheckedIn)
             guestDetails?.let { updateDataStore.updateGuestData(it) }
         }
@@ -1428,7 +1393,7 @@ class EndlessService : Service() {
     private fun updateGuestDetails(
         dataStore: DataStore<CmdDataDto>, data: CmdDataDto?
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             dataStore.updateData { currentPreferences ->
                 currentPreferences.copy(
                     sessionId = data?.sessionId,
@@ -1445,25 +1410,25 @@ class EndlessService : Service() {
     }
 
     private fun updateAccountSetupData(data: AccountSetupResponse) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             updateDataStore.updateAccountData(data)
         }
     }
 
     private fun updateThemeData(data: ThemeResponse) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             updateDataStore.updateThemeData(data)
         }
     }
 
     private fun updateHotelServices(data: HotelServiceResponse) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             updateDataStore.updateHSData(data)
         }
     }
 
     private fun updateLocalAttractions(data: LocalAttractionResponse) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             updateDataStore.updateLAData(data)
         }
     }
@@ -1471,7 +1436,7 @@ class EndlessService : Service() {
     private fun setMoviesResponseData(
         data: MoviesResponse
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             preferenceHandler.updateDatastoreVariables(
                 moviesCount = data.freeContentList.size.plus(data.premiumContentList.size),
                 cListVersion = data.version
@@ -1483,7 +1448,7 @@ class EndlessService : Service() {
     private fun updateShowTimeData(
         data: ShowTimeResponse
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
             preferenceHandler.updateDatastoreVariables(showsCount = data.shoContentList.size)
             updateDataStore.updateShowTimeData(data)
         }

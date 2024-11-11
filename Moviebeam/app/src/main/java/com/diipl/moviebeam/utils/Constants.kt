@@ -84,6 +84,7 @@ object Constants {
 
     const val PRIME_VIDEO_PACKAGE_NAME = "com.amazon.amazonvideo.livingroom"
     const val MDM_PACKAGE_NAME = "com.diipl.mdm"
+    const val PBTV_PACKAGE_NAME = "playboxtv.tv.android.in"
     const val MDM_SERIAL_ACTIVITY = "$MDM_PACKAGE_NAME.ui.SerialActivity"
     const val MDM_CLEAR_CREDENTIALS_ACTION =
         "$MDM_PACKAGE_NAME.services.START_CLEAR_CREDENTIALS_RECEIVER"
