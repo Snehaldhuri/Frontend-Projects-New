@@ -4,8 +4,11 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.addCallback
 import androidx.appcompat.app.AlertDialog
+import androidx.core.text.isDigitsOnly
 import androidx.datastore.core.DataStore
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
@@ -25,29 +28,29 @@ class ClearCredentialsHandler(private val context: Context, private val accountS
     private var appList = ArrayList<String>()
     private val activity: Activity by lazy { BaseActivity.currentActivity!! }
     private var preferenceHandler : PreferenceHandler = PreferenceHandler(context)
-
-    init {
-        sortFreeAndSubscriptionApps()
-    }
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private val handler = Handler(Looper.getMainLooper())
 
     fun startClearCredentials(showPopUp: Boolean = true) {
-//        sortFreeAndSubscriptionApps()
-        context.clearCredentials(appList)
+        sortFreeAndSubscriptionApps()
+        handler.postDelayed({
+            context.clearCredentials(appList)
+        }, 100)
         if (showPopUp) activity.showPopup()
     }
 
-    private fun sortFreeAndSubscriptionApps() = CoroutineScope(Dispatchers.IO).launch {
+    private fun sortFreeAndSubscriptionApps() = coroutineScope.launch {
+        appList.clear()
         val selectedAppsList = accountSetupDataStore.data.first().selectedAppsList
         selectedAppsList.forEach {
             if (it.forAndroid) {
-                appList.add(it.value)
+                val isDigit = it.value.isDigitsOnly()
+                if (!isDigit)
+                    appList.add(it.value)
             }
         }
-
-        val apiApps = selectedAppsList.map { it.value }.toSet()
-        preferenceHandler.updateDatastoreVariables(appList = apiApps)
+        preferenceHandler.updateDatastoreVariables(appList = appList.toSet())
     }
-
 
     private fun Activity.showPopup() {
         val builder = AlertDialog.Builder(this)

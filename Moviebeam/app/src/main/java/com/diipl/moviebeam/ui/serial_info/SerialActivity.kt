@@ -21,6 +21,8 @@ import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.Constants.SERIAL_NO_KEY
+import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.observe
@@ -66,7 +68,14 @@ class SerialActivity : BaseActivity() {
     override fun onStart() {
         super.onStart()
 
+        val serialNum = intent.getStringExtra(SERIAL_NO_KEY).toString()
+        Log.e(TAG, "onStart: $serialNum")
+
         lifecycleScope.launch {
+            if (serialNum.isNotEmptyOrNull() && serialNum.lowercase() != "UNKNOWN".lowercase()){
+                processSerialNo(serialNum)
+                return@launch
+            }
             val isValid = preferenceDataStoreHelper.getFirstPreference(
                 PreferenceDataStoreConstants.IS_STB_ALLOCATED,
                 false
@@ -76,7 +85,7 @@ class SerialActivity : BaseActivity() {
                 PreferenceDataStoreConstants.SERIAL_NO,
                 ""
             )
-            if (serialNo.lowercase() == "UNKNOWN".lowercase()){
+            if (serialNo.lowercase() == "UNKNOWN".lowercase() || serialNo.isEmpty()){
                 fetchSerialNo()
                 return@launch
             }
@@ -98,7 +107,8 @@ class SerialActivity : BaseActivity() {
             else -> {
                 val intent = Intent()
                 intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_SERIAL_ACTIVITY)
-                resultLauncher.launch(intent)
+//                resultLauncher.launch(intent)
+                startActivity(intent)
             }
         }
     }

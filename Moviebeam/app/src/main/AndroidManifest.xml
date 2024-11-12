@@ -124,12 +124,6 @@
             android:icon="@mipmap/ic_launcher"
             android:logo="@mipmap/ic_launcher">
 
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.HOME" />
-            </intent-filter>
-            -->
         </activity>
         <activity
             android:name=".ui.kaping.RegisterSTBActivity"

@@ -336,6 +336,8 @@ class EndlessService : Service() {
                        }
                    delay(1000 * 2)
                }
+           } else {
+               Log.e(TAG, "onCreate: Activity stack is empty!")
            }
         }
 
