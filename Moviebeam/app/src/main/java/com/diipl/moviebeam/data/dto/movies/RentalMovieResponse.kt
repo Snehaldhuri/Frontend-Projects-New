@@ -91,7 +91,7 @@ data class RentalMovieRequest(
     @SerializedName("A") var a: Int = 1,
     @SerializedName("RA") var ra: Int = 1,
     @SerializedName("CTYPE") var cType: String = Constants.C_TYPE_MOVIE,
-    @SerializedName("SEEKTYPE") var seekType: Int = 0,
+    @SerializedName("SEEKTYPE") var seekType: Long = 0,
     @SerializedName("RENTALID") var rentalID: String = "",
     @SerializedName("CONTENT_TYPE_ID") var contentTypeID: Int = 0,
     @SerializedName("PRODUCT_TYPE") var productType: Int = 0,

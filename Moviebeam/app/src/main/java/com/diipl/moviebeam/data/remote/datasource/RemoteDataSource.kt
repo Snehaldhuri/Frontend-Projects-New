@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.data.remote.datasource
 
+import android.util.Log
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
@@ -60,6 +61,102 @@ class RemoteDataSource @Inject constructor(
         logD("In Rental Request Callback: " + "ERROR_CODE = " + responseObject?.errorCode + " RENTALID = " + responseObject?.rentalID)
 
         return responseObject
+    }
+
+    suspend fun getNewMoviesAccess(
+        q: String,
+        UA: String,
+        RID: Int,
+        PID: Int,
+        price: Double,
+        timeStamp: Long,
+        seek: Long,
+        sessionID: String,
+        a: Int,
+        ra: Int,
+        cType: String,
+        seekType: Long,
+        rentalID: String,
+        contentTypeID: Int,
+        productType: Int,
+        vodMID: Long,
+        AID: Long,
+        mode: String
+    ): RentalMovieResponse? {
+        val result = safeAPiCall {
+            moviesAPIService.getRentalNewMovieAccess(
+                q = q,
+                UA = UA,
+                RID = RID,
+                PID = PID,
+                price = price,
+                timeStamp = timeStamp,
+                seek = seek,
+                sessionID = sessionID,
+                a = a,
+                ra = ra,
+                cType = cType,
+                seekType = seekType,
+                rentalID = rentalID,
+                contentTypeID = contentTypeID,
+                productType = productType,
+                vodMID = vodMID,
+                AID = AID,
+                mode = mode
+            )
+        }
+        Log.d(TAG, "getMoviesAccess: $result")
+
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, RentalMovieResponse::class)
+        Log.d(TAG, "getMoviesAccess: $responseObject")
+
+        logD("In Rental Request Callback: ERROR_CODE = ${responseObject?.errorCode}, RENTALID = ${responseObject?.rentalID}")
+
+        return responseObject
+    }
+
+    suspend fun getVodData(
+//        vodMgrIp: String,
+//        vodMgrPort: String,
+        vodMid: Int ,
+        transId: Long,
+        streamingType: String,
+        mode: String ,
+        ua: String,
+        rentalId: Int,
+        productId: Int,
+        priority: Int ,
+        fileName: String,
+        contentType: String,
+        seek: Long,
+        json: Boolean
+    ): String? {
+        val result = safeAPiCall {
+            moviesAPIService.getVodDataAccess(
+//                vodMgrIp = vodMgrIp,
+//                vodMgrPort = vodMgrPort,
+                vodMid = vodMid ,
+                transId = transId,
+                streamingType = streamingType,
+                mode = mode ,
+                userAgent = ua,
+                rentalId = rentalId,
+                productId = productId,
+                priority = priority ,
+                fileName = fileName,
+                contentType = contentType,
+                seek = seek,
+                json = json
+            )
+        }
+        Log.d(TAG, "getVODMANAGERAccess: $result")
+
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, String::class)
+        Log.d(TAG, "getVODMANAGERAccess: $responseObject")
+
+//        logD("In Rental Request Callback: ERROR_CODE = ${responseObject?.errorCode}, RENTALID = ${responseObject?.rentalID}")
+
+        return result.data
     }
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {

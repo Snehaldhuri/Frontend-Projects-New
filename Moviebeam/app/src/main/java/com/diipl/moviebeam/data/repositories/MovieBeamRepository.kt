@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.data.repositories
 
+import android.util.Log
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
@@ -153,4 +154,58 @@ class MovieBeamRepository @Inject constructor(
         return remoteDataSource.getGuestMessages(ua, guestSessionId)
     }
 
+    suspend fun getNewMovieAccess(
+        q: String,
+        UA: String,
+        RID: Int,
+        PID: Int,
+        price: Double,
+        timeStamp: Long,
+        seek: Long,
+        sessionID: String,
+        a: Int,
+        ra: Int,
+        cType: String,
+        seekType: Long,
+        rentalID: String,
+        contentTypeID: Int,
+        productType: Int,
+        vodMID: Long,
+        AID: Long,
+        mode: String
+    ): RentalMovieResponse? {
+        Log.d("TAG", "getVodData: ${remoteDataSource.getNewMoviesAccess(
+            q, UA, RID, PID, price, timeStamp, seek, sessionID, a, ra, cType, seekType,
+            rentalID, contentTypeID, productType, vodMID, AID, mode
+        )}")
+        return remoteDataSource.getNewMoviesAccess(
+            q, UA, RID, PID, price, timeStamp, seek, sessionID, a, ra, cType, seekType,
+            rentalID, contentTypeID, productType, vodMID, AID, mode
+        )
+    }
+
+    suspend fun getVodData(
+//        vodMgrIp: String,
+//        vodMgrPort: String,
+        vodMid: Int ,
+        transId: Long,
+        streamingType: String,
+        mode: String ,
+        ua: String,
+        rentalId: Int,
+        productId: Int,
+        priority: Int ,
+        fileName: String,
+        contentType: String,
+        seek: Long,
+        json: Boolean
+    ): String? {
+        val result = remoteDataSource.getVodData(
+            vodMid,transId,streamingType,mode,ua,rentalId,productId,priority,fileName,contentType,seek,json
+        )
+        Log.d("TAG", "getVodData: ${remoteDataSource.getVodData(
+            vodMid,transId,streamingType,mode,ua,rentalId,productId,priority,fileName,contentType,seek,json
+        )}")
+        return result
+    }
 }

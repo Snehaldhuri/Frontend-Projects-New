@@ -208,7 +208,7 @@ class ShowtimeDetailFragment : BaseFragment() {
                 request.productType = Constants.SHOWTIME_RELEASE_TYPE_ID
                 request.ra = 0
                 request.cType = cType
-                request.seekType = seekType
+                request.seekType = seekType.toLong()
                 request.seek = seekPosition
                 viewModel.updateRentalMovieLog(request)
             }
