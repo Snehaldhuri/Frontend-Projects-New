@@ -22,6 +22,7 @@ import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.SERIAL_NO_KEY
+import com.diipl.moviebeam.utils.getSerialNoFromMDM
 import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
@@ -81,14 +82,6 @@ class SerialActivity : BaseActivity() {
                 false
             )
 
-            val serialNo = preferenceDataStoreHelper.getFirstPreference(
-                PreferenceDataStoreConstants.SERIAL_NO,
-                ""
-            )
-            if (serialNo.lowercase() == "UNKNOWN".lowercase() || serialNo.isEmpty()){
-                fetchSerialNo()
-                return@launch
-            }
             handleStbAllocationStatusResponse(isValid)
         }
 
@@ -105,10 +98,16 @@ class SerialActivity : BaseActivity() {
                 fetchSerialFromSDK()
             }
             else -> {
-                val intent = Intent()
-                intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_SERIAL_ACTIVITY)
+                val serialNo = getSerialNoFromMDM().toString()
+                Log.e(TAG, "fetchSerialNo: $serialNo")
+                if (serialNo.isNotEmptyOrNull() && serialNo.lowercase() != "UNKNOWN".lowercase())
+                    processSerialNo(serialNo)
+                else {
+                    val intent = Intent()
+                    intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_SERIAL_ACTIVITY)
 //                resultLauncher.launch(intent)
-                startActivity(intent)
+                    startActivity(intent)
+                }
             }
         }
     }
@@ -123,7 +122,7 @@ class SerialActivity : BaseActivity() {
     private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val intent: Intent? = result.data
-                intent?.getStringExtra(Constants.SERIAL_NO_KEY)?.let {
+                intent?.getStringExtra(SERIAL_NO_KEY)?.let {
                     processSerialNo(it)
                 }
             }
@@ -131,10 +130,7 @@ class SerialActivity : BaseActivity() {
 
     private fun processSerialNo(serialNo: String) {
         logD("processSerialNo: $serialNo")
-        if (serialNo.lowercase() == "UNKNOWN".lowercase()){
-            fetchSerialNo()
-            return
-        }
+
         val ua = "${Constants.UA_PREFIX}${serialNo}"
         serialViewModel.setDataInDataStore(
             preferenceDataStoreHelper,

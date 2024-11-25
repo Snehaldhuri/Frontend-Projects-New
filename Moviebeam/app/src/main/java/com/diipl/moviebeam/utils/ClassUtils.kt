@@ -1,6 +1,7 @@
 package com.diipl.moviebeam.utils
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -855,4 +856,17 @@ fun Context.getAppVersion(targetPackage: String): String {
     } catch (e: PackageManager.NameNotFoundException) {
         ""
     }
+}
+
+@SuppressLint("Range")
+fun Context.getSerialNoFromMDM(): String? {
+    val SERIAL_NO_KEY = "serialNo"
+    val uri = Uri.parse("content://${Constants.MDM_PACKAGE_NAME}.serialnoprovider/serial")
+    val cursor = contentResolver.query(uri, null, null, null, null)
+    cursor?.use {
+        if (it.moveToFirst()) {
+            return it.getString(it.getColumnIndex(SERIAL_NO_KEY))
+        }
+    }
+    return null
 }
