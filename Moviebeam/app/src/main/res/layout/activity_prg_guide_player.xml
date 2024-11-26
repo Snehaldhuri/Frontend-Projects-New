@@ -30,7 +30,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.95" />
 
-    <androidx.media3.ui.PlayerView
+    <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/pv_program"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

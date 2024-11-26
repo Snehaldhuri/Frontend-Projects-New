@@ -8,10 +8,9 @@ import androidx.work.WorkerParameters
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
 import com.diipl.moviebeam.utils.isEpgDataValid
@@ -23,6 +22,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -35,25 +35,18 @@ class EpgWorker @AssistedInject constructor(
     private val movieBeamRepository: MovieBeamRepository,
     private val roomRepository: RoomRepository,
     private val channelListDataStore: DataStore<ChannelListResponse>,
+    private val preferenceHandler: PreferenceHandler,
     @Assisted appContext: Context,
-    @Assisted workerParams: WorkerParameters
+    @Assisted workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams) {
 
     private var channelList: MutableList<ChannelEpgDTO> = mutableListOf()
     private var isEPGServerApiCalled = false
-
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(
-            applicationContext
-        )
-    }
     private var ua = ""
 
     override suspend fun doWork(): Result {
         logD("doWork: Started")
         initializeDatastoreParams()
-        getHotelCustomizationResponseData(channelListDataStore)
         logD("doWork: Ended")
         return Result.success()
     }
@@ -68,12 +61,7 @@ class EpgWorker @AssistedInject constructor(
     }
 
     private suspend fun fetchEPGDataFromCloud() {
-        val response =
-            movieBeamRepository.getEPGFromCloud(
-                preferenceDataStoreHelper.getFirstPreference(
-                    PreferenceDataStoreConstants.EPG_CDN_URL_KEY, ""
-                )
-            )
+        val response = movieBeamRepository.getEPGFromCloud(preferenceHandler.epgCDNUrl)
         if (response != null) {
             logD("fetchEPGDataFromCloud: Success")
             handleEpgResponse(response)
@@ -271,33 +259,19 @@ class EpgWorker @AssistedInject constructor(
         }
     }
 
-    private fun initializeDatastoreParams() {
-        CoroutineScope(Dispatchers.Default).launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
+    private fun initializeDatastoreParams() = CoroutineScope(Dispatchers.Default).launch {
+        preferenceHandler.loadAllData()
+        delay(100)
+        ua = preferenceHandler.UA
+        getHotelCustomizationResponseData(channelListDataStore)
     }
 
     private fun updateEpgStandEt(epgStartTime: String?, epgEndTime: String?) {
-        CoroutineScope(Dispatchers.Default).launch {
-            epgStartTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
-                    it
-                )
-            }
-            epgEndTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
-                    it
-                )
-            }
+        epgStartTime?.let {
+            preferenceHandler.updateDatastoreVariables(epgStartTime = it)
+        }
+        epgEndTime?.let {
+            preferenceHandler.updateDatastoreVariables(epgEndTime = it)
         }
     }
 

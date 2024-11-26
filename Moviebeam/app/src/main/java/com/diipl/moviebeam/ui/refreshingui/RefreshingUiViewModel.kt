@@ -18,9 +18,8 @@ import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,7 +33,8 @@ private const val TAG = "RefreshingUiViewModel"
 @HiltViewModel
 class RefreshingUiViewModel @Inject constructor(
     private val updateDataStore: UpdateDataStore,
-    private val movieBeamRepository: MovieBeamRepository
+    private val movieBeamRepository: MovieBeamRepository,
+    private val preferenceHandler: PreferenceHandler,
 //    private val workManager: WorkManager
 ) : ViewModel() {
 
@@ -64,8 +64,6 @@ class RefreshingUiViewModel @Inject constructor(
 
     private val _guestMessageLiveData = MutableLiveData<Resource<MessageResponse>>()
     val guestMessageLiveData: LiveData<Resource<MessageResponse>> get() = _guestMessageLiveData
-
-
 
 
     fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
@@ -189,49 +187,17 @@ class RefreshingUiViewModel @Inject constructor(
     }
 
     fun updateGuestSession(
-        preferenceDataStoreHelper: PreferenceDataStoreHelper,
-        guestDetailsDatastore: DataStore<CmdDataDto>,
         isCheckedIn: Boolean,
-        guestDetails: CmdDataDto?
+        guestDetails: CmdDataDto?,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY,
-                isCheckedIn
-            )
-            guestDetails?.sessionId?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.SESSION_ID_KEY,
-                    it
-                )
-            }
-            updateGuestDetails(guestDetailsDatastore, guestDetails)
-        }
-    }
-
-    private fun updateGuestDetails(
-        dataStore: DataStore<CmdDataDto>,
-        data: CmdDataDto?
-    ) {
-
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    sessionId = data?.sessionId,
-                    parentSessionId = data?.parentSessionId,
-                    adultContentDisabled = data?.adultContentDisabled,
-                    message = data?.message,
-                    guestFirstName = data?.guestFirstName,
-                    guestLastName = data?.guestLastName,
-                    adultLocked = data?.adultLocked,
-                    passcode = data?.passcode
-                )
-            }
+            preferenceHandler.updateDatastoreVariables(isCheckedIn = isCheckedIn, sessionId = guestDetails?.sessionId)
+            guestDetails?.let { updateDataStore.updateGuestData(it) }
         }
     }
 
     fun setAccountSetupResponseData(
-        data: AccountSetupResponse
+        data: AccountSetupResponse,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             updateDataStore.updateAccountData(data)
@@ -239,35 +205,16 @@ class RefreshingUiViewModel @Inject constructor(
     }
 
     fun setThemeResponseData(
-        data: ThemeResponse
+        data: ThemeResponse,
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            /*dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    accountId = data.accountId,
-                    fontCss = data.fontCss,
-                    gradientColor = data.gradientColor,
-                    id = data.id,
-                    spotLightColor = data.spotLightColor,
-                    themeBackgroundFileName = data.themeBackgroundFileName,
-                    themeLogoFileNameCloud = data.themeLogoFileNameCloud,
-                    themeBgFileName = data.themeBgFileName,
-                    themeBgFileNameCloud = data.themeBgFileNameCloud,
-                    themeCss = data.themeCss,
-                    type = data.type,
-                    version = data.version,
-                    themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
-                    themeLogoFileName = data.themeLogoFileName
-                )
-
-            }*/
             updateDataStore.updateThemeData(data)
         }
     }
 
     fun setHotelServicesResponseData(
-        data: HotelServiceResponse
+        data: HotelServiceResponse,
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -276,7 +223,7 @@ class RefreshingUiViewModel @Inject constructor(
     }
 
     fun setLocalAttractionResponseData(
-        data: LocalAttractionResponse
+        data: LocalAttractionResponse,
     ) {
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -285,57 +232,27 @@ class RefreshingUiViewModel @Inject constructor(
     }
 
     fun updateSyncList(
-        dataStore: DataStore<MoviesResponse>,
-        data: MoviesResponse
+        data: MoviesResponse,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    accountId = data.accountId,
-                    adultDayPassPrice = data.adultDayPassPrice,
-                    id = data.id,
-                    type = data.type,
-                    version = data.version,
-                    freeContentList = data.freeContentList,
-                    freeGenreList = data.freeGenreList,
-                    premiumContentList = data.premiumContentList,
-                    premiumGenreList = data.premiumGenreList
-                )
-            }
-        }
+        updateDataStore.updateMoviesData(data)
     }
 
     fun updateShowtimeData(
-        dataStore: DataStore<ShowTimeResponse>,
-        data: ShowTimeResponse
+        data: ShowTimeResponse,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    accountId = data.accountId,
-                    id = data.id,
-                    shoContentList = data.shoContentList,
-                    shoGenreList = data.shoGenreList,
-                    type = data.type,
-                    version = data.version
-                )
-            }
-        }
+        updateDataStore.updateShowTimeData(data)
     }
 
     fun updateChannelList(
-        dataStore: DataStore<ChannelListResponse>,
-        data: ChannelListResponse
+        data: ChannelListResponse,
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    channelLcnList = data.channelLcnList,
-                    type = data.type
-                )
-            }
-        }
+        updateDataStore.updateChannelListData(data)
+    }
+
+    fun updateGuestMessage(
+        data: MessageResponse,
+    ) {
+        updateDataStore.updateGuestMessageData(data)
     }
 
     fun getChannelList(dataStore: DataStore<ChannelListResponse>) {
@@ -349,20 +266,6 @@ class RefreshingUiViewModel @Inject constructor(
         }
     }
 
-    fun updateGuestMessage(
-        dataStore: DataStore<MessageResponse>,
-        data: MessageResponse
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    id = data.id,
-                    messagesList = data.messagesList,
-                    type = data.type,
-                )
-            }
-        }
-    }
 
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate

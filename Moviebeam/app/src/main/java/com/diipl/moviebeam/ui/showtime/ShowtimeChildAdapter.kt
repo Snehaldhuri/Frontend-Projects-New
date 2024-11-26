@@ -93,34 +93,34 @@ class ShowtimeChildAdapter(
         holder.itemView.setOnKeyListener { _, keycode, _ ->
             when (keycode) {
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    if (holder.absoluteAdapterPosition == 0 && pos == -1){
+                    if (holder.adapterPosition == 0 && pos == -1){
                         onLeftKey(true)
                     }
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                    pos = if (holder.adapterPosition == 0 && pos != 0){
                         -1
                     } else {
-                        holder.absoluteAdapterPosition
+                        holder.adapterPosition
                     }
                 }
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                    pos = if (holder.adapterPosition == 0 && pos != 0){
                         -1
                     } else {
-                        holder.absoluteAdapterPosition
+                        holder.adapterPosition
                     }
                 }
                 KeyEvent.KEYCODE_DPAD_UP -> {
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                    pos = if (holder.adapterPosition == 0 && pos != 0){
                         -1
                     } else {
-                        holder.absoluteAdapterPosition
+                        holder.adapterPosition
                     }
                 }
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
-                    pos = if (holder.absoluteAdapterPosition == 0 && pos != 0){
+                    pos = if (holder.adapterPosition == 0 && pos != 0){
                         -1
                     } else {
-                        holder.absoluteAdapterPosition
+                        holder.adapterPosition
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.diipl.moviebeam.utils
 
+import android.view.KeyEvent
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.btn.ConciergeBtnModel
@@ -29,6 +30,22 @@ object Constants {
     const val PROGRAM_SEARCH_KEY = 64
     const val NETFLIX_KEY = 65
     const val YOUTUBE_KEY = 66
+
+    // KeyCode for SEI Remote
+    const val ATV_EXIT_KEYCODE = KeyEvent.KEYCODE_F3
+    const val ATV_SEARCH_KEYCODE = KeyEvent.KEYCODE_F6
+    const val ATV_NETFLIX_KEYCODE = KeyEvent.KEYCODE_F7
+    const val ATV_YOUTUBE_KEYCODE = KeyEvent.KEYCODE_F8
+    const val ATV_GUIDE_KEYCODE = KeyEvent.KEYCODE_F9
+    const val ATV_APPS_KEYCODE = KeyEvent.KEYCODE_F10
+    const val ATV_LIVE_TV_KEYCODE = KeyEvent.KEYCODE_SCROLL_LOCK
+    const val ATV_CASTING_KEYCODE = KeyEvent.KEYCODE_BREAK
+    const val ATV_PRIME_VIDEO_KEYCODE = KeyEvent.KEYCODE_PROG_GREEN
+    const val ATV_LAST_CHANNEL_KEYCODE = KeyEvent.KEYCODE_LAST_CHANNEL
+    const val ATV_CAPTIONS_KEYCODE = KeyEvent.KEYCODE_CAPTIONS
+    const val ATV_BLUE_KEYCODE = KeyEvent.KEYCODE_PROG_YELLOW
+    const val ATV_SETTINGS_KEYCODE = KeyEvent.KEYCODE_PROG_BLUE
+
 
     // Movie Rental
     const val C_TYPE_MOVIE: String = "MOVIE"

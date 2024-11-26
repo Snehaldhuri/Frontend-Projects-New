@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.service
+package com.diipl.moviebeam.service.remote
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent

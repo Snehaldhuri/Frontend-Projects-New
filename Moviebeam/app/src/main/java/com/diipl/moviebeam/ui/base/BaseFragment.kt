@@ -5,18 +5,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.diipl.moviebeam.service.handler.PreferenceHandler
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 abstract class BaseFragment : Fragment(){
 
     abstract fun observeViewModel()
 
     protected abstract fun initViewBinding()
 
+    @Inject
+    lateinit var preferenceHandler: PreferenceHandler
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        preferenceHandler.loadAllData()
 
         initViewBinding()
         return super.onCreateView(inflater, container, savedInstanceState)

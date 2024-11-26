@@ -77,7 +77,7 @@ class ShowtimeMenuAdapter(
                 holder.card.setOnClickListener {
                     onMoviesMenuItemClicked(view, item.btnId)
                     holder.itemView.isSelected = true
-                    selectedPosition = holder.absoluteAdapterPosition
+                    selectedPosition = holder.adapterPosition
                     updateFocus(holder)
                     notifyUI()
                 }
@@ -96,7 +96,7 @@ class ShowtimeMenuAdapter(
     }
 
     private fun updateFocus(holder: MyViewHolder) {
-        if (selectedPosition == holder.absoluteAdapterPosition && holder.itemView.isSelected) {
+        if (selectedPosition == holder.adapterPosition && holder.itemView.isSelected) {
             holder.textView.setTextColor(Color.parseColor(Constants.COLOR_BLACK))
             holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_spotlight)
             holder.imageView.imageTintList = ColorStateList.valueOf(Color.BLACK)

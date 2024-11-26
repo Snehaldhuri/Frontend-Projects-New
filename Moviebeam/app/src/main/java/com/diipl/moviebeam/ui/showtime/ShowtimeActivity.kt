@@ -10,7 +10,6 @@ import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.datastore.core.DataStore
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
@@ -18,8 +17,6 @@ import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
 import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -36,17 +33,12 @@ import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ShowtimeActivity : BaseActivity() {
 
     private lateinit var binding: ActivityShowtimeBinding
-
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper =
-        PreferenceDataStoreHelper(this)
 
     @Inject
     lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
@@ -125,7 +117,7 @@ class ShowtimeActivity : BaseActivity() {
             is Resource.Loading -> binding.loaderView.toVisible()
             is Resource.Success -> {
                 status.data?.let { response ->
-                    updateShowsCount(showsCount = response.shoContentList.size)
+                    preferenceHandler.updateDatastoreVariables(showsCount = response.shoContentList.size)
                     val showTimeGenreMap: Map<String, List<Detail>> =
                         response.shoGenreList.associate { genre ->
                             genre.name to genre.detailList
@@ -268,17 +260,6 @@ class ShowtimeActivity : BaseActivity() {
 
     private fun fetchDataFromDataStore() {
         showtimeViewModel.getShowtimeResponseData(showtimeDataStore)
-    }
-
-    private fun updateShowsCount(showsCount: Int? = null) {
-        lifecycleScope.launch {
-            showsCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
-                    it
-                )
-            }
-        }
     }
 
 }

@@ -11,6 +11,8 @@ data class HotelChannel(
     val fileName: String = "",
     val httpStreaming: Boolean = false,
     val id: Int = 0,
+    val ip: String = "",
+    val port: String = "",
     val major: String = "",
     val minor: String = "",
     val recordable: Boolean = false,

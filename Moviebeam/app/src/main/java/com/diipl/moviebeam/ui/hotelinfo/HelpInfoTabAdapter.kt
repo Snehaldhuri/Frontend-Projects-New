@@ -44,7 +44,7 @@ class HelpInfoTabAdapter(
         holder.card.setBackgroundResource(R.drawable.btn_bg_gradient_default)
 
         holder.itemView.setOnClickListener {
-            onFocus(holder.absoluteAdapterPosition, it)
+            onFocus(holder.adapterPosition, it)
         }
 
     }

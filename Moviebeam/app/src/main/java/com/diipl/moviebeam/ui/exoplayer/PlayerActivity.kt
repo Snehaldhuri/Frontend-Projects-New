@@ -1,118 +1,331 @@
 package com.diipl.moviebeam.ui.exoplayer
 
-import android.media.tv.TvContentRating
-import android.media.tv.TvContract
-import android.media.tv.TvTrackInfo
-import android.media.tv.TvView
-import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import androidx.annotation.OptIn
-import androidx.appcompat.app.AppCompatActivity
+import android.view.KeyEvent
+import android.view.SurfaceHolder
 import androidx.databinding.DataBindingUtil
-import androidx.media3.common.MediaItem
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.UdpDataSource
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.diipl.moviebeam.R
+import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ActivityPlayerBinding
-import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
+import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
-
+import com.nes.libplayerapi.PlayerApi
+import com.nes.libplayerapi.bean.TrackBean
+import com.nes.libplayerapi.constant.ConstantKeys
+import com.nes.libplayerapi.listener.OnFingerPrintListener
+import com.nes.libplayerapi.listener.OnVideoStateListener
+import com.nes.libseiplayer.AbstractVideoPlayer
+import com.nes.libseiplayer.SeiPlayerImpl
+import java.util.concurrent.TimeUnit
 
 private const val TAG = "PlayerActivity"
 
-class PlayerActivity : AppCompatActivity() {
+class PlayerActivity : BaseActivity(), OnVideoStateListener {
 
     private lateinit var binding: ActivityPlayerBinding
+    private var currentPos = 0
+    private val handler = Handler(Looper.getMainLooper())
+    private var timeInSeconds = 0L
+    private val timeHandler = Handler(Looper.getMainLooper())
+    private var playerApi: PlayerApi = SeiPlayerImpl<AbstractVideoPlayer>()
+
+    private var isFirst = true
+
+    private val changeChannelRunnable = Runnable {
+        binding.cardTv.toGone()
+    }
+    private val runnable = object : Runnable {
+        override fun run() {
+            timeInSeconds++
+//            binding.tvNumber.text = formatTime(timeInSeconds)
+            timeHandler.postDelayed(this, 1000) // Update every second
+        }
+    }
+
+    private fun formatTime(seconds: Long): String {
+        val hours = TimeUnit.SECONDS.toHours(seconds)
+        val minutes = TimeUnit.SECONDS.toMinutes(seconds) % 60
+        val secs = seconds % 60
+        return String.format("%02d:%02d:%02d", hours, minutes, secs)
+    }
 
     companion object {
-        const val CBT_TERRESTRIAL = "TERRESTRIAL"
-        const val KEY_MAJOR = "major_number"
-        const val KEY_MINOR = "minor_number"
-        val CHANNEL_URI: Uri = TvContract.buildChannelUri(0)
-
-//        val UDP_URI: Uri = Uri.parse("udp://@232.100.103.1:1301")
-        val UDP_URI: Uri = Uri.parse("udp://@232.100.103.10:1310")
+        val programGuideList = mutableListOf<ChannelEpgDTO>()
     }
 
-    @UnstableApi
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun observeViewModel() {
+
+    }
+
+    override fun initViewBinding() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_player)
 
-        startRFPlay()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        currentPos = intent.getIntExtra("currentPos", 0)
+
+        playerApi.init(this)
+        playerApi.setLooping(true)
+        playerApi.subTitleViewGroup = binding.frameLayout
+
+        startPlayback()
+
+        setupSurface()
 
     }
 
-    @OptIn(UnstableApi::class)
-    private fun startIPTuning() {
-        binding.playerView.toVisible()
-        val player = ExoPlayer.Builder(this).build()
+    private fun startPlayback() {
+        handler.removeCallbacks(changeChannelRunnable)
+        timeHandler.removeCallbacks(runnable)
 
-        val factory = DataSource.Factory { UdpDataSource(300000, 100000) }
-        val mediaItem = MediaItem.Builder().setUri(UDP_URI).build()
-        val mediaSource = ProgressiveMediaSource.Factory(factory).createMediaSource(mediaItem)
-        player.setMediaSource(mediaSource)
-        binding.playerView.player = player
-        player.playWhenReady = true
-        player.prepare()
+        timeHandler.post(runnable)
+
+        val program = programGuideList[currentPos]
+        val udpUrl = program.setupUrl()
+
+        playerApi.url = udpUrl
+
+        if (isFirst) isFirst = false
+        else playerApi.start()
+
+        Log.e(TAG, "startPlayback: udpUrl ->> ${program.CNO} -- $udpUrl")
+
+        binding.tvChannelName.text =
+            "\nChannel No.   -->  ${program.CNO}  \nChannel Name  -->  ${program.CN} \nUDP  --> $udpUrl "
+        binding.cardTv.toVisible()
+        handler.postDelayed(changeChannelRunnable, 4000)
 
     }
 
-    private fun startRFPlay(){
-        binding.tvView.toVisible()
+    private fun ChannelEpgDTO.setupUrl() = "udp://@${this.param1}:${this.param2}"
 
-        val majorNumber = 40
-        val minorNumber = 2
+    fun setupSurface() {
+        binding.surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                val surface = holder.surface
+                playerApi.surface = surface
+                playerApi.start()
+            }
 
-        val bundle = Bundle().apply {
-            putInt(KEY_MAJOR, majorNumber)
-            putInt(KEY_MINOR, minorNumber)
-        }
+            override fun surfaceChanged(
+                holder: SurfaceHolder,
+                format: Int,
+                width: Int,
+                height: Int,
+            ) {
 
-        binding.tvView.tune(DTV_INPUT_ID, CHANNEL_URI, bundle)
+            }
 
-        binding.tvView.setCallback(object : TvView.TvInputCallback() {
-            override fun onConnectionFailed(inputId: String?) {
-                super.onConnectionFailed(inputId)
-                Log.e(TAG, "onConnectionFailed: $inputId")
+            override fun surfaceDestroyed(holder: SurfaceHolder) {
+
             }
-            override fun onDisconnected(inputId: String?) {
-                super.onDisconnected(inputId)
-                Log.e(TAG, "onDisconnected: $inputId")
-            }
-            override fun onTracksChanged(inputId: String?, tracks: MutableList<TvTrackInfo>?) {
-                super.onTracksChanged(inputId, tracks)
-                Log.e(TAG, "onTracksChanged: $inputId   ${tracks?.size}")
-            }
-            override fun onTrackSelected(inputId: String?, type: Int, trackId: String?) {
-                super.onTrackSelected(inputId, type, trackId)
-                Log.e(TAG, "onTrackSelected: $inputId, $type, $trackId")
-            }
-            override fun onVideoSizeChanged(inputId: String?, width: Int, height: Int) {
-                super.onVideoSizeChanged(inputId, width, height)
-                Log.e(TAG, "onVideoSizeChanged: $inputId, $width, $height")
-            }
-            override fun onVideoAvailable(inputId: String?) {
-                super.onVideoAvailable(inputId)
-                Log.e(TAG, "onVideoAvailable: $inputId")
-            }
-            override fun onVideoUnavailable(inputId: String?, reason: Int) {
-                super.onVideoUnavailable(inputId, reason)
-                Log.e(TAG, "onVideoUnavailable: $inputId  $reason")
-            }
-            override fun onContentAllowed(inputId: String?) {
-                super.onContentAllowed(inputId)
-                Log.e(TAG, "onContentAllowed: $inputId")
-            }
-            override fun onContentBlocked(inputId: String?, rating: TvContentRating?) {
-                super.onContentBlocked(inputId, rating)
-                Log.e(TAG, "onContentBlocked: $inputId   $rating")
-            }
+
         })
 
+        playerApi.setOnFingerPrintListener(object : OnFingerPrintListener {
+            override fun onVMXFingerPrintEvent(
+                mFingerPrintArray: ByteArray,
+                webClientVersion: String,
+                uniqueIdentifier: String,
+            ) {
+            }
+
+            override fun onVMXFingerPrintEvent(
+                type: Int,
+                duration: Int,
+                quadrant: Int,
+                frequency: Int,
+                opaqueness: Int,
+                reserve: Int,
+                localTime: String,
+                deviceId: String,
+                clientVersion: String,
+            ) {
+            }
+
+            override fun onNagraFingerPrintEvent(mFingerPrint: String) {}
+        })
+        playerApi.addOnStateChangeListener(this)
+        playerApi.addOnVideoSizeChangeListeners { i, i1 -> }
     }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        playerApi.stop()
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        programGuideList.clear()
+    }
+
+    private fun channelUp() {
+        Log.e(TAG, "channelUp: $currentPos")
+        currentPos++
+        Log.e(TAG, "channelUp: ${programGuideList.count()}   $currentPos")
+        if (currentPos == programGuideList.count())
+            currentPos = 0
+
+        startPlayback()
+    }
+
+    private fun channelDown() {
+        Log.e(TAG, "channelDown: $currentPos")
+        currentPos--
+        Log.e(TAG, "channelDown: After $currentPos")
+        if (currentPos < 0)
+            currentPos = programGuideList.count() - 1
+
+        startPlayback()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        when (keyCode) {
+            /* KeyEvent.KEYCODE_DPAD_LEFT -> {
+                 seekBackward(30)
+             }
+
+             KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                 seekForward(30)
+             }
+
+             KeyEvent.KEYCODE_DPAD_CENTER -> playPause()*/
+
+            KeyEvent.KEYCODE_CHANNEL_DOWN,
+            KeyEvent.KEYCODE_DPAD_DOWN,
+            -> {
+                playerApi.stop()
+                channelDown()
+            }
+
+            KeyEvent.KEYCODE_CHANNEL_UP,
+            KeyEvent.KEYCODE_DPAD_UP,
+            -> {
+                playerApi.stop()
+                channelUp()
+            }
+
+
+            KeyEvent.KEYCODE_1 -> {
+                toggleAudioTrack()
+            }
+
+            KeyEvent.KEYCODE_2 -> {
+                toggleVideoTrack()
+            }
+
+            KeyEvent.KEYCODE_3 -> {
+                toggleSubtitle()
+            }
+
+            KeyEvent.KEYCODE_BACK -> onBackPressed()
+
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    fun playPause() {
+        if (playerApi.isPlaying) {
+            playerApi.pause()
+        } else {
+            playerApi.resume()
+        }
+    }
+
+    fun seekForward(second: Long) {
+        val position: Long = playerApi.currentPosition + second * 1000
+        playerApi.seekTo(position)
+    }
+
+    fun seekBackward(second: Int) {
+        val position: Long = playerApi.currentPosition - second * 1000
+        playerApi.seekTo(position)
+    }
+
+    override fun onPlayStateChanged(i: Int) {
+        var state = "IDLE"
+        when (i) {
+            ConstantKeys.CurrentState.STATE_ERROR -> state = "ERROR"
+            ConstantKeys.CurrentState.STATE_IDLE -> state = "IDLE"
+            ConstantKeys.CurrentState.STATE_PREPARING -> state = "PREPARING"
+            ConstantKeys.CurrentState.STATE_PREPARED -> state = "PREPARED"
+            ConstantKeys.CurrentState.STATE_PLAYING -> state = "PLAYING"
+            ConstantKeys.CurrentState.STATE_PAUSED -> state = "PAUSED"
+            ConstantKeys.CurrentState.STATE_BUFFERING_END -> state = "BUFFERING_END"
+            ConstantKeys.CurrentState.STATE_BUFFERING_START -> state = "BUFFERING_START"
+            ConstantKeys.CurrentState.STATE_COMPLETED -> state = "COMPLETED"
+            ConstantKeys.CurrentState.STATE_START_ABORT -> state = "START_ABORT"
+        }
+        //binding.tvNumber.text = state
+        Log.e(TAG, "onPlayStateChanged: $state  ${playerApi.isPlaying}")
+        binding.progressBar.toVisible()
+        if (i == ConstantKeys.CurrentState.STATE_ERROR) {
+            binding.progressBar.toGone()
+            binding.cardError.toVisible()
+            binding.tvError.text = "Unable to tune, please try later..."
+        } else {
+            binding.cardError.toGone()
+            binding.tvError.text = ""
+            if (i == ConstantKeys.CurrentState.STATE_PLAYING) binding.progressBar.toGone()
+        }
+
+    }
+
+    override fun onImplPlayerInit() {
+
+    }
+
+    fun toggleSubtitle() {
+        val trackBeans: List<TrackBean> = playerApi.subTitleList
+        var i = 0
+        while (i < trackBeans.size) {
+            if (trackBeans[i].isSelected) {
+                break
+            }
+            i++
+        }
+        if (i >= trackBeans.size - 1) {
+            i = 0
+        } else {
+            i++
+        }
+        playerApi.selectTrack(trackBeans[i])
+    }
+
+    fun toggleVideoTrack() {
+        val trackBeans: List<TrackBean> = playerApi.videoList
+        if (currentPos >= trackBeans.size - 1) {
+            currentPos = 0
+        } else {
+            currentPos++
+        }
+        playerApi.selectTrack(trackBeans[currentPos])
+    }
+
+    fun toggleAudioTrack() {
+        val trackBeans: List<TrackBean> = playerApi.audioList
+        var i = 0
+        while (i < trackBeans.size) {
+            if (trackBeans[i].isSelected) {
+                break
+            }
+            i++
+        }
+        if (i >= trackBeans.size - 1) {
+            i = 0
+        } else {
+            i++
+        }
+        playerApi.selectTrack(trackBeans[i])
+    }
+
+
 }

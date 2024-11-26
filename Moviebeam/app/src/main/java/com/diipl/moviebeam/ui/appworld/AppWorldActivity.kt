@@ -20,35 +20,24 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.SelectedApps
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityAppWorldBinding
 import com.diipl.moviebeam.databinding.PopupLayoutBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.callNetflixAPI
 import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadLogo
-import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
-import okhttp3.Response
-import org.json.JSONObject
-import java.io.IOException
 import java.util.Collections
 import javax.inject.Inject
 
@@ -123,69 +112,28 @@ class AppWorldActivity : BaseActivity() {
             }
 
             val adapter = AppAdapter {
-                if (packageManager.getLaunchIntentForPackage(it.packageName) == null) {
-                    launchAppSecured(it.packageName)
-                } else {
-                    launchApp(it.packageName)
-                }
+                launchApp(it.packageName)
             }
             adapter.setAppList(list)
             binding.rvApps.adapter = adapter
             appList = ArrayList(apiApps)
-            updateAppList(apiApps)
+            preferenceHandler.updateDatastoreVariables(appList = apiApps)
         } catch (e: Exception) {
             logE("getInstalledApps Exception in AppWorldMain activity ${e.message}")
         }
     }
 
-    private fun createRequestBody(roomNo: String, ua: String, accessType: Int): String {
-        val netflixDetails = JSONObject().apply {
-            put("stbRoomNo", roomNo)
-            put("ua", ua)
-            put("accessType", accessType)
-        }
-        return netflixDetails.toString()
-    }
-
-    private fun postRequest(url: String, requestBody: String) {
-        val client = OkHttpClient()
-
-        val request = Request.Builder()
-            .url(url)
-            .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody))
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-                logE("Network error: ${e.message}")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    logD("sessionId url success")
-                } else {
-                    val responseBody = response.body?.string() ?: "No response body"
-                    val responseCode = response.code
-                    logE("sessionId Failed to call URL. Response code: $responseCode, Response body: $responseBody")
-                }
-            }
-        })
-    }
-
     private fun launchApp(packageName: String) {
         try {
-            startActivity(packageManager.getLaunchIntentForPackage(packageName))
-
             if (packageName == Constants.NETFLIX_PACKAGE_NAME) {
-                val sessionId = GuestDetails.SESSION_ID
-                val url =
-                    "https://stb.moviebeam.com:1930/LG/rest/content/netflixAccess/enter?sessionId=$sessionId"
+                callNetflixAPI(stbRoomNo, ua, 1)
+                NETFLIX_LAUNCHED = true
+            }
 
-                val requestBody = createRequestBody(stbRoomNo, ua, 1)
-
-                postRequest(url, requestBody)
-                NETFLIX_LAUNCHED = true;
+            if (packageManager.getLaunchIntentForPackage(packageName) == null) {
+                launchAppSecured(packageName)
+            } else {
+                startActivity(packageManager.getLaunchIntentForPackage(packageName))
             }
 
         } catch (e: Exception) {
@@ -273,34 +221,9 @@ class AppWorldActivity : BaseActivity() {
         popupBinding.tvPopupText.text = getString(R.string.app_world_clear_credentials_message)
     }
 
-    private fun updateAppList(appList: Set<String>) {
-        lifecycleScope.launch {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.APP_LIST_KEY,
-                appList
-            )
-        }
-    }
-
     private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            stbRoomNo = getStbRoomNo()
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getStbRoomNo(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
+            stbRoomNo = preferenceHandler.roomNo
+            ua = preferenceHandler.UA
     }
 
     fun handleBackClick() {

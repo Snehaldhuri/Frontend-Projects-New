@@ -1,29 +1,19 @@
 package com.diipl.moviebeam.ui.mainmenu
 
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import androidx.activity.viewModels
 import androidx.core.view.updateLayoutParams
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.GridLayoutManager
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
@@ -35,7 +25,6 @@ import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMainMenuBinding
 import com.diipl.moviebeam.service.kappingservice.Actions
@@ -82,6 +71,10 @@ import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.Player
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -139,7 +132,6 @@ class MainMenuActivity : BaseActivity() {
             accountSetupDataStore
         )
     }
-    private lateinit var borderAnimator: ObjectAnimator
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
@@ -166,25 +158,6 @@ class MainMenuActivity : BaseActivity() {
             }
         }
         mainMenuViewModel.getAccountSetupResponseData(accountSetupDataStore)
-    }
-
-    private fun startBorderAnimation() {
-        val borderAnimator = ObjectAnimator.ofArgb(
-            binding.cardClearCredentials,
-            "strokeColor",
-            Color.RED,
-            Color.TRANSPARENT
-        )
-        borderAnimator.duration = 2000
-        borderAnimator.repeatMode = ValueAnimator.REVERSE
-        borderAnimator.repeatCount = ValueAnimator.INFINITE
-        borderAnimator.start()
-    }
-
-    private fun stopBorderAnimation() {
-        if (::borderAnimator.isInitialized) {
-            borderAnimator.cancel()
-        }
     }
 
     @SuppressLint("UnsafeOptInUsageError")
@@ -215,7 +188,7 @@ class MainMenuActivity : BaseActivity() {
         player = ExoPlayer.Builder(this).build()
         player.trackSelectionParameters = player.trackSelectionParameters
             .buildUpon()
-            .setMaxVideoSize(1920, 1080)
+            .setMaxVideoSizeSd()
             .build()
         binding.videoView.player = player
     }
@@ -255,12 +228,6 @@ class MainMenuActivity : BaseActivity() {
         HOTEL_VIDEO_LOOP_COUNT = 3
     }
 
-    private fun animateScale(view: View, animationId: Int) {
-        val anim: Animation = AnimationUtils.loadAnimation(view.context, animationId)
-        view.startAnimation(anim)
-        anim.fillAfter = true
-    }
-
     private fun initializePlayer() {
         init()
         playCount++
@@ -286,6 +253,7 @@ class MainMenuActivity : BaseActivity() {
             super.onPlayerError(error)
             Log.e("TAG", "onPlayerError: ${error.localizedMessage}")
             if (error.localizedMessage!! == "Source error") releaseVideoPlayer()
+            if (error.localizedMessage!!.contains("MediaCodecAudioRenderer error")) releaseVideoPlayer()
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
@@ -306,13 +274,12 @@ class MainMenuActivity : BaseActivity() {
         binding.root.loadBg()
         if (::player.isInitialized) {
             player.stop()
-            player.release()
+//            player.release()
         }
     }
 
     private fun handleTickerResponse(status: Resource<TickerResponse>) {
         when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
@@ -344,7 +311,6 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleAccountSetupResponse(status: Resource<AccountSetupResponse>?) {
         when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let { response ->
@@ -414,15 +380,6 @@ class MainMenuActivity : BaseActivity() {
                             releaseVideoPlayer()
                             val bundle = Bundle()
                             ThemeDetails.TITLE = btn.title
-                            /* bundle.putString(
-                                 "hotelChannel",
-                                 response.hotelChannelList.get(0).toJson()
-                             )
-                             val hotelChannelVideo =
-                                 response.httpStreamingHotelvideoUrl + response.hotelChannelList.get(
-                                     0
-                                 ).fileName
-                             bundle.putString("hotelChannelVideo", hotelChannelVideo)*/
                             var intent: Intent? = null
                             when (btn.btnId) {
                                 Constants.HOTEL_SERVICES_ID -> {
@@ -472,7 +429,6 @@ class MainMenuActivity : BaseActivity() {
                                     intent = if (isNetworkConnected == -1) {
                                         Intent(this, DisconnectedPrgActivity::class.java)
                                     } else {
-                                        //Intent(this, ProgramGuideActivity::class.java)
                                         Intent(this, NewProgramGuideActivity::class.java)
                                     }
 
@@ -480,8 +436,6 @@ class MainMenuActivity : BaseActivity() {
 
                                 Constants.IN_ROOM_DINING_ID -> {
                                     intent = Intent(this, InRoomDiningActivity::class.java)
-//                            intent = Intent(this, GuestServiceActivity::class.java)
-//                            intent.putExtra("btnId", IN_ROOM_ID)
                                 }
 
                                 Constants.CONCIERGE_MAIN_ID -> {
@@ -556,10 +510,6 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleGuestMessageResponse(status: Resource<MessageResponse>) {
         when (status) {
-            is Resource.Loading -> {
-//                binding.loaderView.toVisible()
-            }
-
             is Resource.Success -> {
                 try {
                     guestServiceViewModel.getAccountSetupResponseData(accountSetupDataStore)
@@ -591,7 +541,6 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleGuestDetailsResponse(status: Resource<CmdDataDto>) {
         when (status) {
-            is Resource.Loading -> binding.pbLoader.toVisible()
             is Resource.Success -> {
                 try {
                     status.data?.let {
@@ -644,48 +593,11 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-//    override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-//        when (keyCode) {
-//            KeyEvent.KEYCODE_BACK -> {}
-//        }
-//        return false
-//    }
-
     private fun initializeDatastoreParams() = lifecycleScope.launch {
-        hotelVideoUrl = getHotelVideoUrl()
-        gradientStartColor = getGradientStartColor()
-        gradientEndColor = getGradientEndColor()
-        castingUrl = getCastingUrl()
-        Log.e(TAG, "initializeDatastoreParams: $castingUrl")
-    }
-
-
-    private suspend fun getHotelVideoUrl(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getGradientStartColor(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-            Constants.DEFAULTGRADIENTSTARTCOLOR
-        )
-    }
-
-    private suspend fun getGradientEndColor(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-            Constants.DEFAULTGRADIENTENDCOLOR
-        )
-    }
-
-    private suspend fun getCastingUrl(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.CASTING_URL_KEY,
-            ""
-        )
+        hotelVideoUrl = preferenceHandler.hotelVideoUrl
+        gradientStartColor = preferenceHandler.gradientStartColor
+        gradientEndColor = preferenceHandler.gradientEndColor
+        castingUrl = preferenceHandler.castingUrl
     }
 
     private fun showPatchWall() = lifecycleScope.launch {

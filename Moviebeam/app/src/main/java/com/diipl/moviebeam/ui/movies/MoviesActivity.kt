@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.movies
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
@@ -19,7 +18,6 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityMoviesBinding
 import com.diipl.moviebeam.service.LoggingService
@@ -183,10 +181,7 @@ class MoviesActivity : BaseActivity() {
         binding.dialogContainer.toGone()
 
         lifecycleScope.launch {
-            val isFree = preferenceDataStoreHelper.getFirstPreference(
-                PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS,
-                false
-            )
+            val isFree = preferenceHandler.isAdultDayPass
             if (isFree && activityStack.contains(C_TYPE_MOVIE)) {
                 if (preference.isAdultPassCodeEmpty)
                     setAdultData(adultResponse)
@@ -259,7 +254,7 @@ class MoviesActivity : BaseActivity() {
             is Resource.Success -> {
                 lifecycleScope.launch {
                     status.data?.let { response ->
-                        updateMoviesCount(
+                        preferenceHandler.updateDatastoreVariables(
                             moviesCount = response.freeContentList.size.plus(response.premiumContentList.size),
                             cListVersion = response.version
                         )
@@ -541,23 +536,6 @@ class MoviesActivity : BaseActivity() {
             activityStack.add(this::class.java.simpleName)
         } else {
             finish()
-        }
-    }
-
-    private fun updateMoviesCount(moviesCount: Int? = null, cListVersion: String? = null) {
-        lifecycleScope.launch {
-            moviesCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
-                    it
-                )
-            }
-            cListVersion?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
-                    it
-                )
-            }
         }
     }
 

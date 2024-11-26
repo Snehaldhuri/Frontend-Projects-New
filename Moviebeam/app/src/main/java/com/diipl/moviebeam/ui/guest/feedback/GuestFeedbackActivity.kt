@@ -9,12 +9,9 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityGuestFeedbackBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.feedback.FeedbackViewModel
@@ -28,7 +25,6 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class GuestFeedbackActivity : BaseActivity() {
@@ -36,12 +32,6 @@ class GuestFeedbackActivity : BaseActivity() {
     private lateinit var binding: ActivityGuestFeedbackBinding
     private val feedbackViewModel: FeedbackViewModel by viewModels()
     private var lastFocusedStar: ImageView? = null
-
-    // Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(this)
-    }
-    private var ua = ""
 
     override fun observeViewModel() {
         observe(feedbackViewModel.feedbackLiveData, ::handleFeedbackResponse)
@@ -70,7 +60,6 @@ class GuestFeedbackActivity : BaseActivity() {
         }
 
         setContentView(binding.root)
-        this.initializeDatastoreParams()
         setupUI()
     }
 
@@ -227,21 +216,9 @@ class GuestFeedbackActivity : BaseActivity() {
     }
 
     private fun sendFeedback(feedback: String) {
-        feedbackViewModel.sendGuestFeedback(ua, feedback)
+        feedbackViewModel.sendGuestFeedback(preferenceHandler.UA, feedback)
     }
 
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
     fun handleBackClick() {
         finish()
     }

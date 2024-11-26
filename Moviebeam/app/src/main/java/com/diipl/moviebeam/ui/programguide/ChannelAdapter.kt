@@ -45,7 +45,7 @@ class ChannelAdapter(
         val item = channelList?.get(position)
         holder.binding.tvChannelNo.text = item?.CNO.toString()
 
-        if (focusIndex == holder.absoluteAdapterPosition) {
+        if (focusIndex == holder.adapterPosition) {
             holder.binding.root.requestFocus()
         } else holder.binding.root.clearFocus()
 

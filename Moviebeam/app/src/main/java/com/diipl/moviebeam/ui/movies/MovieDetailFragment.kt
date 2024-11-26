@@ -10,22 +10,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
-import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.ThemeDetails
-import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.loadImagesWithGlideExtPoster
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.showToast
@@ -33,7 +29,6 @@ import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
 
 private const val TAG = "MovieDetailFragment"
 
@@ -44,20 +39,16 @@ class MovieDetailFragment : BaseFragment() {
     val binding get() = _binding!!
 
     var movie: ContentDto? = null
-    private var isCheckedIn = false
 
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
         PreferenceDataStoreHelper(requireContext())
     }
-
-    private var ua = ""
 
     private var seekPosition: Long = 0
     private var rentalID = ""
     private var isAdultDayPassPurchased = false
 
     override fun observeViewModel() {
-        observe(viewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(viewModel.adultDayPassStatus, ::handleAdultPassResponse)
         observeToast(viewModel.showToast)
     }
@@ -67,7 +58,7 @@ class MovieDetailFragment : BaseFragment() {
     }
 
     override fun initViewBinding() {
-        initializeDatastoreParams()
+
     }
 
     override fun onCreateView(
@@ -81,8 +72,6 @@ class MovieDetailFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        viewModel.validateSession(preferenceDataStoreHelper)
 
         viewModel.getAdultStatus(preferenceDataStoreHelper)
 
@@ -177,7 +166,7 @@ class MovieDetailFragment : BaseFragment() {
     private fun apiCall(seekType: Int, cType: String) {
         val request = RentalMovieRequest()
         movie?.let {
-            request.UA = ua
+            request.UA = preferenceHandler.UA
             request.productId = it.productId
             request.releaseID = it.releaseId
             request.price = it.price
@@ -314,25 +303,8 @@ class MovieDetailFragment : BaseFragment() {
         }
     }
 
-    private fun handleValidateSessionResponse(status: Boolean) {
-        this.isCheckedIn = status
-    }
-
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
         binding.root.showToast(this, event, Snackbar.LENGTH_LONG)
-    }
-
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
     private fun handleFocus(view: View, focused: Boolean){

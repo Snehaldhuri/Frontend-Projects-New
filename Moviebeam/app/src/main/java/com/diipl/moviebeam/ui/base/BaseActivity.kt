@@ -2,7 +2,6 @@ package com.diipl.moviebeam.ui.base
 
 import android.app.Activity
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
@@ -20,13 +19,14 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.accountsetup.Buttons
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.casting.HotspotActivity
 import com.diipl.moviebeam.ui.concierge.ConciergeActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
 import com.diipl.moviebeam.ui.guest.feedback.GuestFeedbackActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guest.news.NewsActivity
@@ -40,10 +40,10 @@ import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.weather.WeatherActivity
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.Constants.APPS
-import com.diipl.moviebeam.utils.Constants.PROGRAM_GUIDE
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.isNotEmptyOrNull
+import com.diipl.moviebeam.utils.isPackageExists
 import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.setIPInfo
@@ -59,14 +59,12 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TAG = "BaseActivity"
-
 @AndroidEntryPoint
 abstract class BaseActivity : AppCompatActivity() {
 
     abstract fun observeViewModel()
     protected abstract fun initViewBinding()
 
-    lateinit var context: Context
     private var castingUrl = ""
 
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
@@ -77,13 +75,17 @@ abstract class BaseActivity : AppCompatActivity() {
     @Inject
     lateinit var accountSetupData: DataStore<AccountSetupResponse>
 
+    @Inject
+    lateinit var preferenceHandler: PreferenceHandler
+
     val mainMenuButtonList: MutableList<Buttons> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentActivity = this
-        context = this
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
+
+        preferenceHandler.loadAllData()
 
         launchLogger()
         initViewBinding()
@@ -95,7 +97,7 @@ abstract class BaseActivity : AppCompatActivity() {
 
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {
-            castingUrl = getCastingUrl()
+            castingUrl = preferenceHandler.castingUrl
             mainMenuButtonList.addAll(accountSetupData.data.first().buttonsList)
         }
     }
@@ -166,7 +168,10 @@ abstract class BaseActivity : AppCompatActivity() {
             return true
         }
         if (currentActivity is MainMenuActivity) {
-//            (currentActivity as DisconnectedPrgActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is LiveTVActivity) {
+            (currentActivity as LiveTVActivity).handleBackRemoteClick()
             return true
         }
         return false
@@ -174,89 +179,149 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
         Log.d(
-            "TAG",
-            "onKeyDown: keycode: $keyCode keyEvent.keyCode ${keyEvent.keyCode} keyEvent.action ${keyEvent.action} keyEvent.displayLabel ${keyEvent.displayLabel}  keyEvent.number ${keyEvent.number} keyEvent.scanCode ${keyEvent.scanCode} keyEvent.unicodeChar ${keyEvent.unicodeChar} source: ${keyEvent.source}"
+            "onKeyDown", " keycode: $keyCode keyCode ${keyEvent.keyCode} action " +
+                    "${keyEvent.action} displayLabel ${keyEvent.displayLabel}  number ${keyEvent.number} " +
+                    "scanCode ${keyEvent.scanCode} unicodeChar ${keyEvent.unicodeChar} source: ${keyEvent.source}"
         )
+
         if (keyEvent.source == InputDevice.SOURCE_HDMI)
             return true
 
-        when (keyCode) {
-            KeyEvent.KEYCODE_BACK -> {
-                handleBackKeyAndExitKey()
-
-            }
+        return when (BuildConfig.BUILD_TYPE) {
+            Constants.BUILD_TYPE_STB -> onSTBKeyDown(keyCode, keyEvent)
+            Constants.BUILD_TYPE_CHROMECAST -> onCCKeyDown(keyCode, keyEvent)
+            else -> false
         }
 
-        if (keyEvent.scanCode == Constants.APP_WORLD_KEY) {
-            //Apps
-            if (!checkMenuButtonInButtonListExists(Constants.APPS_ID)) {
-                //return it: don't do anything
-                return true
-            }
-            if (currentActivity !is AppWorldActivity) {
-                ThemeDetails.TITLE = APPS
-                intent = Intent(this, AppWorldActivity::class.java)
-                startActivity(intent)
-            }
+    }
+
+    private fun onCCKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
+        Log.e(TAG, "onCCKeyDown: ")
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            handleBackKeyAndExitKey()
         }
-        if (keyEvent.scanCode == Constants.LIVE_TV_KEY || keyEvent.scanCode == Constants.GUIDE_KEY) {
-            //program Guide
-            if (!checkMenuButtonInButtonListExists(Constants.PRG_GUIDE_ID)) {
-                //return it: don't do anything
-                return true
+
+        when (keyEvent.scanCode) {
+            Constants.APP_WORLD_KEY -> {
+                if (!checkMenuButtonInButtonListExists(Constants.APPS_ID)) {
+                    //return it: don't do anything
+                    return true
+                }
+                if (currentActivity !is AppWorldActivity) {
+                    ThemeDetails.TITLE = Constants.APPS
+                    intent = Intent(this, AppWorldActivity::class.java)
+                    startActivity(intent)
+                }
             }
 
-            if (currentActivity !is NewProgramGuideActivity) {
-                val bundle = Bundle()
-                ThemeDetails.TITLE = PROGRAM_GUIDE
-                val intent = Intent(this, NewProgramGuideActivity::class.java)
-                intent.putExtras(bundle)
-                startActivity(intent)
-            }
-        }
-        if (keyEvent.scanCode == Constants.CASTING_KEY) {
-            //Casting
-            if (!checkMenuButtonInButtonListExists(Constants.CASTING_ID)) {
-                //return it: don't do anything
-                return true
+            Constants.LIVE_TV_KEY,
+            Constants.GUIDE_KEY -> {
+                if (!checkMenuButtonInButtonListExists(Constants.PRG_GUIDE_ID)) {
+                    //return it: don't do anything
+                    return true
+                }
+
+                if (currentActivity !is NewProgramGuideActivity) {
+                    ThemeDetails.TITLE = Constants.PROGRAM_GUIDE
+                    val intent = Intent(this, NewProgramGuideActivity::class.java)
+                    startActivity(intent)
+                }
             }
 
-            if (currentActivity !is CastingActivity) {
-                if (BuildConfig.BUILD_TYPE.equals(Constants.BUILD_TYPE_STB)) {
-                    if (castingUrl.isNullOrEmpty()) {
-                        intent = Intent(this, HotspotActivity::class.java)
-                    } else {
-                        intent = Intent(this, CastingActivity::class.java)
-                    }
-                } else {
-                    if (!castingUrl.isNullOrEmpty()) {
+            Constants.CASTING_KEY -> {
+                if (!checkMenuButtonInButtonListExists(Constants.CASTING_ID)) {
+                    //return it: don't do anything
+                    return true
+                }
+                if (currentActivity !is CastingActivity) {
+                    if (castingUrl.isNotEmptyOrNull()) {
                         intent = Intent(this, CastingActivity::class.java)
                     } else {
                         showToast(getString(R.string.please_contact_the_front_desk_for_assistance))
                     }
+                    startActivity(intent)
                 }
-                startActivity(intent)
             }
-        }
-        if (keyEvent.scanCode == Constants.EXIT_KEY) {
-            //Exit
-            handleBackKeyAndExitKey()
-        }
-        if (keyEvent.scanCode == Constants.PROGRAM_SEARCH_KEY) {
-            //Search
-            if (currentActivity is NewProgramGuideActivity) {
-                ThemeDetails.TITLE = PROGRAM_GUIDE
-                (currentActivity as NewProgramGuideActivity).showSearchDialog()
+
+            Constants.EXIT_KEY -> handleBackKeyAndExitKey()
+
+            Constants.PROGRAM_SEARCH_KEY -> {
+                if (currentActivity is NewProgramGuideActivity) {
+                    ThemeDetails.TITLE = Constants.PROGRAM_GUIDE
+                    (currentActivity as NewProgramGuideActivity).showSearchDialog()
+                }
             }
+
+            Constants.NETFLIX_KEY -> onBaseAppClicked(Constants.NETFLIX_PACKAGE_NAME)
+            Constants.YOUTUBE_KEY -> onBaseAppClicked(Constants.YOUTUBE_PACKAGE_NAME)
+
         }
-        if (keyEvent.scanCode == Constants.NETFLIX_KEY) {
-            // Netflix
-            onBaseAppClicked(Constants.NETFLIX_PACKAGE_NAME)
+
+        return false
+    }
+
+    private fun onSTBKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
+        Log.e(TAG, "onSTBKeyDown: ")
+        when (keyCode) {
+            KeyEvent.KEYCODE_BACK,
+            Constants.ATV_EXIT_KEYCODE -> handleBackKeyAndExitKey()
+
+            Constants.ATV_APPS_KEYCODE -> {
+                if (!checkMenuButtonInButtonListExists(Constants.APPS_ID)) {
+                    //return it: don't do anything
+                    return true
+                }
+                if (currentActivity !is AppWorldActivity) {
+                    ThemeDetails.TITLE = Constants.APPS
+                    intent = Intent(this, AppWorldActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+
+            Constants.ATV_LIVE_TV_KEYCODE,
+            Constants.ATV_GUIDE_KEYCODE -> {
+                if (!checkMenuButtonInButtonListExists(Constants.PRG_GUIDE_ID)) {
+                    return true
+                }
+
+                if (currentActivity !is NewProgramGuideActivity) {
+                    ThemeDetails.TITLE = Constants.PROGRAM_GUIDE
+                    val intent = Intent(this, NewProgramGuideActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+
+            Constants.ATV_CASTING_KEYCODE -> {
+                if (!checkMenuButtonInButtonListExists(Constants.CASTING_ID)) {
+                    //return it: don't do anything
+                    return true
+                }
+                if (currentActivity !is CastingActivity) {
+                    intent = if (castingUrl.isNotEmptyOrNull()) {
+                        Intent(this, CastingActivity::class.java)
+                    } else {
+                        Intent(this, HotspotActivity::class.java)
+                    }
+                    startActivity(intent)
+                }
+            }
+
+            Constants.ATV_SEARCH_KEYCODE -> {
+                if (currentActivity is NewProgramGuideActivity) {
+                    ThemeDetails.TITLE = Constants.PROGRAM_GUIDE
+                    (currentActivity as NewProgramGuideActivity).showSearchDialog()
+                }
+            }
+
+            Constants.ATV_NETFLIX_KEYCODE -> onBaseAppClicked(Constants.NETFLIX_PACKAGE_NAME)
+            Constants.ATV_YOUTUBE_KEYCODE -> onBaseAppClicked(Constants.YOUTUBE_PACKAGE_NAME)
+
+            Constants.ATV_LAST_CHANNEL_KEYCODE -> showToast("LAST KEY is clicked")
+            Constants.ATV_CAPTIONS_KEYCODE -> showToast("CC KEY is clicked")
+            Constants.ATV_BLUE_KEYCODE -> showToast("BLUE KEY is clicked")
+
         }
-        if (keyEvent.scanCode == Constants.YOUTUBE_KEY) {
-            //Youtube
-            onBaseAppClicked(Constants.YOUTUBE_PACKAGE_NAME)
-        }
+
         return false
     }
 
@@ -290,19 +355,12 @@ abstract class BaseActivity : AppCompatActivity() {
         return btnList.isNotEmpty()
     }
 
-    private suspend fun getCastingUrl(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.CASTING_URL_KEY,
-            ""
-        )
-    }
-
     protected open fun fragmentTransaction(
         transactionType: Int,
         fragment: Fragment,
         container: Int,
         isAddToBackStack: Boolean,
-        bundle: Bundle?
+        bundle: Bundle?,
     ) {
         if (bundle != null) {
             fragment.arguments = bundle
@@ -351,17 +409,19 @@ abstract class BaseActivity : AppCompatActivity() {
         }
     }
 
-    fun onBaseAppClicked(packageName: String) {
-        if (context.packageManager.getLaunchIntentForPackage(packageName) == null) {
-            launchAppSecured(packageName)
-        } else {
-            launchApp(packageName)
-        }
+    private fun onBaseAppClicked(packageName: String) {
+        if (isPackageExists(packageName)) {
+            if (packageManager.getLaunchIntentForPackage(packageName) == null) {
+                launchAppSecured(packageName)
+            } else {
+                launchApp(packageName)
+            }
+        } else showToast(getString(R.string.app_not_available))
     }
 
     private fun launchApp(packageName: String) {
-        context.startActivity(
-            context.packageManager.getLaunchIntentForPackage(packageName)?.addFlags(
+        startActivity(
+            packageManager.getLaunchIntentForPackage(packageName)?.addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP
             )
@@ -371,7 +431,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun launchAppSecured(packageName: String?) {
         val intent = Intent()
         intent.setPackage(packageName)
-        val pm = context.packageManager
+        val pm = packageManager
         val resolveInfoList = pm.queryIntentActivities(intent, PackageManager.GET_META_DATA)
         Collections.sort(resolveInfoList, ResolveInfo.DisplayNameComparator(pm))
         if (resolveInfoList.isNotEmpty()) {
@@ -391,7 +451,7 @@ abstract class BaseActivity : AppCompatActivity() {
             }
             i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-            context.startActivity(i)
+            startActivity(i)
         }
     }
 

@@ -7,20 +7,12 @@ import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityExoPlayerBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
@@ -31,12 +23,15 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.fromJson
 import com.diipl.moviebeam.utils.getLastSeek
 import com.diipl.moviebeam.utils.observe
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.Player
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-
 
 private const val TAG = "ExoPlayerActivity"
+
 @AndroidEntryPoint
 class ExoPlayerActivity : BaseActivity() {
 
@@ -59,11 +54,6 @@ class ExoPlayerActivity : BaseActivity() {
     private lateinit var showTimeModel: ShowTimeModel
     private lateinit var movieData: ContentDto
     private lateinit var seriesData: Detail
-
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper =
-        PreferenceDataStoreHelper(this)
-    private var ua = ""
 
     override fun observeViewModel() {
         observe(moviesViewModel.rentalReversal, ::handleRentalReversalResponse)
@@ -90,8 +80,6 @@ class ExoPlayerActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        this.initializeDatastoreParams()
 
         if (intent != null) {
             intent.extras?.getString(Constants.MOVIE_DETAILS)?.let { movieData = it.fromJson() }
@@ -130,13 +118,12 @@ class ExoPlayerActivity : BaseActivity() {
     public override fun onResume() {
         super.onResume()
         hideSystemUi()
-        if (player == null) {
+        if (playbackUrl.isEmpty()) {
             initializePlayer()
         }
 
     }
 
-    @androidx.annotation.OptIn(UnstableApi::class)
     private fun initializePlayer() {
         try {
             player = ExoPlayer.Builder(this)
@@ -158,18 +145,15 @@ class ExoPlayerActivity : BaseActivity() {
                             Constants.BASE_PLAYBACK_URL + releaseId + Constants.TRAILER_EXTENSION
                     }
 
-                    // TODO remove below code in release
-                    /*if (releaseId == 41232)
-                        releaseId = 41391*/
-
                     if (isContent) {
                         playbackUrl =
                             Constants.BASE_PLAYBACK_URL + releaseId + Constants.CONTENT_EXTENSION
                     }
+
                     if (playbackUrl.isNotEmpty()) {
                         val mediaItem = MediaItem.Builder()
                             .setUri(playbackUrl)
-//                        .setMimeType(MimeTypes.APPLICATION_MPD) // For using DASH format use this mediaItem Builder
+//                            .setMimeType(MimeTypes.APPLICATION_MPD) // For using DASH format use this mediaItem Builder
                             .build()
                         exoPlayer.setMediaItem(mediaItem)
                         exoPlayer.playWhenReady = playWhenReady
@@ -254,7 +238,7 @@ class ExoPlayerActivity : BaseActivity() {
         override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,
-            reason: Int
+            reason: Int,
         ) {
             super.onPositionDiscontinuity(oldPosition, newPosition, reason)
             val prev = oldPosition.positionMs.toInt()
@@ -291,25 +275,30 @@ class ExoPlayerActivity : BaseActivity() {
         }
 
     }
+
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-        Log.e(TAG, "onKeyDown:  keyCode == $keyCode  scanCode --> ${keyEvent.scanCode}", )
-        when(keyCode){
+        Log.e(TAG, "onKeyDown:  keyCode == $keyCode  scanCode --> ${keyEvent.scanCode}")
+        when (keyCode) {
             KeyEvent.KEYCODE_BACK -> handleBackRemoteClick()
 
+            KeyEvent.KEYCODE_DPAD_DOWN -> binding.playerView.showController()
+
             0 -> {
-                when(keyEvent.scanCode){
-                    Constants.PLAY_MEDIA_BACKWARD-> player?.seekBack()
+                binding.playerView.showController()
+                when (keyEvent.scanCode) {
+                    Constants.PLAY_MEDIA_BACKWARD -> player?.seekBack()
 
-                    Constants.PLAY_MEDIA_FORWARD-> player?.seekForward()
+                    Constants.PLAY_MEDIA_FORWARD -> player?.seekForward()
 
-                    Constants.MEDIA_PLAY_PAUSE->{
-                        if(player?.isPlaying == true) {
+                    Constants.MEDIA_PLAY_PAUSE -> {
+                        if (player?.isPlaying == true) {
                             player?.pause()
-                        }else{
+                        } else {
                             player?.play()
                         }
                     }
-                    Constants.EXIT_KEY->{
+
+                    Constants.EXIT_KEY -> {
                         handleBackRemoteClick()
                     }
                 }
@@ -320,7 +309,7 @@ class ExoPlayerActivity : BaseActivity() {
 
     private fun apiCall(seekType: Int, a: Int) {
         val request = RentalMovieRequest()
-        request.UA = ua
+        request.UA = preferenceHandler.UA
         if (::movieData.isInitialized) {
             movieData.let {
                 request.productId = it.productId
@@ -364,18 +353,6 @@ class ExoPlayerActivity : BaseActivity() {
         }
     }
 
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
 
 }
 

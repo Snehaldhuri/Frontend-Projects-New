@@ -2,13 +2,10 @@ package com.diipl.moviebeam.ui.guest.news
 
 import android.view.View
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityNewsBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guestservice.news.NewsHeaderTabAdapter
@@ -23,7 +20,6 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 private const val TAG = "NewsActivity"
 @AndroidEntryPoint
@@ -37,10 +33,6 @@ class NewsActivity() : BaseActivity() {
 
     private var newsHeaderPosition: Int = 0
     private var headerView: View? = null
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(this)
-    }
-    private var ua = ""
 
     override fun observeViewModel() {
         observe(newsViewModel.newsHeaderLiveData, ::handleNewsHeaderResponse)
@@ -55,18 +47,7 @@ class NewsActivity() : BaseActivity() {
         binding.btnBack.handleFocusChange()
         binding.btnBack.setOnClickListener { handleBackClick() }
 
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-
         setContentView(binding.root)
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
     private fun handleNewsHeaderResponse(status: Resource<NewsHeaderResponse>) {

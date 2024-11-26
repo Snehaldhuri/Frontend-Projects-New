@@ -114,7 +114,7 @@ class GuestServiceTabAdapter(
         }
 
         holder.itemView.post {
-            if (holder.absoluteAdapterPosition == 0) {
+            if (holder.adapterPosition == 0) {
                 holder.card.requestFocus()
 //                item.isClicked = true
 //                onMenuItemClicked(holder.card, item)

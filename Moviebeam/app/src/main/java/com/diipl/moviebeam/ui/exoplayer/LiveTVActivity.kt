@@ -15,7 +15,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.extractor.mp4.Track
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.DvbChannel
@@ -23,6 +22,7 @@ import com.diipl.moviebeam.databinding.ActivityLiveTvactivityBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
+import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
@@ -52,7 +52,7 @@ class LiveTVActivity : BaseActivity() {
         val program = programGuideList[currentPos]
 
         if (DEVICE_MODEL == Constants.SEI_MB730) {
-            if (!program.param1.isNullOrEmpty()) {
+            if (program.param1.isNotEmptyOrNull()) {
                 val majorNumber = program.param1?.toInt()!!
                 val minorNumber = program.param2?.toInt()!!
                 val bundle = Bundle().apply {
@@ -260,14 +260,9 @@ class LiveTVActivity : BaseActivity() {
 
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        if (programGuideList[0].CNO.equals("100")) {
-            programGuideList.removeAt(0)
-            currentPos -= 1
-            Log.e(TAG, "onResume: $currentPos")
-        }
+    fun handleBackRemoteClick() {
+        Log.e(TAG, "handleBackRemoteClick: ")
+        onBackPressed()
     }
 
     override fun onBackPressed() {
@@ -284,6 +279,7 @@ class LiveTVActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mChannelList.clear()
         programGuideList.clear()
     }
 

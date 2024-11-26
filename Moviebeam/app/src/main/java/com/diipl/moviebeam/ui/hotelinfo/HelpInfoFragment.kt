@@ -9,15 +9,14 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.BuildConfig
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentHelpInfoBinding
-import com.diipl.moviebeam.service.BTService
+import com.diipl.moviebeam.service.remote.BTService
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
+import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.ui.dialogs.ParentalControlFragment
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils
@@ -32,7 +31,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
+class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : BaseFragment() {
 
     //Variables from datastore
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
@@ -53,6 +52,12 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     @Inject
     lateinit var preferences: SharedPreference
+    override fun observeViewModel() {
+
+    }
+
+    override fun initViewBinding() {
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -234,95 +239,18 @@ class HelpInfoFragment(private var onBackButtonClick: () -> Unit) : Fragment() {
 
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {
-            accountId = getAccountId()
-            serialNo = getSerialNo()
-            ua = getUa()
-            stbRoomNo = getStbRoomNo()
-            moviesCount = getMoviesCount()
-            showsCount = getShowsCount()
-            cListVersion = getCListVersion()
-            ipAddress = getIpAddress()
-            netMask = getNetMask()
-            gateway = getGateway()
-            connectivity = getConnectivity()
+            accountId = preferenceHandler.accountID
+            serialNo = preferenceHandler.serialNo
+            ua = preferenceHandler.UA
+            stbRoomNo = preferenceHandler.roomNo
+            moviesCount = preferenceHandler.movieCount
+            showsCount = preferenceHandler.showsCount
+            cListVersion = preferenceHandler.cListVersion
+            ipAddress = preferenceHandler.ipAddress
+            netMask = preferenceHandler.netMask
+            gateway = preferenceHandler.gatewayIP
+            connectivity = preferenceHandler.connectivity
         }
-    }
-
-    private suspend fun getAccountId(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getStbRoomNo(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getSerialNo(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.SERIAL_NO,
-            ""
-        )
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
-
-    private suspend fun getMoviesCount(): Int {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
-            0
-        )
-    }
-
-    private suspend fun getShowsCount(): Int {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.SHOWS_COUNT_KEY,
-            0
-        )
-    }
-
-    private suspend fun getCListVersion(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getIpAddress(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_ADDRESS_KEY,
-            "0.0.0.0"
-        )
-    }
-
-    private suspend fun getNetMask(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_NET_MASK_KEY,
-            "0.0.0.0"
-        )
-    }
-
-    private suspend fun getGateway(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_GATEWAY_KEY,
-            "0.0.0.0"
-        )
-    }
-
-    private suspend fun getConnectivity(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.CONNECTIVITY_KEY,
-            "NO INTERNET"
-        )
     }
 
 }

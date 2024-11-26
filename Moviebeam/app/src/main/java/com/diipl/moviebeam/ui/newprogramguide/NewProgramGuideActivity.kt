@@ -35,22 +35,20 @@ import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.DvbChannel
 import com.diipl.moviebeam.data.dto.remote.BTCommandModel
 import com.diipl.moviebeam.data.dto.remote.IRFrequencyModel
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityNewProgramGuideBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
-import com.diipl.moviebeam.service.BTService
-import com.diipl.moviebeam.service.IIrService
-import com.diipl.moviebeam.service.UsbIrService
+import com.diipl.moviebeam.service.remote.BTService
+import com.diipl.moviebeam.service.remote.IIrService
+import com.diipl.moviebeam.service.remote.UsbIrService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.DEVICE_MODEL
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
+import com.diipl.moviebeam.ui.exoplayer.PlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
-import com.diipl.moviebeam.utils.Constants.HOTEL_VIDEO
 import com.diipl.moviebeam.utils.Constants.SEI_MB730
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
@@ -89,14 +87,12 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private var isFScreenExit = false
 
-    private val preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-    private var epgEndTime = ""
-
     private lateinit var hotelChannel: HotelChannel
     private var hotelChannelVideo: String = ""
 
     @Inject
     lateinit var preferences: SharedPreference
+
     @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
@@ -111,6 +107,8 @@ class NewProgramGuideActivity : BaseActivity() {
     private lateinit var btService: BTService
     private var switchedToTV = false
 
+    private var broadCastType = ""
+
     override fun observeViewModel() {
         observe(programGuideViewModel.accountSetupLiveData, ::handleAccountSetupResponse)
 
@@ -124,8 +122,7 @@ class NewProgramGuideActivity : BaseActivity() {
                 status.data?.let { response ->
                     hotelChannel = response.hotelChannelList[0]
                     hotelChannelVideo = response.httpStreamingHotelvideoUrl + hotelChannel.fileName
-                    Log.e(TAG, "handleAccountSetupResponse: ${hotelChannel.channelNo}")
-
+                    broadCastType = response.tvBroadcastType
                     this.getChannelsFromRoomDB()
                     if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
                         if (DEVICE_MODEL != SEI_MB730)
@@ -175,12 +172,13 @@ class NewProgramGuideActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initializeDatastoreParams()
 
-        if (preferences.isIRRemote)
-            irService = UsbIrService(this).also { it.getInstance() }
-        else
-            btService = BTService(this, lifecycle).also { it.findBondedDevice() }
+        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_CHROMECAST) {
+            if (preferences.isIRRemote)
+                irService = UsbIrService(this).also { it.getInstance() }
+            else
+                btService = BTService(this, lifecycle).also { it.findBondedDevice() }
+        }
 
     }
 
@@ -226,7 +224,7 @@ class NewProgramGuideActivity : BaseActivity() {
         val endDateTime = convertProgramStartOrEndTime(programDateTime.P4_ET)
 
         // Create a Calendar object with the current time
-        val epgEndTime: Date = convertProgramStartOrEndTime(epgEndTime)
+        val epgEndTime: Date = convertProgramStartOrEndTime(preferenceHandler.epgEndTime)
 
         return endDateTime.compareTo(epgEndTime) == -1 //a value less than 0 if this Date is before the Date argument.
     }
@@ -451,10 +449,18 @@ class NewProgramGuideActivity : BaseActivity() {
         }
 
         currentPrograms?.remove(currentProgram)
+
+        val param1 =
+            if (hotelChannel.tvChannelBroadcastType == IP_BROADCAST_TYPE) hotelChannel.ip else if (hotelChannel.tvChannelBroadcastType == RF_BROADCAST_TYPE) hotelChannel.major else ""
+        val param2 =
+            if (hotelChannel.tvChannelBroadcastType == IP_BROADCAST_TYPE) hotelChannel.port else if (hotelChannel.tvChannelBroadcastType == RF_BROADCAST_TYPE) hotelChannel.minor else ""
+
         val hotelVideoProgram = ChannelEpgDTO(
             CN = hotelChannel.channelName,
             VP = hotelChannelVideo,
             CNO = hotelChannel.channelNo,
+            param1 = param1,
+            param2 = param2,
             P1_PT = hotelChannel.channelName,
             P1_CLS = "80",
             C = "1"
@@ -468,7 +474,7 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun setEpgDate(epgDate: TextClock, p1St: String?) {
-        var startTime: Date = convertProgramStartOrEndTime(p1St)
+        val startTime: Date = convertProgramStartOrEndTime(p1St)
 
         val formattedDate = SimpleDateFormat("MMM dd, yyyy").format(startTime)
         epgDate.text = formattedDate
@@ -513,8 +519,12 @@ class NewProgramGuideActivity : BaseActivity() {
                 if (preferences.isIRRemote) switchToTV(program)
                 else switchToTVWithBluetooth(program)
             }
+
             Constants.BUILD_TYPE_STB -> {
-                tuneChannels(program)
+                if (broadCastType == IP_BROADCAST_TYPE)
+                    tuneIPChannels(program)
+                if (broadCastType == RF_BROADCAST_TYPE)
+                    tuneChannels(program)
             }
         }
     }
@@ -524,7 +534,7 @@ class NewProgramGuideActivity : BaseActivity() {
         lifecycleScope.launch {
             val model = preferences.irFrequencyModel
             irService?.let { service ->
-                if (service.isConnected()){
+                if (service.isConnected()) {
                     val num = program?.CNO.toString().toCharArray().asList()
                     if (model.tvBrandName != IRUtils.LG) {
                         service.transmit(model.frequency, model.TV)
@@ -671,7 +681,7 @@ class NewProgramGuideActivity : BaseActivity() {
             irService?.transmit(model.frequency, model.HDMI1)
             switchedToTV = false
         } else {
-            if (btService.isConnected()){
+            if (btService.isConnected()) {
                 val model = preferences.btCommandModel
                 btService.transmit(model.HDMI1)
                 switchedToTV = false
@@ -758,18 +768,24 @@ class NewProgramGuideActivity : BaseActivity() {
         mChannelList.sortBy { dvbChannel -> dvbChannel.number }
     }
 
+    private fun tuneIPChannels(program: ChannelEpgDTO?) {
+        PlayerActivity.programGuideList.addAll(programGuideList)
+        val pos = PlayerActivity.programGuideList.indexOf(program)
+        focusedPosition = programGuideList.indexOf(program)
+        onPause = true
+        val intent = Intent(applicationContext, PlayerActivity::class.java)
+        intent.putExtra("currentPos", pos)
+        startActivity(intent)
+    }
+
     private fun tuneChannels(program: ChannelEpgDTO?) {
         LiveTVActivity.programGuideList.addAll(programGuideList)
-        if (!program?.CN.equals(HOTEL_VIDEO) || !program?.CNO.equals("100")) {
-            val pos = LiveTVActivity.programGuideList.indexOf(program)
-            focusedPosition = programGuideList.indexOf(program)
-            onPause = true
-            val intent = Intent(applicationContext, LiveTVActivity::class.java)
-            intent.putExtra("currentPos", pos)
-            startActivity(intent)
-        } else {
-            showToast("Hotel Video is not available.")
-        }
+        val pos = LiveTVActivity.programGuideList.indexOf(program)
+        focusedPosition = programGuideList.indexOf(program)
+        onPause = true
+        val intent = Intent(applicationContext, LiveTVActivity::class.java)
+        intent.putExtra("currentPos", pos)
+        startActivity(intent)
     }
 
     private fun findDvbInput(): String? {
@@ -806,19 +822,6 @@ class NewProgramGuideActivity : BaseActivity() {
         } else {
             grantPermission()
         }
-    }
-
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            epgEndTime = getEpgEt()
-        }
-    }
-
-    private suspend fun getEpgEt(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.EPG_END_TIME_KEY,
-            ""
-        )
     }
 
     private fun grantPermission() {
@@ -870,6 +873,10 @@ class NewProgramGuideActivity : BaseActivity() {
     companion object {
         var CURRENT_PROGRAMS: List<ChannelEpgDTO>? = null
         var onPause = false
+
+        const val IP_BROADCAST_TYPE = "IP"
+        const val RF_BROADCAST_TYPE = "RF"
+
     }
 
 }

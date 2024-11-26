@@ -19,10 +19,10 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ViewWeatherTimeDateRowBinding
 import com.diipl.moviebeam.di.HardwareAPI
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.mainmenu.MainMenuViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
@@ -70,17 +70,21 @@ class WeatherDateTimeFragment : Fragment() {
     lateinit var preferences: SharedPreference
 
     @Inject
-    lateinit var hardwareAPI:HardwareAPI
+    lateinit var hardwareAPI: HardwareAPI
+
+    @Inject
+    lateinit var preferenceHandler: PreferenceHandler
 
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         binding = ViewWeatherTimeDateRowBinding.inflate(inflater, container, false)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(requireContext())
+
         initializeDatastoreParams()
 
         if (preferences.irFrequencyModel == null)
@@ -117,7 +121,7 @@ class WeatherDateTimeFragment : Fragment() {
             binding.root.toInvisible()
             binding.tvDate.toGone()
             binding.tvTime.toGone()
-            updateDatastoreVariables(
+            preferenceHandler.updateDatastoreVariables(
                 ipAddress = "0.0.0.0",
                 netMask = "0.0.0.0",
                 gateway = "0.0.0.0",
@@ -147,13 +151,16 @@ class WeatherDateTimeFragment : Fragment() {
             is Resource.Success -> {
                 status.data?.let {
                     CoroutineScope(Dispatchers.Default).launch {
-                        if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
+                        if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB) {
                             hardwareAPI.myService?.setDeviceName(
                                 "MBAP_${it.accountId}_${it.roomNo}",
                                 object : IDeviceNameConfigureCallback {
                                     @Throws(RemoteException::class)
                                     override fun onDeviceNameConfigureCallback(s: String) {
-                                        Log.e("TAG", "onDeviceNameConfigureCallback: setDeviceName $s")
+                                        Log.e(
+                                            "TAG",
+                                            "onDeviceNameConfigureCallback: setDeviceName $s"
+                                        )
                                     }
 
                                     override fun asBinder(): IBinder? {
@@ -162,27 +169,7 @@ class WeatherDateTimeFragment : Fragment() {
                                 }
                             )
                         }
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-                            it.accountId
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
-                            it.roomNo
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
-                            it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.CASTING_URL_KEY,
-                            it.stbCastingPageUrl
-                        )
-                        if (it.contentDetailFlag)
-                            preferenceDataStoreHelper.putPreference(
-                                PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
-                                it.httpStreamingHotelvideoUrl + it.hotelChannelList[0].fileName
-                            )
+                        preferenceHandler.updateAccountData(it)
                     }
                 }
             }
@@ -195,7 +182,7 @@ class WeatherDateTimeFragment : Fragment() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
-                    updateDatastoreVariables(
+                    preferenceHandler.updateDatastoreVariables(
                         gradientStartColor = it.gradientColor,
                         gradientEndColor = it.spotLightColor
                     )
@@ -216,7 +203,7 @@ class WeatherDateTimeFragment : Fragment() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let { response ->
-                    updateDatastoreVariables(
+                    preferenceHandler.updateDatastoreVariables(
                         moviesCount = response.freeContentList.size.plus(
                             response.premiumContentList.size
                         ),
@@ -252,7 +239,7 @@ class WeatherDateTimeFragment : Fragment() {
                         newList.forEach {
                             showsCount += it
                         }
-                        updateDatastoreVariables(showsCount = showsCount)
+                        preferenceHandler.updateDatastoreVariables(showsCount = showsCount)
                     }
 
                 }
@@ -262,94 +249,10 @@ class WeatherDateTimeFragment : Fragment() {
         }
     }
 
-    private fun updateDatastoreVariables(
-        moviesCount: Int? = null,
-        showsCount: Int? = null,
-        cListVersion: String? = null,
-        ipAddress: String? = null,
-        netMask: String? = null,
-        gateway: String? = null,
-        connectivity: String? = null,
-        gradientStartColor: String? = null,
-        gradientEndColor: String? = null
-    ) {
-        lifecycleScope.launch {
-            moviesCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
-                    it
-                )
-            }
-            showsCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.SHOWS_COUNT_KEY,
-                    it
-                )
-            }
-            cListVersion?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
-                    it
-                )
-            }
-            ipAddress?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.IP_ADDRESS_KEY,
-                    it
-                )
-            }
-            netMask?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.IP_NET_MASK_KEY,
-                    it
-                )
-            }
-            gateway?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.IP_GATEWAY_KEY,
-                    it
-                )
-            }
-            connectivity?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.CONNECTIVITY_KEY,
-                    it
-                )
-            }
-            gradientStartColor?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-                    it
-                )
-            }
-            gradientEndColor?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-                    it
-                )
-            }
-        }
-    }
-
     private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            GuestDetails.IS_GUEST_CHECKED_IN = getSession()
-            GuestDetails.SESSION_ID = getSessionId()
-        }
+        GuestDetails.IS_GUEST_CHECKED_IN = preferenceHandler.isGuestCheckedIn
+        GuestDetails.SESSION_ID = preferenceHandler.sessionId
     }
 
-    private suspend fun getSession(): Boolean {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY,
-            false
-        )
-    }
-
-    private suspend fun getSessionId(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.SESSION_ID_KEY,
-            ""
-        )
-    }
 
 }

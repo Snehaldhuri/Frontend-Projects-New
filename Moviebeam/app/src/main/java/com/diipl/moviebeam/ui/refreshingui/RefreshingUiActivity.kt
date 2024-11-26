@@ -26,10 +26,6 @@ import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.kaping.CmdDataDto
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.di.HardwareAPI
@@ -59,7 +55,6 @@ import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.diipl.moviebeam.worker.UpdateDataWorker
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -76,7 +71,6 @@ class RefreshingUiActivity : BaseActivity() {
     private var kapingResponse: KapingResponse? = null
 
     //Variables from datastore
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private var accountId = ""
     private var epgCdnUrl = ""
     private var ua = ""
@@ -89,34 +83,10 @@ class RefreshingUiActivity : BaseActivity() {
     private var isEPGServerApiCalled = false
 
     @Inject
-    lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
-
-    @Inject
-    lateinit var themeDataStore: DataStore<ThemeResponse>
-
-    @Inject
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
-    lateinit var weatherDataStore: DataStore<WeatherResponse>
-
-    @Inject
-    lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
-
-    @Inject
-    lateinit var localAttractionDataStore: DataStore<LocalAttractionResponse>
-
-    @Inject
-    lateinit var moviesDataStore: DataStore<MoviesResponse>
-
-    @Inject
-    lateinit var showTimeDataStore: DataStore<ShowTimeResponse>
-
-    @Inject
     lateinit var channelListDataStore: DataStore<ChannelListResponse>
-
-    @Inject
-    lateinit var guestMessageDataStore: DataStore<MessageResponse>
 
     @Inject
     lateinit var roomRepository: RoomRepository
@@ -141,7 +111,6 @@ class RefreshingUiActivity : BaseActivity() {
         binding = ActivityRefreshingUiBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         this.initializeDatastoreParams()
 
         val data = intent.getStringExtra("response")
@@ -232,12 +201,9 @@ class RefreshingUiActivity : BaseActivity() {
     private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
         logD("Signal for check out command")
         refreshingUiViewModel.updateGuestMessage(
-            guestMessageDataStore,
             MessageResponse()
         )
         refreshingUiViewModel.updateGuestSession(
-            preferenceDataStoreHelper,
-            guestDetailsDatastore,
             false,
             kapingResponse.cmdData?.cmdData
         )
@@ -251,8 +217,6 @@ class RefreshingUiActivity : BaseActivity() {
     private fun handleCheckInCmd(kapingResponse: KapingResponse) {
         logD("Signal for check in command")
         refreshingUiViewModel.updateGuestSession(
-            preferenceDataStoreHelper,
-            guestDetailsDatastore,
             true,
             kapingResponse.cmdData?.cmdData
         )
@@ -325,30 +289,8 @@ class RefreshingUiActivity : BaseActivity() {
                         )
                     }
                     refreshingUiViewModel.setAccountSetupResponseData(it)
+                    preferenceHandler.updateAccountData(it)
 
-                    CoroutineScope(Dispatchers.Default).launch {
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-                            it.accountId
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.STB_ROOM_NO_KEY,
-                            it.roomNo
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
-                            it.epgCdnUrl + it.accountId + Constants.EPG_CLOUD_URL_SUFFIX
-                        )
-                        preferenceDataStoreHelper.putPreference(
-                            PreferenceDataStoreConstants.CASTING_URL_KEY,
-                            it.stbCastingPageUrl
-                        )
-                        if (it.contentDetailFlag)
-                            preferenceDataStoreHelper.putPreference(
-                                PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
-                                it.httpStreamingHotelvideoUrl + it.hotelChannelList[0].fileName
-                            )
-                    }
                     scheduleClearCredentialsTask(it.checkOutTime)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
@@ -370,7 +312,7 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.themeLiveData.value?.data?.let {
                     refreshingUiViewModel.setThemeResponseData(it)
-                    updateDatastoreVariables(
+                    preferenceHandler.updateDatastoreVariables(
                         gradientStartColor = it.gradientColor,
                         gradientEndColor = it.spotLightColor
                     )
@@ -444,8 +386,8 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
-                    refreshingUiViewModel.updateSyncList(moviesDataStore, it)
-                    updateDatastoreVariables(
+                    refreshingUiViewModel.updateSyncList(it)
+                    preferenceHandler.updateDatastoreVariables(
                         moviesCount = it.freeContentList.size.plus(it.premiumContentList.size),
                         cListVersion = it.version
                     )
@@ -468,8 +410,8 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 refreshingUiViewModel.showtimeLiveData.value?.data?.let {
-                    updateDatastoreVariables(showsCount = it.shoContentList.size)
-                    refreshingUiViewModel.updateShowtimeData(showTimeDataStore, it)
+                    preferenceHandler.updateDatastoreVariables(showsCount = it.shoContentList.size)
+                    refreshingUiViewModel.updateShowtimeData(it)
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
                     logD("In Showtime callback Success ")
@@ -490,10 +432,10 @@ class RefreshingUiActivity : BaseActivity() {
             is Resource.Success -> {
                 refreshingUiViewModel.channelListLiveData.value?.data?.let {
                     if (EndlessService.kapingCMD == KapingConstants.KAP_CMD_GET_CHANNEL_LIST) {
-                        refreshingUiViewModel.updateChannelList(channelListDataStore, it)
+                        refreshingUiViewModel.updateChannelList(it)
                         EndlessService.kapingCmdExecutionResponse =
                             KapingConstants.EXECUTED_SUCCESSFULLY
-                        updateDatastoreVariables(channelCount = it.channelLcnList.size)
+                        preferenceHandler.updateDatastoreVariables(channelCount = it.channelLcnList.size)
                         logD("In Channel List callback Success ")
                         redirectToMainMenuScreen()
                     } else {
@@ -549,7 +491,7 @@ class RefreshingUiActivity : BaseActivity() {
                 status.data?.let {
                     EndlessService.kapingCmdExecutionResponse =
                         KapingConstants.EXECUTED_SUCCESSFULLY
-                    refreshingUiViewModel.updateGuestMessage(guestMessageDataStore, it)
+                    refreshingUiViewModel.updateGuestMessage(it)
                     binding.tvInfo.text = getString(R.string.you_have_a_new_message)
                     binding.tvMsg.text = it.messagesList?.find {
                         it.isRead == 0
@@ -577,7 +519,7 @@ class RefreshingUiActivity : BaseActivity() {
             val simpleDateFormatter = SimpleDateFormat(Constants.EPG_DATE_FORMAT, Locale.ENGLISH)
             epgResponse.let {
                 if (isEpgDataValid(it.ST, it.ET, simpleDateFormatter)) {
-                    updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
+                    preferenceHandler.updateDatastoreVariables(epgStartTime = it.ST, epgEndTime = it.ET)
                     val channelList =
                         refreshingUiViewModel.channelListLiveData.value?.data?.channelLcnList
                     val currentKey = fetchCurrentProgramKey()
@@ -762,103 +704,13 @@ class RefreshingUiActivity : BaseActivity() {
         startActivity(i)
     }
 
-    private fun updateDatastoreVariables(
-        moviesCount: Int? = null,
-        showsCount: Int? = null,
-        cListVersion: String? = null,
-        gradientStartColor: String? = null,
-        gradientEndColor: String? = null,
-        channelCount: Int? = null,
-        epgStartTime: String? = null,
-        epgEndTime: String? = null
-    ) {
+    private fun initializeDatastoreParams() =
         lifecycleScope.launch {
-            moviesCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.MOVIES_COUNT_KEY,
-                    it
-                )
-            }
-            showsCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.SHOWS_COUNT_KEY,
-                    it
-                )
-            }
-            cListVersion?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.C_LIST_VERSION_KEY,
-                    it
-                )
-            }
-            gradientStartColor?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-                    it
-                )
-            }
-            gradientEndColor?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-                    it
-                )
-            }
-            channelCount?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.CHANNEL_COUNT_KEY,
-                    it
-                )
-            }
-            epgStartTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_START_TIME_KEY,
-                    it
-                )
-            }
-            epgEndTime?.let {
-                preferenceDataStoreHelper.putPreference(
-                    PreferenceDataStoreConstants.EPG_END_TIME_KEY,
-                    it
-                )
-            }
-        }
-    }
+            accountId = preferenceHandler.accountID
+            epgCdnUrl = preferenceHandler.epgCDNUrl
+            ua = preferenceHandler.UA
+            appList = preferenceHandler.appList
 
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            accountId = getAccountId()
-            epgCdnUrl = getEpgCdUrl()
-            ua = getUa()
-            appList = ArrayList(getAppList())
-        }
-    }
-
-    private suspend fun getAccountId(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getEpgCdUrl(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.EPG_CDN_URL_KEY,
-            ""
-        )
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
-    }
-
-    private suspend fun getAppList(): Set<String> {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.APP_LIST_KEY,
-            emptySet()
-        )
     }
 
 }

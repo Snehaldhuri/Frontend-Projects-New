@@ -6,20 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentNewsBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.getCurrentDateTime
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
-import kotlinx.coroutines.launch
 
 class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
 
@@ -32,10 +28,6 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
 
     private var newsHeaderPosition: Int = 0
     private var headerView: View? = null
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(this.requireContext())
-    }
-    private var ua = ""
 
     override fun observeViewModel() {
         observe(newsViewModel.newsHeaderLiveData, ::handleNewsHeaderResponse)
@@ -43,16 +35,7 @@ class NewsFragment(private val onLeftKeyPressed: () -> Unit) : BaseFragment() {
     }
 
     override fun initViewBinding() {
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-    }
 
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
     private fun handleNewsHeaderResponse(status: Resource<NewsHeaderResponse>) {

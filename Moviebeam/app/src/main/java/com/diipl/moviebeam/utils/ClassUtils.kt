@@ -10,6 +10,7 @@ import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -28,7 +29,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -41,12 +41,11 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.ClearCredentialsReceiver
 import com.diipl.moviebeam.service.EpgWorker
 import com.diipl.moviebeam.service.LoggingService
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.service.TickerMsgReceiver
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
@@ -67,6 +66,7 @@ import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
@@ -233,20 +233,6 @@ fun View.handleFocusChange() {
     }
 }
 
-private suspend fun getGradientStartColor(preferenceDataStoreHelper: PreferenceDataStoreHelper): String {
-    return preferenceDataStoreHelper.getFirstPreference(
-        PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-        Constants.DEFAULTGRADIENTSTARTCOLOR
-    )
-}
-
-private suspend fun getGradientEndColor(preferenceDataStoreHelper: PreferenceDataStoreHelper): String {
-    return preferenceDataStoreHelper.getFirstPreference(
-        PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-        Constants.DEFAULTGRADIENTENDCOLOR
-    )
-}
-
 fun RecyclerView.setItemFocused() {
     for (i in 0 until childCount) {
         val childView = getChildAt(i)
@@ -346,7 +332,7 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
         netMask = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
 
         currentActivity?.let {
-            val preferenceDataStoreHelper = PreferenceDataStoreHelper(it)
+            val preferenceHandler = PreferenceHandler(it)
             connectivity = getConnectivityType(it)
             val connectivityManager =
                 it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -361,12 +347,11 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
                 gateway = defaultGateway
             }
 
-            updateDatastoreVariables(
-                preferenceDataStoreHelper,
-                ipAddress,
-                netMask,
-                gateway,
-                connectivity
+            preferenceHandler.updateDatastoreVariables(
+                ipAddress = ipAddress,
+                netMask = netMask,
+                gateway = gateway,
+                connectivity = connectivity
             )
 
             // WIFI DETAILS
@@ -389,41 +374,6 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
     val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
     val uptime = System.currentTimeMillis() - uptimeMillis
 
-}
-
-private fun updateDatastoreVariables(
-    preferenceDataStoreHelper: PreferenceDataStoreHelper,
-    ipAddress: String? = null,
-    netMask: String? = null,
-    gateway: String? = null,
-    connectivity: String? = null
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        ipAddress?.let {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IP_ADDRESS_KEY,
-                it
-            )
-        }
-        netMask?.let {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IP_NET_MASK_KEY,
-                it
-            )
-        }
-        gateway?.let {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IP_GATEWAY_KEY,
-                it
-            )
-        }
-        connectivity?.let {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.CONNECTIVITY_KEY,
-                it
-            )
-        }
-    }
 }
 
 private fun getNetmaskFromPrefixLength(prefixLength: Int): String {
@@ -882,4 +832,13 @@ fun Context.launchSettingsApp() {
         Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
     startActivity(intent)
     clickCount = 0
+}
+
+fun Context.isPackageExists(targetPackage: String): Boolean {
+    return try {
+        val packageInfo: PackageInfo = packageManager.getPackageInfo(targetPackage, 0)
+        targetPackage == packageInfo.packageName
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
+    }
 }

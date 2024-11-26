@@ -24,9 +24,9 @@ import com.diipl.moviebeam.data.dto.remote.BTCommandModel
 import com.diipl.moviebeam.data.dto.remote.IRFrequencyModel
 import com.diipl.moviebeam.databinding.ActivityDisconnectedPrgBinding
 import com.diipl.moviebeam.databinding.DialogSearchProgramBinding
-import com.diipl.moviebeam.service.BTService
-import com.diipl.moviebeam.service.IIrService
-import com.diipl.moviebeam.service.UsbIrService
+import com.diipl.moviebeam.service.remote.BTService
+import com.diipl.moviebeam.service.remote.IIrService
+import com.diipl.moviebeam.service.remote.UsbIrService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.IRUtils

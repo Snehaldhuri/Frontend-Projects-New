@@ -2,10 +2,6 @@ package com.diipl.moviebeam.ui.programguide
 
 import android.annotation.SuppressLint
 import android.view.KeyEvent
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.ExoPlayer
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ActivityPrgGuidePlayerBinding
@@ -15,6 +11,10 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.loadImagesWithGlideExt
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.DefaultRenderersFactory
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
 
 class PrgGuidePlayerActivity : BaseActivity(), KeyEvent.Callback {
 

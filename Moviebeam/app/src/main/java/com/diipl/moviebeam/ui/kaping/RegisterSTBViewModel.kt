@@ -33,26 +33,12 @@ class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: 
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
-    fun getSerialNoFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
-        viewModelScope.launch {
-            _serialNoLiveData.postValue(
-                preferenceDataStoreHelper.getFirstPreference(
-                    PreferenceDataStoreConstants.SERIAL_NO,
-                    ""
-                )
-            )
-        }
-    }
-
     fun updateStbStatus(
         preferenceDataStoreHelper: PreferenceDataStoreHelper,
         isStbRegistered: Boolean,
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.IS_STB_REGISTERED,
-                isStbRegistered
-            )
+            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.IS_STB_REGISTERED, isStbRegistered)
         }
     }
 

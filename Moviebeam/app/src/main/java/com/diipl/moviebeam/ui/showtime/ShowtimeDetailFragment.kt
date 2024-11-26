@@ -6,14 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.service.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
@@ -26,19 +23,11 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
-import kotlinx.coroutines.launch
 
 class ShowtimeDetailFragment : BaseFragment() {
 
     private var _binding: FragmentMovieDetailBinding? = null
     val binding get() = _binding!!
-
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(requireContext())
-    }
-    private var ua = ""
-
     private lateinit var show: Detail
 
     private var position: Int = 0
@@ -64,7 +53,6 @@ class ShowtimeDetailFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
-        this.initializeDatastoreParams()
         LoggingService.sendMessageToWebSocket("In ShowtimeDetailPage create ", "13")
         binding.layoutMovie.toVisible()
         return binding.root
@@ -201,7 +189,7 @@ class ShowtimeDetailFragment : BaseFragment() {
         val request = RentalMovieRequest()
         if (::show.isInitialized) {
             show.let {
-                request.UA = ua
+                request.UA = preferenceHandler.UA
                 request.productId = it.productId
                 request.releaseID = it.releaseId
                 request.contentTypeID = it.contentTypeId
@@ -213,19 +201,6 @@ class ShowtimeDetailFragment : BaseFragment() {
                 viewModel.updateRentalMovieLog(request)
             }
         }
-    }
-
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
 }

@@ -57,11 +57,12 @@
         app:layout_constraintGuide_percent="0.95" />
 
 
-    <androidx.media3.ui.PlayerView
+    <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
+        app:layout_constraintDimensionRatio="16:9"
         app:show_buffering="never"
         app:use_controller="false" />
 

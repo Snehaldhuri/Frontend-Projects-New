@@ -14,9 +14,8 @@ import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ItemButtonBinding
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
@@ -25,6 +24,7 @@ import com.diipl.moviebeam.utils.getWidthInPercent
 import com.diipl.moviebeam.utils.openSettingsPattern
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Collections
 
@@ -38,7 +38,8 @@ class MainMenuBtnAdapter(
     lateinit var context: Context
 
     //Variables from datastore
-    private val preferenceDataStoreHelper = PreferenceDataStoreHelper(currentActivity!!)
+    private val preferenceHandler : PreferenceHandler by lazy { PreferenceHandler(
+        currentActivity!!) }
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
@@ -47,6 +48,7 @@ class MainMenuBtnAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val binding = ItemButtonBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         context = parent.context
+
         initializeDatastoreParams()
         val params = binding.root.layoutParams
         params.width = getWidthInPercent(parent.context, 21)
@@ -109,23 +111,11 @@ class MainMenuBtnAdapter(
 
     private fun initializeDatastoreParams() {
         CoroutineScope(Dispatchers.Default).launch {
-            gradientStartColor = getGradientStartColor()
-            gradientEndColor = getGradientEndColor()
+            preferenceHandler.loadAllData()
+            delay(100)
+            gradientStartColor = preferenceHandler.gradientStartColor
+            gradientEndColor = preferenceHandler.gradientEndColor
         }
-    }
-
-    private suspend fun getGradientStartColor(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.GRADIENT_COLOR_START_KEY,
-            Constants.DEFAULTGRADIENTSTARTCOLOR
-        )
-    }
-
-    private suspend fun getGradientEndColor(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.GRADIENT_COLOR_END_KEY,
-            Constants.DEFAULTGRADIENTENDCOLOR
-        )
     }
 
     private fun onAppClicked(packageName: String) {

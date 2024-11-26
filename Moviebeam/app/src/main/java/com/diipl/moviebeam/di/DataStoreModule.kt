@@ -19,6 +19,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,6 +52,12 @@ private const val MESSAGE_DATA_STORE_FILE_NAME = "message_prefs.pb"
 @InstallIn(SingletonComponent::class)
 @Module
 object DataStoreModule {
+
+    @Singleton
+    @Provides
+    fun providePreferenceHandler(@ApplicationContext appContext: Context): PreferenceHandler {
+        return PreferenceHandler(appContext)
+    }
 
     @Singleton
     @Provides

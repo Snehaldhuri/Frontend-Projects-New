@@ -10,8 +10,8 @@ import android.os.Bundle
 import android.os.Parcelable
 import androidx.appcompat.app.AppCompatActivity
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.service.ACTION_USB_PERMISSION
-import com.diipl.moviebeam.service.requestUsbPermissionForCompatibleDev
+import com.diipl.moviebeam.service.remote.ACTION_USB_PERMISSION
+import com.diipl.moviebeam.service.remote.requestUsbPermissionForCompatibleDev
 import com.diipl.moviebeam.utils.clearCache
 import kotlin.system.exitProcess
 

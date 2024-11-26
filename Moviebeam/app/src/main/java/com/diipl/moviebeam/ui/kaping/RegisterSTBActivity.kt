@@ -9,7 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityKapingBinding
 import com.diipl.moviebeam.service.kappingservice.EndlessService
@@ -46,7 +45,6 @@ class RegisterSTBActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         this.initializeDatastoreParams()
-        registerSTBViewModel.getSerialNoFromDataStore(preferenceDataStoreHelper)
 
         binding.root.openSettingsPattern()
 
@@ -79,7 +77,7 @@ class RegisterSTBActivity : BaseActivity() {
     }
 
     override fun observeViewModel() {
-        observe(registerSTBViewModel.serialNoLiveData, ::handleSerialNumberResponse)
+//        observe(registerSTBViewModel.serialNoLiveData, ::handleSerialNumberResponse)
         observe(registerSTBViewModel.stbMasterLiveData, ::handleStbMasterResponse)
         observeSnackBarMessages(registerSTBViewModel.showSnackBar)
         observeToast(registerSTBViewModel.showToast)
@@ -156,33 +154,11 @@ class RegisterSTBActivity : BaseActivity() {
 
     override fun onBackPressed() {}
 
-    private fun initializeDatastoreParams(){
-        lifecycleScope.launch {
-            ipAddress = getIpAddress()
-            netmask = getNetMask()
-            gateway = getGateway()
-        }
-    }
-
-    private suspend fun getIpAddress(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_ADDRESS_KEY,
-            "0.0.0.0"
-        )
-    }
-
-    private suspend fun getNetMask(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_NET_MASK_KEY,
-            "0.0.0.0"
-        )
-    }
-
-    private suspend fun getGateway(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.IP_GATEWAY_KEY,
-            "0.0.0.0"
-        )
+    private fun initializeDatastoreParams() {
+        ipAddress = preferenceHandler.ipAddress
+        netmask = preferenceHandler.netMask
+        gateway = preferenceHandler.gatewayIP
+        handleSerialNumberResponse(preferenceHandler.serialNo)
     }
 
 }

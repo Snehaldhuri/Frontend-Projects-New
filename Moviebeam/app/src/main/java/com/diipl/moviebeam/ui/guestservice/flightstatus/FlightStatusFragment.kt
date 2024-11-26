@@ -10,13 +10,10 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
-import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
-import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentFlightStatusBinding
 import com.diipl.moviebeam.ui.base.BaseFragment
 import com.diipl.moviebeam.utils.Constants
@@ -26,7 +23,6 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class FlightStatusFragment(
@@ -43,13 +39,6 @@ class FlightStatusFragment(
     private var callType = Constants.DEPARTURE
     private var apCode = ""
 
-    //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
-        PreferenceDataStoreHelper(
-            requireContext()
-        )
-    }
-    private var ua = ""
 
     interface OnFlightStatusChangedListener {
         fun onFlightStatusChanged(isDeparture: Boolean)
@@ -66,7 +55,6 @@ class FlightStatusFragment(
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFlightStatusBinding.inflate(inflater, container, false)
-        initializeDatastoreParams()
         return binding.root
     }
 
@@ -178,7 +166,7 @@ class FlightStatusFragment(
     private fun fetchFlightStatus() {
         flightStatusViewModel.getFlightStatus(
             Constants.FLIGHT_STATUS_CMD,
-            ua,
+            preferenceHandler.UA,
             callType,
             apCode,
             Constants.MODE
@@ -202,19 +190,6 @@ class FlightStatusFragment(
         } else {
             view.setBackgroundResource(R.color.transparent)
         }
-    }
-
-    private fun initializeDatastoreParams() {
-        lifecycleScope.launch {
-            ua = getUa()
-        }
-    }
-
-    private suspend fun getUa(): String {
-        return preferenceDataStoreHelper.getFirstPreference(
-            PreferenceDataStoreConstants.UA,
-            ""
-        )
     }
 
 }
