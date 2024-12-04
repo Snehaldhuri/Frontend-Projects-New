@@ -327,5 +327,4 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
         playerApi.selectTrack(trackBeans[i])
     }
 
-
 }
