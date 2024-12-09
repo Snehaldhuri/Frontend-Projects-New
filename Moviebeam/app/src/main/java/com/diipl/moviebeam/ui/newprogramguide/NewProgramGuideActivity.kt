@@ -123,10 +123,6 @@ class NewProgramGuideActivity : BaseActivity() {
                     hotelChannelVideo = response.httpStreamingHotelvideoUrl + hotelChannel.fileName
                     broadCastType = response.tvBroadcastType
                     this.getChannelsFromRoomDB()
-//                    if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
-//                        if (DEVICE_MODEL != SEI_MB730)
-//                            fetchTVChannels()
-
                 }
             }
             else -> {
@@ -736,9 +732,14 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private fun tuneIPChannels(program: ChannelEpgDTO?) {
         PlayerActivity.programGuideList.addAll(programGuideList)
+        if (PlayerActivity.programGuideList[0].param1?.isEmpty() == true) {
+            PlayerActivity.programGuideList.removeAt(0)
+        }
+
         val pos = PlayerActivity.programGuideList.indexOf(program)
         focusedPosition = programGuideList.indexOf(program)
         onPause = true
+
         val intent = Intent(applicationContext, PlayerActivity::class.java)
         intent.putExtra("currentPos", pos)
         startActivity(intent)
@@ -746,6 +747,10 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private fun tuneChannels(program: ChannelEpgDTO?) {
         LiveTVActivity.programGuideList.addAll(programGuideList)
+        if (PlayerActivity.programGuideList[0].param1?.isEmpty() == true) {
+            PlayerActivity.programGuideList.removeAt(0)
+        }
+
         val pos = LiveTVActivity.programGuideList.indexOf(program)
         focusedPosition = programGuideList.indexOf(program)
         onPause = true

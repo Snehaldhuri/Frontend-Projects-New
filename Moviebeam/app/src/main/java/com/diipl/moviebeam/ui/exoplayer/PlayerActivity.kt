@@ -180,7 +180,7 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
     private fun channelDown() {
         Log.e(TAG, "channelDown: $currentPos")
         currentPos--
-        Log.e(TAG, "channelDown: After $currentPos")
+        Log.e(TAG, "channelDown: After $currentPos  ${currentPos < 0}, ${programGuideList[0]}")
         if (currentPos < 0)
             currentPos = programGuideList.count() - 1
 

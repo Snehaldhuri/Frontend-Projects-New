@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.core.view.updateLayoutParams
@@ -268,11 +269,15 @@ class MainMenuActivity : BaseActivity() {
 
     private fun releaseVideoPlayer() {
         binding.videoView.toGone()
-        if (::player.isInitialized) {
-            player.stop()
-            player.release()
-        }
         binding.root.loadBg()
+        try {
+            if (::player.isInitialized) {
+                player.stop()
+                player.release()
+            }
+        } catch (e: Exception){
+            Log.e(TAG, "releaseVideoPlayer: ${e.localizedMessage}")
+        }
     }
 
     private fun handleTickerResponse(status: Resource<TickerResponse>) {
