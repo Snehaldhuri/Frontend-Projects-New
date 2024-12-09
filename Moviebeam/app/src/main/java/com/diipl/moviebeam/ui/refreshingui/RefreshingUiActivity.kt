@@ -28,13 +28,13 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.repositories.RoomRepository
 import com.diipl.moviebeam.databinding.ActivityRefreshingUiBinding
 import com.diipl.moviebeam.di.HardwareAPI
+import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
 import com.diipl.moviebeam.service.handler.EPGHandler
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
-import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants
@@ -51,6 +51,7 @@ import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toVisible
 import com.diipl.moviebeam.worker.UpdateDataWorker
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -272,6 +273,8 @@ class RefreshingUiActivity : BaseActivity() {
         when (status) {
             is Resource.Success -> {
                 status.data?.let {
+                    refreshingUiViewModel.setAccountSetupResponseData(it)
+
                     if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB) {
                         hardwareAPI.myService?.setDeviceName(
                             "MBAP_${it.accountId}_${it.roomNo}",
@@ -287,8 +290,6 @@ class RefreshingUiActivity : BaseActivity() {
                             }
                         )
                     }
-                    refreshingUiViewModel.setAccountSetupResponseData(it)
-                    preferenceHandler.updateAccountData(it)
 
                     scheduleClearCredentialsTask(it.checkOutTime)
                     EndlessService.kapingCmdExecutionResponse =
@@ -511,7 +512,8 @@ class RefreshingUiActivity : BaseActivity() {
                 }
 
                 EPGHandler.STATUS_OK -> {
-                    EndlessService.kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                    EndlessService.kapingCmdExecutionResponse =
+                        KapingConstants.EXECUTED_SUCCESSFULLY
                     logD("In Get EPG data callback Success ")
                     redirectToMainMenuScreen()
                 }
@@ -532,8 +534,9 @@ class RefreshingUiActivity : BaseActivity() {
         workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, request)
     }
 
-    private fun redirectToMainMenuScreen() {
-        val i = Intent(this, MainMenuActivity::class.java)
+    private fun redirectToMainMenuScreen() = lifecycleScope.launch {
+        delay(1000 * 5)
+        val i = Intent(applicationContext, MainMenuActivity::class.java)
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         startActivity(i)
     }

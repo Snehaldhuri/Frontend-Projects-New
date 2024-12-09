@@ -17,6 +17,7 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.deleteHSFolder
 import com.diipl.moviebeam.utils.deleteLAFolder
@@ -46,6 +47,7 @@ class UpdateDataStore @Inject constructor(
     private val showTimeDataStore: DataStore<ShowTimeResponse>,
     private val guestDetailsDatastore: DataStore<CmdDataDto>,
     private val guestMessageDataStore: DataStore<MessageResponse>,
+    private val preferenceHandler: PreferenceHandler
 ) {
 
     private val TAG = "UpdateDataStore"
@@ -266,6 +268,7 @@ class UpdateDataStore @Inject constructor(
     }
 
     suspend fun updateAccountData(data: AccountSetupResponse) {
+        preferenceHandler.updateAccountData(data)
         accountDataStore.updateData { currentPreferences ->
             currentPreferences.copy(
                 accountId = data.accountId,

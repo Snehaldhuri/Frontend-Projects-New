@@ -5,20 +5,27 @@ import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.SharedPreference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 private const val TAG = "PreferenceHandler"
 class PreferenceHandler(val context: Context) {
 
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+    private val preferenceDataStoreHelper by lazy {
         PreferenceDataStoreHelper(
             context
         )
     }
+    private val preferences by lazy { SharedPreference(context) }
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private var job: Job? = null
 
-    private val CONSTANT_IP = "0.0.0.0"
+    val CONSTANT_IP = "0.0.0.0"
 
     var accountID = ""
     var roomNo = ""
@@ -37,10 +44,19 @@ class PreferenceHandler(val context: Context) {
     var sessionId = ""
     var cListVersion = ""
     var connectivity = ""
+    var laVersion = ""
+    var hsVersion = ""
+    var themeVersion = ""
+    var moviesVersion = ""
+    var showTimeVersion = ""
 
     var networkStatus = true
     var isGuestCheckedIn = true
     var isAdultDayPass = true
+    var isStbAllocated = false
+    var isContentDetailFlagEnabled = true
+    var isAllDataFetched = false
+    var isStbRegistered = false
 
     var movieCount = 0
     var showsCount = 0
@@ -48,7 +64,20 @@ class PreferenceHandler(val context: Context) {
 
     var appList = ArrayList<String>()
 
-    fun loadAllData() = CoroutineScope(Dispatchers.IO).launch {
+//    var remoteModel = RemoteModel()
+
+    init {
+        job?.cancel()
+        job = null
+        job = coroutineScope.launch {
+            while (isActive){
+                loadAllData()
+                delay(1000*5)
+            }
+        }
+    }
+
+    private fun loadAllData() = coroutineScope.launch {
         accountID = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.ACCOUNT_ID_KEY, "")
         roomNo = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.STB_ROOM_NO_KEY, "")
         serialNo = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SERIAL_NO, "0")
@@ -72,10 +101,19 @@ class PreferenceHandler(val context: Context) {
         sessionId = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SESSION_ID_KEY, "")
         cListVersion = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.C_LIST_VERSION_KEY, "")
         connectivity = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CONNECTIVITY_KEY, "NO INTERNET")
+        laVersion = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.LA_VERSION_KEY, "0")
+        hsVersion = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.HS_VERSION_KEY, "0")
+        themeVersion = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.THEME_VERSION_KEY, "0")
+        moviesVersion = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.MOVIES_VERSION_KEY, "0")
+        showTimeVersion = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.SHOW_TIME_VERSION_KEY, "0")
 
         networkStatus = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.NETWORK_STATUS, false)
         isGuestCheckedIn = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_GUEST_CHECKED_IN_KEY, false)
         isAdultDayPass = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS, false)
+        isAllDataFetched = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_ALL_DATA_FETCHED, false)
+        isContentDetailFlagEnabled = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CONTENT_DETAIL_FLAG, false)
+        isStbAllocated = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_STB_ALLOCATED, false)
+        isStbRegistered = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_STB_REGISTERED, false)
 
         movieCount = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.MOVIES_COUNT_KEY, 0)
         channelCount = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CHANNEL_COUNT_KEY, 0)
@@ -86,10 +124,15 @@ class PreferenceHandler(val context: Context) {
             emptySet()
         ))
 
+//        remoteModel = preferences.btRemoteModel
     }
 
     fun updateAccountData(data : AccountSetupResponse){
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
+            preferenceDataStoreHelper.putPreference(
+                PreferenceDataStoreConstants.CONTENT_DETAIL_FLAG,
+                data.contentDetailFlag
+            )
             preferenceDataStoreHelper.putPreference(
                 PreferenceDataStoreConstants.ACCOUNT_ID_KEY,
                 data.accountId
@@ -111,6 +154,30 @@ class PreferenceHandler(val context: Context) {
                     PreferenceDataStoreConstants.HOTEL_VIDEO_URL_KEY,
                     data.httpStreamingHotelvideoUrl + data.hotelChannelList[0].fileName
                 )
+
+         /*   val  isNotNull = data.tvRemoteProtocol.isNotEmptyOrNull() && data.dthRemoteProtocol.isNotEmptyOrNull() &&
+                    data.sourceHdmiCode.isNotEmptyOrNull() && data.destHdmiCode.isNotEmptyOrNull()
+
+            val msg = "tvBrandId:${data.tvBrandId}, tvDthId:${data.tvDthId}, sourceHdmiId:${data.sourceHdmiId}, " +
+                    "destHdmiId:${data.destHdmiId}, sourceHdmiCode:${data.sourceHdmiCode}, destHdmiCode:${data.destHdmiCode}, " +
+                    "tvRemoteProtocol:${data.tvRemoteProtocol}, dthRemoteProtocol:${data.dthRemoteProtocol}"
+
+            this@PreferenceHandler.logD("Remote Details:->> $msg ")
+
+            if (isNotNull){
+                val model = RemoteModel(
+                    tvId = data.tvBrandId,
+                    dthId = data.tvDthId,
+                    sourceId = data.sourceHdmiId,
+                    destinationId = data.destHdmiId,
+                    sourceCode = data.sourceHdmiCode,
+                    destinationCode = data.destHdmiCode,
+                    tvProtocol = data.tvRemoteProtocol,
+                    dthProtocol = data.dthRemoteProtocol
+                )
+                preferences.btRemoteModel = model
+                remoteModel = model
+            }*/
         }
     }
 
@@ -130,9 +197,53 @@ class PreferenceHandler(val context: Context) {
         ipAddress: String? = null,
         netMask: String? = null,
         gateway: String? = null,
+        isAllDataFetched: Boolean? = null,
+        isStbRegistered: Boolean? = null,
         connectivity: String? = null,
+        laVersion: String? = null,
+        hsVersion: String? = null,
+        themeVersion: String? = null,
+        moviesVersion: String? = null,
+        showTimeVersion: String? = null,
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch {
+
+            laVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.LA_VERSION_KEY, it
+                )
+            }
+            hsVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.HS_VERSION_KEY, it
+                )
+            }
+            themeVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.THEME_VERSION_KEY, it
+                )
+            }
+            moviesVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.MOVIES_VERSION_KEY, it
+                )
+            }
+            showTimeVersion?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.SHOW_TIME_VERSION_KEY, it
+                )
+            }
+            isStbRegistered?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IS_STB_REGISTERED, it
+                )
+            }
+
+            isAllDataFetched?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IS_ALL_DATA_FETCHED, it
+                )
+            }
 
             isStbAllocated?.let {
                 preferenceDataStoreHelper.putPreference(
@@ -202,7 +313,7 @@ class PreferenceHandler(val context: Context) {
             appList?.let {
                 preferenceDataStoreHelper.putPreference(
                     PreferenceDataStoreConstants.APP_LIST_KEY,
-                it)
+                    it)
             }
 
             ipAddress?.let {

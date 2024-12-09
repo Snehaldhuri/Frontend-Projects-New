@@ -84,7 +84,6 @@ class NewsViewModel @Inject constructor(
 
     private fun initializeDatastoreParams() {
         viewModelScope.launch {
-            preferenceHandler.loadAllData()
             delay(100)
             fetchNewsHeader(preferenceHandler.UA, 1)
         }

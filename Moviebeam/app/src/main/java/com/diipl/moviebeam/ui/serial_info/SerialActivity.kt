@@ -28,6 +28,7 @@ import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.observe
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -51,7 +52,6 @@ class SerialActivity : BaseActivity() {
     override fun observeViewModel() {
         observe(serialViewModel.serialNoTakenLiveData, ::handleDataStoreResponse)
         observe(serialViewModel.stbStatusLiveData, ::handleStbStatusResponse)
-//        observe(serialViewModel.stbAllocationStatusLiveData, ::handleStbAllocationStatusResponse)
     }
 
     override fun initViewBinding() {
@@ -112,9 +112,9 @@ class SerialActivity : BaseActivity() {
         }
     }
 
-    private fun fetchSerialFromSDK() {
+    private fun fetchSerialFromSDK() = lifecycleScope.launch {
+        delay(500)
         hardwareAPI.myService?.let {
-            Log.e(TAG, "fetchSerialFromSDK: ${it.deviceSn}")
             processSerialNo(it.deviceSn)
         }
     }

@@ -27,7 +27,7 @@ class ClearCredentialsHandler(private val context: Context, private val accountS
 
     private var appList = ArrayList<String>()
     private val activity: Activity by lazy { BaseActivity.currentActivity!! }
-    private var preferenceHandler : PreferenceHandler = PreferenceHandler(context)
+    private var preferenceHandler = PreferenceHandler(context)
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val handler = Handler(Looper.getMainLooper())
 

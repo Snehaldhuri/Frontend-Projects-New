@@ -21,20 +21,23 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.CONFIG_DATA_KEY
-import com.diipl.moviebeam.utils.KapingConstants
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.getConnectivityType
+import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.openSettingsPattern
+import com.diipl.moviebeam.utils.rebootDevice
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showToast
 import com.google.android.material.snackbar.Snackbar
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,29 +49,34 @@ class RegisterSTBActivity : BaseActivity() {
     private val registerSTBViewModel: RegisterSTBViewModel by viewModels()
     private lateinit var binding: ActivityKapingBinding
 
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-    private var ipAddress = "0.0.0.0"
-    private var netmask = "0.0.0.0"
-    private var gateway = "0.0.0.0"
+    private val preferenceDataStoreHelper by lazy { PreferenceDataStoreHelper(this) }
 
     @Inject
     lateinit var hardwareAPI: HardwareAPI
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        binding.root.openSettingsPattern()
-
-        initializeDatastoreParams()
-
-        binding.tvIp.text = ipAddress
-        binding.tvNetMask.text = netmask
-        binding.tvGateway.text = gateway
+        val reboot = intent.getStringExtra("btnId")
 
         binding.tvSwVersion.text = BuildConfig.VERSION_NAME
-        binding.tvConnectivity.text = getConnectivityType(applicationContext)
+        binding.root.openSettingsPattern()
 
-        validateAsFlag()
+        lifecycleScope.launch {
+            while (isActive) {
+                loadIP()
+                if (preferenceHandler.ipAddress != preferenceHandler.CONSTANT_IP)
+                    this.cancel()
+                delay(1000 * 2)
+            }
+        }
+
+        if (reboot == Constants.REBOOT_BTN)
+            handleRebootCmd(false)
+        else {
+            handleSerialNumberResponse(preferenceHandler.serialNo)
+            validateAsFlag()
+        }
+
     }
 
     private fun validateAsFlag() {
@@ -90,6 +98,7 @@ class RegisterSTBActivity : BaseActivity() {
     }
 
     override fun observeViewModel() {
+//        observe(registerSTBViewModel.serialNoLiveData, ::handleSerialNumberResponse)
         observe(registerSTBViewModel.accountSetupLiveData, ::handleAccountResponse)
         observe(registerSTBViewModel.stbMasterLiveData, ::handleStbMasterResponse)
         observeSnackBarMessages(registerSTBViewModel.showSnackBar)
@@ -99,11 +108,11 @@ class RegisterSTBActivity : BaseActivity() {
     private fun handleAccountResponse(resource: Resource<AccountSetupResponse>) {
         when (resource) {
             is Resource.Success -> {
-                resource.data?.let { sendDataMDM(it) }
-            }
-
-            is Resource.DataError -> {
-                handleRebootCmd()
+                resource.data?.let {
+                    if (it.mdmServerUrl.isNotEmptyOrNull())
+                        sendDataMDM(it)
+                    else handleRebootCmd()
+                }
             }
 
             else -> {}
@@ -127,30 +136,22 @@ class RegisterSTBActivity : BaseActivity() {
         launchNewActivity(STBDetailsActivity::class.java, true)
     }
 
-    private fun handleRebootCmd() {
-        showToast("Account API call failed.")
+    private fun handleRebootCmd(isLog: Boolean = true) {
+        if (isLog) {
+            val msg = "Account API call failed and MDM server is not found."
+            logE("${msg.replace(".", "")} after 3 times retry.")
+            showToast(msg)
+        } else {
+            logE("UA: ${preferenceHandler.UA} is removed from HID: ${preferenceHandler.accountID}. Rebooting device...")
+        }
 
         preferenceHandler.updateDatastoreVariables(isStbAllocated = false)
 
-        when (BuildConfig.BUILD_TYPE) {
-            Constants.BUILD_TYPE_STB -> {
-                hardwareAPI.myService?.rebootDevice()
-            }
-
-            else -> {
-                val intent = Intent()
-                intent.component =
-                    ComponentName(
-                        Constants.MDM_PACKAGE_NAME,
-                        KapingConstants.MDM_RESTART_ACTIVITY_NAME
-                    )
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-            }
-        }
+        rebootDevice()
     }
 
     private fun handleSerialNumberResponse(serialNo: String) {
+        Log.e(TAG, "handleSerialNumberResponse: $serialNo")
         val ua = "${Constants.UA_PREFIX}$serialNo"
         binding.tvUa.text = ua
         binding.tvSerialNo.text = serialNo
@@ -221,11 +222,13 @@ class RegisterSTBActivity : BaseActivity() {
 
     override fun onBackPressed() {}
 
-    private fun initializeDatastoreParams() {
-        ipAddress = preferenceHandler.ipAddress
-        netmask = preferenceHandler.netMask
-        gateway = preferenceHandler.gatewayIP
-        handleSerialNumberResponse(preferenceHandler.serialNo)
+    private fun loadIP() {
+        binding.root.postDelayed({
+            binding.tvIp.text = preferenceHandler.ipAddress
+            binding.tvNetMask.text = preferenceHandler.netMask
+            binding.tvGateway.text = preferenceHandler.gatewayIP
+            binding.tvConnectivity.text = preferenceHandler.connectivity
+        }, 200)
     }
 
 }

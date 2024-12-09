@@ -35,6 +35,7 @@ import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.grantPermissions
 import com.diipl.moviebeam.utils.launchNewActivity
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
@@ -89,6 +90,8 @@ class STBDetailsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        grantPermissions()
 
         stbDetailViewModel.getNetworkStatus(preferenceDataStoreHelper)
 
@@ -221,7 +224,6 @@ class STBDetailsActivity : BaseActivity() {
                             }
                         )
                     }
-                    preferenceHandler.updateAccountData(it)
 
                     scheduleClearCredentialsTask(it.checkOutTime)
                     stbDetailViewModel.fetchHotelService(it.accountId)

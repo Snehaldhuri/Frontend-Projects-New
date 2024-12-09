@@ -324,7 +324,6 @@ class HomeViewModel @Inject constructor(
 
     private fun initializeDatastoreParams() {
         viewModelScope.launch {
-            preferenceHandler.loadAllData()
             delay(100)
             fetchAllApi("ACTIVATE", preferenceHandler.UA, "JSON")
         }

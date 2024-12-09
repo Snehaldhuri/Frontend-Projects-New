@@ -66,7 +66,6 @@ class WeatherViewModel @Inject constructor(
 
     private fun initializeDatastoreParams() {
         viewModelScope.launch {
-            preferenceHandler.loadAllData()
             delay(100)
             fetchWeatherData(preferenceHandler.UA)
         }

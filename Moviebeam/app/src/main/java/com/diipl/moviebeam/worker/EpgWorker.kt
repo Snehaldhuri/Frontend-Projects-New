@@ -98,7 +98,6 @@ class EpgWorker @AssistedInject constructor(
     }
 
     private fun initializeDatastoreParams() = CoroutineScope(Dispatchers.Default).launch {
-        preferenceHandler.loadAllData()
         delay(100)
         ua = preferenceHandler.UA
         getHotelCustomizationResponseData(channelListDataStore)

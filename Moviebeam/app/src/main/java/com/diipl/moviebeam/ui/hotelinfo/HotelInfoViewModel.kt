@@ -41,10 +41,6 @@ class HotelInfoViewModel @Inject constructor(
     private val showToastPrivate = MutableLiveData<SingleEvent<Any>>()
     val showToast: LiveData<SingleEvent<Any>> get() = showToastPrivate
 
-    init {
-        preferenceHandler.loadAllData()
-    }
-
     // Get Response from DataStore
 
     fun getWeatherResponseData(dataStore: DataStore<WeatherResponse>) {

@@ -38,7 +38,7 @@ class MainMenuBtnAdapter(
     lateinit var context: Context
 
     //Variables from datastore
-    private val preferenceHandler : PreferenceHandler by lazy { PreferenceHandler(
+    private val preferenceHandler by lazy { PreferenceHandler(
         currentActivity!!) }
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
@@ -111,7 +111,6 @@ class MainMenuBtnAdapter(
 
     private fun initializeDatastoreParams() {
         CoroutineScope(Dispatchers.Default).launch {
-            preferenceHandler.loadAllData()
             delay(100)
             gradientStartColor = preferenceHandler.gradientStartColor
             gradientEndColor = preferenceHandler.gradientEndColor

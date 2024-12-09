@@ -15,7 +15,6 @@ import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -57,8 +56,6 @@ class MessageViewModel @Inject constructor(
 
     private fun initializeDatastoreParams() {
         viewModelScope.launch {
-            preferenceHandler.loadAllData()
-            delay(100)
             fetchGuestMessages(preferenceHandler.UA, GuestDetails.SESSION_ID)
         }
     }

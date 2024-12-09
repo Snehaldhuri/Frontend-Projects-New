@@ -40,6 +40,17 @@ class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: 
     private val _accountSetupLiveData = MutableLiveData<Resource<AccountSetupResponse>>()
     val accountSetupLiveData: LiveData<Resource<AccountSetupResponse>> get() = _accountSetupLiveData
 
+    fun getSerialNoFromDataStore(preferenceDataStoreHelper: PreferenceDataStoreHelper) {
+        viewModelScope.launch {
+            _serialNoLiveData.postValue(
+                preferenceDataStoreHelper.getFirstPreference(
+                    PreferenceDataStoreConstants.SERIAL_NO,
+                    ""
+                )
+            )
+        }
+    }
+
     fun fetchAccountAPI(ua: String) = viewModelScope.launch(Dispatchers.IO) {
         _accountSetupLiveData.postValue(Resource.Loading())
 

@@ -81,7 +81,6 @@ class LoggingService : Service() {
     }
 
     private fun initData() = CoroutineScope(Dispatchers.Default).launch {
-        preferenceHandler.loadAllData()
         delay(100)
         accountId = preferenceHandler.accountID
         stbRoomNo = preferenceHandler.roomNo

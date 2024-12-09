@@ -20,7 +20,7 @@ object PreferenceDataStoreConstants {
     val ADULT_DAY_PASS_STATUS = booleanPreferencesKey("adultDayPassStatus")
     val ADULT_DAY_PASS_FINISH_TIME = longPreferencesKey("adultDayPassFinishTime")
     val UA = stringPreferencesKey("UA")
-
+    val CONTENT_DETAIL_FLAG = booleanPreferencesKey("isContentDetailFlagEnabled")
 
     // Kaping Keys
     val IS_GUEST_CHECKED_IN_KEY = booleanPreferencesKey("IS_GUEST_CHECKED_IN")
@@ -28,6 +28,7 @@ object PreferenceDataStoreConstants {
 
     val IS_STB_REGISTERED = booleanPreferencesKey("IS_STB_REGISTERED")
     val IS_STB_ALLOCATED = booleanPreferencesKey("IS_STB_ALLOCATED")
+    val IS_ALL_DATA_FETCHED = booleanPreferencesKey("isAllDataFetched")
 
     val ACCOUNT_ID_KEY = stringPreferencesKey("ACCOUNT_ID")
     val STB_ROOM_NO_KEY = stringPreferencesKey("STB_ROOM_NO")
@@ -48,5 +49,10 @@ object PreferenceDataStoreConstants {
     val EPG_END_TIME_KEY = stringPreferencesKey("EPG_END_TIME")
     val APP_LIST_KEY = stringSetPreferencesKey("APP_LIST")
     val SESSION_ID_KEY = stringPreferencesKey("SESSION_ID")
+    val LA_VERSION_KEY = stringPreferencesKey("LA_VERSION")
+    val HS_VERSION_KEY = stringPreferencesKey("HS_VERSION")
+    val THEME_VERSION_KEY = stringPreferencesKey("THEME_VERSION")
+    val MOVIES_VERSION_KEY = stringPreferencesKey("MOVIES_VERSION")
+    val SHOW_TIME_VERSION_KEY = stringPreferencesKey("SHOW_TIME_VERSION")
 
 }

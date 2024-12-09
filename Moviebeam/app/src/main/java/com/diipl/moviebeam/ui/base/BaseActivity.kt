@@ -85,8 +85,6 @@ abstract class BaseActivity : AppCompatActivity() {
         currentActivity = this
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
-        preferenceHandler.loadAllData()
-
         launchLogger()
         initViewBinding()
         observeViewModel()

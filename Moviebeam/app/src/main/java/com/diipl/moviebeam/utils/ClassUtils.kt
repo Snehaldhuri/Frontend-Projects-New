@@ -29,6 +29,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.TypeConverter
@@ -42,6 +43,7 @@ import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
+import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.service.receiver.ClearCredentialsReceiver
@@ -76,6 +78,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -476,7 +479,7 @@ fun ConstraintLayout.loadBg() {
             .into(object : CustomTarget<Drawable?>() {
                 override fun onResourceReady(
                     resource: Drawable,
-                    transition: Transition<in Drawable?>?
+                    transition: Transition<in Drawable?>?,
                 ) {
                     resource.alpha = 160
                     background = resource
@@ -708,11 +711,11 @@ fun Activity.launchLogger() {
         }
     }
 
-    if (!LoggingService.isServiceStarted){
+    if (!LoggingService.isServiceStarted) {
         Log.e(TAG, "launchLogger: starting logger -> ${LoggingService.isServiceStarted}")
         val serviceIntent = Intent(this, LoggingService::class.java)
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-    } else  Log.e(TAG, "launchLogger: logger is running -> ${LoggingService.isServiceStarted}")
+    } else Log.e(TAG, "launchLogger: logger is running -> ${LoggingService.isServiceStarted}")
 
 }
 
@@ -720,12 +723,15 @@ fun Context.getInstalledAppInfo(packageName: String): ApplicationInfo? {
     return try {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // Use ApplicationInfoFlags in API 33 (Android 13) and above
-            packageManager.getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(0))
+            packageManager.getApplicationInfo(
+                packageName,
+                PackageManager.ApplicationInfoFlags.of(0)
+            )
         } else {
             // Use legacy approach for versions below Android 13
             packageManager.getApplicationInfo(packageName, 0)
         }
-    }catch (e: Exception){
+    } catch (e: Exception) {
         null
     }
 }
@@ -744,7 +750,7 @@ fun Context.showToast(message: String) = GlobalScope.launch(Dispatchers.Main) {
 fun isEpgDataValid(
     startDateStr: String?,
     endDateStr: String?,
-    simpleDateFormatter: SimpleDateFormat
+    simpleDateFormatter: SimpleDateFormat,
 ): Boolean {
     if (startDateStr == null || endDateStr == null)
         return false
@@ -756,7 +762,7 @@ fun isEpgDataValid(
 
 fun removeEarlierData(
     iterator: MutableIterator<MutableMap.MutableEntry<String, MutableList<ChannelEpgDTO>>>?,
-    currentKey: String
+    currentKey: String,
 ) {
     while (iterator?.hasNext() == true) {
         val entry = iterator.next()
@@ -817,7 +823,12 @@ fun <T> Activity.launchNewActivity(cls: Class<T>, finish: Boolean = false) {
 
 fun <T> Class<T>.startActivity() {
     currentActivity?.let {
-        it.startActivity(Intent(it, this).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP))
+        it.startActivity(
+            Intent(
+                it,
+                this
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        )
     }
 }
 
@@ -869,4 +880,44 @@ fun Context.getSerialNoFromMDM(): String? {
         }
     }
     return null
+}
+
+fun Activity.rebootDevice() = CoroutineScope(Dispatchers.IO).launch {
+    val hardwareAPI = HardwareAPI(this@rebootDevice)
+    Log.e(TAG, "rebootDevice: 1")
+    delay(1000)
+    Log.e(TAG, "rebootDevice: 100")
+    when (BuildConfig.BUILD_TYPE) {
+        Constants.BUILD_TYPE_STB -> {
+            hardwareAPI.myService?.let {
+                logE("Rebooting SEI device...")
+                it.rebootDevice()
+            }
+        }
+        else -> {
+            val intent = Intent()
+            intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finishAffinity()
+        }
+    }
+}
+
+fun Context.grantPermissions() {
+    if ((ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_DENIED) || (ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_DENIED)
+    ) {
+        Intent(Intent.ACTION_VIEW).apply {
+            component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_GRANT_PERMISSION)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(this)
+        }
+    }
+
 }

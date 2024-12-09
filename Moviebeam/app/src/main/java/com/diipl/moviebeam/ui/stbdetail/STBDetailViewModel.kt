@@ -325,7 +325,6 @@ class STBDetailViewModel @Inject constructor(
     }
 
     private fun initializeDatastoreParams() = viewModelScope.launch {
-        preferenceHandler.loadAllData()
         delay(200)
         accountId = preferenceHandler.accountID
         ua = preferenceHandler.UA

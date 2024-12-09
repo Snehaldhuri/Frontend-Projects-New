@@ -108,7 +108,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
@@ -303,7 +302,6 @@ class EndlessService : Service() {
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
         versionNumber = getVersionNumber()
         logD(versionNumber)
-        this.initializeDatastoreParams()
 
         val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
 //        filter.addAction(Intent.CATEGORY_HOME)
@@ -437,7 +435,8 @@ class EndlessService : Service() {
             while (isServiceStarted) {
                 launch(Dispatchers.IO) {
                     setIPInfo()
-                    preferenceHandler.loadAllData()
+                    initializeDatastoreParams()
+
                     delay(100)
                     UA = preferenceHandler.UA
 
@@ -605,10 +604,15 @@ class EndlessService : Service() {
                             true
                         } else {
                             preferenceHandler.updateDatastoreVariables(isStbAllocated = false)
-                            handleRebootCmd()
-                            delay(1000)
                             if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
-                                RegisterSTBActivity::class.java.startActivity()
+                                BaseActivity.currentActivity?.let {
+                                    Intent(it, RegisterSTBActivity::class.java).apply {
+                                        putExtra("btnId", Constants.REBOOT_BTN)
+                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                                        startActivity(this)
+                                        it.finish()
+                                    }
+                                }
                             }
                             false
                         }
@@ -726,24 +730,8 @@ class EndlessService : Service() {
         }
     }
 
-    private var updateJob: Job? = null
-
-    private fun updateParams(){
-        updateJob?.cancel()
-        updateJob = coroutineScope.launch {
-            while (true){
-                if (ua.isNotEmpty()){
-                    updateJob?.cancel()
-                } else {
-                    initializeDatastoreParams()
-                }
-                delay(5000)
-            }
-        }
-    }
-
     private fun handleKaping(kapingResponse: KapingResponse?) {
-        updateParams()
+
         when (kapingResponse?.cmdData?.cmd) {
 
             KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
@@ -1025,7 +1013,6 @@ class EndlessService : Service() {
                     )
                 }
                 updateAccountSetupData(response)
-                preferenceHandler.updateAccountData(response)
 
                 scheduleClearCredentialsTask(response.checkOutTime)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
@@ -1364,7 +1351,6 @@ class EndlessService : Service() {
 
     private fun getGuestMessages() {
         coroutineScope.launch {
-            preferenceHandler.loadAllData()
             delay(100)
             if (preferenceHandler.isGuestCheckedIn) {
                 getGuestDetails(guestDetailsDatastore)
@@ -1537,7 +1523,6 @@ class EndlessService : Service() {
 
     private fun initializeDatastoreParams() {
         CoroutineScope(Dispatchers.Default).launch {
-            preferenceHandler.loadAllData()
             delay(100)
             accountId = preferenceHandler.accountID
             serialNo = preferenceHandler.serialNo

@@ -25,8 +25,6 @@ abstract class BaseFragment : Fragment(){
         savedInstanceState: Bundle?
     ): View? {
 
-        preferenceHandler.loadAllData()
-
         initViewBinding()
         return super.onCreateView(inflater, container, savedInstanceState)
     }

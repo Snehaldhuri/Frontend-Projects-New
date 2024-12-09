@@ -169,7 +169,6 @@ class WeatherDateTimeFragment : Fragment() {
                                 }
                             )
                         }
-                        preferenceHandler.updateAccountData(it)
                     }
                 }
             }

@@ -8,6 +8,7 @@ import com.diipl.moviebeam.data.dto.btn.GsBtnModel
 
 object Constants {
 
+    const val REBOOT_BTN = "rebootID"
     const val CONFIG_DATA_KEY = "configData"
 
     var isWorkDone = 0

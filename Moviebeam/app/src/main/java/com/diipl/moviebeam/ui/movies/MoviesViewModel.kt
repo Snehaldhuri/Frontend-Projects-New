@@ -50,10 +50,6 @@ class MoviesViewModel @Inject constructor(
     private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
     val moviesLiveData: LiveData<Resource<MoviesResponse>> get() = _moviesLiveData
 
-    init {
-        preferenceHandler.loadAllData()
-    }
-
     // Get Response From DataStore
     fun getMoviesInfoResponseData(dataStore: DataStore<MoviesResponse>) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -185,7 +181,6 @@ class MoviesViewModel @Inject constructor(
     val rentalReversal: LiveData<Resource<RentalReversalResponse>> get() = _rentalReversal
     fun setRentalReversal(rentalMovieModel: RentalMovieModel) {
         viewModelScope.launch {
-            preferenceHandler.loadAllData()
             delay(100)
             if (rentalMovieModel.rentalID != 0) {
                 val request = RentalReversalRequest()
