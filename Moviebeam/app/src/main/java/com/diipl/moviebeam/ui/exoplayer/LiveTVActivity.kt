@@ -20,7 +20,6 @@ import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.data.dto.program.DvbChannel
 import com.diipl.moviebeam.databinding.ActivityLiveTvactivityBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.showToast
@@ -51,26 +50,26 @@ class LiveTVActivity : BaseActivity() {
     private val tuneChannelRunnable = Runnable {
         val program = programGuideList[currentPos]
 
-        if (DEVICE_MODEL == Constants.SEI_MB730) {
-            if (program.param1.isNotEmptyOrNull()) {
-                val majorNumber = program.param1?.toInt()!!
-                val minorNumber = program.param2?.toInt()!!
-                val bundle = Bundle().apply {
-                    putInt(KEY_MAJOR, majorNumber)
-                    putInt(KEY_MINOR, minorNumber)
-                }
-                binding.tvView.tune(DTV_INPUT_ID, CHANNEL_URI, bundle)
-            } else {
-                showToast("Channel No. ${program.CNO} is not playable.")
+//        if (DEVICE_MODEL == Constants.SEI_MB730) {
+        if (program.param1.isNotEmptyOrNull()) {
+            val majorNumber = program.param1?.toInt()!!
+            val minorNumber = program.param2?.toInt()!!
+            val bundle = Bundle().apply {
+                putInt(KEY_MAJOR, majorNumber)
+                putInt(KEY_MINOR, minorNumber)
             }
+            binding.tvView.tune(DTV_INPUT_ID, CHANNEL_URI, bundle)
         } else {
-            val list = mChannelList.toList()
-            val dvb = list.filter { program.CNO?.toInt() == it.number }
-            if (dvb.isNotEmpty()) {
-                binding.tvView.tune(DTV_INPUT_ID, dvb[0].uri)
-            } else showToast("Channel No. ${program.CNO} is not available.")
-
+            showToast("Channel No. ${program.CNO} is not playable.")
         }
+        /* } else {
+             val list = mChannelList.toList()
+             val dvb = list.filter { program.CNO?.toInt() == it.number }
+             if (dvb.isNotEmpty()) {
+                 binding.tvView.tune(DTV_INPUT_ID, dvb[0].uri)
+             } else showToast("Channel No. ${program.CNO} is not available.")
+
+         }*/
     }
 
     private val changeChannelRunnable = Runnable {

@@ -42,14 +42,12 @@ import com.diipl.moviebeam.service.remote.IIrService
 import com.diipl.moviebeam.service.remote.UsbIrService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
-import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.DEVICE_MODEL
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.ui.exoplayer.PlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
-import com.diipl.moviebeam.utils.Constants.SEI_MB730
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.SingleEvent
@@ -125,9 +123,9 @@ class NewProgramGuideActivity : BaseActivity() {
                     hotelChannelVideo = response.httpStreamingHotelvideoUrl + hotelChannel.fileName
                     broadCastType = response.tvBroadcastType
                     this.getChannelsFromRoomDB()
-                    if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
-                        if (DEVICE_MODEL != SEI_MB730)
-                            fetchTVChannels()
+//                    if (BuildConfig.BUILD_TYPE == Constants.BUILD_TYPE_STB)
+//                        if (DEVICE_MODEL != SEI_MB730)
+//                            fetchTVChannels()
 
                 }
             }
