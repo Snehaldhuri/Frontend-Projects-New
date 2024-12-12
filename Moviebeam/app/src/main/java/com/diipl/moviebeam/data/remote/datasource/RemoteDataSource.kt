@@ -31,9 +31,9 @@ import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
+import com.diipl.moviebeam.service.handler.NetworkHandler
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.service.handler.NetworkHandler
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toQueryMap
@@ -71,9 +71,9 @@ class RemoteDataSource @Inject constructor(
         return responseObject
     }
 
-    suspend fun getHotelServiceInfo(accountId: String): HotelServiceResponse? {
+    suspend fun getHotelServiceInfo(ua: String): HotelServiceResponse? {
         val result = safeAPiCall {
-            lgRestApiService.getHotelServices(accountId)
+            lgRestApiService.getHotelServices(ua)
         }
         val responseObject = ApiResponseParsing().getResponseAsObject(result.data, HotelServiceResponse::class)
         logD("In Hotel Services Callback: version = "+ responseObject?.version)

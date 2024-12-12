@@ -23,7 +23,7 @@ open class NetworkHandler @Inject constructor(
     inline fun <reified T> safeAPiCall(api: () -> Response<T>): Resource<T> {
         try {
             val result = api()
-            runCatching { logD("API call status: ${result.code()},  URL: ${result.raw().request.url}, Message: ${result.message()}") }
+            runCatching { logD("API call status: ${result.code()},  URL: ${result.raw().request.url}, Message: ${result.body()}") }
             if (result.isSuccessful) {
                 val body = result.body()
                 return Resource.Success(body)

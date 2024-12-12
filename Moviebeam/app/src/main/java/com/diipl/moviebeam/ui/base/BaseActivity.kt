@@ -27,6 +27,7 @@ import com.diipl.moviebeam.ui.casting.HotspotActivity
 import com.diipl.moviebeam.ui.concierge.ConciergeActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
+import com.diipl.moviebeam.ui.exoplayer.PlayerActivity
 import com.diipl.moviebeam.ui.guest.feedback.GuestFeedbackActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guest.news.NewsActivity
@@ -170,6 +171,10 @@ abstract class BaseActivity : AppCompatActivity() {
         }
         if (currentActivity is LiveTVActivity) {
             (currentActivity as LiveTVActivity).handleBackRemoteClick()
+            return true
+        }
+        if (currentActivity is PlayerActivity) {
+            (currentActivity as PlayerActivity).handleBackRemoteClick()
             return true
         }
         return false

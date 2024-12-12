@@ -11,6 +11,8 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.epg.ChannelEpgDTO
 import com.diipl.moviebeam.databinding.ActivityPlayerBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
+import com.diipl.moviebeam.utils.logD
+import com.diipl.moviebeam.utils.showToast
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
 import com.nes.libplayerapi.PlayerApi
@@ -20,7 +22,6 @@ import com.nes.libplayerapi.listener.OnFingerPrintListener
 import com.nes.libplayerapi.listener.OnVideoStateListener
 import com.nes.libseiplayer.AbstractVideoPlayer
 import com.nes.libseiplayer.SeiPlayerImpl
-import java.util.concurrent.TimeUnit
 
 private const val TAG = "PlayerActivity"
 
@@ -29,28 +30,19 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
     private lateinit var binding: ActivityPlayerBinding
     private var currentPos = 0
     private val handler = Handler(Looper.getMainLooper())
-    private var timeInSeconds = 0L
-    private val timeHandler = Handler(Looper.getMainLooper())
     private var playerApi: PlayerApi = SeiPlayerImpl<AbstractVideoPlayer>()
 
     private var isFirst = true
-
-    private val changeChannelRunnable = Runnable {
-        binding.cardTv.toGone()
-    }
-    private val runnable = object : Runnable {
-        override fun run() {
-            timeInSeconds++
-//            binding.tvNumber.text = formatTime(timeInSeconds)
-            timeHandler.postDelayed(this, 1000) // Update every second
+    private var channelNumberInput = ""
+    private val channelChangeDelay = 2000L // 2 seconds delay for channel switching
+    private val channelChangeRunnable = Runnable {
+        if (channelNumberInput.isNotEmpty()) {
+            switchChannel(channelNumberInput)
         }
     }
 
-    private fun formatTime(seconds: Long): String {
-        val hours = TimeUnit.SECONDS.toHours(seconds)
-        val minutes = TimeUnit.SECONDS.toMinutes(seconds) % 60
-        val secs = seconds % 60
-        return String.format("%02d:%02d:%02d", hours, minutes, secs)
+    private val changeChannelRunnable = Runnable {
+        binding.cardTv.toGone()
     }
 
     companion object {
@@ -83,9 +75,6 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
 
     private fun startPlayback() {
         handler.removeCallbacks(changeChannelRunnable)
-        timeHandler.removeCallbacks(runnable)
-
-        timeHandler.post(runnable)
 
         val program = programGuideList[currentPos]
         val udpUrl = program.setupUrl()
@@ -95,7 +84,7 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
         if (isFirst) isFirst = false
         else playerApi.start()
 
-        Log.e(TAG, "startPlayback: udpUrl ->> ${program.CNO} -- $udpUrl")
+        logD("startPlayback: udpUrl ->> ${program.CNO} -- $udpUrl")
 
         binding.tvChannelName.text =
             "\nChannel No.   -->  ${program.CNO}  \nChannel Name  -->  ${program.CN} \nUDP  --> $udpUrl "
@@ -156,9 +145,10 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
         playerApi.addOnVideoSizeChangeListeners { i, i1 -> }
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
+    override fun onPause() {
         playerApi.stop()
+        playerApi.release()
+        super.onPause()
         finish()
     }
 
@@ -168,9 +158,7 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
     }
 
     private fun channelUp() {
-        Log.e(TAG, "channelUp: $currentPos")
         currentPos++
-        Log.e(TAG, "channelUp: ${programGuideList.count()}   $currentPos")
         if (currentPos == programGuideList.count())
             currentPos = 0
 
@@ -178,9 +166,7 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
     }
 
     private fun channelDown() {
-        Log.e(TAG, "channelDown: $currentPos")
         currentPos--
-        Log.e(TAG, "channelDown: After $currentPos  ${currentPos < 0}, ${programGuideList[0]}")
         if (currentPos < 0)
             currentPos = programGuideList.count() - 1
 
@@ -213,8 +199,9 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
                 channelUp()
             }
 
+            KeyEvent.KEYCODE_BACK -> handleBackRemoteClick()
 
-            KeyEvent.KEYCODE_1 -> {
+            /*KeyEvent.KEYCODE_1 -> {
                 toggleAudioTrack()
             }
 
@@ -224,12 +211,76 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
 
             KeyEvent.KEYCODE_3 -> {
                 toggleSubtitle()
+            }*/
+
+
+            KeyEvent.KEYCODE_0,
+            KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_2,
+            KeyEvent.KEYCODE_3,
+            KeyEvent.KEYCODE_4,
+            KeyEvent.KEYCODE_5,
+            KeyEvent.KEYCODE_6,
+            KeyEvent.KEYCODE_7,
+            KeyEvent.KEYCODE_8,
+            KeyEvent.KEYCODE_9,
+            -> {
+                // Append the numeric key to the channel number input
+                channelNumberInput += (keyCode - KeyEvent.KEYCODE_0).toString()
+
+                if (channelNumberInput.length > 4) {
+                    channelNumberInput = channelNumberInput.substring(1, 5)
+                }
+
+                binding.cardNumber.toVisible()
+                binding.tvNumber.text = channelNumberInput
+
+                // Reset any previous channel change delay
+                handler.removeCallbacks(channelChangeRunnable)
+
+                // Schedule the channel change after a delay
+                handler.postDelayed(channelChangeRunnable, channelChangeDelay)
+                return true
             }
 
-            KeyEvent.KEYCODE_BACK -> onBackPressed()
+            KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_DPAD_CENTER -> {
+                // Handle channel switch immediately on "OK" button press
+                if (channelNumberInput.isNotEmpty()) {
+                    handler.removeCallbacks(channelChangeRunnable)
+                    switchChannel(channelNumberInput)
+                    return true
+                }
+            }
 
         }
         return super.onKeyDown(keyCode, event)
+    }
+    private fun switchChannel(channelNumber: String) {
+        if (channelNumber.isNotEmpty()) {
+            // Logic to switch to the entered channel number
+            // Replace this with actual channel switching code
+            binding.cardNumber.toGone()
+            playerApi.reset()
+
+            val originalNum = channelNumber.trimStart('0')
+            Log.e(TAG, "Switching to channel: $channelNumber ->  $originalNum")
+
+            val channel = programGuideList.filter { it.CNO == originalNum }
+
+            if (channel.isNotEmpty()) {
+                currentPos = programGuideList.indexOf(channel[0])
+                startPlayback()
+            } else {
+                showToast("Channel No. $originalNum is not available!")
+            }
+            channelNumberInput = "" // Reset channel input after switching
+            binding.tvNumber.text = channelNumberInput
+        }
+    }
+
+
+    fun handleBackRemoteClick() {
+        onBackPressed()
     }
 
     fun playPause() {

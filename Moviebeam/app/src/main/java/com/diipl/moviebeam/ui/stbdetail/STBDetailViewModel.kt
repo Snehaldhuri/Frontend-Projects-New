@@ -104,10 +104,10 @@ class STBDetailViewModel @Inject constructor(
         }
     }
 
-    fun fetchHotelService(accountId: String) {
+    fun fetchHotelService(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val hotelServicesResponse =
-                async { movieBeamRepository.getHotelServiceInfo(accountId) }
+                async { movieBeamRepository.getHotelServiceInfo(ua) }
             val result = awaitAll(
                 hotelServicesResponse
             )

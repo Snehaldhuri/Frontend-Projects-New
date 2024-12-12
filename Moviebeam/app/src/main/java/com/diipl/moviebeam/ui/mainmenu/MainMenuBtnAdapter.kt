@@ -16,7 +16,6 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.databinding.ItemButtonBinding
 import com.diipl.moviebeam.service.handler.PreferenceHandler
-import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getInstalledAppInfo
@@ -37,9 +36,6 @@ class MainMenuBtnAdapter(
     var itemList: List<BtnModel> = emptyList()
     lateinit var context: Context
 
-    //Variables from datastore
-    private val preferenceHandler by lazy { PreferenceHandler(
-        currentActivity!!) }
     private var gradientStartColor = Constants.DEFAULTGRADIENTSTARTCOLOR
     private var gradientEndColor = Constants.DEFAULTGRADIENTENDCOLOR
 
@@ -58,7 +54,6 @@ class MainMenuBtnAdapter(
     }
 
     override fun getItemCount(): Int = itemList.size
-
 
     override fun getItemViewType(position: Int): Int {
         return position
@@ -110,11 +105,12 @@ class MainMenuBtnAdapter(
     }
 
     private fun initializeDatastoreParams() {
-        CoroutineScope(Dispatchers.Default).launch {
-            delay(100)
-            gradientStartColor = preferenceHandler.gradientStartColor
-            gradientEndColor = preferenceHandler.gradientEndColor
-        }
+       CoroutineScope(Dispatchers.IO).launch {
+           val preferenceHandler = PreferenceHandler(context)
+           delay(160)
+           gradientStartColor = preferenceHandler.gradientStartColor
+           gradientEndColor = preferenceHandler.gradientEndColor
+       }
     }
 
     private fun onAppClicked(packageName: String) {

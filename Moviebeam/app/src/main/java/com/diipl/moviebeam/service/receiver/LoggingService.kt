@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -61,7 +62,6 @@ class LoggingService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        initData()
         updateData()
 
     }
@@ -69,13 +69,9 @@ class LoggingService : Service() {
     private fun updateData() {
         updateJob?.cancel()
         updateJob = CoroutineScope(Dispatchers.Default).launch {
-            while (true) {
-                if (accountId == "") {
-                    initData()
-                } else {
-                    updateJob?.cancel()
-                }
-                delay(1000 * 10)
+            while (isActive) {
+                initData()
+                delay(1000 * 3)
             }
         }
     }

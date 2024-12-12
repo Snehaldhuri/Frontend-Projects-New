@@ -1105,7 +1105,7 @@ class EndlessService : Service() {
 
     private fun fetchHotelServiceInfo(accountId: String) {
         coroutineScope.launch {
-            val response = movieBeamRepository.getHotelServiceInfo(accountId)
+            val response = movieBeamRepository.getHotelServiceInfo(preferenceHandler.UA)
             if (response != null) {
                 updateHotelServices(response)
 //                startUpdateDataWorker(UpdateDataWorker.ACTION_HS)

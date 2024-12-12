@@ -27,10 +27,12 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.remote.datasource.RemoteDataSource
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import javax.inject.Inject
 
 class MovieBeamRepository @Inject constructor(
-    private val remoteDataSource: RemoteDataSource
+    private val remoteDataSource: RemoteDataSource,
+    private val preferenceHandler: PreferenceHandler
 ) {
 
     suspend fun getMovieAccess(request: RentalMovieRequest): RentalMovieResponse? {
@@ -38,15 +40,18 @@ class MovieBeamRepository @Inject constructor(
     }
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {
-        return remoteDataSource.getWeatherData(ua)
+        val UA = ua.ifEmpty { preferenceHandler.UA }
+        return remoteDataSource.getWeatherData(UA)
     }
 
-    suspend fun getHotelServiceInfo(accountId: String): HotelServiceResponse? {
-        return remoteDataSource.getHotelServiceInfo(accountId)
+    suspend fun getHotelServiceInfo(ua: String): HotelServiceResponse? {
+        val UA = ua.ifEmpty { preferenceHandler.UA }
+        return remoteDataSource.getHotelServiceInfo(UA)
     }
 
     suspend fun getThemeDetails(ua: String): ThemeResponse? {
-        return remoteDataSource.getThemeDetails(ua)
+        val UA = ua.ifEmpty { preferenceHandler.UA }
+        return remoteDataSource.getThemeDetails(UA)
     }
 
     suspend fun getDateTimeData(ua: String): DateTimeResponse? {
@@ -72,7 +77,8 @@ class MovieBeamRepository @Inject constructor(
     }
 
     suspend fun getLocalAttractionInfo(ua: String): LocalAttractionResponse? {
-        return remoteDataSource.getLocalAttractionInfo(ua)
+        val UA = ua.ifEmpty { preferenceHandler.UA }
+        return remoteDataSource.getLocalAttractionInfo(UA)
     }
 
     suspend fun getNewsHeader(ua: String, languageId: Int): NewsHeaderResponse? {

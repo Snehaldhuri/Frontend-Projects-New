@@ -239,7 +239,7 @@ class RefreshingUiActivity : BaseActivity() {
     }
 
     private fun handleHsChangeCmd() {
-        refreshingUiViewModel.fetchHotelServiceInfo(accountId)
+        refreshingUiViewModel.fetchHotelServiceInfo(preferenceHandler.UA)
     }
 
     private fun handleLAChangeCmd() {

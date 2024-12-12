@@ -145,8 +145,7 @@ class MainMenuActivity : BaseActivity() {
     private fun handleNetworkResponse(isConnected: Boolean) {
         if (isConnected) {
             isNetworkConnected = 1
-            if (preferenceHandler.isContentDetailFlagEnabled)
-                binding.videoView.toVisible()
+            loadVideo()
         } else {
             isNetworkConnected = -1
             releaseVideoPlayer()
@@ -186,15 +185,17 @@ class MainMenuActivity : BaseActivity() {
         binding.videoView.player = player
     }
 
-    override fun onResume() {
-        super.onResume()
-
+    private fun loadVideo() {
         logD("isContentDetailFlagEnabled: ${preferenceHandler.isContentDetailFlagEnabled}, hotelVideoUrl: ${preferenceHandler.hotelVideoUrl}")
 
         if (preferenceHandler.isContentDetailFlagEnabled) initializePlayer()
-        else {
-            releaseVideoPlayer()
-        }
+        else releaseVideoPlayer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        loadVideo()
 
         binding.cardView.postDelayed({
             binding.cardView.toVisible()

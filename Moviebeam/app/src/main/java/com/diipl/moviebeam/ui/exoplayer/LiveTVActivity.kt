@@ -36,7 +36,6 @@ class LiveTVActivity : BaseActivity() {
     private val mSubtitleTrackList = arrayListOf<Track>()
     private var mPrevTracksIds = HashSet<String>()
     private var currentPos = 0
-    private var isDone = false
 
     private var channelNumberInput = ""
     private val channelChangeDelay = 2000L // 2 seconds delay for channel switching
@@ -50,7 +49,6 @@ class LiveTVActivity : BaseActivity() {
     private val tuneChannelRunnable = Runnable {
         val program = programGuideList[currentPos]
 
-//        if (DEVICE_MODEL == Constants.SEI_MB730) {
         if (program.param1.isNotEmptyOrNull()) {
             val majorNumber = program.param1?.toInt()!!
             val minorNumber = program.param2?.toInt()!!
@@ -62,14 +60,6 @@ class LiveTVActivity : BaseActivity() {
         } else {
             showToast("Channel No. ${program.CNO} is not playable.")
         }
-        /* } else {
-             val list = mChannelList.toList()
-             val dvb = list.filter { program.CNO?.toInt() == it.number }
-             if (dvb.isNotEmpty()) {
-                 binding.tvView.tune(DTV_INPUT_ID, dvb[0].uri)
-             } else showToast("Channel No. ${program.CNO} is not available.")
-
-         }*/
     }
 
     private val changeChannelRunnable = Runnable {

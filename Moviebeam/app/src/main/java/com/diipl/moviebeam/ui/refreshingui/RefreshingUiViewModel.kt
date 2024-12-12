@@ -102,10 +102,10 @@ class RefreshingUiViewModel @Inject constructor(
         }
     }
 
-    fun fetchHotelServiceInfo(accountId: String) {
+    fun fetchHotelServiceInfo(ua: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _hotelServiceLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getHotelServiceInfo(accountId)
+            val response = movieBeamRepository.getHotelServiceInfo(ua)
             if (response == null) {
                 _hotelServiceLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {
