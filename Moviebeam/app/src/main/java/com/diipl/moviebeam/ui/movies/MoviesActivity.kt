@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
@@ -62,6 +63,9 @@ class MoviesActivity : BaseActivity() {
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
 
     @Inject
+    lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
+
+    @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
 
     @Inject
@@ -93,7 +97,7 @@ class MoviesActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         preferenceDataStoreHelper = PreferenceDataStoreHelper(applicationContext)
-
+        moviesViewModel.getAccountSetupResponseData(accountSetupDataStore)
         moviesViewModel.getAdultStatus(preferenceDataStoreHelper)
         moviesViewModel.getMoviesInfoResponseData(moviesDataStore)
 

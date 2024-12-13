@@ -321,7 +321,7 @@ class ExoPlayerActivity : BaseActivity() {
                 request.productType = it.releaseTypeId
                 request.a = a
                 request.ra = 0
-                request.seekType = seekType
+                request.seekType = seekType.toLong()
                 request.seek = player.getLastSeek()
             }
             moviesViewModel.updateRentalMovieLog(request)
@@ -336,7 +336,7 @@ class ExoPlayerActivity : BaseActivity() {
                 request.productType = Constants.SHOWTIME_RELEASE_TYPE_ID
                 request.a = a
                 request.ra = 0
-                request.seekType = seekType
+                request.seekType = seekType.toLong()
                 request.seek = player.getLastSeek()
             }
             moviesViewModel.updateRentalMovieLog(request)

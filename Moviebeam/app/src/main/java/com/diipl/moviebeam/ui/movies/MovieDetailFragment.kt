@@ -175,7 +175,7 @@ class MovieDetailFragment : BaseFragment() {
             request.rentalID = rentalID
             request.ra = 0
             request.cType = cType
-            request.seekType = seekType
+            request.seekType = seekType.toLong()
             request.seek = seekPosition
             viewModel.updateRentalMovieLog(request)
         }

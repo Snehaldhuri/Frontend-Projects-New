@@ -147,7 +147,8 @@ class ConfirmRentalActivity : BaseActivity() {
             request.contentTypeID = movie.contentTypeId
             request.productType = movie.releaseTypeId
             if (isCheckedIn) {
-                viewModel.getRentalMovieResponse(request)
+                viewModel.getNewRentalMovieResponse(request)
+                viewModel.requestVODMgr(request)
             } else {
                 viewModel.showToastMessage(getString(R.string.call_front_desk))
             }
