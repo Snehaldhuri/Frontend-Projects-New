@@ -604,6 +604,9 @@ class EndlessService : Service() {
                             true
                         } else {
                             preferenceHandler.updateDatastoreVariables(isStbAllocated = false)
+                            if (result != null) {
+                                handleCheckOutCmd(result)
+                            }
                             if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
                                 BaseActivity.currentActivity?.let {
                                     Intent(it, RegisterSTBActivity::class.java).apply {

@@ -177,6 +177,13 @@ class RegisterSTBActivity : BaseActivity() {
 
                     else -> {
                         registerSTBViewModel.updateStbStatus(preferenceDataStoreHelper, false)
+                        lifecycleScope.launch {
+                            preferenceHandler.updateDatastoreVariables(isStbRegistered = false)
+                            delay(5*1000)
+                            handleSerialNumberResponse(preferenceHandler.serialNo)
+                            delay(100)
+                            this.cancel()
+                        }
                     }
                 }
             }
@@ -184,6 +191,13 @@ class RegisterSTBActivity : BaseActivity() {
             else -> {
                 status.errorCode?.let { registerSTBViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { registerSTBViewModel.showToastMessage(it) }
+                lifecycleScope.launch {
+                    preferenceHandler.updateDatastoreVariables(isStbRegistered = false)
+                    delay(5*1000)
+                    handleSerialNumberResponse(preferenceHandler.serialNo)
+                    delay(100)
+                    this.cancel()
+                }
             }
         }
     }
