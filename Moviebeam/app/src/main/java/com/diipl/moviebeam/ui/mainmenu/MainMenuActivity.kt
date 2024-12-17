@@ -101,7 +101,7 @@ class MainMenuActivity : BaseActivity() {
     private lateinit var binding: ActivityMainMenuBinding
 
     private var isServiceStarted = false
-    private lateinit var player: ExoPlayer
+    private var player: ExoPlayer? = null
     private var isNetworkConnected = 0
     private var playCount = 0
 
@@ -177,19 +177,28 @@ class MainMenuActivity : BaseActivity() {
     }
 
     private fun init() {
+        if (player != null)
+            return
         player = ExoPlayer.Builder(this).build()
-        player.trackSelectionParameters = player.trackSelectionParameters
-            .buildUpon()
-            .setMaxVideoSizeSd()
-            .build()
-        binding.videoView.player = player
+        player?.apply {
+            trackSelectionParameters = trackSelectionParameters
+                .buildUpon()
+                .setMaxVideoSizeSd()
+                .build()
+            binding.videoView.player = this
+        }
     }
 
     private fun loadVideo() {
         logD("isContentDetailFlagEnabled: ${preferenceHandler.isContentDetailFlagEnabled}, hotelVideoUrl: ${preferenceHandler.hotelVideoUrl}")
-
         if (preferenceHandler.isContentDetailFlagEnabled) initializePlayer()
         else releaseVideoPlayer()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.e(TAG, "onDestroy: $player")
+        player = null
     }
 
     override fun onResume() {
@@ -220,9 +229,9 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        super.onPause()
         releaseVideoPlayer()
         HOTEL_VIDEO_LOOP_COUNT = 3
+        super.onPause()
     }
 
     private fun initializePlayer() {
@@ -230,12 +239,14 @@ class MainMenuActivity : BaseActivity() {
         playCount++
         if (preferenceHandler.hotelVideoUrl.isNotEmpty()) {
             binding.videoView.toVisible()
-            player.setMediaItem(MediaItem.fromUri(preferenceHandler.hotelVideoUrl))
-            player.repeatMode = Player.REPEAT_MODE_ALL
-            player.addListener(playerListener)
-            player.playWhenReady = true
-            player.prepare()
-            player.play()
+            player?.apply {
+                setMediaItem(MediaItem.fromUri(preferenceHandler.hotelVideoUrl))
+                repeatMode = Player.REPEAT_MODE_ALL
+                addListener(playerListener)
+                playWhenReady = true
+                prepare()
+                play()
+            }
         } else {
             if (playCount <= 2) {
                 lifecycleScope.launch {
@@ -271,13 +282,14 @@ class MainMenuActivity : BaseActivity() {
     private fun releaseVideoPlayer() {
         binding.videoView.toGone()
         binding.root.loadBg()
-        try {
-            if (::player.isInitialized) {
-                player.stop()
-                player.release()
-            }
-        } catch (e: Exception){
-            Log.e(TAG, "releaseVideoPlayer: ${e.localizedMessage}")
+        player?.let {
+            Log.e(TAG, "releaseVideoPlayer: releasing")
+            it.stop()
+            it.release()
+            player = null
+        } ?: {
+            player!!.stop()
+            Log.e(TAG, "releaseVideoPlayer: Player is null")
         }
     }
 
