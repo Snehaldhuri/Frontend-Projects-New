@@ -60,6 +60,7 @@ object Constants {
     const val INTERNET_ERROR_MESSAGE = "Internet Connection Not Available"
     const val SERVER_ERROR = "Server Error"
     const val LG_REST = "LG_REST"
+    const val DYNAMIC_RETRO = "DYNAMIC_RETRO"
     const val ACCOUNT_SETUP = "ACCOUNT_SETUP"
     const val HELP_INFO = "Help & Info"
     const val SYSTEM_INFO = "System Info"

@@ -17,6 +17,7 @@ import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
+import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
@@ -186,7 +187,7 @@ class MovieBeamRepository @Inject constructor(
 
     suspend fun getVodData(
 //        vodMgrIp: String,
-//        vodMgrPort: String,
+        baseUrl: String,
         vodMid: Int ,
         transId: Long,
         streamingType: String,
@@ -199,13 +200,12 @@ class MovieBeamRepository @Inject constructor(
         contentType: String,
         seek: Long,
         json: Boolean
-    ): String? {
-        val result = remoteDataSource.getVodData(
-            vodMid,transId,streamingType,mode,ua,rentalId,productId,priority,fileName,contentType,seek,json
-        )
+    ): VodMovieResponse? {
         Log.d("TAG", "getVodData: ${remoteDataSource.getVodData(
-            vodMid,transId,streamingType,mode,ua,rentalId,productId,priority,fileName,contentType,seek,json
+            baseUrl,vodMid,transId,streamingType,mode,ua,rentalId,productId,priority,fileName,contentType,seek,json
         )}")
-        return result
+        return remoteDataSource.getVodData(
+            baseUrl,vodMid,transId,streamingType,mode,ua,rentalId,productId,priority,fileName,contentType,seek,json
+        )
     }
 }
