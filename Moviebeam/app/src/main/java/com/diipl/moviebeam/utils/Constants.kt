@@ -136,6 +136,8 @@ object Constants {
     const val MAIN_CONCIERGE ="Concierge"
     const val MAIN_WEATHER ="Weather"
     const val MAIN_NEWS = "News"
+    const val ACCU_WEATHER = "AccuWeather"
+
 
     //Movies page menu button Id
     const val MOVIE_RENTALS_ID = "movieRentals"

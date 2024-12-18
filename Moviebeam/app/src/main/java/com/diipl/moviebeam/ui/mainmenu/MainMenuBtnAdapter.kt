@@ -8,6 +8,7 @@ import android.content.pm.ResolveInfo
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.setPadding
@@ -16,7 +17,9 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.databinding.ItemButtonBinding
 import com.diipl.moviebeam.service.handler.PreferenceHandler
+import com.diipl.moviebeam.ui.weather.WeatherActivity
 import com.diipl.moviebeam.utils.Constants
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.getHeightInPercent
 import com.diipl.moviebeam.utils.getInstalledAppInfo
 import com.diipl.moviebeam.utils.getWidthInPercent
@@ -68,10 +71,16 @@ class MainMenuBtnAdapter(
 
         val app = context.getInstalledAppInfo(item.appPackageId)
 
-        if (item.isApp && app != null) {
+        if (item.isApp) {
             holder.binding.root.setPadding(3)
-            val drawable = context.packageManager.getApplicationBanner(item.appPackageId)
-            holder.binding.ivAppIcon.setImageDrawable(drawable)
+            if (app != null) {
+                val drawable = context.packageManager.getApplicationBanner(item.appPackageId)
+                holder.binding.ivAppIcon.setImageDrawable(drawable)
+            } else {
+                if(item.appPackageId == "144115188075855876"){
+                    holder.binding.ivAppIcon.setImageResource(R.drawable.accuweather_new)
+                }
+            }
             holder.binding.root.setOnClickListener { onAppClicked(item.appPackageId) }
         } else {
             holder.binding.ivMenuIcon.setImageResource(item.imageResId)
@@ -114,6 +123,13 @@ class MainMenuBtnAdapter(
     }
 
     private fun onAppClicked(packageName: String) {
+        if(packageName == "144115188075855876"){
+            ThemeDetails.TITLE = Constants.ACCU_WEATHER
+            Intent(context, WeatherActivity::class.java).apply {
+                context.startActivity(this)
+            }
+            return
+        }
         if (context.packageManager.getLaunchIntentForPackage(packageName) == null) {
             launchAppSecured(packageName)
         } else {
