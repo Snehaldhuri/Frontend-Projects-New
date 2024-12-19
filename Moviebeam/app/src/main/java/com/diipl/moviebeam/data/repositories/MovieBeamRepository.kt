@@ -23,6 +23,8 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
+import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.datasource.RemoteDataSource
 import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
@@ -62,7 +64,8 @@ class MovieBeamRepository @Inject constructor(
     private val accountDataStore: DataStore<AccountSetupResponse>,
     private val themeDataStore: DataStore<ThemeResponse>,
     private val channelListDataStore: DataStore<ChannelListResponse>,
-    private val hardwareAPI: HardwareAPI
+    private val hardwareAPI: HardwareAPI,
+    private val preferenceDataStoreHelper: PreferenceDataStoreHelper
 ) {
 
     private val TAG = "MovieBeamRepository"
@@ -112,8 +115,6 @@ class MovieBeamRepository @Inject constructor(
 
         if (isCompleted && isAccountAvailable) {
             updateGuestSession(false, CmdDataDto())
-
-
 
             val initCall = async {
                 fetchThemeDetails()
@@ -200,11 +201,9 @@ class MovieBeamRepository @Inject constructor(
         when (btnId) {
             Constants.VOD_ID -> if (preferenceHandler.isMoviesEmpty || !preferenceHandler.isAllDataFetched) fetchMoviesMore()
             Constants.PRG_GUIDE_ID -> {
-                if (BuildConfig.BUILD_TYPE_ID == 6)
-                    return
-                if (!preferenceHandler.isEPGEmpty || preferenceHandler.isAllDataFetched)
-                    return
-                fetchEpgData()
+                if (BuildConfig.BUILD_TYPE_ID != 6)
+                    if (preferenceHandler.isEPGEmpty || !preferenceHandler.isAllDataFetched)
+                        fetchEpgData()
             }
             Constants.SHOWTIMES_ID -> if (preferenceHandler.isShowtimeEmpty || !preferenceHandler.isAllDataFetched) fetchShowtime()
             Constants.HOTEL_SERVICES_ID -> if (preferenceHandler.isHSEmpty || !preferenceHandler.isAllDataFetched) fetchHotelService()
@@ -396,12 +395,17 @@ class MovieBeamRepository @Inject constructor(
         }
     }
 
-    fun updateGuestSession(isCheckedIn: Boolean, guestDetails: CmdDataDto?, response: MessageResponse = MessageResponse()) {
+    fun updateGuestSession(isCheckedIn: Boolean, guestDetails: CmdDataDto?, response: MessageResponse = MessageResponse()) = CoroutineScope(Dispatchers.IO).launch {
         guestDetails?.let {
             val sessionId = it.sessionId ?: ""
             if (isCheckedIn && sessionId == preferenceHandler.sessionId){
-                return
+                return@launch
             }
+
+            roomRepository.deleteRecentMovies()
+            roomRepository.deleteRecentShows()
+            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS, false)
+
             updateDataStore.updateGuestMessageData(response)
             clearCredentialsHandler.startClearCredentials(false)
 

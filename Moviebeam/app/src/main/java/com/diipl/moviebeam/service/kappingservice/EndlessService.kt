@@ -367,9 +367,9 @@ class EndlessService : Service() {
                         pingFakeServer()
                         callKapingApi()
 
-                        if (GuestDetails.SESSION_ID.isNotEmpty() && GuestDetails.SESSION_ID != "null") roomRepository.removeOverTimeMovies()
-
-                        if (GuestDetails.SESSION_ID == "null") {
+                        if (preferenceHandler.isGuestCheckedIn)
+                            roomRepository.removeOverTimeMovies()
+                        else {
                             roomRepository.deleteRecentMovies()
                             roomRepository.deleteRecentShows()
                             removeAdultData()
