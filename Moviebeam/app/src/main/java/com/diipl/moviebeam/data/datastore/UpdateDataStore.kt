@@ -283,6 +283,7 @@ class UpdateDataStore @Inject constructor(
     }
 
     fun updateChannelListData(data: ChannelListResponse) = CoroutineScope(Dispatchers.IO).launch {
+        preferenceHandler.updateDatastoreVariables(channelCount = data.channelLcnList.size)
         channelListDataStore.updateData { currentPreferences ->
             currentPreferences.copy(
                 id = data.id,

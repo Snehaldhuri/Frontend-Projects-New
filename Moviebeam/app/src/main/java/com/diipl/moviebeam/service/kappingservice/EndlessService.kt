@@ -749,7 +749,7 @@ class EndlessService : Service() {
                 return
             }
             when (activityStack.last()) {
-                ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> handleCmdInRefreshingUi(kapingResponse)
+                NewProgramGuideActivity::class.java.simpleName, ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> handleCmdInRefreshingUi(kapingResponse)
                 else -> fetchChannelList()
             }
         } else {
