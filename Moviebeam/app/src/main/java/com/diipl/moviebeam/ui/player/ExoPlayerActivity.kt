@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.exoplayer
+package com.diipl.moviebeam.ui.player
 
 import android.os.Bundle
 import android.util.Log
@@ -16,7 +16,7 @@ import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.databinding.ActivityExoPlayerBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
-import com.diipl.moviebeam.service.receiver.LoggingService
+import com.diipl.moviebeam.service.services.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.movies.MoviesViewModel
 import com.diipl.moviebeam.utils.Constants

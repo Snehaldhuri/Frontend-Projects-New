@@ -15,32 +15,22 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
-import android.os.RemoteException
 import android.util.Log
 import android.widget.Toast
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.android.tv.settings.aidl.regular.IDeviceNameConfigureCallback
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.Resource
-import com.diipl.moviebeam.data.datastore.UpdateDataStore
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
-import com.diipl.moviebeam.data.dto.epg.EPGResponse
-import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.btn.BtnModel
+import com.diipl.moviebeam.data.dto.concierge.ConciergeResponse
 import com.diipl.moviebeam.data.dto.kaping.KapingResponse
-import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
-import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassSync
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
 import com.diipl.moviebeam.data.dto.movies.RentalSyncResponse
-import com.diipl.moviebeam.data.dto.program.ChannelListResponse
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
-import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
-import com.diipl.moviebeam.data.dto.ticker.TvTickerDTO
 import com.diipl.moviebeam.data.kaping.CmdDataDto
 import com.diipl.moviebeam.data.kaping.CmdDto
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_CONTENT_STATUS
@@ -51,54 +41,60 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
-import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.room.models.RentalMovieModel
-import com.diipl.moviebeam.service.handler.ClearCredentialsHandler
 import com.diipl.moviebeam.service.handler.EPGHandler
 import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.service.handler.callNetflixAPI
+import com.diipl.moviebeam.service.remote.BTService
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.activityStack
 import com.diipl.moviebeam.ui.dialogs.AdultContentDialog
-import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
-import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.localattraction.LocalAttractionActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
+import com.diipl.moviebeam.ui.player.ExoPlayerActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
 import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
+import com.diipl.moviebeam.ui.register_stb.RegisterSTBActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
+import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.GLOBAL_LOOP_SEC
 import com.diipl.moviebeam.utils.Constants.MDM_PACKAGE_NAME
+import com.diipl.moviebeam.utils.Constants.OPEN_VPN_CONNECT_CMD
+import com.diipl.moviebeam.utils.Constants.OPEN_VPN_DISCONNECT_CMD
+import com.diipl.moviebeam.utils.Constants.OPEN_VPN_PACKAGE_NAME
+import com.diipl.moviebeam.utils.Constants.OPEN_VPN_PROFILE
+import com.diipl.moviebeam.utils.Constants.OPEN_VPN_PROFILE_NAME
 import com.diipl.moviebeam.utils.DeviceUtils
 import com.diipl.moviebeam.utils.GuestDetails
 import com.diipl.moviebeam.utils.KapingConstants
-import com.diipl.moviebeam.utils.KapingResponseParsing
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.SharedPreference
-import com.diipl.moviebeam.utils.ThemeDetails
+import com.diipl.moviebeam.utils.cleanString
 import com.diipl.moviebeam.utils.compareVersions
 import com.diipl.moviebeam.utils.fromJson
+import com.diipl.moviebeam.utils.getAppVersion
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
-import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.isAppInstalled
 import com.diipl.moviebeam.utils.isNotAllowed
 import com.diipl.moviebeam.utils.isNotEmptyOrNull
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.logE
 import com.diipl.moviebeam.utils.logK
-import com.diipl.moviebeam.utils.scheduleClearCredentialsTask
-import com.diipl.moviebeam.utils.scheduleMsgEndTask
+import com.diipl.moviebeam.utils.rebootDevice
 import com.diipl.moviebeam.utils.setIPInfo
+import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.startActivity
 import com.diipl.moviebeam.utils.toInteger
 import com.diipl.moviebeam.utils.toJson
 import com.diipl.moviebeam.utils.toTimestamp
@@ -108,12 +104,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -122,7 +117,6 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
-import java.lang.Integer.parseInt
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -133,61 +127,23 @@ private const val TAG = "EndlessService"
 @AndroidEntryPoint
 class EndlessService : Service() {
 
-    //Variables from datastore
-    private var accountId: String = ""
-    private var serialNo = ""
-    private var ua = ""
-    private var stbRoomNo: String = ""
-    private var epgStartTime = ""
-    private var epgEndTime = ""
-    private var channelCount = 0
-    private var appList = ArrayList<String>()
 
     private var wakeLock: PowerManager.WakeLock? = null
     private var counter = 0
     private val myApiService = createRetrofitService()
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
-    private var UA = ""
-    private var isGuestCheckedIn = false
-    private var versionNumber = ""
-    private var themeVersion = ""
-    private var laVersion = ""
-    private var moviesVersion = ""
-    private var showtimeVersion = ""
-    private var hotelServicesVersion = ""
-    private var CMDRES = ""
-    private var EVENT = ""
-    private var epochTime = ""
+    private val versionNumber by lazy { BuildConfig.VERSION_NAME.replace(".", "").trim() }
     private var transactionId = ""
-    private var isEPGServerApiCalled = false
     private var isNetworkAvailable = true
+
+    private val dispatcher = Dispatchers.IO
+    private val coroutineScope = CoroutineScope(dispatcher)
 
     private val _accountSetupLiveData = MutableLiveData<AccountSetupResponse>()
     val accountSetupLiveData: LiveData<AccountSetupResponse> get() = _accountSetupLiveData
 
-    private val _themeLiveData = MutableLiveData<ThemeResponse>()
-    val themeLiveData: LiveData<ThemeResponse> get() = _themeLiveData
-
-    private val _localAttractionLiveData = MutableLiveData<LocalAttractionResponse>()
-    val localAttractionLiveData: LiveData<LocalAttractionResponse> get() = _localAttractionLiveData
-
     private val _moviesLiveData = MutableLiveData<MoviesResponse>()
-    val moviesLiveData: LiveData<MoviesResponse> get() = _moviesLiveData
-
-    private val _showtimeLiveData = MutableLiveData<ShowTimeResponse>()
-    val showtimeLiveData: LiveData<ShowTimeResponse> get() = _showtimeLiveData
-
-    private val _hotelServicesLiveData = MutableLiveData<HotelServiceResponse>()
-    val hotelServicesLiveData: LiveData<HotelServiceResponse> get() = _hotelServicesLiveData
-
-    private val _channelListLiveData = MutableLiveData<ChannelListResponse>()
-    val channelListLiveData: LiveData<ChannelListResponse> get() = _channelListLiveData
-
-    private val _guestDetailsLiveData = MutableLiveData<Resource<CmdDataDto>>()
-    val guestDetailsLiveData: LiveData<Resource<CmdDataDto>> get() = _guestDetailsLiveData
-
-    private var _isGuestCheckedInLiveData = MutableLiveData<Boolean>()
-    val isGuestCheckedInLiveData: LiveData<Boolean> get() = _isGuestCheckedInLiveData
+    private val moviesLiveData: LiveData<MoviesResponse> get() = _moviesLiveData
 
     @Inject
     lateinit var networkUtils: NetworkUtils
@@ -202,31 +158,10 @@ class EndlessService : Service() {
     lateinit var accountSetupDataStore: DataStore<AccountSetupResponse>
 
     @Inject
-    lateinit var themeDataStore: DataStore<ThemeResponse>
-
-    @Inject
-    lateinit var localAttractionsDataStore: DataStore<LocalAttractionResponse>
-
-    @Inject
     lateinit var moviesDataStore: DataStore<MoviesResponse>
 
     @Inject
-    lateinit var showtimeDataStore: DataStore<ShowTimeResponse>
-
-    @Inject
-    lateinit var hotelServicesDataStore: DataStore<HotelServiceResponse>
-
-    @Inject
-    lateinit var guestDetailsDatastore: DataStore<CmdDataDto>
-
-    @Inject
-    lateinit var channelListDatastore: DataStore<ChannelListResponse>
-
-    @Inject
     lateinit var tickerDatastore: DataStore<TickerResponse>
-
-    @Inject
-    lateinit var messageDatastore: DataStore<MessageResponse>
 
     @Inject
     lateinit var roomRepository: RoomRepository
@@ -234,23 +169,17 @@ class EndlessService : Service() {
     @Inject
     lateinit var sharedPreference: SharedPreference
 
-    @Inject
-    lateinit var updateDataStore: UpdateDataStore
+    private lateinit var btService: BTService
 
     @Inject
     lateinit var preferenceHandler: PreferenceHandler
 
-    @Inject
-    lateinit var hardwareAPI: HardwareAPI
-    private val clearCredentialsHandler : ClearCredentialsHandler by lazy { ClearCredentialsHandler(applicationContext, accountSetupDataStore) }
-
-    private val epgHandler by lazy { EPGHandler(this, roomRepository) }
-
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private var btnModelList = emptyList<BtnModel>()
 
     companion object {
+        const val FEATURE_NOT_SUPPORTED = "feature not supported"
+        var HOME_KEY_PRESSED = false
         var isServiceStarted = false
-        var AS_FLAG = false
         var kapingCMD = KapingConstants.KAP_CMD_DO_NOTHING
         var kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
 
@@ -300,11 +229,10 @@ class EndlessService : Service() {
         super.onCreate()
         logD("The service has been created".uppercase(Locale.ROOT))
         preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
-        versionNumber = getVersionNumber()
         logD(versionNumber)
 
         val filter = IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
-//        filter.addAction(Intent.CATEGORY_HOME)
+        filter.addAction(Intent.CATEGORY_HOME)
         filter.addAction(Intent.ACTION_SCREEN_OFF)
         filter.addAction(Intent.ACTION_SCREEN_ON)
         registerReceiver(homePressReceiver, filter)
@@ -313,30 +241,32 @@ class EndlessService : Service() {
         var isSwitched = false
         var count = 0
         coroutineScope.launch {
-            delay(1000*5)
-           if (activityStack.isNotEmpty()) {
-               while (activityStack.last()?.isNotEmpty() == true) {
-                   if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
-                       if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
-                           preferenceDataStoreHelper.putPreference(NETWORK_STATUS, isNetworkAvailable)
-                           if (!isNetworkAvailable && !isSwitched) {
-                               isSwitched = true
-                               startMainMenu()
-                               count = 0
-                           }
-                           if (isNetworkAvailable && isSwitched) {
-                               isSwitched = false
-                               if (count == 0) {
-                                   startMainMenu()
-                                   count++
-                               }
-                           }
-                       }
-                   delay(1000 * 2)
-               }
-           } else {
-               Log.e(TAG, "onCreate: Activity stack is empty!")
-           }
+            try {
+                while (activityStack.last()?.isNotEmpty() == true) {
+                    if (activityStack.last() != RegisterSTBActivity::class.java.simpleName)
+                        if (activityStack.last() != STBDetailsActivity::class.java.simpleName) {
+                            preferenceDataStoreHelper.putPreference(
+                                NETWORK_STATUS,
+                                isNetworkAvailable
+                            )
+                            if (!isNetworkAvailable && !isSwitched) {
+                                isSwitched = true
+                                MainMenuActivity::class.java.startActivity()
+                                count = 0
+                            }
+                            if (isNetworkAvailable && isSwitched) {
+                                isSwitched = false
+                                if (count == 0) {
+                                    MainMenuActivity::class.java.startActivity()
+                                    count++
+                                }
+                            }
+                        }
+                    delay(1000 * 2)
+                }
+            } catch (e: Exception) {
+                Log.e("TAG", "activityStack: ${e.localizedMessage}")
+            }
         }
 
         val notification = createNotification()
@@ -371,11 +301,10 @@ class EndlessService : Service() {
         when (activityStack.last()) {
             AppWorldActivity::class.java.simpleName -> {
                 if (AppWorldActivity.NETFLIX_LAUNCHED) {
-
-                    callNetflixAPI(stbRoomNo, ua, 2)
+                    callNetflixAPI(preferenceHandler.roomNo, preferenceHandler.UA, 2)
                     AppWorldActivity.NETFLIX_LAUNCHED = false
                 } else {
-                    startMainMenu()
+                    switchToHDMI()
                 }
             }
             NewProgramGuideActivity::class.java.simpleName, DisconnectedPrgActivity::class.java.simpleName -> {
@@ -384,26 +313,21 @@ class EndlessService : Service() {
                 } else  if(activityStack.last() == DisconnectedPrgActivity::class.java.simpleName){
                     (BaseActivity.currentActivity as DisconnectedPrgActivity).switchToHDMI()
                 }
-                startMainMenu()
+                switchToHDMI()
             }
             else -> {
-                startMainMenu()
+                switchToHDMI()
             }
         }
     }
 
-    private fun startMainMenu() {
-        startActivity(Intent(applicationContext, MainMenuActivity::class.java).apply {
-            flags =
-                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        })
-    }
-
-    private fun <T> Class<T>.startActivity() {
-        startActivity(Intent(applicationContext, this).apply {
-            flags =
-                Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        })
+    private fun switchToHDMI() {
+//        HOME_KEY_PRESSED = true
+        MainMenuActivity::class.java.startActivity()
+       /* if (::btService.isInitialized && btService.isConnected()) {
+            btService.transmit(preferenceHandler.remoteModel.sourceInput)
+        }
+        return*/
     }
 
     override fun onDestroy() {
@@ -435,22 +359,11 @@ class EndlessService : Service() {
             while (isServiceStarted) {
                 launch(Dispatchers.IO) {
                     setIPInfo()
-                    initializeDatastoreParams()
-
-                    delay(100)
-                    UA = preferenceHandler.UA
 
                     _accountSetupLiveData.postValue(accountSetupDataStore.data.first())
-                    _themeLiveData.postValue(themeDataStore.data.first())
-                    _localAttractionLiveData.postValue(localAttractionsDataStore.data.first())
                     _moviesLiveData.postValue(moviesDataStore.data.first())
-                    _showtimeLiveData.postValue(showtimeDataStore.data.first())
-                    _hotelServicesLiveData.postValue(hotelServicesDataStore.data.first())
-                    _channelListLiveData.postValue(channelListDatastore.data.first())
-                    isGuestCheckedIn = preferenceHandler.isGuestCheckedIn
 
-                    logD("UA -> $UA")
-                    if (UA.isNotBlank()) {
+                    if (preferenceHandler.UA.isNotBlank()) {
                         pingFakeServer()
                         callKapingApi()
 
@@ -463,6 +376,7 @@ class EndlessService : Service() {
                         }
                     }
                 }
+//                btService = BTService(applicationContext).also { it.findBondedDevice() }
                 delay(GLOBAL_LOOP_SEC * 1000L)
             }
             logD("End of the loop for the service")
@@ -503,138 +417,104 @@ class EndlessService : Service() {
     }
 
     private fun callKapingApi() {
+        // Calculate epoch time as a 9-character hex string
+        val epochTime = (Date().time / 1000).toString(16).padStart(9, '0')
 
-        val themeVersion1 = themeLiveData.value?.version
-        if (!themeVersion1.isNullOrEmpty()) {
-            themeVersion = themeVersion1
-        }
-//        log(themeVersion1.toString())
-
-        val laVersion1 = localAttractionLiveData.value?.version
-        if (!laVersion1.isNullOrEmpty()) {
-            laVersion = laVersion1
-        }
-//        log(laVersion1.toString())
-
-        val moviesVersion1 = moviesLiveData.value?.version
-        if (!moviesVersion1.isNullOrEmpty()) {
-            moviesVersion = moviesVersion1
-        }
-//        log(moviesVersion1.toString())
-
-        val showtimeVersion1 = showtimeLiveData.value?.version
-        if (!showtimeVersion1.isNullOrEmpty()) {
-            showtimeVersion = showtimeVersion1
-        }
-//        log(showtimeVersion1.toString())
-
-        val hotelServicesVersion1 = hotelServicesLiveData.value?.version
-        if (!hotelServicesVersion1.isNullOrEmpty()) {
-            hotelServicesVersion = hotelServicesVersion1
-        }
-//        log(hotelServicesVersion1.toString())
-
-        var epoch =
-            parseInt(((Date().time / 1000).toString())).toString(16); //Date => timestamp => HEX
-        var Prefix = "";
-        var Prfixzero = "";
-        //Epoch should be 9 charcters, append 0 if not
-        if (epoch.length < 9) {
-            Prfixzero = (9 - epoch.length).toString();
-            if (Prfixzero.equals("1")) {
-                Prefix = "0"
-            } else if (Prfixzero.equals("2")) {
-                Prefix = "00";
-            }
-            epoch = Prefix + epoch;
-            epochTime = epoch
-        }
-        CMDRES = if (kapingCMD == "00") {
+        // Build CMDRES
+        val cmdRes = if (kapingCMD == "00") {
             ""
         } else {
             "$kapingCMD$epochTime$transactionId$kapingCmdExecutionResponse"
         }
-        logD("CMDRES -> $CMDRES")
 
-        EVENT =
-            isScreenOn() + getCurrentPanelNumber() + if (isGuestCheckedIn) KapingConstants.EVENT_CHECK_IN else KapingConstants.EVENT_CHECK_OUT
-        logD("EVENT -> $EVENT")
+        // Build EVENT string
+        val event = buildString {
+            append(isScreenOn())
+            append(getCurrentPanelNumber())
+            append(
+                if (preferenceHandler.isGuestCheckedIn)
+                    KapingConstants.EVENT_CHECK_IN
+                else
+                    KapingConstants.EVENT_CHECK_OUT
+            )
+        }
 
+        // Prepare API call
         val kapingCall = myApiService.getKapingService(
             Constants.KAPING,
-            UA,
+            preferenceHandler.UA,
             "0",
             versionNumber,
-            moviesVersion,
+            preferenceHandler.moviesVersion,
             Constants.DV,
             "1",
-            EVENT,
+            event,
             "0",
             Constants.RBTY,
             Constants.MODE,
-            laVersion,
-            hotelServicesVersion,
-            themeVersion,
-            CMDRES,
+            preferenceHandler.laVersion,
+            preferenceHandler.hsVersion,
+            preferenceHandler.themeVersion,
+            cmdRes,
             "1",
             Constants.INRMVER,
             Constants.LAUVER
         )
 
+        // Make the API call
         kapingCall.enqueue(object : Callback<String> {
-            override fun onResponse(
-                call: Call<String>, response: Response<String>
-            ) {
+            override fun onResponse(call: Call<String>, response: Response<String>) {
                 if (response.isSuccessful) {
-                    isNetworkAvailable = true
-                    val data = response.body()
-                    val result = KapingResponseParsing().getResponseAsObject(
-                        data, KapingResponse::class
-                    )
-                    result?.CMD?.let {
-                        result.cmdData = parseCmd(it)
-                    }
-                    // Handle the data here
-                    result?.CMD?.let { cmd -> logCmdSignal(cmd) }
-                    kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
-
-                    coroutineScope.launch {
-                        AS_FLAG = if (result?.AS.isNullOrEmpty()) {
-                            preferenceHandler.updateDatastoreVariables(isStbAllocated = true)
-                            true
-                        } else {
-                            preferenceHandler.updateDatastoreVariables(isStbAllocated = false)
-                            if (result != null) {
-                                handleCheckOutCmd(result)
-                            }
-                            if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
-                                BaseActivity.currentActivity?.let {
-                                    Intent(it, RegisterSTBActivity::class.java).apply {
-                                        putExtra("btnId", Constants.REBOOT_BTN)
-                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                        startActivity(this)
-                                        it.finish()
-                                    }
-                                }
-                            }
-                            false
-                        }
-                    }
-
-                    handleKaping(result)
+                    handleSuccessfulResponse(response.body())
                 } else {
-                    // Handle unsuccessful response
+                    logE("Kaping API call failed with code: ${response.code()}")
                 }
-
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
                 isNetworkAvailable = false
-                logE(t.toString())
+                logE("Kaping API call failed: ${t.message}")
             }
-
         })
+    }
 
+    // Handle successful API response
+    private fun handleSuccessfulResponse(data: String?) {
+        isNetworkAvailable = true
+        val result = ApiResponseParsing().getResponseAsObject(data, KapingResponse::class)?.apply {
+            CMD?.let {
+                cmdData = parseCmd(it)
+                logCmdSignal(it)
+            }
+        }
+
+        kapingCmdExecutionResponse = KapingConstants.PENDING_EXECUTION
+
+        result?.let {
+            if (it.AS.equals("CLEAR")) {
+                handleClearCommand(it)
+            } else if (it.AS.isNullOrEmpty()) {
+                preferenceHandler.updateDatastoreVariables(isStbAllocated = true)
+                handleKaping(result)
+            }
+        }
+    }
+
+    // Handle CLEAR command logic
+    private fun handleClearCommand(result: KapingResponse) {
+        preferenceHandler.updateDatastoreVariables(isStbAllocated = false, isAllDataFetched = false)
+        handleCheckOutCmd(result)
+
+        if (activityStack.last() != RegisterSTBActivity::class.java.simpleName) {
+            BaseActivity.currentActivity?.let { currentActivity ->
+                Intent(currentActivity, RegisterSTBActivity::class.java).apply {
+                    putExtra("btnId", Constants.REBOOT_BTN)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    currentActivity.startActivity(this)
+                    currentActivity.finish()
+                }
+            }
+        }
     }
 
     private val commandMessages = mapOf(
@@ -667,6 +547,7 @@ class EndlessService : Service() {
         val epochTime = cmd.substring(2, 11)
         transactionId = cmd.substring(11, minOf(cmd.length, 19))
         var cmdDataDto: CmdDataDto? = null
+        //retrieve data for VPN profile
         if (kapingCMD == KapingConstants.KAP_CMD_CHECK_IN || kapingCMD == KapingConstants.KAP_CMD_CHECK_OUT) {
             val cmdData = cmd.substring(19, cmd.length)
             val sessionId = cmdData.substring(5, 15)
@@ -674,18 +555,15 @@ class EndlessService : Service() {
             val message = cmdData.substringAfter(" ").trim()
             var passCode: String? = null
             var parentSessionId: String? = null
-            var guestFirstName: String? = null
-            var guestLastName: String? = null
+            var guestName: String? = null
             var adultLocked: Boolean? = null
             if (kapingCMD == KapingConstants.KAP_CMD_CHECK_IN) {
                 adultContentDisabled = cmdData[0] == '0'
                 parentSessionId = cmdData.substring(15, 25)
                 val nameAndPass = cmdData.substring(cmdData.indexOf("Welcome"))
-                guestFirstName = nameAndPass.split(" ")[1]
-                val lastNameAndPass = nameAndPass.split(" ")[2]
+                guestName = nameAndPass.substring(8, (nameAndPass.length - 4)).cleanString()
                 try {
-                    guestLastName = lastNameAndPass.substring(0, lastNameAndPass.length - 4)
-                    passCode = lastNameAndPass.substring(lastNameAndPass.length - 4)
+                    passCode = nameAndPass.substring(nameAndPass.length - 4)
                     if (passCode == "____") {
                         passCode = null
                         adultLocked = false
@@ -695,287 +573,321 @@ class EndlessService : Service() {
                     }
                 } catch (e: Exception) {
                     logE("parseCmd: ${e.message}")
-                    guestLastName = lastNameAndPass
                     passCode = null
                     adultLocked = false
                 }
-
             }
-
             cmdDataDto = CmdDataDto(
                 sessionId,
                 parentSessionId,
                 adultContentDisabled,
                 message,
-                guestFirstName,
-                guestLastName,
+                guestName,
                 adultLocked,
                 passCode
             )
-
-
-            if (adultLocked != null) {
-                updateAdultContent(adultLocked)
-            } else updateAdultContent(false)
+            updateAdultContent(cmd)
             if (passCode != null) {
                 updateParentalPassCode(passCode)
             } else {
                 updateParentalPassCode("____")
             }
-
         }
         return CmdDto(kapingCMD, epochTime, transactionId, cmdDataDto)
     }
 
     private fun updateParentalPassCode(passCode: String) {
-        coroutineScope.launch {
-            sharedPreference.adultPassCode = passCode
+        sharedPreference.adultPassCode = passCode
+    }
+
+    private fun handleKaping(kapingResponse: KapingResponse?) = coroutineScope.launch {
+        btnModelList = accountSetupLiveData.value?.let {
+            Constants.HOME_PAGE_MENU_BUTTON_LIST.filter { model ->
+                it.buttonsList.any { it.buttonName == model.btnId }
+            }
+        }!!
+
+        when (kapingResponse?.cmdData?.cmd) {
+            KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> handleSoftwareUpdate()
+
+            KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE,
+            KapingConstants.KAP_CMD_CHECK_IN,
+            KapingConstants.KAP_CMD_CHECK_OUT,
+            KapingConstants.KAP_CMD_THEME_CHANGE,
+            -> handleAccountUpdate(kapingResponse)
+
+            KapingConstants.KAP_CMD_HS_CHANGE -> handleHSUpdate(kapingResponse)
+
+            KapingConstants.KAP_CMD_LA_CHANGE -> handleLAUpdate(kapingResponse)
+
+            KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> handleFetchSyncList(kapingResponse)
+
+            KapingConstants.KAP_CMD_FETCH_SHOWTIME_DATA -> handleShowtimeCmd(kapingResponse)
+
+            KapingConstants.KAP_CMD_GET_CHANNEL_LIST -> handleChannelCmd(kapingResponse)
+
+            KapingConstants.KAP_CMD_GET_EPG_DATA -> handleEPGCmd(kapingResponse)
+
+            KapingConstants.KAP_CMD_SYNC_RECENT_VIEWED -> handleSyncRecentCmd(kapingResponse)
+
+            KapingConstants.KAP_CMD_SYNC_ADULT_DAYPASS -> handleSyncAdultDayPassCmd(kapingResponse)
+
+            KapingConstants.KAP_CMD_ENABLE_DISABLE_ADULT_CONTENT -> handleAdultContentCmd(kapingResponse)
+
+            KapingConstants.KAP_CMD_SEND_SYS_INFO -> handleSysInfoCmd()
+
+            KapingConstants.KAP_CMD_REBOOT -> handleRebootCmd()
+
+            KapingConstants.KAP_CMD_GET_TICKER_MESSAGES -> handleTickerMsgCmd()
+
+            KapingConstants.KAP_CMD_GET_GUEST_MESSAGES -> handleGuestMessagesCmd(kapingResponse)
+
+            KapingConstants.KAP_CMD_CONNECT_VPN -> {
+                logD("Signal for VPN Connect command")
+                handleVPNCommand(kapingResponse, OPEN_VPN_CONNECT_CMD)
+            }
+
+            KapingConstants.KAP_CMD_DISCONNECT_VPN -> {
+                logD("Signal for VPN Disconnect command")
+                handleVPNCommand(kapingResponse, OPEN_VPN_DISCONNECT_CMD)
+            }
         }
     }
 
-    private fun handleKaping(kapingResponse: KapingResponse?) {
+    private fun handleGuestMessagesCmd(kapingResponse: KapingResponse) {
+        when (activityStack.last()) {
+            SerialActivity::class.java.simpleName, STBDetailsActivity::class.java.simpleName, RegisterSTBActivity::class.java.simpleName -> fetchGuestMessage()
+            else -> handleCmdInRefreshingUi(kapingResponse)
+        }
+    }
 
-        when (kapingResponse?.cmdData?.cmd) {
+    private fun handleAdultContentCmd(kapingResponse: KapingResponse) {
+        if (btnModelList.any { it.btnId == Constants.VOD_ID }) {
+            updateAdultContent(kapingResponse.CMD)
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("AdultContent Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
 
-            KapingConstants.KAP_CMD_SOFTWARE_UPDATE -> {
-                CoroutineScope(Dispatchers.Default).launch {
-                    val api = async { movieBeamRepository.getSoftwareUpdateDetails(
-                        BuildConfig.BUILD_TYPE_ID,
-                        ua
-                    ) }
-                    val data = awaitAll(api)
-                   if (data[0] != null){
-                       data[0]?.let {response->
-                           if (response.fileName.isNotEmptyOrNull()) {
-                               val isUpgradeable = compareVersions(response.softwareVersion)
-                               if (isUpgradeable) {
-                                   logD("softwareData: isUpgradable: $isUpgradeable  ${BuildConfig.VERSION_NAME} $response")
-                                   val intent = Intent(Intent.ACTION_VIEW)
-                                   intent.component =
-                                       ComponentName(
-                                           MDM_PACKAGE_NAME,
-                                           KapingConstants.MDM_SOFTWARE_ACTIVITY
-                                       )
-                                   intent.putExtra("softwareData", response.toJson())
-                                   intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                   startActivity(intent)
-                               }
-                               kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                           }
-                       }
-                   }
-                }
-
-            }
-
-            KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE, KapingConstants.KAP_CMD_CHECK_IN, KapingConstants.KAP_CMD_CHECK_OUT, KapingConstants.KAP_CMD_THEME_CHANGE -> {
-                removeAdultData()
-                when (activityStack.last()) {
-                    SerialActivity::class.java.simpleName, STBDetailsActivity::class.java.simpleName, RegisterSTBActivity::class.java.simpleName -> {
-                        handleCmdInBackground(kapingResponse)
-                    }
-
-                    else -> {
-                        handleCmdInRefreshingUi(kapingResponse)
+    private fun handleSyncAdultDayPassCmd(kapingResponse: KapingResponse) = coroutineScope.launch {
+        if (btnModelList.any { it.btnId == Constants.VOD_ID }) {
+            kapingResponse.CMD?.let { str ->
+                val data = str.substring(19, str.length)
+                val syncResponse = data.fromJson<AdultDayPassSync>()
+                syncResponse.dayPassList.forEach {
+                    it.let {
+                        preferenceDataStoreHelper.putPreference(
+                            ADULT_DAY_PASS_STATUS,
+                            true
+                        )
+                        preferenceDataStoreHelper.putPreference(
+                            ADULT_DAY_PASS_FINISH_TIME,
+                            it.dayPassRentalTime.toTimestamp().also { time ->
+                                time.plus(24 * 60 * 60 * 1000)
+                            })
                     }
                 }
             }
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("SyncAdultDayPass Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
 
-            KapingConstants.KAP_CMD_HS_CHANGE -> {
-                when (activityStack.last()) {
-                    HotelInfoActivity::class.java.simpleName -> {
-                        handleCmdInRefreshingUi(kapingResponse)
-                    }
-
-                    else -> {
-                        fetchHotelServiceInfo(accountId)
-                    }
-                }
-            }
-
-            KapingConstants.KAP_CMD_LA_CHANGE -> {
-                when (activityStack.last()) {
-                    LocalAttractionActivity::class.java.simpleName, GuestServiceActivity::class.java.simpleName -> {
-                        handleCmdInRefreshingUi(kapingResponse)
-                    }
-
-                    else -> {
-                        fetchLocalAttractionInfo(UA)
-                    }
-                }
-            }
-
-            KapingConstants.KAP_CMD_FETCH_SYNC_LIST -> {
-                when (activityStack.last()) {
-                    MoviesActivity::class.java.simpleName, MovieDetailFragment::class.java.simpleName, AdultContentDialog::class.java.simpleName, ExoPlayerActivity::class.java.simpleName -> {
-                        handleCmdInRefreshingUi(kapingResponse)
-                    }
-
-                    else -> {
-                        fetchSyncList(UA)
-                    }
-                }
-            }
-
-            KapingConstants.KAP_CMD_FETCH_SHOWTIME_DATA -> {
-                when (activityStack.last()) {
-                    ShowtimeActivity::class.java.simpleName, ExoPlayerActivity::class.java.simpleName -> {
-                        handleCmdInRefreshingUi(kapingResponse)
-                    }
-
-                    else -> {
-                        fetchShowtimeData(UA)
-                    }
-                }
-            }
-
-            KapingConstants.KAP_CMD_GET_CHANNEL_LIST -> {
-                when (activityStack.last()) {
-                    ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> {
-                        handleCmdInRefreshingUi(kapingResponse)
-                    }
-
-                    else -> {
-                        fetchChannelList(UA)
-                    }
-                }
-            }
-
-            KapingConstants.KAP_CMD_GET_EPG_DATA -> {
-                when (activityStack.last()) {
-                    ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> {
-                        handleCmdInRefreshingUi(kapingResponse)
-                    }
-
-                    else -> {
-                        fetchEPGData()
-                    }
-                }
-            }
-
-            KapingConstants.KAP_CMD_SYNC_RECENT_VIEWED -> {
-                coroutineScope.launch {
-                    kapingResponse.CMD?.let { str ->
-                        val data = str.substring(19, str.length)
-                        val syncResponse = data.fromJson<RentalSyncResponse>()
-                        moviesLiveData.value?.let { res ->
-                            syncResponse.syncList.forEach { sync ->
-                                res.premiumContentList?.forEach {
-                                    if (sync.releaseId == it.releaseId && sync.productId == it.productId) {
-                                        val model = RentalMovieModel()
-                                        model.movieData = it
-                                        model.rentalID = sync.rentalId
-                                        model.sessionID = GuestDetails.SESSION_ID
-                                        model.currentSeek = sync.seek
-                                        model.startTimeStamp = sync.rentalTime.toTimestamp()
-                                        model.lastTimeStamp = System.currentTimeMillis()
-                                        roomRepository.insertRentalMovies(model)
-                                    }
-                                }
+    private fun handleSyncRecentCmd(kapingResponse: KapingResponse) = coroutineScope.launch {
+        if (btnModelList.any { it.btnId == Constants.VOD_ID }) {
+            kapingResponse.CMD?.let { str ->
+                val data = str.substring(19, str.length)
+                val syncResponse = data.fromJson<RentalSyncResponse>()
+                moviesLiveData.value?.let { res ->
+                    syncResponse.syncList.forEach { sync ->
+                        res.premiumContentList.forEach {
+                            if (sync.releaseId == it.releaseId && sync.productId == it.productId) {
+                                val model = RentalMovieModel()
+                                model.movieData = it
+                                model.rentalID = sync.rentalId
+                                model.sessionID = GuestDetails.SESSION_ID
+                                model.currentSeek = sync.seek
+                                model.startTimeStamp = sync.rentalTime.toTimestamp()
+                                model.lastTimeStamp = System.currentTimeMillis()
+                                roomRepository.insertRentalMovies(model)
                             }
                         }
                     }
                 }
             }
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("SyncRecent List Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
 
-            KapingConstants.KAP_CMD_SYNC_ADULT_DAYPASS -> {
-                coroutineScope.launch {
-                    kapingResponse.CMD?.let { str ->
-                        val data = str.substring(19, str.length)
-                        val syncResponse = data.fromJson<AdultDayPassSync>()
-                        syncResponse.dayPassList.forEach {
-                            it.let {
-                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, true)
-                                preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_FINISH_TIME,
-                                    it.dayPassRentalTime.toTimestamp().also { time ->
-                                        time.plus(24 * 60 * 60 * 1000)
-                                    })
-                            }
-                        }
-                    }
+    private fun handleEPGCmd(kapingResponse: KapingResponse) {
+        if (btnModelList.any { it.btnId == Constants.PRG_GUIDE_ID } && BuildConfig.BUILD_TYPE_ID != 6) {
+            when (activityStack.last()) {
+                ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> {
+                    handleCmdInRefreshingUi(kapingResponse)
+                }
 
+                else -> {
+                    fetchEPGData()
                 }
             }
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("EPG Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
 
-            KapingConstants.KAP_CMD_ENABLE_DISABLE_ADULT_CONTENT -> {
-                coroutineScope.launch {
-                    kapingResponse.CMD?.let { str ->
-                        val isEnabled = str[19] == '1'
-                        updateAdultContent(isEnabled)
-                    }
-                }
+    private fun handleChannelCmd(kapingResponse: KapingResponse) {
+        if (btnModelList.any { it.btnId == Constants.PRG_GUIDE_ID }) {
+            if (accountSetupLiveData.value?.isPlayBoxTv == true) {
+                logD("PlayBox TV is enabled")
+                kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+                logE("Channel List Cmd $FEATURE_NOT_SUPPORTED")
+                return
             }
-
-            KapingConstants.KAP_CMD_SEND_SYS_INFO -> {
-                coroutineScope.launch {
-                    handleSysInfoCmd()
-                }
+            when (activityStack.last()) {
+                ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> handleCmdInRefreshingUi(kapingResponse)
+                else -> fetchChannelList()
             }
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("Channel List Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
 
-            KapingConstants.KAP_CMD_REBOOT -> {
-                coroutineScope.launch {
-                    handleRebootCmd()
-                }
+    private fun handleShowtimeCmd(kapingResponse: KapingResponse) {
+        if (btnModelList.any { it.btnId == Constants.SHOWTIMES_ID }) {
+            when (activityStack.last()) {
+                ShowtimeActivity::class.java.simpleName, ExoPlayerActivity::class.java.simpleName -> handleCmdInRefreshingUi(kapingResponse)
+                else -> fetchShowtimeData()
             }
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("Showtime Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
 
-            KapingConstants.KAP_CMD_GET_TICKER_MESSAGES -> {
-                coroutineScope.launch {
-                    handleTickerMsgCmd(UA)
-                }
+    private fun handleFetchSyncList(kapingResponse: KapingResponse) {
+        if (btnModelList.any { it.btnId == Constants.VOD_ID }) {
+            when (activityStack.last()) {
+                MoviesActivity::class.java.simpleName, MovieDetailFragment::class.java.simpleName, AdultContentDialog::class.java.simpleName, ExoPlayerActivity::class.java.simpleName ->
+                    handleCmdInRefreshingUi(kapingResponse)
+                else -> fetchSyncList()
+
             }
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("FetchSyncList Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
 
-            KapingConstants.KAP_CMD_GET_GUEST_MESSAGES -> {
-                when (activityStack.last()) {
-                    SerialActivity::class.java.simpleName, STBDetailsActivity::class.java.simpleName, RegisterSTBActivity::class.java.simpleName -> {
-                        getGuestMessages()
-                    }
+    private fun handleLAUpdate(kapingResponse: KapingResponse) {
+        if (btnModelList.any { it.btnId == Constants.LOCAL_ATTRACTION_ID }) {
+            when (activityStack.last()) {
+                LocalAttractionActivity::class.java.simpleName, GuestServiceActivity::class.java.simpleName -> handleCmdInRefreshingUi(kapingResponse)
+                else -> fetchLocalAttractionInfo()
+            }
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("LA Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
 
-                    else -> {
-                        handleCmdInRefreshingUi(kapingResponse)
-                    }
+    private fun handleHSUpdate(kapingResponse: KapingResponse) {
+        if (btnModelList.any { it.btnId == Constants.HOTEL_SERVICES_ID }) {
+            when (activityStack.last()) {
+                HotelInfoActivity::class.java.simpleName -> handleCmdInRefreshingUi(kapingResponse)
+                else -> fetchHotelServiceInfo()
+            }
+        } else {
+            kapingCmdExecutionResponse = KapingConstants.FEATURE_NOT_SUPPORTED
+            logE("HS Cmd $FEATURE_NOT_SUPPORTED")
+        }
+    }
+
+    private fun handleAccountUpdate(kapingResponse: KapingResponse) {
+        removeAdultData()
+        when (activityStack.last()) {
+            SerialActivity::class.java.simpleName, STBDetailsActivity::class.java.simpleName, RegisterSTBActivity::class.java.simpleName -> handleCmdInBackground(kapingResponse)
+            else -> handleCmdInRefreshingUi(kapingResponse)
+        }
+    }
+
+    private fun handleSoftwareUpdate() = coroutineScope.launch {
+        val response = withContext(Dispatchers.IO) {
+            movieBeamRepository.getSoftwareUpdateDetails()
+        }
+
+        response?.let {
+            if (it.fileName.isNotEmptyOrNull() && compareVersions(it.softwareVersion)) {
+                logD("softwareData -> currentVersion: ${BuildConfig.VERSION_NAME}  response: $it")
+
+                Intent(Intent.ACTION_VIEW).apply {
+                    component = ComponentName(
+                        MDM_PACKAGE_NAME,
+                        KapingConstants.MDM_SOFTWARE_ACTIVITY
+                    )
+                    putExtra("softwareData", it.toJson())
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(this)
                 }
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
             }
         }
+    }
+
+    private fun handleVPNCommand(response: KapingResponse, command: String) {
+        val profileID = response.CMD.toString().substring(19)
+
+        if (!isAppInstalled(OPEN_VPN_PACKAGE_NAME)) {
+            showToast("Open VPN app not available")
+            return
+        }
+
+        if (profileID.isEmpty()) {
+            showToast("Invalid VPN ID")
+            return
+        }
+
+        Intent(Intent.ACTION_MAIN).apply {
+            setClassName(OPEN_VPN_PACKAGE_NAME, command)
+            putExtra(OPEN_VPN_PROFILE_NAME, "$OPEN_VPN_PROFILE$profileID")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(this)
+        }
+
     }
 
     private fun handleCmdInRefreshingUi(kapingResponse: KapingResponse) {
         when (kapingResponse.cmdData?.cmd) {
             KapingConstants.KAP_CMD_CHECK_IN -> {
                 resetPopUps(true)
-                kapingResponse.CMD?.let {
-                    if (it.length > 19) {
-                        val isEnabled = it[19] == '1'
-                        updateAdultContent(isEnabled)
-                    }
-                }
+                updateAdultContent(kapingResponse.CMD)
             }
 
             KapingConstants.KAP_CMD_CHECK_OUT -> resetPopUps(false)
         }
-        val i = Intent(applicationContext, RefreshingUiActivity::class.java)
-        i.putExtra("response", kapingResponse.toJson())
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(i)
+        Intent(applicationContext, RefreshingUiActivity::class.java).apply {
+            putExtra("response", kapingResponse.toJson())
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(this)
+        }
     }
 
     private fun handleCmdInBackground(kapingResponse: KapingResponse) {
         when (kapingResponse.cmdData?.cmd) {
-            KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE -> {
-                fetchAccountSetupDetails(Constants.ACTIVATE, UA, Constants.MODE)
-            }
+            KapingConstants.KAP_CMD_ACCOUNT_ACTIVATE -> fetchAccountSetupDetails()
 
-            KapingConstants.KAP_CMD_THEME_CHANGE -> {
-                fetchThemeDetails(UA)
-            }
+            KapingConstants.KAP_CMD_THEME_CHANGE -> fetchThemeDetails()
 
             KapingConstants.KAP_CMD_CHECK_IN -> {
                 resetPopUps(true)
-                kapingResponse.CMD?.let {
-                    if (it.length > 19) {
-                        val isEnabled = it[19] == '1'
-                        updateAdultContent(isEnabled)
-                    }
-                }
+                updateAdultContent(kapingResponse.CMD)
                 handleCheckInCmd(kapingResponse)
             }
 
@@ -996,222 +908,83 @@ class EndlessService : Service() {
 
     }
 
-    private fun fetchAccountSetupDetails(cmd: String, ua: String, mode: String) {
+    private fun fetchAccountSetupDetails() {
         coroutineScope.launch {
-            val response = movieBeamRepository.getAccountSetupDetails(cmd, ua, mode)
-            if (response != null) {
-                if(BuildConfig.BUILD_TYPE==Constants.BUILD_TYPE_STB) {
-                    hardwareAPI.myService?.setDeviceName(
-                        "MBAP_${response.accountId}_${response.roomNo}",
-                        object : IDeviceNameConfigureCallback {
-                            @Throws(RemoteException::class)
-                            override fun onDeviceNameConfigureCallback(s: String) {
-                                Log.e("TAG", "onDeviceNameConfigureCallback: setDeviceName $s")
-                            }
-
-                            override fun asBinder(): IBinder? {
-                                return null
-                            }
-                        }
-                    )
-                }
-                updateAccountSetupData(response)
-
-                scheduleClearCredentialsTask(response.checkOutTime)
+            val isComplete = movieBeamRepository.fetchAccountData(true)
+            if (isComplete)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                logD("In Account Setup callback Success")
-            } else {
-                logE("In Account Setup callback Fail")
+        }
+    }
+
+    private fun fetchThemeDetails() {
+        coroutineScope.launch {
+            val isComplete = movieBeamRepository.fetchThemeDetails()
+            if (isComplete) {
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                logD("Theme current version: ${preferenceHandler.themeVersion}")
             }
         }
     }
 
-    private fun fetchThemeDetails(ua: String) {
+    private fun fetchGuestMessage() = coroutineScope.launch {
+        if (preferenceHandler.isGuestCheckedIn) movieBeamRepository.fetchGuestMessage()
+    }
+
+    private fun fetchHotelServiceInfo() {
         coroutineScope.launch {
-            val response = movieBeamRepository.getThemeDetails(ua)
-            if (response != null) {
-                updateThemeData(response)
-                ThemeDetails.GRADIENT_COLOR_START = response.gradientColor
-                ThemeDetails.GRADIENT_COLOR_END = response.spotLightColor
-                ThemeDetails.GRADIENT = null
-                ThemeDetails.GRADIENT = getGradientColor()
-                ThemeDetails.BG_IMAGE = response.themeBackgroundFileName
-                ThemeDetails.LOGO_IMAGE = response.themeLogoFileName
+            val isComplete = movieBeamRepository.fetchHotelService()
+            if (isComplete) {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-//                startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
-                logD("In Theme callback Success")
-                logD("Theme current version: ${response.version}")
-            } else {
-                logE("In Theme callback Fail")
+                logD("Hotel Services current version: ${preferenceHandler.hsVersion}")
             }
         }
     }
 
-    private fun fetchTickerMessage(ua: String) {
+    private fun fetchLocalAttractionInfo() {
         coroutineScope.launch {
-            val response = movieBeamRepository.getTvTickerMessages(ua)
-            if (response != null) {
-                val sdf = SimpleDateFormat(Constants.TICKER_MESSAGE_DATE_FORMAT, Locale.ENGLISH)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    response.tvTickerList?.removeIf { msg ->
-                        (msg.all == 0 && msg.assignedRooms?.contains(stbRoomNo) != true)
-                                || sdf.parse(msg.etStr!!)!!.before(Date())
-                    }
-                } else {
-                    val iterator = response.tvTickerList?.iterator()
-                    while (iterator!!.hasNext()) {
-                        val msg: TvTickerDTO = iterator.next()
-                        if ((msg.all == 0 && msg.assignedRooms?.contains(stbRoomNo) != true)
-                            || sdf.parse(msg.etStr!!)!!.before(Date())
-                        ) {
-                            iterator.remove()
-                        }
-                    }
-                }
-                updateTickerMessage(response)
+            val isComplete = movieBeamRepository.fetchLocalAttractions()
+            if (isComplete) {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                response.tvTickerList?.forEach {
-                    applicationContext.scheduleMsgEndTask(it)
-                }
-                logD("In Ticker message callback Success")
-                logD("Ticker current version: ${response.version}")
-            } else {
-                logE("In Ticker message callback Fail")
+                logD("Local Attraction current version: ${preferenceHandler.laVersion}")
             }
         }
     }
 
-    private fun fetchGuestMessage(ua: String, guestSessionId: String) {
+    private fun fetchSyncList() {
         coroutineScope.launch {
-            val response = movieBeamRepository.getGuestMessages(ua, guestSessionId)
-            if (response != null) {
-                updateGuestMessage(response)
-                logD("In Guest message callback Success")
-            } else {
-                logE("In Guest message callback Fail")
+            val isComplete = movieBeamRepository.fetchMoviesMore()
+            if (isComplete) {
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                logD("Releases current version: ${preferenceHandler.moviesVersion}")
             }
         }
     }
 
-    private fun updateAdultContent(enabled: Boolean) {
+    private fun fetchShowtimeData() {
         coroutineScope.launch {
-            sharedPreference.isAdultContentEnabled = enabled
-            preferenceDataStoreHelper.putPreference(ADULT_CONTENT_STATUS, enabled)
-        }
-    }
-
-    private fun removeAdultData() {
-        coroutineScope.launch {
-            preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, false)
-        }
-    }
-
-    private fun fetchHotelServiceInfo(accountId: String) {
-        coroutineScope.launch {
-            val response = movieBeamRepository.getHotelServiceInfo(preferenceHandler.UA)
-            if (response != null) {
-                updateHotelServices(response)
-//                startUpdateDataWorker(UpdateDataWorker.ACTION_HS)
+            val isComplete = movieBeamRepository.fetchShowtime()
+            if (isComplete) {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                logD("In Hotel Services callback Success")
-                logD("Hotel Services current version: ${response.version}")
-            } else {
-                logE("In Hotel Services callback Fail")
+                logD("Showtime current version: ${preferenceHandler.showTimeVersion}")
             }
         }
     }
 
-    private fun fetchLocalAttractionInfo(ua: String) {
+    private fun fetchChannelList() {
         coroutineScope.launch {
-            val response = movieBeamRepository.getLocalAttractionInfo(ua)
-            if (response != null) {
-                updateLocalAttractions(response)
-//                startUpdateDataWorker(UpdateDataWorker.ACTION_LA)
+            val isComplete = movieBeamRepository.fetchChannelList()
+            if (isComplete) {
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                logD("In Local Attractions callback Success")
-                logD("Local Attraction current version: ${response.version}")
-            } else {
-                logE("In Local Attractions callback Fail")
-            }
-        }
-    }
-
-    private fun fetchSyncList(ua: String) {
-        coroutineScope.launch {
-            val response = movieBeamRepository.getMoviesInfo(ua)
-            if (response != null) {
-                setMoviesResponseData(response)
-                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                logD("In Releases callback Success")
-                logD("Releases current version: ${response.version}")
-            } else {
-                logE("In Releases callback Fail")
-            }
-        }
-    }
-
-    private fun fetchShowtimeData(ua: String) {
-        coroutineScope.launch {
-            val response = movieBeamRepository.getShowtimeInfo(ua)
-            if (response != null) {
-                updateShowTimeData(response)
-                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                logD("In ShowtimeReleasesCollection callback Success")
-                logD("Showtime current version: ${response.version}")
-            } else {
-                logE("In ShowtimeReleasesCollection callback Fail")
-            }
-        }
-    }
-
-    private fun fetchChannelList(ua: String) {
-        coroutineScope.launch {
-            val response = movieBeamRepository.getChannelList(ua)
-            if (response != null) {
-                updateChannelList(response)
-                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                channelCount = response.channelLcnList.size
-                preferenceHandler.updateDatastoreVariables(channelCount = channelCount)
-                logD("In Channel List callback Success ")
-            } else {
-                logE("In Channel List callback Fail")
             }
         }
     }
 
     private fun fetchEPGData() {
-        coroutineScope.launch {
-            val response =
-                movieBeamRepository.getEPGFromCloud(accountSetupLiveData.value?.epgCdnUrl + accountSetupLiveData.value?.accountId + Constants.EPG_CLOUD_URL_SUFFIX)
-            if (response != null) {
-                processEPGData(response)
-            } else {
-                logE("In Get EPG Data callback Fail")
-            }
-        }
-    }
-
-    private fun processEPGData(response: EPGResponse) {
-        channelListLiveData.value?.channelLcnList?.let { epgHandler.parseEPG(response, it) }
-        GlobalScope.launch(Dispatchers.Main) {
-            epgHandler.epgStatus.observeForever {
-                Log.e(TAG, "processEPGData: $it")
+        CoroutineScope(Dispatchers.Main).launch {
+            movieBeamRepository.fetchEpgData()
+            movieBeamRepository.epgStatus.observeForever {
                 when (it) {
-                    EPGHandler.STATUS_FAIL -> {
-                        logE("Invalid EPG Data found")
-                        logD("Fetching EPG Data from server")
-                        isEPGServerApiCalled = if (!isEPGServerApiCalled) {
-                            fetchEPGDataFromServer(UA)
-                            true
-                        } else {
-                            false
-                        }
-                        this.cancel()
-                    }
-
                     EPGHandler.STATUS_OK -> {
-                        logD("In Get EPG Data callback Success")
-                        logD("Valid EPG Data Found")
                         kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
                         this.cancel()
                     }
@@ -1220,45 +993,32 @@ class EndlessService : Service() {
         }
     }
 
-    private fun fetchEPGDataFromServer(ua: String) {
+    private fun sendConciergeInfo(serviceId: String, body: ConciergeResponse) {
         coroutineScope.launch {
-            val response = movieBeamRepository.getEPGDataFromServer(ua)
+            val response = movieBeamRepository.sendConciergeInfo(serviceId, body)
             if (response != null) {
-                processEPGData(response)
                 kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                logD("In Get EPG Data Server callback Success")
+                logD("In ConciergeInfo callback Success")
             } else {
-                logE("In Get EPG Data Server callback Fail")
+                logE("In ConciergeInfo callback Fail")
             }
         }
     }
 
-    private fun sendSysInfo(ua: String, body: SysInfoDTO) {
-        coroutineScope.launch {
-            val response = movieBeamRepository.sendSysInfo(ua, body)
-            if (response != null && response == 0) {
-                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                logD("In Channel List callback Success")
-            } else {
-                logE("In Channel List callback Fail")
-            }
-        }
-    }
-
-    private fun handleSysInfoCmd() {
+    private fun handleSysInfoCmd() = coroutineScope.launch {
         val accountSetupData = accountSetupLiveData.value
         val dateFormatter = SimpleDateFormat("EEE. MMM dd, yyyy hh:mm:ss a", Locale.ENGLISH)
         val body = SysInfoDTO()
-        body.HOTELCODE = accountId.toInteger()
-        body.ROOM = stbRoomNo.uppercase()
+        body.HOTELCODE = preferenceHandler.accountID.toInteger()
+        body.ROOM = preferenceHandler.roomNo.uppercase()
         body.STBTIME = dateFormatter.format(Date())
         body.LASTCALLBACK = dateFormatter.format(Date())
         body.HOTELMODEL = accountSetupData?.hotelModel?.toInteger()
         body.HOTELPLAN = accountSetupData?.hotelPlan
         body.tvBroadcastType = accountSetupData?.tvBroadcastType
         body.streamingType = accountSetupData?.streamingType
-        body.UA = ua
-        body.SRNO = serialNo
+        body.UA = preferenceHandler.UA
+        body.SRNO = preferenceHandler.serialNo
         body.stbIp = preferenceHandler.ipAddress
         body.netMask = preferenceHandler.netMask
         body.route = preferenceHandler.gatewayIP
@@ -1272,16 +1032,16 @@ class EndlessService : Service() {
         body.mgIp = accountSetupData?.softwareDownloadIp
         body.mgPort = accountSetupData?.softwareDownloadPort
         body.swVersion = BuildConfig.VERSION_NAME
-        body.SYNCLISTVERSON = moviesVersion
-        body.hsVersion = hotelServicesVersion
-        body.laVersion = laVersion
-        body.THVERSION = themeVersion
-        body.epgStart = epgStartTime
-        body.epgEnd = epgEndTime
-        body.channelCount = channelCount.toString()
+        body.SYNCLISTVERSON = preferenceHandler.moviesVersion
+        body.hsVersion = preferenceHandler.hsVersion
+        body.laVersion = preferenceHandler.laVersion
+        body.THVERSION = preferenceHandler.themeVersion
+        body.epgStart = preferenceHandler.epgStartTime
+        body.epgEnd = preferenceHandler.epgEndTime
+        body.channelCount = preferenceHandler.channelCount.toString()
         body.inRmVersion = Constants.INRMVER
         body.lauVersion = Constants.LAUVER
-        body.shoVersion = showtimeVersion
+        body.shoVersion = preferenceHandler.showTimeVersion
         body.blankChannelLcn = accountSetupData?.blankChannelLcn
         body.appsCount = accountSetupData?.selectedAppsList?.filter { it.forAndroid }?.size
         body.zoneId = accountSetupData?.stbZoneId.toString()
@@ -1300,171 +1060,63 @@ class EndlessService : Service() {
         body.platformVersion = Build.VERSION.RELEASE
         body.stbModel = Build.MODEL
         body.bootVersion = Build.ID
+        body.mdmVersion = getAppVersion(MDM_PACKAGE_NAME)
+        body.playBoxTvVersion = getAppVersion(Constants.PBTV_PACKAGE_NAME)
 
-        sendSysInfo(ua, body)
+        val response = movieBeamRepository.sendSysInfo(body)
+        if (response != null && response == 0) {
+            kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+            logD("In System Info callback Success")
+        } else {
+            logE("In System Info callback Fail")
+        }
 
+    }
+
+    private fun handleCheckInCmd(kapingResponse: KapingResponse) {
+        movieBeamRepository.updateGuestSession(true, kapingResponse.cmdData?.cmdData)
+        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+    }
+
+    private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
+        movieBeamRepository.updateGuestSession(false, kapingResponse.cmdData?.cmdData)
+        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+    }
+
+    private fun handleRebootCmd() {
+        BaseActivity.currentActivity?.let {
+            it.rebootDevice()
+            kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+        }
+    }
+
+    private fun handleTickerMsgCmd() {
+        coroutineScope.launch {
+            val isComplete = movieBeamRepository.fetchTickerMessages()
+            if (isComplete) {
+                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
+                logD("Ticker current version: ${tickerDatastore.data.first().version}")
+            }
+        }
+    }
+
+    private fun updateAdultContent(CMD: String?) = coroutineScope.launch {
+        CMD?.let {
+            if (it.length > 19) {
+                val isEnabled = it[19] == '1'
+                sharedPreference.isAdultContentEnabled = isEnabled
+                preferenceDataStoreHelper.putPreference(ADULT_CONTENT_STATUS, isEnabled)
+            }
+        }
+    }
+
+    private fun removeAdultData() = coroutineScope.launch {
+        preferenceDataStoreHelper.putPreference(ADULT_DAY_PASS_STATUS, false)
     }
 
     private fun getVolumeLevel(): Int {
         val am = getSystemService(AUDIO_SERVICE) as AudioManager
         return am.getStreamVolume(AudioManager.STREAM_MUSIC)
-    }
-
-    private fun handleCheckInCmd(kapingResponse: KapingResponse) {
-        updateGuestSession(true, kapingResponse.cmdData?.cmdData)
-        GuestDetails.IS_GUEST_CHECKED_IN = true
-        kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-    }
-
-    private fun handleCheckOutCmd(kapingResponse: KapingResponse) {
-        CoroutineScope(Dispatchers.Default).launch {
-            updateGuestMessage(MessageResponse())
-            updateGuestSession(
-                false,
-                kapingResponse.cmdData?.cmdData
-            )
-            clearCredentialsHandler.startClearCredentials(false)
-            GuestDetails.IS_GUEST_CHECKED_IN = false
-            kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-        }
-    }
-
-    private fun handleRebootCmd() {
-        when (BuildConfig.BUILD_TYPE) {
-            Constants.BUILD_TYPE_STB -> {
-                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-                Log.e("TAG", "handleRebootCmd: BUILD_TYPE_STB Start", )
-                hardwareAPI.myService?.rebootDevice()
-                Log.e("TAG", "handleRebootCmd: BUILD_TYPE_STB End", )
-                Log.e("TAG", "handleRebootCmd: BUILD_TYPE_STB End1", )
-            }
-            else -> {
-                val intent = Intent()
-                intent.component = ComponentName(MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                startActivity(intent)
-                kapingCmdExecutionResponse = KapingConstants.EXECUTED_SUCCESSFULLY
-            }
-        }
-    }
-
-    private fun handleTickerMsgCmd(ua: String) {
-        fetchTickerMessage(ua)
-    }
-
-    private fun getGuestMessages() {
-        coroutineScope.launch {
-            delay(100)
-            if (preferenceHandler.isGuestCheckedIn) {
-                getGuestDetails(guestDetailsDatastore)
-            }
-        }
-    }
-
-    private fun getGuestDetails(dataStore: DataStore<CmdDataDto>) {
-        coroutineScope.launch {
-            dataStore.data.collect {
-                it.sessionId?.let {
-                    fetchGuestMessage(ua, it)
-                }
-            }
-        }
-    }
-
-    private fun updateGuestSession(
-        isCheckedIn: Boolean,
-        guestDetails: CmdDataDto?
-    ) {
-        coroutineScope.launch {
-            preferenceHandler.updateDatastoreVariables(sessionId = guestDetails?.sessionId, isCheckedIn = isCheckedIn)
-            guestDetails?.let { updateDataStore.updateGuestData(it) }
-        }
-    }
-
-    private fun updateGuestDetails(
-        dataStore: DataStore<CmdDataDto>, data: CmdDataDto?
-    ) {
-        coroutineScope.launch {
-            dataStore.updateData { currentPreferences ->
-                currentPreferences.copy(
-                    sessionId = data?.sessionId,
-                    parentSessionId = data?.parentSessionId,
-                    adultContentDisabled = data?.adultContentDisabled,
-                    message = data?.message,
-                    guestFirstName = data?.guestFirstName,
-                    guestLastName = data?.guestLastName,
-                    adultLocked = data?.adultLocked,
-                    passcode = data?.passcode
-                )
-            }
-        }
-    }
-
-    private fun updateAccountSetupData(data: AccountSetupResponse) {
-        coroutineScope.launch {
-            updateDataStore.updateAccountData(data)
-        }
-    }
-
-    private fun updateThemeData(data: ThemeResponse) {
-        coroutineScope.launch {
-            updateDataStore.updateThemeData(data)
-        }
-    }
-
-    private fun updateHotelServices(data: HotelServiceResponse) {
-        coroutineScope.launch {
-            updateDataStore.updateHSData(data)
-        }
-    }
-
-    private fun updateLocalAttractions(data: LocalAttractionResponse) {
-        coroutineScope.launch {
-            updateDataStore.updateLAData(data)
-        }
-    }
-
-    private fun setMoviesResponseData(
-        data: MoviesResponse
-    ) {
-        coroutineScope.launch {
-            preferenceHandler.updateDatastoreVariables(
-                moviesCount = data.freeContentList.size.plus(data.premiumContentList.size),
-                cListVersion = data.version
-            )
-            updateDataStore.updateMoviesData(data)
-        }
-    }
-
-    private fun updateShowTimeData(
-        data: ShowTimeResponse
-    ) {
-        coroutineScope.launch {
-            preferenceHandler.updateDatastoreVariables(showsCount = data.shoContentList.size)
-            updateDataStore.updateShowTimeData(data)
-        }
-    }
-
-    private fun updateChannelList(
-        data: ChannelListResponse
-    ) {
-        updateDataStore.updateChannelListData(data)
-    }
-
-    private fun updateTickerMessage(
-        data: TickerResponse
-    ) {
-        updateDataStore.updateTickerData(data)
-    }
-
-    private fun updateGuestMessage(
-        data: MessageResponse
-    ) {
-        updateDataStore.updateGuestMessageData(data)
-    }
-
-    private fun getVersionNumber(): String {
-        return BuildConfig.VERSION_NAME.replace(".", "").trim()
     }
 
     private fun createNotification(): Notification {
@@ -1490,15 +1142,6 @@ class EndlessService : Service() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        /*val options = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            ActivityOptions.makeBasic()
-        } else {
-            ActivityOptions.makeTaskLaunchBehind()
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            options.isPendingIntentBackgroundActivityLaunchAllowed = true
-        }*/
-
         val pendingIntent: PendingIntent =
             Intent(this, MainMenuActivity::class.java).let { notificationIntent ->
                 PendingIntent.getActivity(
@@ -1522,19 +1165,6 @@ class EndlessService : Service() {
     private fun isScreenOn(): String {
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         return if (pm.isInteractive) KapingConstants.POWER_MODE_ON else KapingConstants.POWER_MODE_STAND_BY
-    }
-
-    private fun initializeDatastoreParams() {
-        CoroutineScope(Dispatchers.Default).launch {
-            delay(100)
-            accountId = preferenceHandler.accountID
-            serialNo = preferenceHandler.serialNo
-            ua = preferenceHandler.UA
-            stbRoomNo = preferenceHandler.roomNo
-            epgStartTime = preferenceHandler.epgStartTime
-            epgEndTime = preferenceHandler.epgEndTime
-            channelCount = preferenceHandler.channelCount
-        }
     }
 
 }

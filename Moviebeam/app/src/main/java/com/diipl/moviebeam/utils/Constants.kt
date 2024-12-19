@@ -392,4 +392,11 @@ object Constants {
     const val MEDIA_PLAY_PAUSE= 164
     const val PLAY_MEDIA_FORWARD= 208
 
+    const val OPEN_VPN_PROFILE_NAME = "de.blinkt.openvpn.api.profileName"
+    const val OPEN_VPN_CONNECT_CMD = "de.blinkt.openvpn.api.ConnectVPN"
+    const val OPEN_VPN_DISCONNECT_CMD = "de.blinkt.openvpn.api.DisconnectVPN"
+    const val OPEN_VPN_PROFILE = "profile"
+    const val OPEN_VPN_PACKAGE_NAME = "de.blinkt.openvpn"
+
+
 }

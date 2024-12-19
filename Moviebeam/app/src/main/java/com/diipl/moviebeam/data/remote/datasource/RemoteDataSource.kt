@@ -1,11 +1,14 @@
 package com.diipl.moviebeam.data.remote.datasource
 
+import android.util.Log
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.concierge.ConciergeResponse
 import com.diipl.moviebeam.data.dto.datetime.DateTimeResponse
 import com.diipl.moviebeam.data.dto.epg.EPGResponse
 import com.diipl.moviebeam.data.dto.feedback.FeedbackResponse
 import com.diipl.moviebeam.data.dto.flightstatus.FlightStatusResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
+import com.diipl.moviebeam.data.dto.inRoomDining.InRoomDining
 import com.diipl.moviebeam.data.dto.laundryResponce.LaundryResponce
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.message.MessageResponse
@@ -37,6 +40,8 @@ import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toQueryMap
+import java.text.SimpleDateFormat
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -198,13 +203,15 @@ class RemoteDataSource @Inject constructor(
     }
 
     suspend fun sendGuestFeedback(
-        ua: String, feedback: String, stbTime: String
+        ua: String, feedback: String
     ): FeedbackResponse? {
+        val dateFormat = SimpleDateFormat("dd-MMM-yyyy HH:mm:ss", Locale.ENGLISH)
+        val stbTime = dateFormat.format(System.currentTimeMillis())
         val result = safeAPiCall {
             lgRestApiService.sendGuestFeedback(ua, feedback, stbTime)
         }
         val responseObject = ApiResponseParsing().getResponseAsObject(result.data, FeedbackResponse::class)
-        logD("In Guest Feedback Callback")
+        logD("In Guest Feedback Callback: code ${responseObject?.errorCode}")
         return responseObject
     }
 
@@ -279,5 +286,32 @@ class RemoteDataSource @Inject constructor(
         return responseObject
 
     }
+
+    suspend fun processConciergeMaster(ua: String,serviceId: String, body: ConciergeResponse): String? {
+        val result = if (body.toiletries?.isNotEmpty() == true){
+            safeAPiCall {
+                lgRestApiService.conciergeToiletryMaster(ua,serviceId.toInt(),
+                    body.toiletries!!
+                )
+            }
+        } else {
+            safeAPiCall {
+                lgRestApiService.conciergeMaster(ua,serviceId.toInt(), body)
+            }
+        }
+        Log.d(TAG, "processConciergeMaster6: ${result.data}")
+        logD("In conciergeMaster Request Callback: ERROR_CODE = "+ result.errorCode)
+        return result.data
+    }
+
+    suspend fun getInRoomDiningInfo(ua: String): InRoomDining? {
+        val result = safeAPiCall {
+            lgRestApiService.getInRoomData(ua)
+        }
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, InRoomDining::class)
+        logD("In Room Dining Callback: version = " + responseObject?.version)
+        return responseObject
+    }
+
 
 }

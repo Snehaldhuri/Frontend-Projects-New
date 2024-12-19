@@ -13,7 +13,6 @@ import android.view.KeyEvent
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
@@ -25,9 +24,6 @@ import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
 import com.diipl.moviebeam.ui.casting.HotspotActivity
 import com.diipl.moviebeam.ui.concierge.ConciergeActivity
-import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
-import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
-import com.diipl.moviebeam.ui.exoplayer.PlayerActivity
 import com.diipl.moviebeam.ui.guest.feedback.GuestFeedbackActivity
 import com.diipl.moviebeam.ui.guest.message.GuestMessageActivity
 import com.diipl.moviebeam.ui.guest.news.NewsActivity
@@ -37,6 +33,9 @@ import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
+import com.diipl.moviebeam.ui.player.ExoPlayerActivity
+import com.diipl.moviebeam.ui.player.LiveTVActivity
+import com.diipl.moviebeam.ui.player.PlayerActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.weather.WeatherActivity
@@ -53,10 +52,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.Collections
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TAG = "BaseActivity"
@@ -68,13 +63,13 @@ abstract class BaseActivity : AppCompatActivity() {
 
     private var castingUrl = ""
 
-    private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
+    private val preferenceDataStoreHelper by lazy { PreferenceDataStoreHelper(this) }
 
     @Inject
     lateinit var sharedPreference: SharedPreference
 
     @Inject
-    lateinit var accountSetupData: DataStore<AccountSetupResponse>
+    lateinit var accountDataStore: DataStore<AccountSetupResponse>
 
     @Inject
     lateinit var preferenceHandler: PreferenceHandler
@@ -84,7 +79,6 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentActivity = this
-        preferenceDataStoreHelper = PreferenceDataStoreHelper(this)
 
         launchLogger()
         initViewBinding()
@@ -97,7 +91,7 @@ abstract class BaseActivity : AppCompatActivity() {
     private fun initializeDatastoreParams() {
         lifecycleScope.launch {
             castingUrl = preferenceHandler.castingUrl
-            mainMenuButtonList.addAll(accountSetupData.data.first().buttonsList)
+            mainMenuButtonList.addAll(accountDataStore.data.first().buttonsList)
         }
     }
 
@@ -210,8 +204,8 @@ abstract class BaseActivity : AppCompatActivity() {
                     //return it: don't do anything
                     return true
                 }
+                ThemeDetails.TITLE = Constants.APPS
                 if (currentActivity !is AppWorldActivity) {
-                    ThemeDetails.TITLE = Constants.APPS
                     intent = Intent(this, AppWorldActivity::class.java)
                     startActivity(intent)
                 }
@@ -274,8 +268,8 @@ abstract class BaseActivity : AppCompatActivity() {
                     //return it: don't do anything
                     return true
                 }
+                ThemeDetails.TITLE = Constants.APPS
                 if (currentActivity !is AppWorldActivity) {
-                    ThemeDetails.TITLE = Constants.APPS
                     intent = Intent(this, AppWorldActivity::class.java)
                     startActivity(intent)
                 }
@@ -357,61 +351,6 @@ abstract class BaseActivity : AppCompatActivity() {
         Log.e(TAG, "checkMenuButtonInButtonListExists: ${btnList.isNotEmpty()}")
         return btnList.isNotEmpty()
     }
-
-    protected open fun fragmentTransaction(
-        transactionType: Int,
-        fragment: Fragment,
-        container: Int,
-        isAddToBackStack: Boolean,
-        bundle: Bundle?,
-    ) {
-        if (bundle != null) {
-            fragment.arguments = bundle
-        }
-
-        val trans = supportFragmentManager.beginTransaction()
-        when (transactionType) {
-            ADD_FRAGMENT -> trans.add(container, fragment, fragment.javaClass.simpleName)
-            REPLACE_FRAGMENT -> {
-                trans.replace(container, fragment, fragment.javaClass.simpleName)
-                if (isAddToBackStack) trans.addToBackStack(null)
-            }
-        }
-        trans.commit()
-    }
-
-    class CustomThreadExecutor {
-
-        private lateinit var scheduledExecutorService: ScheduledExecutorService
-        private lateinit var scheduledFuture: ScheduledFuture<*>
-        var counter = 0
-
-        init {
-            //Start Scheduler as required
-            startScheduler()
-        }
-
-        fun startScheduler() {
-            scheduledExecutorService = Executors.newScheduledThreadPool(2)
-
-            scheduledFuture = scheduledExecutorService.scheduleAtFixedRate(
-                { tempImageFetch() }, 0, 60, TimeUnit.SECONDS
-            )
-        }
-
-        fun shutdownScheduler() {
-            //Stop before exit the app or when necessary
-            scheduledExecutorService.shutdownNow()
-
-        }
-
-        private fun tempImageFetch() {
-            //TODO call API
-            counter++
-            Log.d("counter", counter.toString())
-        }
-    }
-
     private fun onBaseAppClicked(packageName: String) {
         if (isPackageExists(packageName)) {
             if (packageManager.getLaunchIntentForPackage(packageName) == null) {
@@ -459,8 +398,6 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val ADD_FRAGMENT = 0
-        const val REPLACE_FRAGMENT = 1
         var currentActivity: Activity? = null
         val activityStack: MutableList<String?> = mutableListOf()
     }

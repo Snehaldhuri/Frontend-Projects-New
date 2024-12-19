@@ -17,7 +17,6 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
-import android.net.LinkProperties
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.net.wifi.WifiManager
@@ -47,24 +46,25 @@ import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.service.receiver.ClearCredentialsReceiver
-import com.diipl.moviebeam.service.receiver.LoggingService
 import com.diipl.moviebeam.service.receiver.TickerMsgReceiver
+import com.diipl.moviebeam.service.services.LoggingService
 import com.diipl.moviebeam.ui.appworld.AppWorldActivity
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.base.BaseActivity.Companion.currentActivity
 import com.diipl.moviebeam.ui.casting.CastingActivity
-import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.guestservice.GuestServiceActivity
 import com.diipl.moviebeam.ui.hotelinfo.HelpInfoFragment
 import com.diipl.moviebeam.ui.hotelinfo.HotelInfoActivity
 import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
-import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
 import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
+import com.diipl.moviebeam.ui.player.ExoPlayerActivity
 import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
+import com.diipl.moviebeam.ui.refreshingui.RefreshingUiActivity
+import com.diipl.moviebeam.ui.register_stb.RegisterSTBActivity
 import com.diipl.moviebeam.ui.serial_info.SerialActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.showtime.ShowtimeDetailFragment
@@ -90,7 +90,6 @@ import java.net.NetworkInterface
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Collections
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -114,10 +113,10 @@ fun <T : Any> T.toQueryMap(): Map<String, Any> {
 
 fun String.isNotAllowed(): Boolean {
     return when (this) {
-        SerialActivity::class.java.simpleName -> false
-        RegisterSTBActivity::class.java.simpleName -> false
-        STBDetailsActivity::class.java.simpleName -> false
-        MainMenuActivity::class.java.simpleName -> false
+        SerialActivity::class.java.simpleName,
+        RegisterSTBActivity::class.java.simpleName,
+        STBDetailsActivity::class.java.simpleName,
+        RefreshingUiActivity::class.java.simpleName -> false
         else -> true
     }
 }
@@ -178,16 +177,12 @@ fun isNetworkAvailable(context: Context): Boolean {
     }
 }
 
-fun replaceDegreeSymbol(temp: String?): String {
-    var temperature = ""
-    temp?.let {
-        temperature = if (it.contains("&deg C")) {
-            it.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
-        } else {
-            it.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
-        }
+fun String.replaceDegreeSymbol(): String {
+    return if (this.contains("&deg C")) {
+        this.replace("&deg C", Constants.SYMBOL_DEGREE_CELSIUS)
+    } else {
+        this.replace("&deg F", Constants.SYMBOL_DEGREE_FAHRENHEIT)
     }
-    return temperature
 }
 
 fun ExoPlayer?.getLastSeek(): Long {
@@ -328,49 +323,53 @@ fun getCurrentPanelNumber(): String {
 
 fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
     // NETWORK DETAILS
+
     try {
-        val ipAddress: String
-        val netMask: String
-        val connectivity: String
+        var ipAddress: String
+        var netMask: String
+        var connectivity: String
         var gateway = "0.0.0.0"
-        val networkInterfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
-        val address = networkInterfaces[1].interfaceAddresses[1]
 
-        ipAddress = address.address?.hostAddress ?: "0.0.0.0"
-        netMask = getNetmaskFromPrefixLength(address.networkPrefixLength.toInt())
+        val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+        networkInterfaces?.toList()?.forEach { networkInterface ->
 
-        currentActivity?.let {
-            val preferenceHandler = PreferenceHandler(it)
-            connectivity = getConnectivityType(it)
-            val connectivityManager =
-                it.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-            val wifiManager =
-                it.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            // Get all interface addresses
+            val interfaceAddresses = networkInterface.interfaceAddresses
+            interfaceAddresses.forEach { interfaceAddress ->
+                val address = interfaceAddress.address
+                val broadcast = interfaceAddress.broadcast
+                val networkPrefixLength = interfaceAddress.networkPrefixLength.toInt()
 
-            connectivityManager.activeNetwork?.let { network ->
-                // Get the LinkProperties for the active network
-                val linkProperties: LinkProperties? = connectivityManager.getLinkProperties(network)
-                // Get the default gateway from the LinkProperties
-                val defaultGateway = linkProperties?.routes?.get(2)?.gateway?.hostAddress.toString()
-                gateway = defaultGateway
-            }
+                val comp = broadcast?.hostAddress ?: "N/A"
+                if (comp != "N/A") {
+                    ipAddress = address.hostAddress!!.toString()
+                    netMask = getNetmaskFromPrefixLength(networkPrefixLength)
+                    currentActivity?.let {
+                        val preferenceHandler = PreferenceHandler(it)
+                        connectivity = getConnectivityType(it)
+                        val wifiManager = it.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
-            preferenceHandler.updateDatastoreVariables(
-                ipAddress = ipAddress,
-                netMask = netMask,
-                gateway = gateway,
-                connectivity = connectivity
-            )
+                        gateway = it.getDefaultGateway()
 
-            // WIFI DETAILS
-            if (ContextCompat.checkSelfPermission(
-                    it,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                if (wifiManager.isWifiEnabled) {
-                    val connectionInfo = wifiManager.connectionInfo
-                    val strength = WifiManager.calculateSignalLevel(connectionInfo.rssi, 5)
+                        preferenceHandler.updateDatastoreVariables(
+                            ipAddress = ipAddress,
+                            gateway = gateway,
+                            connectivity = connectivity,
+                            netMask = netMask
+                        )
+
+                        // WIFI DETAILS
+                        if (ContextCompat.checkSelfPermission(
+                                it,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            if (wifiManager.isWifiEnabled) {
+                                val connectionInfo = wifiManager.connectionInfo
+                                val strength = WifiManager.calculateSignalLevel(connectionInfo.rssi, 5)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -378,11 +377,38 @@ fun setIPInfo() = CoroutineScope(Dispatchers.IO).launch {
         Log.e("setIPInfo: ", "Exception :  ${e.localizedMessage}")
     }
 
-// DEVICE UPTIME
+    // DEVICE UPTIME
     val uptimeMillis = System.currentTimeMillis() - SystemClock.uptimeMillis()
     val uptime = System.currentTimeMillis() - uptimeMillis
 
 }
+
+fun Context.getDefaultGateway(): String {
+    val connectivityManager =
+        getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    connectivityManager.activeNetwork?.let { network ->
+        val linkProperties = connectivityManager.getLinkProperties(network)
+        linkProperties?.routes?.forEach { route ->
+            val gateway = route.gateway?.hostAddress?.toString()
+            if (gateway != null) {
+                if (isIPv4(gateway) && gateway != "0.0.0.0") {
+                    return gateway
+                }
+            }
+        }
+    }
+
+    // If no gateway is found, return null
+    return "0.0.0.0"
+}
+
+private fun isIPv4(address: String): Boolean {
+    // Simple regex to identify IPv4 addresses
+    val ipv4Pattern = Regex("^\\d{1,3}(\\.\\d{1,3}){3}$")
+    return ipv4Pattern.matches(address)
+}
+
 
 private fun getNetmaskFromPrefixLength(prefixLength: Int): String {
     var length = prefixLength
@@ -712,10 +738,10 @@ fun Activity.launchLogger() {
     }
 
     if (!LoggingService.isServiceStarted) {
-        Log.e(TAG, "launchLogger: starting logger -> ${LoggingService.isServiceStarted}")
+        Log.e(TAG, "launchLogger: starting logger")
         val serviceIntent = Intent(this, LoggingService::class.java)
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-    } else Log.e(TAG, "launchLogger: logger is running -> ${LoggingService.isServiceStarted}")
+    } else Log.e(TAG, "launchLogger: logger is running")
 
 }
 
@@ -884,9 +910,7 @@ fun Context.getSerialNoFromMDM(): String? {
 
 fun Activity.rebootDevice() = CoroutineScope(Dispatchers.IO).launch {
     val hardwareAPI = HardwareAPI(this@rebootDevice)
-    Log.e(TAG, "rebootDevice: 1")
-    delay(1000)
-    Log.e(TAG, "rebootDevice: 100")
+    delay(500)
     when (BuildConfig.BUILD_TYPE) {
         Constants.BUILD_TYPE_STB -> {
             hardwareAPI.myService?.let {
@@ -895,6 +919,7 @@ fun Activity.rebootDevice() = CoroutineScope(Dispatchers.IO).launch {
             }
         }
         else -> {
+            logE("Rebooting Dongle 4K device...")
             val intent = Intent()
             intent.component = ComponentName(Constants.MDM_PACKAGE_NAME, KapingConstants.MDM_RESTART_ACTIVITY_NAME)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -920,4 +945,20 @@ fun Context.grantPermissions() {
         }
     }
 
+}
+
+fun String?.cleanString(): String {
+    return this?.let {
+//        replace(Regex("[^A-Za-z0-9 ]"), "").replace("\\s+".toRegex(), " ").trim()
+        replace("\\s+".toRegex(), " ").trim()
+    } ?: ""
+}
+
+fun Context.isAppInstalled(packageName: String): Boolean {
+    return try {
+        packageManager.getPackageInfo(packageName, 0)
+        true
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
+    }
 }

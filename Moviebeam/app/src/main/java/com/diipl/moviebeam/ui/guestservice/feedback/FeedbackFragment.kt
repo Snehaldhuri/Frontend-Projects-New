@@ -31,9 +31,7 @@ class FeedbackFragment(
     private val feedbackViewModel: FeedbackViewModel by activityViewModels()
     private var lastFocusedStar: ImageView? = null
 
-    override fun observeViewModel() {
-        observe(feedbackViewModel.feedbackLiveData, ::handleFeedbackResponse)
-    }
+    override fun observeViewModel() = observe(feedbackViewModel.feedbackLiveData, ::handleFeedbackResponse)
 
     override fun initViewBinding() {}
 
@@ -199,8 +197,7 @@ class FeedbackFragment(
         }
     }
 
-    private fun sendFeedback(feedback: String) {
-        feedbackViewModel.sendGuestFeedback(preferenceHandler.UA, feedback)
-    }
+    private fun sendFeedback(feedback: String) = feedbackViewModel.sendGuestFeedback(feedback)
+
 
 }

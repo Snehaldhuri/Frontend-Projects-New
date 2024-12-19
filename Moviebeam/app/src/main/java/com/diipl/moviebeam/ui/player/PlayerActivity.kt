@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.exoplayer
+package com.diipl.moviebeam.ui.player
 
 import android.os.Bundle
 import android.os.Handler

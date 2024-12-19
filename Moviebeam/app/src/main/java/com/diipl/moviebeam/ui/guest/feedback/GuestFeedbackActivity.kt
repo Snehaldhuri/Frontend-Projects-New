@@ -215,11 +215,8 @@ class GuestFeedbackActivity : BaseActivity() {
         }
     }
 
-    private fun sendFeedback(feedback: String) {
-        feedbackViewModel.sendGuestFeedback(preferenceHandler.UA, feedback)
-    }
+    private fun sendFeedback(feedback: String) = feedbackViewModel.sendGuestFeedback(feedback)
 
-    fun handleBackClick() {
-        finish()
-    }
+    fun handleBackClick() = finish()
+
 }

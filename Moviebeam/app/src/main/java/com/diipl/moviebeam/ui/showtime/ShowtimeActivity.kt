@@ -18,9 +18,9 @@ import com.diipl.moviebeam.data.dto.btn.BtnModel
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.databinding.ActivityShowtimeBinding
-import com.diipl.moviebeam.service.receiver.LoggingService
+import com.diipl.moviebeam.service.services.LoggingService
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.ui.player.ExoPlayerActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.handleFocusChange

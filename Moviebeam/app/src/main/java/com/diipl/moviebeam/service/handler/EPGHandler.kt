@@ -230,12 +230,14 @@ class EPGHandler(val context: Context, val roomRepository: RoomRepository) {
                     }
                     if (index == map.size-1){
                         Log.e(TAG, "parseEPG: $index  ${map.size-1}")
+                        preferenceHandler.updateDatastoreVariables(isEPGEmpty = true)
                         _epgStatus.postValue(STATUS_OK)
                     }
                 }
             }
 
         } else {
+            preferenceHandler.updateDatastoreVariables(isEPGEmpty = false)
             logE("Invalid EPG data found")
             _epgStatus.postValue(STATUS_FAIL)
         }

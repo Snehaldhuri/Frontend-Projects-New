@@ -1,5 +1,6 @@
-package com.diipl.moviebeam.ui.kaping
+package com.diipl.moviebeam.ui.register_stb
 
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,16 +13,18 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
-import com.diipl.moviebeam.utils.logE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: MovieBeamRepository) :
+class RegisterSTBViewModel @Inject constructor(
+    private val movieBeamRepository: MovieBeamRepository,
+    private val accountDataStore: DataStore<AccountSetupResponse>,
+    ) :
     ViewModel() {
 
     private val _stbMasterLiveData = MutableLiveData<Resource<StbMasterResponse>>()
@@ -51,17 +54,14 @@ class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: 
         }
     }
 
-    fun fetchAccountAPI(ua: String) = viewModelScope.launch(Dispatchers.IO) {
+    fun fetchAccountAPI() = viewModelScope.launch(Dispatchers.IO) {
         _accountSetupLiveData.postValue(Resource.Loading())
-
-        val accountSetupApiResponse = async { movieBeamRepository.getAccountSetupDetails(Constants.ACTIVATE, ua, Constants.MODE) }
-        val result = awaitAll(accountSetupApiResponse)
-
-        if (result[0] == null) {
-            logE(Constants.SERVER_ERROR + " in Account Setup Api")
-            _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Account Setup Api"))
+        delay(200)
+        val isComplete = movieBeamRepository.fetchAccountData()
+        if (isComplete) {
+            _accountSetupLiveData.postValue(Resource.Success(accountDataStore.data.first()))
         } else {
-            _accountSetupLiveData.postValue(Resource.Success(result[0] as AccountSetupResponse))
+            _accountSetupLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR + " in Account Setup Api"))
         }
     }
 
@@ -77,17 +77,10 @@ class RegisterSTBViewModel @Inject constructor(private val movieBeamRepository: 
         }
     }
 
-    fun processSTBMaster(
-        ua: String,
-        srNo: String,
-        macAddress: String,
-        wifiMacAddress: String,
-        stbType: String,
-    ) {
+    fun processSTBMaster(UA: String, serialNo: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _stbMasterLiveData.postValue(Resource.Loading())
-            val response =
-                movieBeamRepository.processStbMaster(ua, srNo, macAddress, wifiMacAddress, stbType)
+            val response = movieBeamRepository.processStbMaster(UA, serialNo)
             if (response == null) {
                 _stbMasterLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {

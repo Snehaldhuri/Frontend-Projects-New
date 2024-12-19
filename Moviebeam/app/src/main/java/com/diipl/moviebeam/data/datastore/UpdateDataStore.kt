@@ -1,13 +1,12 @@
 package com.diipl.moviebeam.data.datastore
 
-import android.util.Log
 import androidx.datastore.core.DataStore
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
 import com.diipl.moviebeam.data.dto.hotelservice.HotelServiceResponse
-import com.diipl.moviebeam.data.dto.hotelservice.Service
-import com.diipl.moviebeam.data.dto.hotelservice.Services
-import com.diipl.moviebeam.data.dto.localattraction.LAService
-import com.diipl.moviebeam.data.dto.localattraction.LAServices
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
 import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.MoviesResponse
@@ -17,22 +16,16 @@ import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.dto.ticker.TickerResponse
 import com.diipl.moviebeam.data.dto.weather.WeatherResponse
 import com.diipl.moviebeam.data.kaping.CmdDataDto
+import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.service.handler.PreferenceHandler
-import com.diipl.moviebeam.utils.Constants
-import com.diipl.moviebeam.utils.deleteHSFolder
-import com.diipl.moviebeam.utils.deleteLAFolder
-import com.diipl.moviebeam.utils.deleteThemeFolder
-import com.diipl.moviebeam.utils.saveHSImage
-import com.diipl.moviebeam.utils.saveLAImage
-import com.diipl.moviebeam.utils.saveThemeImage
-import com.diipl.moviebeam.utils.saveThemeImageServer
+import com.diipl.moviebeam.utils.isNotEmptyOrNull
+import com.diipl.moviebeam.utils.logE
+import com.diipl.moviebeam.utils.replaceDegreeSymbol
+import com.diipl.moviebeam.worker.UpdateDataWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import okhttp3.internal.toImmutableList
 import javax.inject.Inject
 
 class UpdateDataStore @Inject constructor(
@@ -40,6 +33,7 @@ class UpdateDataStore @Inject constructor(
     private val localAttractionDataStore: DataStore<LocalAttractionResponse>,
     private val themeDataStore: DataStore<ThemeResponse>,
     private val accountDataStore: DataStore<AccountSetupResponse>,
+    private val preferenceHandler: PreferenceHandler,
     private val hotelServiceDataStore: DataStore<HotelServiceResponse>,
     private val channelListDataStore: DataStore<ChannelListResponse>,
     private val tickerDataStore: DataStore<TickerResponse>,
@@ -47,225 +41,8 @@ class UpdateDataStore @Inject constructor(
     private val showTimeDataStore: DataStore<ShowTimeResponse>,
     private val guestDetailsDatastore: DataStore<CmdDataDto>,
     private val guestMessageDataStore: DataStore<MessageResponse>,
-    private val preferenceHandler: PreferenceHandler
+    private val workManager: WorkManager,
 ) {
-
-    private val TAG = "UpdateDataStore"
-
-    suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
-
-        Log.e(TAG, "updateHSData: Downloading HS Images  ${Constants.isWorkDone}")
-        deleteHSFolder()
-        val servicesList = mutableListOf<Services>()
-        val resp = async(Dispatchers.IO) {
-            data.servicesList.forEach { services ->
-                val serv = mutableListOf<Service>()
-                services.serviceList.forEach { service ->
-                    val list = mutableListOf<String>()
-                    val newList = mutableListOf<String>()
-
-                    val deferredImages = service.serviceImageListCloud.map { imageUrl ->
-                        async(Dispatchers.IO) {
-                            try {
-                                saveHSImage(imageUrl)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to save image: ${e.message}")
-                                null
-                            }
-                        }
-                    }
-
-                    list.addAll(deferredImages.awaitAll().filterNotNull())
-
-                    val newImages = service.serviceImageListNewCloud.map { imageUrl ->
-                        async(Dispatchers.IO) {
-                            try {
-                                saveHSImage(imageUrl)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to save image: ${e.message}")
-                                null
-                            }
-                        }
-                    }
-
-                    newList.addAll(newImages.awaitAll().filterNotNull())
-
-                    val updatedService = service.copy(
-                        serviceImageListCloud = list.toImmutableList(),
-                        serviceImageListNewCloud = newList.toImmutableList()
-                    )
-                    serv.add(updatedService)
-                }
-                val updatedServices = services.copy(
-                    serviceList = serv.toImmutableList()
-                )
-                servicesList.add(updatedServices)
-            }
-
-        }
-
-        val res = awaitAll(resp)
-        Log.e(TAG, "updateHSData: ${res.isNotEmpty()}")
-        if (res.isNotEmpty()) {
-            try {
-                hotelServiceDataStore.updateData { currentPreferences ->
-                    currentPreferences.copy(
-                        id = data.id,
-                        servicesList = servicesList.toImmutableList(),
-                        type = data.type,
-                        version = data.version
-                    )
-                }
-                if (Constants.isWorkDone == 2) Constants.isWorkDone = 3
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to update DataStore: ${e.message}")
-            }
-        }
-        Log.e(TAG, "updateHSData: Downloading HS Images Done  ${Constants.isWorkDone}")
-    }
-
-    suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
-        /*localAttractionDataStore.updateData { currentPreferences ->
-            currentPreferences.copy(
-                id = data.id,
-                servicesList = data.servicesList,
-                type = data.type,
-                version = data.version
-            )
-        }*/
-
-        Log.e(TAG, "updateLAData: Downloading LA Images  ${Constants.isWorkDone}")
-        deleteLAFolder()
-        val servicesList = mutableListOf<LAServices>()
-        val resp = async(Dispatchers.IO) {
-            data.servicesList.forEach { services ->
-                val serv = mutableListOf<LAService>()
-                services.serviceList.forEach { service ->
-                    val list = mutableListOf<String>()
-                    val newList = mutableListOf<String>()
-                    val deferredImages = service.serviceImageListCloud.map { imageUrl ->
-                        async(Dispatchers.IO) {
-                            try {
-                                saveLAImage(imageUrl)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to save image: ${e.message}")
-                                null
-                            }
-                        }
-                    }
-
-                    list.addAll(deferredImages.awaitAll().filterNotNull())
-
-                    val newImages = service.serviceImageListNewCloud.map { imageUrl ->
-                        async(Dispatchers.IO) {
-                            try {
-                                saveLAImage(imageUrl)
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to save image: ${e.message}")
-                                null
-                            }
-                        }
-                    }
-
-                    newList.addAll(newImages.awaitAll().filterNotNull())
-
-                    val imagePathPosterCloud = saveLAImage(service.imagePathPosterCloud)
-                    val imagePathPosterNewCloud = saveLAImage(service.imagePathPosterNewCloud)
-                    val imagePathSushiCloud = saveLAImage(service.imagePathSushiCloud)
-
-                    val updatedService = service.copy(
-                        imagePathPosterCloud = imagePathPosterCloud,
-                        imagePathPosterNewCloud = imagePathPosterNewCloud,
-                        imagePathSushiCloud = imagePathSushiCloud,
-                        serviceImageListCloud = list.toImmutableList(),
-                        serviceImageListNewCloud = newList.toImmutableList()
-                    )
-                    serv.add(updatedService)
-                }
-                val updatedServices = services.copy(
-                    serviceList = serv.toImmutableList()
-                )
-                servicesList.add(updatedServices)
-            }
-        }
-
-        val res = awaitAll(resp)
-        Log.e(TAG, "updateLAData: ${res.isNotEmpty()}")
-        if (res.isNotEmpty()) {
-            try {
-                localAttractionDataStore.updateData { currentPreferences ->
-                    currentPreferences.copy(
-                        id = data.id,
-                        servicesList = servicesList.toImmutableList(),
-                        type = data.type,
-                        version = data.version
-                    )
-                }
-                if (Constants.isWorkDone == 1) Constants.isWorkDone = 2
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to update DataStore: ${e.message}")
-            }
-        }
-        Log.e(TAG, "updateLAData: Downloading LA Images Done  ${Constants.isWorkDone}")
-    }
-
-    suspend fun updateThemeData(data: ThemeResponse) = coroutineScope {
-        Log.e(TAG, "updateThemeData: Downloading Theme Images   $${Constants.isWorkDone}")
-        try {
-            deleteThemeFolder()
-            val themeBackgroundFileName = async {
-                getThemeFileName(
-                    data.themeBackgroundFileNameCloud,
-                    data.themeBackgroundFileName
-                )
-            }
-            val themeLogoFileName = async {
-                getThemeFileName(
-                    data.themeLogoFileNameCloud,
-                    data.themeLogoFileName
-                )
-            }
-
-            val result = awaitAll(
-                themeBackgroundFileName, themeLogoFileName
-            )
-            if (result[0] != null && result[1] != null) {
-                themeDataStore.updateData { currentPreferences ->
-                    currentPreferences.copy(
-                        accountId = data.accountId,
-                        spotLightColor = data.spotLightColor,
-                        fontCss = data.fontCss,
-                        gradientColor = data.gradientColor,
-                        themeBackgroundFileName = result[0],
-                        themeLogoFileName = result[1],
-                        id = data.id,
-                        themeBgFileName = data.themeBgFileName,
-                        themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
-                        themeCss = data.themeCss,
-                        themeBgFileNameCloud = data.themeBgFileNameCloud,
-                        themeLogoFileNameCloud = data.themeLogoFileNameCloud,
-                        type = data.type,
-                        version = data.version
-                    )
-                }
-                if (Constants.isWorkDone == 0) Constants.isWorkDone = 1
-            } else {
-
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to update DataStore: ${e.message}")
-        }
-        Log.e(TAG, "updateThemeData: Downloading Theme Images Done  ${Constants.isWorkDone}")
-
-    }
-
-    private suspend fun getThemeFileName(cloudFileName: String?, localFileName: String?): String? {
-        return if (cloudFileName != null) {
-            saveThemeImage(cloudFileName)
-        } else {
-            saveThemeImageServer(localFileName)
-        }
-    }
 
     suspend fun updateAccountData(data: AccountSetupResponse) {
         preferenceHandler.updateAccountData(data)
@@ -382,18 +159,18 @@ class UpdateDataStore @Inject constructor(
         weatherDataStore.updateData { currentPreferences ->
             currentPreferences.copy(
                 accountId = data.accountId,
-                dewPoint = data.dewPoint,
+                dewPoint = data.dewPoint.replaceDegreeSymbol(),
                 durationMin = data.durationMin,
-                high = data.high,
+                high = data.high.replaceDegreeSymbol().replace("high ", ""),
                 highForLingual = data.highForLingual,
                 humidity = data.humidity,
                 id = data.id,
                 location = data.location,
-                low = data.low,
+                low = data.low.replaceDegreeSymbol().replace("low ", ""),
                 lowForLingual = data.lowForLingual,
                 sunrise = data.sunrise,
                 sunset = data.sunset,
-                tempCondition = data.tempCondition,
+                tempCondition = data.tempCondition.replaceDegreeSymbol(),
                 tempConditionUrl = data.tempConditionUrl,
                 tempConditionUrlCloud = data.tempConditionUrlCloud,
                 type = data.type,
@@ -404,6 +181,105 @@ class UpdateDataStore @Inject constructor(
             )
 
         }
+    }
+
+    suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
+        if (preferenceHandler.hsVersion != data.version) {
+            if (data.servicesList.isNotEmpty()) {
+                updateHSParams(data)
+            } else {
+                preferenceHandler.updateDatastoreVariables(isHSEmpty = true)
+                logE("${MovieBeamRepository.HS} list is empty.")
+            }
+        } else {
+            preferenceHandler.updateDatastoreVariables(isHSEmpty = false)
+            logE("Same ${MovieBeamRepository.HS} version found.")
+        }
+
+    }
+
+    suspend fun updateHSParams(data: HotelServiceResponse) = coroutineScope {
+        preferenceHandler.updateDatastoreVariables(hsVersion = data.version, isHSEmpty = false)
+        hotelServiceDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                id = data.id,
+                servicesList = data.servicesList,
+                type = data.type,
+                version = data.version
+            )
+        }
+        startUpdateDataWorker(UpdateDataWorker.ACTION_HS)
+    }
+
+    suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
+        if (preferenceHandler.laVersion != data.version) {
+            if (data.servicesList.isNotEmpty()) {
+                updateLAParams(data)
+            } else {
+                preferenceHandler.updateDatastoreVariables(isLAEmpty = true)
+                logE("${MovieBeamRepository.LA} list is empty.")
+            }
+        } else {
+            preferenceHandler.updateDatastoreVariables(isLAEmpty = false)
+            logE("Same ${MovieBeamRepository.LA} version found.")
+        }
+    }
+
+    suspend fun updateLAParams(data: LocalAttractionResponse) = coroutineScope {
+        preferenceHandler.updateDatastoreVariables(
+            laVersion = data.version,
+            isLAEmpty = false
+        )
+        localAttractionDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                id = data.id,
+                servicesList = data.servicesList,
+                type = data.type,
+                version = data.version
+            )
+        }
+        startUpdateDataWorker(UpdateDataWorker.ACTION_LA)
+    }
+
+    suspend fun updateThemeData(data: ThemeResponse) = coroutineScope {
+        if (data.version != preferenceHandler.themeVersion) {
+            if (data.themeBackgroundFileName.isNotEmptyOrNull()) {
+                updateThemeParams(data)
+            } else {
+                preferenceHandler.updateDatastoreVariables(isThemeEmpty = true)
+                logE("${MovieBeamRepository.THEME} data is empty.")
+            }
+        } else {
+            preferenceHandler.updateDatastoreVariables(isThemeEmpty = false)
+            logE("Same ${MovieBeamRepository.THEME} version found.")
+        }
+
+    }
+
+    suspend fun updateThemeParams(data: ThemeResponse) = coroutineScope {
+        preferenceHandler.updateDatastoreVariables(
+            themeVersion = data.version,
+            isThemeEmpty = false
+        )
+        themeDataStore.updateData { currentPreferences ->
+            currentPreferences.copy(
+                accountId = data.accountId,
+                spotLightColor = data.spotLightColor,
+                fontCss = data.fontCss,
+                gradientColor = data.gradientColor,
+                themeBackgroundFileName = data.themeBackgroundFileName,
+                themeLogoFileName = data.themeLogoFileName,
+                id = data.id,
+                themeBgFileName = data.themeBgFileName,
+                themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
+                themeCss = data.themeCss,
+                themeBgFileNameCloud = data.themeBgFileNameCloud,
+                themeLogoFileNameCloud = data.themeLogoFileNameCloud,
+                type = data.type,
+                version = data.version
+            )
+        }
+        startUpdateDataWorker(UpdateDataWorker.ACTION_THEME)
     }
 
     fun updateChannelListData(data: ChannelListResponse) = CoroutineScope(Dispatchers.IO).launch {
@@ -417,18 +293,34 @@ class UpdateDataStore @Inject constructor(
     }
 
     fun updateMoviesData(data: MoviesResponse) = CoroutineScope(Dispatchers.IO).launch {
-        moviesDataStore.updateData { currentPreferences ->
-            currentPreferences.copy(
-                accountId = data.accountId,
-                adultDayPassPrice = data.adultDayPassPrice,
-                freeGenreList = data.freeGenreList,
-                freeContentList = data.freeContentList,
-                premiumContentList = data.premiumContentList,
-                premiumGenreList = data.premiumGenreList,
-                id = data.id,
-                type = data.type,
-                version = data.version
-            )
+        if (data.version != preferenceHandler.moviesVersion) {
+            if (data.freeContentList.isNotEmpty() || data.premiumContentList.isNotEmpty()) {
+                preferenceHandler.updateDatastoreVariables(
+                    moviesCount = data.freeContentList.size.plus(data.premiumContentList.size),
+                    cListVersion = data.version,
+                    moviesVersion = data.version,
+                    isMoviesEmpty = false
+                )
+                moviesDataStore.updateData { currentPreferences ->
+                    currentPreferences.copy(
+                        accountId = data.accountId,
+                        adultDayPassPrice = data.adultDayPassPrice,
+                        freeGenreList = data.freeGenreList,
+                        freeContentList = data.freeContentList,
+                        premiumContentList = data.premiumContentList,
+                        premiumGenreList = data.premiumGenreList,
+                        id = data.id,
+                        type = data.type,
+                        version = data.version
+                    )
+                }
+            } else {
+                preferenceHandler.updateDatastoreVariables(isMoviesEmpty = true)
+                logE("${MovieBeamRepository.MOVIES} data is empty.")
+            }
+        } else {
+            preferenceHandler.updateDatastoreVariables(isMoviesEmpty = false)
+            logE("Same ${MovieBeamRepository.MOVIES} version found.")
         }
     }
 
@@ -444,15 +336,29 @@ class UpdateDataStore @Inject constructor(
     }
 
     fun updateShowTimeData(data: ShowTimeResponse) = CoroutineScope(Dispatchers.IO).launch {
-        showTimeDataStore.updateData { currentPreferences ->
-            currentPreferences.copy(
-                accountId = data.accountId,
-                id = data.id,
-                shoContentList = data.shoContentList,
-                shoGenreList = data.shoGenreList,
-                type = data.type,
-                version = data.version
-            )
+        if (data.version != preferenceHandler.showTimeVersion) {
+            if (data.shoGenreList.isNotEmpty()) {
+                preferenceHandler.updateDatastoreVariables(
+                    showsCount = data.shoContentList.size,
+                    showTimeVersion = data.version
+                )
+                showTimeDataStore.updateData { currentPreferences ->
+                    currentPreferences.copy(
+                        accountId = data.accountId,
+                        id = data.id,
+                        shoContentList = data.shoContentList,
+                        shoGenreList = data.shoGenreList,
+                        type = data.type,
+                        version = data.version
+                    )
+                }
+            } else {
+                preferenceHandler.updateDatastoreVariables(isShowtimeEmpty = true)
+                logE("${MovieBeamRepository.SHOW_TIME} data is empty.")
+            }
+        } else {
+            preferenceHandler.updateDatastoreVariables(isShowtimeEmpty = false)
+            logE("Same ${MovieBeamRepository.SHOW_TIME} version found.")
         }
     }
 
@@ -463,8 +369,7 @@ class UpdateDataStore @Inject constructor(
                 parentSessionId = data.parentSessionId,
                 adultContentDisabled = data.adultContentDisabled,
                 message = data.message,
-                guestFirstName = data.guestFirstName,
-                guestLastName = data.guestLastName,
+                guestName = data.guestName,
                 adultLocked = data.adultLocked,
                 passcode = data.passcode
             )
@@ -481,5 +386,16 @@ class UpdateDataStore @Inject constructor(
         }
     }
 
+    private fun startUpdateDataWorker(action: String) {
+        val inputData = Data.Builder()
+            .putString(UpdateDataWorker.ACTION, action)
+            .build()
+
+        val request = OneTimeWorkRequestBuilder<UpdateDataWorker>()
+            .setInputData(inputData)
+            .build()
+
+        workManager.enqueueUniqueWork(action, ExistingWorkPolicy.APPEND, request)
+    }
 
 }

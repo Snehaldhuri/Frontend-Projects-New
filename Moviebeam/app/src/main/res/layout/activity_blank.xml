@@ -6,6 +6,6 @@
     android:layout_width="match_parent"
     android:background="@color/transparentBlack_45"
     android:layout_height="match_parent"
-    tools:context=".ui.splash.BlankActivity">
+    tools:context=".ui.base.BlankActivity">
 
 </androidx.constraintlayout.widget.ConstraintLayout>

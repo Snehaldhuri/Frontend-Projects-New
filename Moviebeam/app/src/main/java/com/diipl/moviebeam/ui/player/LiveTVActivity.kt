@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.exoplayer
+package com.diipl.moviebeam.ui.player
 
 import android.media.tv.TvContentRating
 import android.media.tv.TvContract

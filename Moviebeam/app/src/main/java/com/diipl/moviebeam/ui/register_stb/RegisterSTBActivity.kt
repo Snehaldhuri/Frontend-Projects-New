@@ -1,11 +1,10 @@
-package com.diipl.moviebeam.ui.kaping
+package com.diipl.moviebeam.ui.register_stb
 
 import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
@@ -16,7 +15,6 @@ import com.diipl.moviebeam.data.dto.stbdetail.StbMasterResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityKapingBinding
 import com.diipl.moviebeam.di.HardwareAPI
-import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
@@ -70,21 +68,34 @@ class RegisterSTBActivity : BaseActivity() {
             }
         }
 
-        if (reboot == Constants.REBOOT_BTN)
+        if (reboot == Constants.REBOOT_BTN) {
+            binding.tvUa.text = preferenceHandler.UA
+            binding.tvSerialNo.text = preferenceHandler.serialNo
+            binding.ivQrCode.setImageBitmap(generateQRCode(preferenceHandler.serialNo))
             handleRebootCmd(false)
-        else {
-            handleSerialNumberResponse(preferenceHandler.serialNo)
+        } else {
+            registerSTBViewModel.getSerialNoFromDataStore(preferenceDataStoreHelper)
             validateAsFlag()
         }
 
     }
 
+    private fun loadIP() {
+        binding.root.postDelayed({
+            binding.tvIp.text = preferenceHandler.ipAddress
+            binding.tvNetMask.text = preferenceHandler.netMask
+            binding.tvGateway.text = preferenceHandler.gatewayIP
+            binding.tvConnectivity.text = preferenceHandler.connectivity
+            binding.tvSwVersion.text = BuildConfig.VERSION_NAME
+        }, 200)
+    }
+
     private fun validateAsFlag() {
         lifecycleScope.launch {
-            //checking as flag
-            if (EndlessService.AS_FLAG) {
-                logD("AS Flag is True")
-                registerSTBViewModel.fetchAccountAPI(preferenceHandler.UA)
+            if (preferenceHandler.isStbAllocated && preferenceHandler.isStbRegistered) {
+                this@RegisterSTBActivity.logD("AS Flag is True")
+                registerSTBViewModel.fetchAccountAPI()
+                this.cancel()
             } else {
                 delay(60 * 1000)
                 validateAsFlag()
@@ -98,11 +109,20 @@ class RegisterSTBActivity : BaseActivity() {
     }
 
     override fun observeViewModel() {
-//        observe(registerSTBViewModel.serialNoLiveData, ::handleSerialNumberResponse)
+        observe(registerSTBViewModel.serialNoLiveData, ::handleSerialNumberResponse)
         observe(registerSTBViewModel.accountSetupLiveData, ::handleAccountResponse)
         observe(registerSTBViewModel.stbMasterLiveData, ::handleStbMasterResponse)
         observeSnackBarMessages(registerSTBViewModel.showSnackBar)
         observeToast(registerSTBViewModel.showToast)
+    }
+
+
+    private fun handleSerialNumberResponse(serialNo: String) {
+        val ua = "${Constants.UA_PREFIX}$serialNo"
+        binding.tvUa.text = ua
+        binding.tvSerialNo.text = serialNo
+        binding.ivQrCode.setImageBitmap(generateQRCode(serialNo))
+        registerSTBViewModel.processSTBMaster(ua, serialNo)
     }
 
     private fun handleAccountResponse(resource: Resource<AccountSetupResponse>) {
@@ -122,7 +142,7 @@ class RegisterSTBActivity : BaseActivity() {
     private fun sendDataMDM(response: AccountSetupResponse) = lifecycleScope.launch {
         val configData =
             "${preferenceHandler.serialNo}, ${response.accountId}, ${response.roomNo}, ${response.mdmServerUrl}, ${response.mdmServerUsername}, ${response.mdmServerPassword}"
-        Log.e(TAG, "sendDataMDM: $configData")
+        this@RegisterSTBActivity.logD("Sending Data to MDM -> $configData")
 
         Intent(Intent.ACTION_VIEW).apply {
             component = ComponentName(Constants.MDM_PACKAGE_NAME, Constants.MDM_UPDATE_DATA)
@@ -150,56 +170,44 @@ class RegisterSTBActivity : BaseActivity() {
         rebootDevice()
     }
 
-    private fun handleSerialNumberResponse(serialNo: String) {
-        Log.e(TAG, "handleSerialNumberResponse: $serialNo")
-        val ua = "${Constants.UA_PREFIX}$serialNo"
-        binding.tvUa.text = ua
-        binding.tvSerialNo.text = serialNo
-        binding.ivQrCode.setImageBitmap(generateQRCode(serialNo))
-        registerSTBViewModel.processSTBMaster(
-            ua,
-            serialNo,
-            Constants.MAC_ADDRESS,
-            Constants.WIFI_MAC_ADDRESS,
-            Constants.STB_TYPE
-        )
-    }
-
     private fun handleStbMasterResponse(status: Resource<StbMasterResponse>) {
         when (status) {
             is Resource.Success -> {
-                val response = registerSTBViewModel.stbMasterLiveData.value?.data
-                when (response?.errorCode) {
-                    400, 402 -> {
-                        binding.tvStb.text = "Yes"
-                        registerSTBViewModel.updateStbStatus(preferenceDataStoreHelper, true)
-                    }
+                status.data?.let { response ->
+                    when (response.errorCode) {
+                        400, 402 -> {
+                            binding.tvStb.text = "Yes"
+                            preferenceHandler.updateDatastoreVariables(isStbRegistered = true)
+                        }
 
-                    else -> {
-                        registerSTBViewModel.updateStbStatus(preferenceDataStoreHelper, false)
-                        lifecycleScope.launch {
-                            preferenceHandler.updateDatastoreVariables(isStbRegistered = false)
-                            delay(5*1000)
-                            handleSerialNumberResponse(preferenceHandler.serialNo)
-                            delay(100)
-                            this.cancel()
+                        else -> {
+                            retrySTBMaster()
                         }
                     }
                 }
+
             }
 
             else -> {
                 status.errorCode?.let { registerSTBViewModel.showToastMessage(getString(it)) }
                 status.errorMsg?.let { registerSTBViewModel.showToastMessage(it) }
-                lifecycleScope.launch {
-                    preferenceHandler.updateDatastoreVariables(isStbRegistered = false)
-                    delay(5*1000)
-                    handleSerialNumberResponse(preferenceHandler.serialNo)
-                    delay(100)
-                    this.cancel()
-                }
+                retrySTBMaster()
             }
         }
+    }
+
+    private fun retrySTBMaster() {
+        if (!preferenceHandler.isStbRegistered)
+            lifecycleScope.launch {
+                preferenceHandler.updateDatastoreVariables(isStbRegistered = false)
+                delay(5 * 1000)
+                registerSTBViewModel.processSTBMaster(
+                    preferenceHandler.UA,
+                    preferenceHandler.serialNo
+                )
+                delay(100)
+                return@launch
+            }
     }
 
     private fun observeToast(event: LiveData<SingleEvent<Any>>) {
@@ -235,14 +243,5 @@ class RegisterSTBActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {}
-
-    private fun loadIP() {
-        binding.root.postDelayed({
-            binding.tvIp.text = preferenceHandler.ipAddress
-            binding.tvNetMask.text = preferenceHandler.netMask
-            binding.tvGateway.text = preferenceHandler.gatewayIP
-            binding.tvConnectivity.text = preferenceHandler.connectivity
-        }, 200)
-    }
 
 }

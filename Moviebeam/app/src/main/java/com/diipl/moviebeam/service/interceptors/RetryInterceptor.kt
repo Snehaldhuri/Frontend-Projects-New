@@ -1,9 +1,10 @@
-package com.diipl.moviebeam.service.handler
+package com.diipl.moviebeam.service.interceptors
 
 import android.content.Context
 import com.diipl.moviebeam.di.HardwareAPI
+import com.diipl.moviebeam.service.handler.PreferenceHandler
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
+import com.diipl.moviebeam.ui.register_stb.RegisterSTBActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.logE

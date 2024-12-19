@@ -58,6 +58,7 @@ data class SysInfoDTO(
     var appsCount: Int? = null,
     var zoneId: String? = null,
     var enableShowtime: String? = null,
-    var ENABLE_NDVR: String? = null
-
+    var ENABLE_NDVR: String? = null,
+    var mdmVersion: String? = null,
+    var playBoxTvVersion: String? = null
 )
