@@ -19,14 +19,14 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USB_PERMISSION" />
     <uses-permission android:name="android.permission.TRANSMIT_IR" />
-
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!-- Request legacy Bluetooth permissions on older devices. -->
-    <uses-permission android:name="android.permission.BLUETOOTH"
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /> <!-- Request legacy Bluetooth permissions on older devices. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
         android:maxSdkVersion="30" />
 
     <uses-feature
@@ -38,7 +38,6 @@
     <uses-feature
         android:name="android.hardware.location.gps"
         android:required="false" />
-
     <uses-feature
         android:name="android.hardware.consumerir"
         android:required="false" />
@@ -74,6 +73,12 @@
         android:theme="@style/Theme.Moviebeam"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.exoplayer.VodManagerRfActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.exoplayer.VodManagerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.casting.HotspotActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
@@ -84,14 +89,17 @@
         <activity
             android:name=".ui.exoplayer.PlayerActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
-            android:exported="true" >
-           <!-- <intent-filter>
+            android:exported="true">
+
+            <!--
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>-->
+            </intent-filter>
+            -->
         </activity>
         <activity
             android:name=".ui.splash.BlankActivity"
@@ -141,8 +149,8 @@
         <activity
             android:name=".ui.refreshingui.RefreshingUiActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
-            android:launchMode="singleInstance"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleInstance" />
         <activity
             android:name=".ui.inroomdining.InRoomDiningActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
@@ -200,32 +208,26 @@
             android:name=".ui.hotelinfo.HotelInfoActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
-
         <activity
             android:name=".ui.guest.feedback.GuestFeedbackActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
-
         <activity
             android:name=".ui.guest.message.GuestMessageActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
-
         <activity
             android:name=".ui.guest.news.NewsActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
-
         <activity
             android:name=".ui.weather.WeatherActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
-
         <activity
             android:name=".ui.concierge.ConciergeActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
-
         <activity
             android:name=".ui.localattraction.LocalAttractionActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"

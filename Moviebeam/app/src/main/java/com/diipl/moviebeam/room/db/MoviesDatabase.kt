@@ -15,7 +15,7 @@ import com.diipl.moviebeam.room.models.ShowTimeModel
 
 @Database(
     entities = [RentalMovieModel::class, ChannelEpgDTO::class, ShowTimeModel::class],
-    version = 4,
+    version = 6,
     exportSchema = false
 )
 abstract class MoviesDatabase : RoomDatabase() {

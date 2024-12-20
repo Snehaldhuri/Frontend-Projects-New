@@ -6,13 +6,16 @@ import androidx.activity.viewModels
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
+import com.diipl.moviebeam.BuildConfig
 import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.Resource
+import com.diipl.moviebeam.data.dto.accountsetup.HotelChannel
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.DayPassResponse
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
+import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_FINISH_TIME
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PASS_STATUS
@@ -20,6 +23,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityConfirmRentalBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
+import com.diipl.moviebeam.ui.exoplayer.VodManagerActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.fromJson
@@ -45,6 +49,12 @@ class ConfirmRentalActivity : BaseActivity() {
     private lateinit var preferenceDataStoreHelper: PreferenceDataStoreHelper
     private lateinit var passPrice: String
 
+    private var broadCastType = ""
+    private var focusedPosition: Int = 0
+    private lateinit var hotelChannel: HotelChannel
+    val request = RentalMovieRequest()
+
+
     @Inject
     lateinit var themeDataStore: DataStore<ThemeResponse>
 
@@ -52,7 +62,36 @@ class ConfirmRentalActivity : BaseActivity() {
         observe(viewModel.isGuestCheckedInLiveData, ::handleValidateSessionResponse)
         observe(viewModel.rentalMovieResponse, ::handleMovieResponse)
         observe(viewModel.purchaseResponse, ::handlePurchaseResponse)
+        observe(viewModel.vodMovieResponse, ::handleVodMovieResponse)
         observeToast(viewModel.showToast)
+    }
+
+    private fun handleVodMovieResponse(resource: Resource<VodMovieResponse>) {
+        when (resource) {
+            is Resource.Loading -> {
+                binding.layoutRental.toGone()
+                binding.progressBar.toVisible()
+            }
+
+            is Resource.Success -> {
+                resource.data?.let {
+                    when (it.errorCode) {
+                        0 -> {
+                            tuneIPChannels(it)
+                        }
+                        else -> {
+                            viewModel.showToastMessage(getString(R.string.call_front_desk))
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                binding.progressBar.toGone()
+                binding.layoutRental.toGone()
+                viewModel.showToastMessage(getString(R.string.call_front_desk))
+            }
+        }
     }
 
     private fun handlePurchaseResponse(resource: Resource<DayPassResponse>) {
@@ -139,16 +178,20 @@ class ConfirmRentalActivity : BaseActivity() {
         }
 
         binding.btnConfirm.setOnClickListener {
-            val request = RentalMovieRequest()
             request.UA = preferenceHandler.UA
             request.productId = movie.productId
             request.releaseID = movie.releaseId
             request.price = movie.price
             request.contentTypeID = movie.contentTypeId
             request.productType = movie.releaseTypeId
+
             if (isCheckedIn) {
-                viewModel.getNewRentalMovieResponse(request)
-                viewModel.requestVODMgr(request)
+                when (BuildConfig.BUILD_TYPE) {
+                    Constants.BUILD_TYPE_STB -> {
+                        viewModel.getNewRentalMovieResponse(request)
+                    }
+                }
+
             } else {
                 viewModel.showToastMessage(getString(R.string.call_front_desk))
             }
@@ -174,6 +217,17 @@ class ConfirmRentalActivity : BaseActivity() {
         }
     }
 
+    private fun tuneIPChannels(program: VodMovieResponse) {
+        viewModel.insertMovieDetails(vodMovieResponse = program, movie = movie)
+        viewModel.getRentalMovie(movie.releaseId)
+        viewModel.movieData.observe(this) { data ->
+            VodManagerActivity.vodResponse = data
+            val intent = Intent(applicationContext, VodManagerActivity::class.java)
+            startActivity(intent)
+        }
+
+    }
+
     private fun handleMovieResponse(state: Resource<RentalMovieResponse>) {
         when (state) {
             is Resource.Loading -> {
@@ -185,22 +239,22 @@ class ConfirmRentalActivity : BaseActivity() {
                 state.data?.let { data ->
                     when (data.errorCode) {
                         0 -> {
-                            startActivity(data)
+                            viewModel.requestVODMgr(request)
                         }
 
-                        1 -> {
+                        1 -> {// 1 = Error while processing, wrong input
                             binding.progressBar.toGone()
                             binding.layoutRental.toVisible()
                             viewModel.showToastMessage(getString(R.string.product_is_currently_unavailable))
                         }
 
-                        2 -> {
+                        2 -> { // Insufficient balance.
                             binding.progressBar.toGone()
                             binding.layoutRental.toVisible()
                             viewModel.showToastMessage(getString(R.string.please_contact_the_front_desk_for_assistance))
                         }
 
-                        3 -> {
+                        3 -> {// 3= Wrong guest session received from request
                             binding.progressBar.toGone()
                             binding.layoutRental.toVisible()
                             viewModel.showToastMessage(getString(R.string.call_front_desk_to_activate_moviebeam_services))
@@ -240,7 +294,7 @@ class ConfirmRentalActivity : BaseActivity() {
 
     private fun startActivity(data: RentalMovieResponse) {
 
-        viewModel.insertMovieDetails(data, movie)
+        viewModel.insertMovieDetails(movieResponse = data, movie = movie)
 
         val bundle = Bundle()
         bundle.putString(Constants.MOVIE_DETAILS, movie.toJson())

@@ -17,6 +17,7 @@ import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
+import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
 import com.diipl.moviebeam.data.dto.showtime.Detail
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_CONTENT_STATUS
@@ -24,6 +25,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PAS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.data.repositories.MovieBeamRepository
 import com.diipl.moviebeam.data.repositories.RoomRepository
+import com.diipl.moviebeam.di.DynamicAPIFactory
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.room.models.ShowTimeModel
 import com.diipl.moviebeam.service.handler.PreferenceHandler
@@ -50,7 +52,7 @@ class MoviesViewModel @Inject constructor(
     private val movieBeamRepository: MovieBeamRepository,
     private val preferenceHandler: PreferenceHandler,
     private val accountSetupData: DataStore<AccountSetupResponse>,
-    private val roomRepository: RoomRepository
+    private val roomRepository: RoomRepository,
 ) : ViewModel() {
 
     private val _moviesLiveData = MutableLiveData<Resource<MoviesResponse>>()
@@ -97,6 +99,9 @@ class MoviesViewModel @Inject constructor(
 
     private var _rentalMovieResponse = MutableLiveData<Resource<RentalMovieResponse>>()
     val rentalMovieResponse: LiveData<Resource<RentalMovieResponse>> get() = _rentalMovieResponse
+
+    private var _vodMovieResponse = MutableLiveData<Resource<VodMovieResponse>>()
+    val vodMovieResponse: LiveData<Resource<VodMovieResponse>> get() = _vodMovieResponse
 
     fun getRentalMovieResponse(request: RentalMovieRequest) {
         viewModelScope.launch {
@@ -151,8 +156,7 @@ class MoviesViewModel @Inject constructor(
     fun requestVODMgr(
         request: RentalMovieRequest
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
-
+        viewModelScope.launch {
             try {
                 val epoch = getEpochTimeInSeconds()
                 val fileName = "${request.releaseID}_0.m2t"
@@ -161,14 +165,13 @@ class MoviesViewModel @Inject constructor(
                 val vodMgrIp = dataResponse.vodMgrIp
                 val vodMgrPort = dataResponse.vodMgrPort
 
-                Log.d(TAG, "requestVODMgr: $vodMgrIp:$vodMgrPort")
                 val baseUrl = "http://$vodMgrIp:$vodMgrPort/"
-                //http://10.1.8.3:8083/   (reference)
-                //url will create something like (http://10.1.8.3:8083/VODManager/ContentRequestServlet?VODMID=1&TRANSID=1732008000&A=2&M=UNICAST&UA=17311KKAJK7608&RID=42171&PID=15022307&PRIORITY=5&FILENAME=42171_0.m2t&CTYPE=NDVR&SEEK=0&JSON=true)
+                Log.d(TAG, "requestVODMgr: $baseUrl")
                 try {
+
                     val response = movieBeamRepository.getVodData(
 //                        vodMgrIp = dataResponse.vodMgrIp,
-//                        vodMgrPort = dataResponse.vodMgrPort,
+                        baseUrl = baseUrl,
                         vodMid = 1,
                         transId = epoch.toLong(),
                         streamingType = "2",
@@ -184,8 +187,10 @@ class MoviesViewModel @Inject constructor(
                     )
                     if (response == null) {
                         Log.d("TAG", "Fetch failed: $response")
+                        _vodMovieResponse.postValue(Resource.DataError(msg = "fetch error"))
                     } else {
                         Log.e("TAG", "Fetch successful: $response")
+                        _vodMovieResponse.postValue(Resource.Success(response))
                     }
                 } catch (e: Exception) {
                     Log.e("TAG", "Exception during fetch: ${e.message}")
@@ -210,17 +215,33 @@ class MoviesViewModel @Inject constructor(
         return roomRepository.getWatchedMovies()
     }
 
-    fun insertMovieDetails(data: RentalMovieResponse, movie: ContentDto) {
+    fun insertMovieDetails(
+        vodMovieResponse: VodMovieResponse? = null,
+        movieResponse: RentalMovieResponse? = null,
+        movie: ContentDto? = null
+    ) =
         viewModelScope.launch {
             val model = RentalMovieModel()
-            model.rentalID = if (data.rentalID.isEmpty()) 0 else data.rentalID.toInt()
+            movieResponse?.let {
+                model.rentalID = if (it.rentalID.isEmpty()) 0 else it.rentalID.toInt()
+            }
             model.finishTimeStamp = (model.startTimeStamp + (24 * 60 * 60 * 1000))
             model.sessionID = GuestDetails.SESSION_ID
             model.movieData = movie
 
+            vodMovieResponse?.let {
+                if (it.channelType == "IP"){
+                    model.ip = it.ip
+                    model.port = it.port
+                } else {
+                    model.major = it.major
+                    model.minor = it.minor
+                }
+                model.channelType = it.channelType
+            }
+
             roomRepository.insertRentalMovies(model)
         }
-    }
 
     fun insertShowDetails(show: Detail) {
         viewModelScope.launch {

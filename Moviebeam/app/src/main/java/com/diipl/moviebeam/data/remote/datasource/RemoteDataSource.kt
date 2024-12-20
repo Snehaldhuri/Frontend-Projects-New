@@ -17,6 +17,7 @@ import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
+import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
@@ -33,11 +34,14 @@ import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import com.diipl.moviebeam.service.handler.NetworkHandler
+import com.diipl.moviebeam.di.DynamicAPIFactory
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toQueryMap
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -51,7 +55,8 @@ class RemoteDataSource @Inject constructor(
     @Named(Constants.ASSET) private val assetApiService: AssetApiService,
     @Named(Constants.SYS_INFO) private val sysInfoService: AssetApiService,
     private val moviesAPIService: MoviesAPIService,
-    private val epgApiService: EpgApiService
+    private val epgApiService: EpgApiService,
+    private val apiFactory : DynamicAPIFactory
 ) : NetworkHandler(networkUtils) {
 
     suspend fun getMoviesAccess(request: RentalMovieRequest): RentalMovieResponse? {
@@ -116,48 +121,53 @@ class RemoteDataSource @Inject constructor(
     }
 
     suspend fun getVodData(
-//        vodMgrIp: String,
-//        vodMgrPort: String,
-        vodMid: Int ,
+        baseUrl: String,
+        vodMid: Int,
         transId: Long,
         streamingType: String,
-        mode: String ,
+        mode: String,
         ua: String,
         rentalId: Int,
         productId: Int,
-        priority: Int ,
+        priority: Int,
         fileName: String,
         contentType: String,
         seek: Long,
         json: Boolean
-    ): String? {
+    ): VodMovieResponse? {
+        val service = apiFactory.createApiService(baseUrl)
+
         val result = safeAPiCall {
-            moviesAPIService.getVodDataAccess(
-//                vodMgrIp = vodMgrIp,
-//                vodMgrPort = vodMgrPort,
-                vodMid = vodMid ,
+            service.getVodDataAccess(
+                vodMid = vodMid,
                 transId = transId,
                 streamingType = streamingType,
-                mode = mode ,
+                mode = mode,
                 userAgent = ua,
                 rentalId = rentalId,
                 productId = productId,
-                priority = priority ,
+                priority = priority,
                 fileName = fileName,
                 contentType = contentType,
                 seek = seek,
                 json = json
             )
         }
-        Log.d(TAG, "getVODMANAGERAccess: $result")
 
-        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, String::class)
-        Log.d(TAG, "getVODMANAGERAccess: $responseObject")
+        Log.e(TAG, "getVodData: ${result.data}")
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, VodMovieResponse::class)
+        Log.d(TAG, "getVodData123: ${responseObject?.channelType}")
+        if(responseObject?.channelType=="RF"){
 
-//        logD("In Rental Request Callback: ERROR_CODE = ${responseObject?.errorCode}, RENTALID = ${responseObject?.rentalID}")
+        }
+        else if(responseObject?.channelType=="IP"){
 
-        return result.data
+        }
+        Log.e(TAG, "responseObject:->  $responseObject")
+
+        return responseObject
     }
+
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {
         val result = safeAPiCall {
