@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.exoplayer
+package com.diipl.moviebeam.ui.player
 
 import android.media.tv.TvContentRating
 import android.media.tv.TvContract
@@ -13,13 +13,10 @@ import android.view.KeyEvent
 import android.view.SurfaceHolder
 import androidx.databinding.DataBindingUtil
 import com.diipl.moviebeam.R
-import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
 import com.diipl.moviebeam.databinding.ActivityVodManagerBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Track
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
-import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toVisible
 import com.nes.libplayerapi.PlayerApi
@@ -29,7 +26,6 @@ import com.nes.libplayerapi.listener.OnFingerPrintListener
 import com.nes.libplayerapi.listener.OnVideoStateListener
 import com.nes.libseiplayer.AbstractVideoPlayer
 import com.nes.libseiplayer.SeiPlayerImpl
-import java.util.concurrent.TimeUnit
 
 private const val TAG = "VodManagerActivity"
 

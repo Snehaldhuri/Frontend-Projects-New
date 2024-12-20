@@ -22,8 +22,7 @@ import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants.ADULT_DAY_PAS
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.ActivityConfirmRentalBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
-import com.diipl.moviebeam.ui.exoplayer.VodManagerActivity
+import com.diipl.moviebeam.ui.player.VodManagerActivity
 import com.diipl.moviebeam.ui.player.ExoPlayerActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent

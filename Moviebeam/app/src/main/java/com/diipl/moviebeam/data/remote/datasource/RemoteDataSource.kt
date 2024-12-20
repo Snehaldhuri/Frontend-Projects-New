@@ -35,14 +35,13 @@ import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
+import com.diipl.moviebeam.di.DynamicAPIFactory
 import com.diipl.moviebeam.service.handler.NetworkHandler
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.NetworkUtils
 import com.diipl.moviebeam.utils.logD
 import com.diipl.moviebeam.utils.toQueryMap
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject

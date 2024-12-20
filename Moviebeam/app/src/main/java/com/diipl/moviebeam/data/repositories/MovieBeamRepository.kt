@@ -1,6 +1,5 @@
 package com.diipl.moviebeam.data.repositories
 
-import android.util.Log
 import android.content.Context
 import android.os.Build
 import android.os.IBinder
@@ -17,11 +16,9 @@ import com.diipl.moviebeam.data.dto.concierge.ConciergeResponse
 import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
+import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
-import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
 import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
-import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
-import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse

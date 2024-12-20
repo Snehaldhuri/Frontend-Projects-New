@@ -76,7 +76,7 @@
             android:name=".ui.exoplayer.VodManagerRfActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.exoplayer.VodManagerActivity"
+            android:name=".ui.player.VodManagerActivity"
             android:exported="false" />
         <activity
             android:name=".ui.casting.HotspotActivity"
