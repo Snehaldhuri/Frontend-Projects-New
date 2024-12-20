@@ -163,15 +163,11 @@ class FlightStatusFragment(
         this.airPorts = airPorts.split(",")
     }
 
-    private fun fetchFlightStatus() {
+    private fun fetchFlightStatus() =
         flightStatusViewModel.getFlightStatus(
-            Constants.FLIGHT_STATUS_CMD,
-            preferenceHandler.UA,
             callType,
-            apCode,
-            Constants.MODE
+            apCode
         )
-    }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val item: String = parent?.getItemAtPosition(position).toString()

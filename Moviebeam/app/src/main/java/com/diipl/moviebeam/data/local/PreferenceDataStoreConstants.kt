@@ -29,6 +29,12 @@ object PreferenceDataStoreConstants {
     val IS_STB_REGISTERED = booleanPreferencesKey("IS_STB_REGISTERED")
     val IS_STB_ALLOCATED = booleanPreferencesKey("IS_STB_ALLOCATED")
     val IS_ALL_DATA_FETCHED = booleanPreferencesKey("isAllDataFetched")
+    val IS_HS_EMPTY = booleanPreferencesKey("isHSEmpty")
+    val IS_LA_EMPTY = booleanPreferencesKey("isLAEmpty")
+    val IS_THEME_EMPTY = booleanPreferencesKey("isThemeEmpty")
+    val IS_MOVIES_EMPTY = booleanPreferencesKey("isMoviesEmpty")
+    val IS_SHOWTIME_EMPTY = booleanPreferencesKey("isShowtimeEmpty")
+    val IS_EPG_EMPTY = booleanPreferencesKey("isEPGEmpty")
 
     val ACCOUNT_ID_KEY = stringPreferencesKey("ACCOUNT_ID")
     val STB_ROOM_NO_KEY = stringPreferencesKey("STB_ROOM_NO")

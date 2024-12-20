@@ -5,10 +5,12 @@ import kotlin.reflect.KClass
 
 class ApiResponseParsing {
 
-    private fun <T: Any> mapJsonToObj(json: String?, clazz: KClass<T>): T? {
-        json?.let {
-            return Gson().fromJson(it, clazz.java)
-        }?: return null
+    /*    fun <T: Any> getResponseAsObject(str: String?, clazz: KClass<T>): T? {
+            return mapJsonToObj(callbackToJson(str), clazz)
+        }*/
+
+    private fun callbackToJson(str: String?): String?{
+        return str?.substring(10, str.length-3)
     }
 
     fun <T : Any> getResponseAsObject(str: String?, clazz: KClass<T>): T? {
@@ -29,6 +31,12 @@ class ApiResponseParsing {
     private fun isCallbackFormat(str: String): Boolean {
         // Check if the string contains a callback-like structure
         return str.contains("(") && str.contains(")")
+    }
+
+    private fun <T: Any> mapJsonToObj(json: String?, clazz: KClass<T>): T? {
+        json?.let {
+            return Gson().fromJson(it, clazz.java)
+        }?: return null
     }
 
     fun parseSysInfoResponse(response: String?): Int? {

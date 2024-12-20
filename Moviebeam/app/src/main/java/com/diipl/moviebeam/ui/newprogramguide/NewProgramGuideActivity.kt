@@ -41,9 +41,9 @@ import com.diipl.moviebeam.service.remote.BTService
 import com.diipl.moviebeam.service.remote.IIrService
 import com.diipl.moviebeam.service.remote.UsbIrService
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
-import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
-import com.diipl.moviebeam.ui.exoplayer.PlayerActivity
+import com.diipl.moviebeam.ui.player.LiveTVActivity
+import com.diipl.moviebeam.ui.player.LiveTVActivity.Companion.mChannelList
+import com.diipl.moviebeam.ui.player.PlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
@@ -450,6 +450,8 @@ class NewProgramGuideActivity : BaseActivity() {
         val param2 =
             if (hotelChannel.tvChannelBroadcastType == IP_BROADCAST_TYPE) hotelChannel.port else if (hotelChannel.tvChannelBroadcastType == RF_BROADCAST_TYPE) hotelChannel.minor else ""
 
+        Log.e(TAG, "loadProgramGuide: ${hotelChannel.tvChannelBroadcastType}, $broadCastType,  $param1, $param2")
+
         val hotelVideoProgram = ChannelEpgDTO(
             CN = hotelChannel.channelName,
             VP = hotelChannelVideo,
@@ -483,6 +485,7 @@ class NewProgramGuideActivity : BaseActivity() {
             }
 
             Constants.BUILD_TYPE_STB -> {
+                Log.e(TAG, "launchExoPlayer: $broadCastType")
                 if (broadCastType == IP_BROADCAST_TYPE)
                     tuneIPChannels(program)
                 if (broadCastType == RF_BROADCAST_TYPE)

@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.splash
+package com.diipl.moviebeam.ui.base
 
 import android.content.BroadcastReceiver
 import android.content.Context

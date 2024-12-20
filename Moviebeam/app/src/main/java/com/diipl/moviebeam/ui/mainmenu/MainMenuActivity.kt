@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.ViewGroup
 import androidx.activity.viewModels
@@ -47,7 +48,6 @@ import com.diipl.moviebeam.ui.inroomdining.InRoomDiningActivity
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
-import com.diipl.moviebeam.ui.refreshingui.RefreshingUiViewModel
 import com.diipl.moviebeam.ui.showtime.ShowtimeActivity
 import com.diipl.moviebeam.ui.weather.WeatherActivity
 import com.diipl.moviebeam.utils.Constants
@@ -59,6 +59,7 @@ import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.animateScale
 import com.diipl.moviebeam.utils.getGradientColor
+import com.diipl.moviebeam.utils.grantPermissions
 import com.diipl.moviebeam.utils.loadBg
 import com.diipl.moviebeam.utils.loadLogo
 import com.diipl.moviebeam.utils.logD
@@ -77,10 +78,12 @@ import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.Collections
 import javax.inject.Inject
 
@@ -93,15 +96,13 @@ class MainMenuActivity : BaseActivity() {
 
     private val guestServiceViewModel: GuestServiceViewModel by viewModels()
 
-    private val refreshingUiViewModel: RefreshingUiViewModel by viewModels()
-
     @Inject
     lateinit var guestMessageDataStore: DataStore<MessageResponse>
 
     private lateinit var binding: ActivityMainMenuBinding
 
     private var isServiceStarted = false
-    private lateinit var player: ExoPlayer
+    private var player: ExoPlayer? = null
     private var isNetworkConnected = 0
     private var playCount = 0
 
@@ -128,6 +129,7 @@ class MainMenuActivity : BaseActivity() {
             accountSetupDataStore
         )
     }
+    private var resetJob : Job? = null
 
     override fun observeViewModel() {
         observe(mainMenuViewModel.networkStatus, ::handleNetworkResponse)
@@ -176,20 +178,29 @@ class MainMenuActivity : BaseActivity() {
         }
     }
 
-    private fun init() {
+    private fun initMedia() {
+        if (player != null)
+            return
         player = ExoPlayer.Builder(this).build()
-        player.trackSelectionParameters = player.trackSelectionParameters
-            .buildUpon()
-            .setMaxVideoSizeSd()
-            .build()
-        binding.videoView.player = player
+        player?.apply {
+            trackSelectionParameters = trackSelectionParameters
+                .buildUpon()
+                .setMaxVideoSizeSd()
+                .build()
+            binding.videoView.player = this
+        }
     }
 
     private fun loadVideo() {
         logD("isContentDetailFlagEnabled: ${preferenceHandler.isContentDetailFlagEnabled}, hotelVideoUrl: ${preferenceHandler.hotelVideoUrl}")
-
         if (preferenceHandler.isContentDetailFlagEnabled) initializePlayer()
         else releaseVideoPlayer()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.e(TAG, "onDestroy: $player")
+        player = null
     }
 
     override fun onResume() {
@@ -220,29 +231,59 @@ class MainMenuActivity : BaseActivity() {
     }
 
     override fun onPause() {
-        super.onPause()
         releaseVideoPlayer()
         HOTEL_VIDEO_LOOP_COUNT = 3
+        super.onPause()
     }
 
     private fun initializePlayer() {
-        init()
+        initMedia()
         playCount++
-        if (preferenceHandler.hotelVideoUrl.isNotEmpty()) {
-            binding.videoView.toVisible()
-            player.setMediaItem(MediaItem.fromUri(preferenceHandler.hotelVideoUrl))
-            player.repeatMode = Player.REPEAT_MODE_ALL
-            player.addListener(playerListener)
-            player.playWhenReady = true
-            player.prepare()
-            player.play()
+
+        val baseDir = Environment.getExternalStorageDirectory().absolutePath
+        val videoDir = "HotelVideo"
+        val fileName = "${preferenceHandler.accountID}_$videoDir.m2t"
+        val dir = File(baseDir, videoDir)
+        if (!dir.exists()) dir.mkdir()
+        val videoFile = File(dir, fileName)
+
+        if (videoFile.exists()) {
+            if (!videoFile.canRead()) {
+                grantPermissions()
+                return
+            }
+            logD("Playing video from local file: ${videoFile.absolutePath}")
+            playMedia(videoFile.absolutePath)
         } else {
-            if (playCount <= 2) {
-                lifecycleScope.launch {
-                    delay(2000)
-                    initializePlayer()
-                }
-            } else releaseVideoPlayer()
+            if (preferenceHandler.hotelVideoUrl.isNotEmpty()) {
+                logD("Playing video from URL: ${preferenceHandler.hotelVideoUrl}")
+                playMedia(preferenceHandler.hotelVideoUrl)
+            } else {
+                handlePlaybackFailure()
+            }
+        }
+    }
+
+    private fun playMedia(uri: String) {
+        binding.videoView.toVisible()
+        player?.apply {
+            setMediaItem(MediaItem.fromUri(uri))
+            repeatMode = Player.REPEAT_MODE_ALL
+            addListener(playerListener)
+            playWhenReady = true
+            prepare()
+            play()
+        }
+    }
+
+    private fun handlePlaybackFailure() {
+        if (playCount <= 2) {
+            lifecycleScope.launch {
+                delay(2000)
+                initializePlayer()
+            }
+        } else {
+            releaseVideoPlayer()
         }
     }
 
@@ -269,15 +310,15 @@ class MainMenuActivity : BaseActivity() {
     }
 
     private fun releaseVideoPlayer() {
-        binding.videoView.toGone()
-        binding.root.loadBg()
-        try {
-            if (::player.isInitialized) {
-                player.stop()
-                player.release()
+        resetJob?.cancel()
+        resetJob = lifecycleScope.launch {
+            binding.videoView.toGone()
+            binding.root.loadBg()
+            player?.let {
+                it.stop()
+                it.release()
             }
-        } catch (e: Exception){
-            Log.e(TAG, "releaseVideoPlayer: ${e.localizedMessage}")
+            player = null
         }
     }
 
@@ -324,7 +365,7 @@ class MainMenuActivity : BaseActivity() {
 
                         val containsMainMsg =
                             response.buttonsList.find { button -> button.buttonName == "mainmsg" } != null
-                        refreshingUiViewModel.setMainMsgStatus(containsMainMsg)
+//                        refreshingUiViewModel.setMainMsgStatus(containsMainMsg)
 
                         binding.tvGreeting.text = response.hotelInfo
 
@@ -466,7 +507,7 @@ class MainMenuActivity : BaseActivity() {
                                 startActivity(it)
                             }
                         }
-                        if (sortedBtnModelList != null) {
+                        if (sortedBtnModelList.isNotEmpty()) {
                             adapter.itemList = sortedBtnModelList
                             if (sortedBtnModelList.size < 5) {
                                 binding.cardView.layoutParams.height = 220
@@ -526,11 +567,9 @@ class MainMenuActivity : BaseActivity() {
 
     private fun handleValidateSessionResponse(status: Boolean) {
         try {
-            if (status) {
+            if (status)
                 mainMenuViewModel.getGuestDetails(guestDetailsDatastore)
-                GuestDetails.IS_GUEST_CHECKED_IN = true
-            } else
-                GuestDetails.IS_GUEST_CHECKED_IN = false
+            GuestDetails.IS_GUEST_CHECKED_IN = status
             GuestDetails.SESSION_ID = "null"
             binding.pbLoader.toInvisible()
         } catch (e: Exception) {
@@ -543,13 +582,13 @@ class MainMenuActivity : BaseActivity() {
             is Resource.Success -> {
                 try {
                     status.data?.let {
-                        if (it.guestFirstName.isNullOrEmpty()) {
+                        if (it.guestName.isNullOrEmpty()) {
                             binding.tvWelcome.toGone()
                             binding.pbLoader.toGone()
                         } else {
                             GuestDetails.SESSION_ID = it.sessionId.toString()
                             binding.tvWelcome.text =
-                                "Welcome ${it.guestFirstName} ${it.guestLastName}"
+                                "Welcome ${it.guestName}"
                             binding.tvWelcome.toVisible()
                             binding.pbLoader.toInvisible()
                         }

@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.ui.exoplayer
+package com.diipl.moviebeam.ui.player
 
 import android.os.Bundle
 import android.os.Handler
@@ -269,6 +269,7 @@ class PlayerActivity : BaseActivity(), OnVideoStateListener {
 
             if (channel.isNotEmpty()) {
                 currentPos = programGuideList.indexOf(channel[0])
+                playerApi.stop()
                 startPlayback()
             } else {
                 showToast("Channel No. $originalNum is not available!")

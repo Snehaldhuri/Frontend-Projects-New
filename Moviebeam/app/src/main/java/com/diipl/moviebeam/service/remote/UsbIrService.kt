@@ -13,7 +13,7 @@ import android.hardware.usb.UsbManager
 import android.os.Build
 import android.util.Log
 import com.diipl.moviebeam.BuildConfig
-import com.diipl.moviebeam.ui.splash.BlankActivity
+import com.diipl.moviebeam.ui.base.BlankActivity
 
 private const val TAG = "UsbIrService"
 

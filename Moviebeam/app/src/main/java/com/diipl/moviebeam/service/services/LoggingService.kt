@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.service.receiver
+package com.diipl.moviebeam.service.services
 
 import android.app.Service
 import android.content.Intent
@@ -15,7 +15,6 @@ import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.utils.getCurrentPanelNumber
 import com.diipl.moviebeam.utils.launchLogger
 import com.diipl.moviebeam.utils.toInteger
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,20 +29,20 @@ import okhttp3.WebSocketListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import javax.inject.Inject
 
-@AndroidEntryPoint
 class LoggingService : Service() {
 
     //Variables from datastore
-    private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
+    private val preferenceDataStoreHelper by lazy {
         PreferenceDataStoreHelper(
             applicationContext
         )
     }
-
-    @Inject
-    lateinit var preferenceHandler: PreferenceHandler
+    private val preferenceHandler by lazy {
+        PreferenceHandler(
+            applicationContext
+        )
+    }
 
     private lateinit var client: OkHttpClient
     private val binder = LoggingServiceBinder()
@@ -62,6 +61,7 @@ class LoggingService : Service() {
     override fun onCreate() {
         super.onCreate()
 
+        initData()
         updateData()
 
     }
@@ -69,19 +69,20 @@ class LoggingService : Service() {
     private fun updateData() {
         updateJob?.cancel()
         updateJob = CoroutineScope(Dispatchers.Default).launch {
-            while (isActive) {
+            while (isActive){
                 initData()
-                delay(1000 * 3)
+                delay(1000*3)
             }
         }
     }
 
-    private fun initData() = CoroutineScope(Dispatchers.Default).launch {
-        delay(100)
-        accountId = preferenceHandler.accountID
-        stbRoomNo = preferenceHandler.roomNo
-        ua = preferenceHandler.UA
-        ipAddress = preferenceHandler.ipAddress
+    private fun initData() {
+        CoroutineScope(Dispatchers.Default).launch {
+            accountId = preferenceHandler.accountID
+            stbRoomNo = preferenceHandler.roomNo
+            ua = preferenceHandler.UA
+            ipAddress = preferenceHandler.ipAddress
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -152,10 +153,7 @@ class LoggingService : Service() {
 
     private fun updateNetworkStatus(isAvailable: Boolean) {
         CoroutineScope(Dispatchers.IO).launch {
-            preferenceDataStoreHelper.putPreference(
-                PreferenceDataStoreConstants.NETWORK_STATUS,
-                isAvailable
-            )
+            preferenceDataStoreHelper.putPreference(PreferenceDataStoreConstants.NETWORK_STATUS, isAvailable)
         }
     }
 
@@ -170,15 +168,15 @@ class LoggingService : Service() {
         isServiceStarted = false
         webSocket?.cancel()
         webSocket = null
-        client.dispatcher.executorService.shutdown()
+        if (::client.isInitialized)
+            client.dispatcher.executorService.shutdown()
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     companion object {
         private const val TAG = "LoggingService"
 
-        const val NO_INTERNET_MSG =
-            "Unable to resolve host \"mblog.moviebeam.com\": No address associated with hostname"
+        const val NO_INTERNET_MSG = "Unable to resolve host \"mblog.moviebeam.com\": No address associated with hostname"
 
         private var webSocket: WebSocket? = null
         private val sdf = SimpleDateFormat("EEE. MMM d, yyyy hh:mm:ss a", Locale.ENGLISH)
@@ -211,7 +209,7 @@ class LoggingService : Service() {
 
         fun sendMessageToWebSocket(message: String, type: String) {
             val hid = if (accountId.isNotEmpty()) accountId.toInteger() else 0
-            if (webSocket != null && isServiceStarted) {
+            if (webSocket != null) {
                 formattedDate = sdf.format(Date())
                 val msgDto = LogDTO(
                     T = type,
@@ -225,8 +223,7 @@ class LoggingService : Service() {
                     M = message
                 )
 
-                val customJson =
-                    """{"T":"I","P":"${msgDto.P}","UA":"${msgDto.UA}","HID":${msgDto.HID},"ROOMNO":"${msgDto.ROOMNO}","IP":"${msgDto.IP}","TSP":"${msgDto.TSP}","Panel":${msgDto.Panel},"M":"${msgDto.M}"}"""
+                val customJson = """{"T":"I","P":"${msgDto.P}","UA":"${msgDto.UA}","HID":${msgDto.HID},"ROOMNO":"${msgDto.ROOMNO}","IP":"${msgDto.IP}","TSP":"${msgDto.TSP}","Panel":${msgDto.Panel},"M":"${msgDto.M}"}"""
 
                 val isSent = webSocket?.send(customJson)
 
@@ -237,12 +234,8 @@ class LoggingService : Service() {
                 }
             } else {
                 isServiceStarted = false
-                webSocket?.cancel()
                 webSocket = null
-                Log.e(
-                    TAG,
-                    "Websocket3 Failed to send message: WebSocket is not initialized or sending failed"
-                )
+                Log.e(TAG, "Websocket3 Failed to send message: WebSocket is not initialized or sending failed")
             }
         }
     }

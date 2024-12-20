@@ -22,10 +22,10 @@ class FlightStatusViewModel @Inject constructor(
     private val _flightStatusLiveData = MutableLiveData<Resource<FlightStatusResponse>>()
     val flightStatusLiveData: LiveData<Resource<FlightStatusResponse>> get() = _flightStatusLiveData
 
-    fun getFlightStatus(cmd: String, ua: String, callType: String, apCode: String, mode: String) {
+    fun getFlightStatus(callType: String, apCode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _flightStatusLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getFlightStatus(cmd, ua, callType, apCode, mode)
+            val response = movieBeamRepository.getFlightStatus(callType, apCode)
             if (response == null) {
                 _flightStatusLiveData.postValue(Resource.DataError(code = R.string.server_error))
             } else {

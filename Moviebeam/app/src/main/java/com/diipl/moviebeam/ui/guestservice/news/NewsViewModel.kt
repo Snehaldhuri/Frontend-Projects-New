@@ -15,7 +15,6 @@ import com.diipl.moviebeam.utils.SingleEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,13 +32,13 @@ class NewsViewModel @Inject constructor(
     val newsLiveData: LiveData<Resource<NewsResponse>> get() = _newsLiveData
 
     init {
-        initializeDatastoreParams()
+        fetchNewsHeader()
     }
 
-    private fun fetchNewsHeader(ua: String, languageId: Int) {
+    private fun fetchNewsHeader() {
         viewModelScope.launch(Dispatchers.IO) {
             _newsHeaderLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getNewsHeader(ua, languageId)
+            val response = movieBeamRepository.getNewsHeader(1)
             if (response == null) {
                 _newsHeaderLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
             } else {
@@ -60,18 +59,6 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    fun fetchNewsDetails(ua: String, newsId: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _newsLiveData.postValue(Resource.Loading())
-            val response = movieBeamRepository.getNewsDetails(ua,newsId)
-            if (response == null) {
-                _newsLiveData.postValue(Resource.DataError(msg = Constants.SERVER_ERROR))
-            } else {
-                _newsLiveData.postValue(Resource.Success(response))
-            }
-        }
-    }
-
     private val showSnackBarPrivate = MutableLiveData<SingleEvent<Any>>()
     val showSnackBar: LiveData<SingleEvent<Any>> get() = showSnackBarPrivate
 
@@ -81,13 +68,5 @@ class NewsViewModel @Inject constructor(
     fun showToastMessage(error: String) {
         showToastPrivate.value = SingleEvent(error)
     }
-
-    private fun initializeDatastoreParams() {
-        viewModelScope.launch {
-            delay(100)
-            fetchNewsHeader(preferenceHandler.UA, 1)
-        }
-    }
-
 
 }

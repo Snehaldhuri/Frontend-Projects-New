@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
-import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -17,8 +16,8 @@ import com.diipl.moviebeam.di.HardwareAPI
 import com.diipl.moviebeam.service.kappingservice.Actions
 import com.diipl.moviebeam.service.kappingservice.EndlessService
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.kaping.RegisterSTBActivity
 import com.diipl.moviebeam.ui.mainmenu.MainMenuActivity
+import com.diipl.moviebeam.ui.register_stb.RegisterSTBActivity
 import com.diipl.moviebeam.ui.stbdetail.STBDetailsActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.SERIAL_NO_KEY
@@ -58,13 +57,9 @@ class SerialActivity : BaseActivity() {
         binding = ActivitySerialBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-    }
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         serialViewModel.getDataFromDataStore(preferenceDataStoreHelper)
     }
+
 
     override fun onStart() {
         super.onStart()

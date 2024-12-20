@@ -7,7 +7,7 @@
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:background="@drawable/stb_dark_landing_page"
-    tools:context=".ui.kaping.RegisterSTBActivity">
+    tools:context=".ui.register_stb.RegisterSTBActivity">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/gl_vertical_5"

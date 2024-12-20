@@ -1,8 +1,12 @@
 package com.diipl.moviebeam.data.remote.services
 
+import com.diipl.moviebeam.data.dto.concierge.ConciergeResponse
+import com.diipl.moviebeam.data.dto.concierge.ToiletryData
 import retrofit2.Call
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface LgRestApiService {
@@ -101,7 +105,7 @@ interface LgRestApiService {
     suspend fun sendGuestFeedback(
         @Query("UA") ua: String,
         @Query("FEEDBACK") feedback: String,
-        @Query("STB_TIME") stbTime: String
+        @Query(value = "STB_TIME", encoded = true) stbTime: String
     ): Response<String>
 
     @GET("process/softwareDetails")
@@ -151,6 +155,27 @@ interface LgRestApiService {
     suspend fun getGuestMessages(
         @Query("UA") ua: String,
         @Query("guestSessionId") guestSessionId: String
+    ): Response<String>
+
+    @POST("process/conciergeRequestSms")
+    @JvmSuppressWildcards
+    suspend fun conciergeToiletryMaster(
+        @Query("UA") ua: String,
+        @Query("serviceId") serviceId: Int,
+        @Body request: List<ToiletryData>
+    ): Response<String>
+
+    @POST("process/conciergeRequestSms")
+    @JvmSuppressWildcards
+    suspend fun conciergeMaster(
+        @Query("UA") ua: String,
+        @Query("serviceId") serviceId: Int,
+        @Body request: ConciergeResponse
+    ): Response<String>
+
+    @GET("content/diningInfo")
+    suspend fun getInRoomData(
+        @Query("UA") ua: String
     ): Response<String>
 
 }

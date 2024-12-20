@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.diipl.moviebeam.data.dto.remote.BTCommandModel;
 import com.diipl.moviebeam.data.dto.remote.IRFrequencyModel;
+import com.diipl.moviebeam.data.dto.remote.RemoteModel;
 import com.google.gson.Gson;
 
 import java.io.File;
@@ -707,5 +708,19 @@ public class SharedPreference {
     public void setIRRemote(boolean isIRRemote){
         putBoolean("isIRRemote", isIRRemote);
     }
+
+    public void setBTRemoteModel(RemoteModel model){
+        putString("BTRemoteModel", new Gson().toJson(model));
+    }
+    public RemoteModel getBTRemoteModel(){
+        String model = new Gson().toJson(new RemoteModel());
+        String obj = getStringWithKey("BTRemoteModel", model);
+        return new Gson().fromJson(obj, RemoteModel.class);
+    }
+
+    public String getStringWithKey(String key, String defaultValue) {
+        return preferences.getString(key, defaultValue);
+    }
+
 
 }

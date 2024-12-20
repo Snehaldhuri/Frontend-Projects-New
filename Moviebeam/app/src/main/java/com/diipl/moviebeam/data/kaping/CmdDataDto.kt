@@ -11,8 +11,7 @@ data class CmdDataDto(
     val parentSessionId: String? = null,
     val adultContentDisabled: Boolean? = false,
     val message: String? = null,
-    val guestFirstName: String? = null,
-    val guestLastName: String? = null,
+    val guestName: String? = null,
     val adultLocked: Boolean? = false,
     val passcode: String? = null
 ) : Parcelable

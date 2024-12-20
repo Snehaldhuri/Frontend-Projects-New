@@ -2,10 +2,13 @@ package com.diipl.moviebeam.service.handler
 
 import android.content.Context
 import com.diipl.moviebeam.data.dto.accountsetup.AccountSetupResponse
+import com.diipl.moviebeam.data.dto.remote.RemoteModel
 import com.diipl.moviebeam.data.local.PreferenceDataStoreConstants
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SharedPreference
+import com.diipl.moviebeam.utils.isNotEmptyOrNull
+import com.diipl.moviebeam.utils.logD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -57,6 +60,12 @@ class PreferenceHandler(val context: Context) {
     var isContentDetailFlagEnabled = true
     var isAllDataFetched = false
     var isStbRegistered = false
+    var isHSEmpty = true
+    var isLAEmpty = true
+    var isThemeEmpty = true
+    var isMoviesEmpty = true
+    var isShowtimeEmpty = true
+    var isEPGEmpty = true
 
     var movieCount = 0
     var showsCount = 0
@@ -64,7 +73,7 @@ class PreferenceHandler(val context: Context) {
 
     var appList = ArrayList<String>()
 
-//    var remoteModel = RemoteModel()
+    var remoteModel = RemoteModel()
 
     init {
         job?.cancel()
@@ -114,6 +123,12 @@ class PreferenceHandler(val context: Context) {
         isContentDetailFlagEnabled = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CONTENT_DETAIL_FLAG, false)
         isStbAllocated = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_STB_ALLOCATED, false)
         isStbRegistered = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_STB_REGISTERED, false)
+        isLAEmpty = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_LA_EMPTY, true)
+        isHSEmpty = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_HS_EMPTY, true)
+        isThemeEmpty = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_THEME_EMPTY, true)
+        isMoviesEmpty = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_MOVIES_EMPTY, true)
+        isShowtimeEmpty = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_SHOWTIME_EMPTY, true)
+        isEPGEmpty = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.IS_EPG_EMPTY, true)
 
         movieCount = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.MOVIES_COUNT_KEY, 0)
         channelCount = preferenceDataStoreHelper.getFirstPreference(PreferenceDataStoreConstants.CHANNEL_COUNT_KEY, 0)
@@ -124,7 +139,8 @@ class PreferenceHandler(val context: Context) {
             emptySet()
         ))
 
-//        remoteModel = preferences.btRemoteModel
+        remoteModel = preferences.btRemoteModel
+
     }
 
     fun updateAccountData(data : AccountSetupResponse){
@@ -155,7 +171,7 @@ class PreferenceHandler(val context: Context) {
                     data.httpStreamingHotelvideoUrl + data.hotelChannelList[0].fileName
                 )
 
-         /*   val  isNotNull = data.tvRemoteProtocol.isNotEmptyOrNull() && data.dthRemoteProtocol.isNotEmptyOrNull() &&
+            val  isNotNull = data.tvRemoteProtocol.isNotEmptyOrNull() && data.dthRemoteProtocol.isNotEmptyOrNull() &&
                     data.sourceHdmiCode.isNotEmptyOrNull() && data.destHdmiCode.isNotEmptyOrNull()
 
             val msg = "tvBrandId:${data.tvBrandId}, tvDthId:${data.tvDthId}, sourceHdmiId:${data.sourceHdmiId}, " +
@@ -177,7 +193,7 @@ class PreferenceHandler(val context: Context) {
                 )
                 preferences.btRemoteModel = model
                 remoteModel = model
-            }*/
+            }
         }
     }
 
@@ -205,9 +221,44 @@ class PreferenceHandler(val context: Context) {
         themeVersion: String? = null,
         moviesVersion: String? = null,
         showTimeVersion: String? = null,
+        isHSEmpty: Boolean? = null,
+        isLAEmpty: Boolean? = null,
+        isThemeEmpty: Boolean? = null,
+        isMoviesEmpty: Boolean? = null,
+        isShowtimeEmpty: Boolean? = null,
+        isEPGEmpty: Boolean? = null,
     ) {
         coroutineScope.launch {
-
+            isEPGEmpty?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IS_HS_EMPTY, it
+                )
+            }
+            isHSEmpty?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IS_HS_EMPTY, it
+                )
+            }
+            isLAEmpty?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IS_LA_EMPTY, it
+                )
+            }
+            isThemeEmpty?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IS_THEME_EMPTY, it
+                )
+            }
+            isMoviesEmpty?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IS_MOVIES_EMPTY, it
+                )
+            }
+            isShowtimeEmpty?.let {
+                preferenceDataStoreHelper.putPreference(
+                    PreferenceDataStoreConstants.IS_SHOWTIME_EMPTY, it
+                )
+            }
             laVersion?.let {
                 preferenceDataStoreHelper.putPreference(
                     PreferenceDataStoreConstants.LA_VERSION_KEY, it

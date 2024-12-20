@@ -1,4 +1,4 @@
-package com.diipl.moviebeam.service.kappingservice
+package com.diipl.moviebeam.service.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -6,7 +6,11 @@ import android.content.Intent
 import android.hardware.usb.UsbManager
 import android.os.Build
 import android.util.Log
-import com.diipl.moviebeam.ui.splash.BlankActivity
+import com.diipl.moviebeam.service.kappingservice.Actions
+import com.diipl.moviebeam.service.kappingservice.EndlessService
+import com.diipl.moviebeam.service.kappingservice.ServiceState
+import com.diipl.moviebeam.service.kappingservice.getServiceState
+import com.diipl.moviebeam.ui.base.BlankActivity
 import com.diipl.moviebeam.utils.IRUtils
 import com.diipl.moviebeam.utils.SharedPreference
 import com.diipl.moviebeam.utils.clearCache

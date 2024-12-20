@@ -24,7 +24,6 @@ class WeatherActivity : BaseActivity() {
         binding.btnBack.setOnClickListener { handleBackClick() }
         setContentView(binding.root)
     }
-    fun handleBackClick() {
-        finish()
-    }
+    fun handleBackClick() = finish()
+
 }

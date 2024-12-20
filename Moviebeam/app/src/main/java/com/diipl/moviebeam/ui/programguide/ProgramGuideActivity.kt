@@ -43,8 +43,8 @@ import com.diipl.moviebeam.service.remote.BTService
 import com.diipl.moviebeam.service.remote.IIrService
 import com.diipl.moviebeam.service.remote.UsbIrService
 import com.diipl.moviebeam.ui.base.BaseActivity
-import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity
-import com.diipl.moviebeam.ui.exoplayer.LiveTVActivity.Companion.mChannelList
+import com.diipl.moviebeam.ui.player.LiveTVActivity
+import com.diipl.moviebeam.ui.player.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.Constants.DTV_INPUT_ID
 import com.diipl.moviebeam.utils.Constants.DTV_KIT_PACKAGE_NAME
@@ -196,7 +196,6 @@ class ProgramGuideActivity : BaseActivity() {
                 if (!isEpgApiCalled) {
                     binding.pbLoader.toVisible()
                     isEpgApiCalled = true
-                    programGuideViewModel.fetchEPGDataFromServer(ua)
                 } else {
                     binding.pbLoader.toInvisible()
                 }

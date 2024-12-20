@@ -24,6 +24,7 @@ import com.diipl.moviebeam.databinding.ActivityConfirmRentalBinding
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.exoplayer.ExoPlayerActivity
 import com.diipl.moviebeam.ui.exoplayer.VodManagerActivity
+import com.diipl.moviebeam.ui.player.ExoPlayerActivity
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.fromJson

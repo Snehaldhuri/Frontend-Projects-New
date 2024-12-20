@@ -6,7 +6,7 @@ import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
-import com.diipl.moviebeam.service.handler.RetryInterceptor
+import com.diipl.moviebeam.service.interceptors.RetryInterceptor
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.JsonOrStringConverterFactory
 import com.google.gson.Gson

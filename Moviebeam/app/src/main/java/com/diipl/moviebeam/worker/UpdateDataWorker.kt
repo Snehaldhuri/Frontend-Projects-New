@@ -12,14 +12,13 @@ import com.diipl.moviebeam.data.dto.hotelservice.Services
 import com.diipl.moviebeam.data.dto.localattraction.LAService
 import com.diipl.moviebeam.data.dto.localattraction.LAServices
 import com.diipl.moviebeam.data.dto.localattraction.LocalAttractionResponse
-import com.diipl.moviebeam.data.dto.movies.MoviesResponse
-import com.diipl.moviebeam.data.dto.showtime.ShowTimeResponse
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
-import com.diipl.moviebeam.data.dto.weather.WeatherResponse
-import com.diipl.moviebeam.data.repositories.MovieBeamRepository
+import com.diipl.moviebeam.service.handler.PreferenceHandler
+import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.deleteHSFolder
 import com.diipl.moviebeam.utils.deleteLAFolder
 import com.diipl.moviebeam.utils.deleteThemeFolder
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.saveHSImage
 import com.diipl.moviebeam.utils.saveLAImage
 import com.diipl.moviebeam.utils.saveThemeImage
@@ -35,13 +34,10 @@ import okhttp3.internal.toImmutableList
 
 @HiltWorker
 class UpdateDataWorker @AssistedInject constructor(
-    private val moviesDataStore: DataStore<MoviesResponse>,
-    private val showTimeDataStore: DataStore<ShowTimeResponse>,
-    private val weatherDataStore: DataStore<WeatherResponse>,
+    private val preferenceHandler: PreferenceHandler,
     private val localAttractionDataStore: DataStore<LocalAttractionResponse>,
     private val hotelServiceDataStore: DataStore<HotelServiceResponse>,
     private val themeDataStore: DataStore<ThemeResponse>,
-    private val movieBeamRepository: MovieBeamRepository,
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
@@ -64,17 +60,17 @@ class UpdateDataWorker @AssistedInject constructor(
             when (action) {
                 ACTION_ALL -> {
                     updateThemeData()
-                    updateLAData(localAttractionDataStore.data.first())
-                    updateHSData(hotelServiceDataStore.data.first())
+                    updateLAData()
+                    updateHSData()
                     Result.success()
                 }
 
                 ACTION_HS -> {
-                    updateHSData(hotelServiceDataStore.data.first())
+                    updateHSData()
                     Result.success()
                 }
                 ACTION_LA -> {
-                    updateLAData(localAttractionDataStore.data.first())
+                    updateLAData()
                     Result.success()
                 }
                 ACTION_THEME -> {
@@ -94,9 +90,12 @@ class UpdateDataWorker @AssistedInject constructor(
 
     }
 
-    private suspend fun updateHSData(data: HotelServiceResponse) = coroutineScope {
+    private suspend fun updateHSData() = coroutineScope {
         Log.e(TAG, "updateHSData: Downloading HS Images", )
         deleteHSFolder()
+
+        val data = hotelServiceDataStore.data.first()
+
         val servicesList = mutableListOf<Services>()
         val resp = async(Dispatchers.IO) {
             data.servicesList.forEach { services ->
@@ -164,9 +163,12 @@ class UpdateDataWorker @AssistedInject constructor(
         Log.e(TAG, "updateHSData: Downloading HS Images Done", )
     }
 
-    private suspend fun updateLAData(data: LocalAttractionResponse) = coroutineScope {
+    private suspend fun updateLAData() = coroutineScope {
         Log.e(TAG, "updateLAData: Downloading LA Images", )
         deleteLAFolder()
+
+        val data = localAttractionDataStore.data.first()
+
         val servicesList = mutableListOf<LAServices>()
         val resp = async(Dispatchers.IO) {
             data.servicesList.forEach { services ->
@@ -243,7 +245,14 @@ class UpdateDataWorker @AssistedInject constructor(
         Log.e(TAG, "updateThemeData: Downloading Theme Images", )
         try {
             deleteThemeFolder()
+
             val data = themeDataStore.data.first()
+
+            preferenceHandler.updateDatastoreVariables(
+                gradientStartColor = data.gradientColor,
+                gradientEndColor = data.spotLightColor
+            )
+
             val themeBackgroundFileName = async {
                 getThemeFileName(
                     data.themeBackgroundFileNameCloud,
@@ -263,12 +272,31 @@ class UpdateDataWorker @AssistedInject constructor(
             if (result[0] != null && result[1] != null) {
                 themeDataStore.updateData { currentPreferences ->
                     currentPreferences.copy(
+                        accountId = data.accountId,
+                        spotLightColor = data.spotLightColor,
+                        fontCss = data.fontCss,
+                        gradientColor = data.gradientColor,
                         themeBackgroundFileName = result[0],
-                        themeLogoFileName = result[1]
+                        themeLogoFileName = result[1],
+                        id = data.id,
+                        themeBgFileName = data.themeBgFileName,
+                        themeBackgroundFileNameCloud = data.themeBackgroundFileNameCloud,
+                        themeCss = data.themeCss,
+                        themeBgFileNameCloud = data.themeBgFileNameCloud,
+                        themeLogoFileNameCloud = data.themeLogoFileNameCloud,
+                        type = data.type,
+                        version = data.version
                     )
                 }
-            } else {
 
+                ThemeDetails.GRADIENT_COLOR_START = data.gradientColor
+                ThemeDetails.GRADIENT_COLOR_END = data.spotLightColor
+                ThemeDetails.GRADIENT = null
+                ThemeDetails.GRADIENT = getGradientColor()
+                ThemeDetails.BG_IMAGE = result[0]
+                ThemeDetails.LOGO_IMAGE = result[1]
+            } else {
+                Log.e(TAG, "updateThemeData: Await results are null!")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to update DataStore: ${e.message}")
