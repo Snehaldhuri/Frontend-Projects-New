@@ -1,5 +1,7 @@
 package com.diipl.moviebeam.ui.mainmenu
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -10,6 +12,7 @@ import android.graphics.drawable.GradientDrawable
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
@@ -70,9 +73,10 @@ class MainMenuBtnAdapter(
         val item = itemList[position]
 
         val app = context.getInstalledAppInfo(item.appPackageId)
-
+        holder.binding.root.setBackgroundResource(R.drawable.btn_bg_gradient_default)
         if (item.isApp) {
             holder.binding.root.setPadding(3)
+            holder.binding.root.setBackgroundResource(android.R.color.transparent)
             if (app != null) {
                 val drawable = context.packageManager.getApplicationBanner(item.appPackageId)
                 holder.binding.ivAppIcon.setImageDrawable(drawable)
@@ -88,17 +92,31 @@ class MainMenuBtnAdapter(
             holder.binding.root.setOnClickListener { onMenuItemClicked(item) }
         }
 
-
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
             if (isFocused) {
+//                (view.parent as? ViewGroup)?.clipChildren = false
+//                (view.parent as? ViewGroup)?.clipToPadding = false
+
                 view.background = getGradientColor()
+
+                val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1.0f, 1.06f)
+                val scaleY = ObjectAnimator.ofFloat(view, View.SCALE_Y, 1.0f, 1.06f)
+
+                val scaleAnimatorSet = AnimatorSet()
+                scaleAnimatorSet.duration = 200
+                scaleAnimatorSet.playTogether(scaleX, scaleY)
+                scaleAnimatorSet.start()
             } else {
-                view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                view.scaleX = 1.0f
+                view.scaleY = 1.0f
+                if (item.isApp) {
+                    view.setBackgroundResource(android.R.color.transparent)
+                }else{
+                    view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                }
             }
         }
-
         holder.itemView.openSettingsPattern()
-
     }
 
     private fun getGradientColor(): GradientDrawable {
@@ -173,5 +191,4 @@ class MainMenuBtnAdapter(
         }
     }
 }
-
 

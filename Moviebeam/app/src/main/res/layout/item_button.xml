@@ -4,7 +4,7 @@
     android:id="@+id/clHomeMenuButton"
     android:layout_width="match_parent"
     android:layout_height="85dp"
-    android:layout_margin="@dimen/dp_4"
+    android:layout_margin="5dp"
     android:background="@drawable/btn_bg_gradient_default"
     android:clickable="true"
     android:layout_gravity="center"
