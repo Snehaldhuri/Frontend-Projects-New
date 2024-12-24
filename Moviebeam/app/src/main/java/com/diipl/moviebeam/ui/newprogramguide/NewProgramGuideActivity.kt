@@ -54,6 +54,7 @@ import com.diipl.moviebeam.utils.SingleEvent
 import com.diipl.moviebeam.utils.ThemeDetails
 import com.diipl.moviebeam.utils.clearCache
 import com.diipl.moviebeam.utils.fetchCurrentProgramKey
+import com.diipl.moviebeam.utils.getGradientColor
 import com.diipl.moviebeam.utils.handleFocusChange
 import com.diipl.moviebeam.utils.hideKeyboard
 import com.diipl.moviebeam.utils.loadBg
@@ -646,11 +647,13 @@ class NewProgramGuideActivity : BaseActivity() {
             irService?.transmit(model.frequency, model.HDMI1)
             switchedToTV = false
         } else {
-            if (btService.isConnected()) {
-                val model = preferences.btCommandModel
-                btService.transmit(model.HDMI1)
-                switchedToTV = false
-            } else showToast(BTService.MSG_BT_NOT_CONNECTED)
+            if(::btService.isInitialized) {
+                if (btService.isConnected()) {
+                    val model = preferences.btCommandModel
+                    btService.transmit(model.HDMI1)
+                    switchedToTV = false
+                } else showToast(BTService.MSG_BT_NOT_CONNECTED)
+            }
         }
         Log.e(TAG, "switchToHDMI  $switchedToTV")
     }

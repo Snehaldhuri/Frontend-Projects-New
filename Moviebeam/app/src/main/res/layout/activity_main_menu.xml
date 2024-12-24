@@ -348,7 +348,7 @@
         android:id="@+id/view"
         android:layout_width="@dimen/dp_0"
         android:layout_height="@dimen/dp_0"
-        android:background="@color/transparentBlack_45"
+        android:background="@color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
