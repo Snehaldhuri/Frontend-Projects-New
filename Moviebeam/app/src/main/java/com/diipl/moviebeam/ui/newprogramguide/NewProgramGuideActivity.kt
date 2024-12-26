@@ -753,8 +753,8 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private fun tuneChannels(program: ChannelEpgDTO?) {
         LiveTVActivity.programGuideList.addAll(programGuideList)
-        if (PlayerActivity.programGuideList[0].param1?.isEmpty() == true) {
-            PlayerActivity.programGuideList.removeAt(0)
+        if (LiveTVActivity.programGuideList[0].param1?.isEmpty() == true) {
+            LiveTVActivity.programGuideList.removeAt(0)
         }
 
         val pos = LiveTVActivity.programGuideList.indexOf(program)
