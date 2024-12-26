@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.view.setPadding
 import androidx.recyclerview.widget.RecyclerView
 import com.diipl.moviebeam.R
@@ -93,29 +94,32 @@ class MainMenuBtnAdapter(
         }
 
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
-            if (isFocused) {
-//                (view.parent as? ViewGroup)?.clipChildren = false
-//                (view.parent as? ViewGroup)?.clipToPadding = false
+            view.animate().cancel()
 
-                view.background = getGradientColor()
+            val scaleX = if (isFocused) 1.06f else 1.0f
+            val scaleY = if (isFocused) 1.06f else 1.0f
 
-                val scaleX = ObjectAnimator.ofFloat(view, View.SCALE_X, 1.0f, 1.06f)
-                val scaleY = ObjectAnimator.ofFloat(view, View.SCALE_Y, 1.0f, 1.06f)
+            val scaleXAnimator = ObjectAnimator.ofFloat(view, View.SCALE_X, scaleX)
+            val scaleYAnimator = ObjectAnimator.ofFloat(view, View.SCALE_Y, scaleY)
 
-                val scaleAnimatorSet = AnimatorSet()
-                scaleAnimatorSet.duration = 200
-                scaleAnimatorSet.playTogether(scaleX, scaleY)
-                scaleAnimatorSet.start()
+            val scaleAnimatorSet = AnimatorSet().apply {
+                duration = 200
+                interpolator = AccelerateDecelerateInterpolator()
+                playTogether(scaleXAnimator, scaleYAnimator)
+            }
+            scaleAnimatorSet.start()
+
+            view.background = if (isFocused) {
+                getGradientColor()
             } else {
-                view.scaleX = 1.0f
-                view.scaleY = 1.0f
                 if (item.isApp) {
-                    view.setBackgroundResource(android.R.color.transparent)
-                }else{
-                    view.setBackgroundResource(R.drawable.btn_bg_gradient_default)
+                    view.resources.getDrawable(android.R.color.transparent, view.context.theme)
+                } else {
+                    view.resources.getDrawable(R.drawable.btn_bg_gradient_default, view.context.theme)
                 }
             }
         }
+
         holder.itemView.openSettingsPattern()
     }
 
