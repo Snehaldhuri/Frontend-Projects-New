@@ -58,6 +58,8 @@ import com.diipl.moviebeam.ui.movies.MovieDetailFragment
 import com.diipl.moviebeam.ui.movies.MoviesActivity
 import com.diipl.moviebeam.ui.newprogramguide.NewProgramGuideActivity
 import com.diipl.moviebeam.ui.player.ExoPlayerActivity
+import com.diipl.moviebeam.ui.player.LiveTVActivity
+import com.diipl.moviebeam.ui.player.PlayerActivity
 import com.diipl.moviebeam.ui.programguide.DisconnectedPrgActivity
 import com.diipl.moviebeam.ui.programguide.PrgGuidePlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideActivity
@@ -749,7 +751,7 @@ class EndlessService : Service() {
                 return
             }
             when (activityStack.last()) {
-                ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> handleCmdInRefreshingUi(kapingResponse)
+                PlayerActivity::class.java.simpleName,LiveTVActivity::class.java.simpleName,NewProgramGuideActivity::class.java.simpleName,ProgramGuideActivity::class.java.simpleName, PrgGuidePlayerActivity::class.java.simpleName -> handleCmdInRefreshingUi(kapingResponse)
                 else -> fetchChannelList()
             }
         } else {
