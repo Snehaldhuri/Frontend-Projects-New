@@ -141,7 +141,6 @@
         <activity
             android:name=".ui.refreshingui.RefreshingUiActivity"
             android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
-            android:launchMode="singleInstance"
             android:exported="false" />
         <activity
             android:name=".ui.inroomdining.InRoomDiningActivity"
