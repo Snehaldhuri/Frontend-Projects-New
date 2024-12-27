@@ -21,6 +21,12 @@ data class RentalMovieModel(
     var currentSeek: Long = 0,
     var finishTimeStamp: Long = startTimeStamp + (24 * 60 * 60 * 1000),
     var lastTimeStamp: Long = 0,
+    var ip: String = "",
+    var port: String = "",
+    var channelType: String = "",
+    var major: String = "",
+    var minor: String = "",
+
     @Embedded var movieData: ContentDto? = null
 )
 

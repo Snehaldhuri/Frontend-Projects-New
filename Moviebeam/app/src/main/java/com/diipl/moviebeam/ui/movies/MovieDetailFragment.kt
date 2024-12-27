@@ -14,6 +14,7 @@ import com.diipl.moviebeam.R
 import com.diipl.moviebeam.data.dto.movies.ContentDto
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
+import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
 import com.diipl.moviebeam.data.local.PreferenceDataStoreHelper
 import com.diipl.moviebeam.databinding.FragmentMovieDetailBinding
 import com.diipl.moviebeam.room.models.RentalMovieModel
@@ -39,6 +40,9 @@ class MovieDetailFragment : BaseFragment() {
     val binding get() = _binding!!
 
     var movie: ContentDto? = null
+    var rentalMovie: RentalMovieModel? = null
+
+    private var vodMovieResponse: VodMovieResponse? = null
 
     private val preferenceDataStoreHelper: PreferenceDataStoreHelper by lazy {
         PreferenceDataStoreHelper(requireContext())
@@ -72,7 +76,7 @@ class MovieDetailFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        Log.d(TAG, "onViewCreated: $rentalMovie")
         viewModel.getAdultStatus(preferenceDataStoreHelper)
 
         binding.btnWatchTrailer.setOnClickListener {
@@ -89,15 +93,17 @@ class MovieDetailFragment : BaseFragment() {
 
         binding.btnRentNow.setOnClickListener {
             if (binding.btnRentNow.text == getString(R.string.watch_free)) {
-                apiCall(0, Constants.C_TYPE_MOVIE)
-                movie?.let { it1 ->
-                    viewModel.insertMovieDetails(RentalMovieResponse(), it1)
-                    (activity as MoviesActivity?)?.gotoExoPlayerActivity(
-                        it1,
-                        false,
-                        true,
-                        seekPosition
-                    )
+                if(rentalMovie?.channelType == ""){
+                    apiCall(0, Constants.C_TYPE_MOVIE)
+                    movie?.let { it1 ->
+                        viewModel.insertMovieDetails(movieResponse = RentalMovieResponse(), movie = it1)
+                        (activity as MoviesActivity?)?.gotoExoPlayerActivity(
+                            it1,
+                            false,
+                            true,
+                            seekPosition
+                        )
+                    }
                 }
             } else {
                 startActivity(
@@ -108,6 +114,7 @@ class MovieDetailFragment : BaseFragment() {
                 )
             }
         }
+
         binding.btnAdultPlay.setOnClickListener {
             if (binding.btnAdultPlay.text == getString(R.string.watch_free) || binding.btnAdultPlay.text == getString(
                     R.string.watch_now
@@ -116,7 +123,7 @@ class MovieDetailFragment : BaseFragment() {
             ) {
                 apiCall(0, Constants.C_TYPE_MOVIE)
                 movie?.let { it1 ->
-                    viewModel.insertMovieDetails(RentalMovieResponse(), it1)
+                    viewModel.insertMovieDetails(movieResponse = RentalMovieResponse(), movie = it1)
                     (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                         it1,
                         false,
@@ -150,7 +157,7 @@ class MovieDetailFragment : BaseFragment() {
 
         binding.btnWatchFromStart.setOnClickListener {
             apiCall(1, Constants.C_TYPE_MOVIE)
-            viewModel.insertMovieDetails(RentalMovieResponse(), movie!!)
+            viewModel.insertMovieDetails(movieResponse = RentalMovieResponse(), movie = movie!!)
             movie?.let { it1 ->
                 (activity as MoviesActivity?)?.gotoExoPlayerActivity(
                     it1,
@@ -175,7 +182,7 @@ class MovieDetailFragment : BaseFragment() {
             request.rentalID = rentalID
             request.ra = 0
             request.cType = cType
-            request.seekType = seekType
+            request.seekType = seekType.toLong()
             request.seek = seekPosition
             viewModel.updateRentalMovieLog(request)
         }
@@ -196,9 +203,11 @@ class MovieDetailFragment : BaseFragment() {
 
     fun setMovieDetails(content: ContentDto) {
         viewModel.getRentalMovie(content.releaseId)
-
+        Log.d(TAG, "setMovieDetails2: $content")
         viewModel.movieData.observe(this) { data ->
             movie = if (data != null) data.movieData!! else content
+            Log.d(TAG, "setMovieDetails: $data")
+            Log.d(TAG, "setMovieDetails1: $content")
             updateUI(movie!!, data)
             binding.root.invalidate()
         }
@@ -207,7 +216,8 @@ class MovieDetailFragment : BaseFragment() {
 
     private fun updateUI(content: ContentDto, data: RentalMovieModel?) {
         Log.e(TAG, "updateUI: ${data?.currentSeek ?: "-1"} == $content")
-
+        rentalMovie = data
+        Log.d(TAG, "updateUI: $rentalMovie")
         binding.btnAdultPlay.toGone()
 
         when (content.releaseTypeId) {

@@ -16,7 +16,9 @@ import com.diipl.moviebeam.data.dto.concierge.ConciergeResponse
 import com.diipl.moviebeam.data.dto.message.MessageResponse
 import com.diipl.moviebeam.data.dto.movies.AdultDayPassRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
+import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
+import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
 import com.diipl.moviebeam.data.dto.sysInfo.SysInfoDTO
 import com.diipl.moviebeam.data.dto.theme.ThemeResponse
@@ -448,4 +450,57 @@ class MovieBeamRepository @Inject constructor(
 
     suspend fun getSoftwareUpdateDetails() = remoteDataSource.getSoftwareUpdateDetails(BuildConfig.BUILD_TYPE_ID, preferenceHandler.UA)
 
+    suspend fun getNewMovieAccess(
+        q: String,
+        UA: String,
+        RID: Int,
+        PID: Int,
+        price: Double,
+        timeStamp: Long,
+        seek: Long,
+        sessionID: String,
+        a: Int,
+        ra: Int,
+        cType: String,
+        seekType: Long,
+        rentalID: String,
+        contentTypeID: Int,
+        productType: Int,
+        vodMID: Long,
+        AID: Long,
+        mode: String
+    ): RentalMovieResponse? {
+        Log.d("TAG", "getVodData: ${remoteDataSource.getNewMoviesAccess(
+            q, UA, RID, PID, price, timeStamp, seek, sessionID, a, ra, cType, seekType,
+            rentalID, contentTypeID, productType, vodMID, AID, mode
+        )}")
+        return remoteDataSource.getNewMoviesAccess(
+            q, UA, RID, PID, price, timeStamp, seek, sessionID, a, ra, cType, seekType,
+            rentalID, contentTypeID, productType, vodMID, AID, mode
+        )
+    }
+
+    suspend fun getVodData(
+//        vodMgrIp: String,
+        baseUrl: String,
+        vodMid: Int ,
+        transId: Long,
+        streamingType: String,
+        mode: String ,
+        ua: String,
+        rentalId: Int,
+        productId: Int,
+        priority: Int ,
+        fileName: String,
+        contentType: String,
+        seek: Long,
+        json: Boolean
+    ): VodMovieResponse? {
+        Log.d("TAG", "getVodData: ${remoteDataSource.getVodData(
+            baseUrl,vodMid,transId,streamingType,mode,ua,rentalId,productId,priority,fileName,contentType,seek,json
+        )}")
+        return remoteDataSource.getVodData(
+            baseUrl,vodMid,transId,streamingType,mode,ua,rentalId,productId,priority,fileName,contentType,seek,json
+        )
+    }
 }

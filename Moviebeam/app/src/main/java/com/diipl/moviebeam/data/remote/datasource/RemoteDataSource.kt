@@ -19,6 +19,7 @@ import com.diipl.moviebeam.data.dto.movies.RentalMovieRequest
 import com.diipl.moviebeam.data.dto.movies.RentalMovieResponse
 import com.diipl.moviebeam.data.dto.movies.RentalReversalRequest
 import com.diipl.moviebeam.data.dto.movies.RentalReversalResponse
+import com.diipl.moviebeam.data.dto.movies.VodMovieResponse
 import com.diipl.moviebeam.data.dto.news.NewsHeaderResponse
 import com.diipl.moviebeam.data.dto.news.NewsResponse
 import com.diipl.moviebeam.data.dto.program.ChannelListResponse
@@ -34,6 +35,7 @@ import com.diipl.moviebeam.data.remote.services.AssetApiService
 import com.diipl.moviebeam.data.remote.services.EpgApiService
 import com.diipl.moviebeam.data.remote.services.LgRestApiService
 import com.diipl.moviebeam.data.remote.services.MoviesAPIService
+import com.diipl.moviebeam.di.DynamicAPIFactory
 import com.diipl.moviebeam.service.handler.NetworkHandler
 import com.diipl.moviebeam.utils.ApiResponseParsing
 import com.diipl.moviebeam.utils.Constants
@@ -55,7 +57,8 @@ class RemoteDataSource @Inject constructor(
     @Named(Constants.ASSET) private val assetApiService: AssetApiService,
     @Named(Constants.SYS_INFO) private val sysInfoService: AssetApiService,
     private val moviesAPIService: MoviesAPIService,
-    private val epgApiService: EpgApiService
+    private val epgApiService: EpgApiService,
+    private val apiFactory : DynamicAPIFactory
 ) : NetworkHandler(networkUtils) {
 
     suspend fun getMoviesAccess(request: RentalMovieRequest): RentalMovieResponse? {
@@ -66,6 +69,107 @@ class RemoteDataSource @Inject constructor(
 
         return responseObject
     }
+
+    suspend fun getNewMoviesAccess(
+        q: String,
+        UA: String,
+        RID: Int,
+        PID: Int,
+        price: Double,
+        timeStamp: Long,
+        seek: Long,
+        sessionID: String,
+        a: Int,
+        ra: Int,
+        cType: String,
+        seekType: Long,
+        rentalID: String,
+        contentTypeID: Int,
+        productType: Int,
+        vodMID: Long,
+        AID: Long,
+        mode: String
+    ): RentalMovieResponse? {
+        val result = safeAPiCall {
+            moviesAPIService.getRentalNewMovieAccess(
+                q = q,
+                UA = UA,
+                RID = RID,
+                PID = PID,
+                price = price,
+                timeStamp = timeStamp,
+                seek = seek,
+                sessionID = sessionID,
+                a = a,
+                ra = ra,
+                cType = cType,
+                seekType = seekType,
+                rentalID = rentalID,
+                contentTypeID = contentTypeID,
+                productType = productType,
+                vodMID = vodMID,
+                AID = AID,
+                mode = mode
+            )
+        }
+        Log.d(TAG, "getMoviesAccess: $result")
+
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, RentalMovieResponse::class)
+        Log.d(TAG, "getMoviesAccess: $responseObject")
+
+        logD("In Rental Request Callback: ERROR_CODE = ${responseObject?.errorCode}, RENTALID = ${responseObject?.rentalID}")
+
+        return responseObject
+    }
+
+    suspend fun getVodData(
+        baseUrl: String,
+        vodMid: Int,
+        transId: Long,
+        streamingType: String,
+        mode: String,
+        ua: String,
+        rentalId: Int,
+        productId: Int,
+        priority: Int,
+        fileName: String,
+        contentType: String,
+        seek: Long,
+        json: Boolean
+    ): VodMovieResponse? {
+        val service = apiFactory.createApiService(baseUrl)
+
+        val result = safeAPiCall {
+            service.getVodDataAccess(
+                vodMid = vodMid,
+                transId = transId,
+                streamingType = streamingType,
+                mode = mode,
+                userAgent = ua,
+                rentalId = rentalId,
+                productId = productId,
+                priority = priority,
+                fileName = fileName,
+                contentType = contentType,
+                seek = seek,
+                json = json
+            )
+        }
+
+        Log.e(TAG, "getVodData: ${result.data}")
+        val responseObject = ApiResponseParsing().getResponseAsObject(result.data, VodMovieResponse::class)
+        Log.d(TAG, "getVodData123: ${responseObject?.channelType}")
+        if(responseObject?.channelType=="RF"){
+
+        }
+        else if(responseObject?.channelType=="IP"){
+
+        }
+        Log.e(TAG, "responseObject:->  $responseObject")
+
+        return responseObject
+    }
+
 
     suspend fun getWeatherData(ua: String): WeatherResponse? {
         val result = safeAPiCall {
@@ -312,6 +416,5 @@ class RemoteDataSource @Inject constructor(
         logD("In Room Dining Callback: version = " + responseObject?.version)
         return responseObject
     }
-
 
 }

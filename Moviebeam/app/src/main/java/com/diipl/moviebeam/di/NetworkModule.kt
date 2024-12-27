@@ -9,6 +9,8 @@ import com.diipl.moviebeam.data.remote.services.MoviesAPIService
 import com.diipl.moviebeam.service.interceptors.RetryInterceptor
 import com.diipl.moviebeam.utils.Constants
 import com.diipl.moviebeam.utils.JsonOrStringConverterFactory
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,6 +41,15 @@ object NetworkModule {
             .connectTimeout(Constants.API_TIME_OUT_IN_SEC, TimeUnit.SECONDS)
             .build()
     }
+
+
+    @Provides
+    @Singleton
+    @Named(Constants.DYNAMIC_RETRO)
+    fun provideDynamicRetrofit(): Retrofit.Builder =
+        Retrofit.Builder()
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
 
     @Singleton
     @Provides
@@ -89,6 +100,13 @@ object NetworkModule {
         .baseUrl(Constants.BASE_URL_MOVIE_RENTAL)
         .client(okHttpClient)
         .build()
+
+    @Singleton
+    @Provides
+    fun provideRetrofitBuilder(okHttpClient: OkHttpClient): Retrofit.Builder = Retrofit.Builder()
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .client(okHttpClient)
+
 
     @Singleton
     @Provides

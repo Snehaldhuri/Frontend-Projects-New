@@ -17,6 +17,22 @@ data class RentalMovieResponse(
     @SerializedName("UA") var UA: String = ""
 )
 
+
+@Serializable
+data class VodMovieResponse(
+    @SerializedName("ERROR_CODE") var errorCode :Int = 0,
+    @SerializedName("DESCRIPTION") var description: String = "",
+    @SerializedName("LCN") var lcn: String = "",
+    @SerializedName("TRANSID") var transId: Long = 0,
+    @SerializedName("CHANNELTYPE") var channelType: String = "",
+    @SerializedName("CHANNELBROADCASTTYPE") var channelBroadcastType: String = "",
+    @SerializedName("IP") var ip: String = "",
+    @SerializedName("PORT") var port: String = "",
+    @SerializedName("MAJOR") var major: String = "",
+    @SerializedName("MINOR") var minor: String = ""
+)
+
+
 data class RentalSyncResponse(
     @SerializedName("syncList")
     var syncList: List<Sync> = listOf()
@@ -91,7 +107,7 @@ data class RentalMovieRequest(
     @SerializedName("A") var a: Int = 1,
     @SerializedName("RA") var ra: Int = 1,
     @SerializedName("CTYPE") var cType: String = Constants.C_TYPE_MOVIE,
-    @SerializedName("SEEKTYPE") var seekType: Int = 0,
+    @SerializedName("SEEKTYPE") var seekType: Long = 0,
     @SerializedName("RENTALID") var rentalID: String = "",
     @SerializedName("CONTENT_TYPE_ID") var contentTypeID: Int = 0,
     @SerializedName("PRODUCT_TYPE") var productType: Int = 0,
