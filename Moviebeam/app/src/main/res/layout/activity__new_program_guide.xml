@@ -128,6 +128,31 @@
         app:layout_constraintStart_toStartOf="@+id/gl_vertical_27"
         app:layout_constraintTop_toTopOf="@+id/gl_horizontal_16" />
 
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_number"
+        android:layout_width="120dp"
+        android:layout_height="38dp"
+        android:visibility="gone"
+        app:cardElevation="@dimen/dp_0"
+        android:layout_marginBottom="3dp"
+        app:cardBackgroundColor="@color/lb_grey"
+        app:cardCornerRadius="@dimen/dp_8"
+        app:layout_constraintBottom_toTopOf="@+id/btn_Search"
+        app:layout_constraintEnd_toEndOf="@+id/gl_vertical_95"
+        >
+
+        <TextView
+            android:id="@+id/tv_number"
+            android:gravity="center"
+            android:singleLine="true"
+            android:maxLength="4"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            android:textSize="@dimen/sp_22" />
+    </androidx.cardview.widget.CardView>
+
+
     <Button
         android:id="@+id/btn_Search"
         android:nextFocusLeft="@id/btn_back"

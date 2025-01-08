@@ -11,6 +11,8 @@ import android.graphics.drawable.Drawable
 import android.media.tv.TvContract
 import android.media.tv.TvInputManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
@@ -65,6 +67,7 @@ import com.diipl.moviebeam.utils.observe
 import com.diipl.moviebeam.utils.setupSnackbar
 import com.diipl.moviebeam.utils.showKeyboard
 import com.diipl.moviebeam.utils.showToast
+import com.diipl.moviebeam.utils.toGone
 import com.diipl.moviebeam.utils.toInvisible
 import com.diipl.moviebeam.utils.toVisible
 import com.google.android.material.snackbar.Snackbar
@@ -89,6 +92,16 @@ class NewProgramGuideActivity : BaseActivity() {
 
     private lateinit var hotelChannel: HotelChannel
     private var hotelChannelVideo: String = ""
+
+    private var channelNumberInput = ""
+    private val channelSearchDelay = 1000L // Delay in milliseconds
+    private val handler = Handler(Looper.getMainLooper())
+    private val channelSearchRunnable = Runnable {
+        if (channelNumberInput.isNotEmpty()) {
+            searchInAdapter(channelNumberInput)
+        }
+    }
+
 
     @Inject
     lateinit var preferences: SharedPreference
@@ -332,6 +345,38 @@ class NewProgramGuideActivity : BaseActivity() {
             false
         }
     }
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_0,
+            KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_2,
+            KeyEvent.KEYCODE_3,
+            KeyEvent.KEYCODE_4,
+            KeyEvent.KEYCODE_5,
+            KeyEvent.KEYCODE_6,
+            KeyEvent.KEYCODE_7,
+            KeyEvent.KEYCODE_8,
+            KeyEvent.KEYCODE_9 -> {
+                // Append the key pressed to the channel number
+                channelNumberInput += (keyCode - KeyEvent.KEYCODE_0).toString()
+
+                // Limit the input to 4 digits
+                if (channelNumberInput.length > 4) {
+                    channelNumberInput = channelNumberInput.takeLast(4)
+                }
+
+                binding.cardNumber.toVisible()
+                binding.tvNumber.text = channelNumberInput
+
+                // Reset the search delay
+                handler.removeCallbacks(channelSearchRunnable)
+                handler.postDelayed(channelSearchRunnable, channelSearchDelay)
+
+                return true
+            }
+        }
+        return super.onKeyUp(keyCode, event)
+    }
 
     private fun searchInAdapter(name: String) {
         var focusIndex = -1
@@ -348,6 +393,8 @@ class NewProgramGuideActivity : BaseActivity() {
             }
         }
 
+        binding.cardNumber.toGone()
+
         if (focusIndex >= 0) {
             binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.scrollToPosition(focusIndex)
         } else programGuideViewModel.showToastMessage("No such channel with $name")
@@ -355,6 +402,13 @@ class NewProgramGuideActivity : BaseActivity() {
         //focus on channel with searched value
         adapter.updateFocusOnSearch(focusIndex)
 
+        resetChannelInput()
+
+    }
+
+    private fun resetChannelInput() {
+        channelNumberInput = ""
+        Log.d(TAG, "Channel input reset")
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
