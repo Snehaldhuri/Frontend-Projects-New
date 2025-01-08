@@ -44,6 +44,7 @@ import com.diipl.moviebeam.service.remote.IIrService
 import com.diipl.moviebeam.service.remote.UsbIrService
 import com.diipl.moviebeam.ui.base.BaseActivity
 import com.diipl.moviebeam.ui.player.LiveTVActivity
+import com.diipl.moviebeam.ui.player.LiveTVActivity.Companion
 import com.diipl.moviebeam.ui.player.LiveTVActivity.Companion.mChannelList
 import com.diipl.moviebeam.ui.player.PlayerActivity
 import com.diipl.moviebeam.ui.programguide.ProgramGuideViewModel
@@ -98,7 +99,7 @@ class NewProgramGuideActivity : BaseActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val channelSearchRunnable = Runnable {
         if (channelNumberInput.isNotEmpty()) {
-            searchInAdapter(channelNumberInput)
+            searchInPage(channelNumberInput)
         }
     }
 
@@ -401,14 +402,37 @@ class NewProgramGuideActivity : BaseActivity() {
 
         //focus on channel with searched value
         adapter.updateFocusOnSearch(focusIndex)
-
-        resetChannelInput()
-
     }
 
-    private fun resetChannelInput() {
+    private fun searchInPage(name: String) {
+        var focusIndex = -1
+        val originalNum = name.trimStart('0')
+        Log.e(TAG, "Switching to channel: $name ->  $originalNum")
+
+        run breaking@{
+            programGuideList?.forEachIndexed { index, model ->
+                if (name.isNotEmpty()) {
+                    if ((model.CNO.toString() == originalNum) ||
+                        (model.CN?.equals(originalNum, ignoreCase = true) == true)) {
+                        focusIndex = index
+                        return@breaking
+                    }
+                }
+            }
+        }
+
+        binding.cardNumber.toGone()
+
+        if (focusIndex >= 0) {
+            binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.scrollToPosition(focusIndex)
+            adapter.updateFocusOnSearch(focusIndex)
+
+        } else {
+            programGuideViewModel.showToastMessage("No such channel with $name")
+        }
+
+        // Reset the input after search
         channelNumberInput = ""
-        Log.d(TAG, "Channel input reset")
     }
 
     private fun observeSnackBarMessages(event: LiveData<SingleEvent<Any>>) {
