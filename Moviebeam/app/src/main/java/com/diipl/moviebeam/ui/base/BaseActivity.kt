@@ -96,6 +96,7 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun handleBackKeyAndExitKey(): Boolean {
+        Log.d(TAG, "handleBackKeyAndExitKey: $currentActivity")
         if (currentActivity is ShowtimeActivity) {
             (currentActivity as ShowtimeActivity).handleBackClick()
             return true
@@ -133,6 +134,7 @@ abstract class BaseActivity : AppCompatActivity() {
             return true
         }
         if (currentActivity is NewProgramGuideActivity) {
+            Log.d(TAG, "handleBackKeyAndExitKey: issue found")
             (currentActivity as NewProgramGuideActivity).handleBackRemoteClick()
             return true
         }
@@ -164,6 +166,7 @@ abstract class BaseActivity : AppCompatActivity() {
             return true
         }
         if (currentActivity is LiveTVActivity) {
+            Log.e(TAG, "Handling BACK key in LiveTVActivity")
             (currentActivity as LiveTVActivity).handleBackRemoteClick()
             return true
         }
@@ -176,10 +179,17 @@ abstract class BaseActivity : AppCompatActivity() {
 
     override fun onKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
         Log.d(
-            "onKeyDown", " keycode: $keyCode keyCode ${keyEvent.keyCode} action " +
+            TAG, "OnKeyDown-> keycode: $keyCode keyCode ${keyEvent.keyCode} action " +
                     "${keyEvent.action} displayLabel ${keyEvent.displayLabel}  number ${keyEvent.number} " +
-                    "scanCode ${keyEvent.scanCode} unicodeChar ${keyEvent.unicodeChar} source: ${keyEvent.source}"
+                    "scanCode ${keyEvent.scanCode} unicodeChar ${keyEvent.unicodeChar} source: ${keyEvent.source} repeatcount: ${keyEvent.repeatCount}"
         )
+
+        //if the button is pressed continuously then it creates multiple repeat count
+        //this will prevent the user from holding the key for long duration (long key press leads to multiple repeat count)
+        if(keyEvent.repeatCount>0){
+            // Ignore repeated key presses
+            return true
+        }
 
         if (keyEvent.source == InputDevice.SOURCE_HDMI)
             return true
@@ -258,7 +268,7 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     private fun onSTBKeyDown(keyCode: Int, keyEvent: KeyEvent): Boolean {
-        Log.e(TAG, "onSTBKeyDown: ")
+        Log.e(TAG, "onSTBKeyDown: $keyCode")
         when (keyCode) {
             KeyEvent.KEYCODE_BACK,
             Constants.ATV_EXIT_KEYCODE -> handleBackKeyAndExitKey()

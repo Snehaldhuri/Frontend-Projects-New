@@ -44,13 +44,16 @@ class ProgramGuideAdapter(
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val item = programList?.get(position)
+
         if (item != null) {
             holder.binding.layoutChannelCard.tvChannelName.text = item.CN
             holder.binding.layoutChannelCard.tvChannelNo.text = item.CNO
         }
 
         if (channelFocusIndex == holder.adapterPosition) {
-            holder.binding.root.requestFocus()
+            holder.binding.root.post {
+                holder.binding.root.requestFocus()
+            }
         } else holder.binding.root.clearFocus()
 
         if (focusedAdapter != -1 && focusedAdapter == holder.adapterPosition)

@@ -399,5 +399,6 @@ object Constants {
     const val OPEN_VPN_PROFILE = "profile"
     const val OPEN_VPN_PACKAGE_NAME = "de.blinkt.openvpn"
 
+    const val KEYCODE_EXIT = 133
 
 }
