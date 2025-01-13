@@ -171,6 +171,7 @@ class NewProgramGuideActivity : BaseActivity() {
         binding.btnBack.setOnClickListener { handleBackRemoteClick() }
 
         binding.pbLoader.toVisible()
+        //test
     }
 
     private fun setAdapter() {
