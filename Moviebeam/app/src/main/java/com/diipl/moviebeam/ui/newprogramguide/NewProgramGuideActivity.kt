@@ -308,9 +308,11 @@ class NewProgramGuideActivity : BaseActivity() {
 
                 binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.post {
                     binding.cvProgramGuide.toVisible()
-                    binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.findViewHolderForAdapterPosition(
-                        focusedPosition
-                    )?.itemView?.requestFocus()
+                    binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.postDelayed({
+                        val viewHolder = binding.layoutProgramGuide.layoutPrgGuide.rvProgramGuideEpg.findViewHolderForAdapterPosition(focusedPosition)
+                        viewHolder?.itemView?.requestFocus()
+                    }, 100)
+                }
                 }
                 //setAdapter()
                 adapter.notifyDataSetChanged()
@@ -450,6 +452,7 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun playChannelVideoBg(program: ChannelEpgDTO?) {
+        Log.d(TAG, "playChannelVideoBg: Snehal")
         updatePopupText(program, binding.tvPopupProgText)
         if (program == null) {
             isFScreenExit = false
@@ -475,6 +478,7 @@ class NewProgramGuideActivity : BaseActivity() {
     }
 
     private fun updatePopupText(channel: ChannelEpgDTO?, tvPopupText: TextView) {
+        Log.d(TAG, "updatePopupText: Snehal popup")
         tvPopupText.text = "Please press the OK button on your remote to tune in to ${channel?.CN}."
         binding.tvPopupProgDesc.text = createSpannableString()
         binding.tvPopupProgDesc.textAlignment = View.TEXT_ALIGNMENT_CENTER

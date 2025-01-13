@@ -51,9 +51,7 @@ class ProgramGuideAdapter(
         }
 
         if (channelFocusIndex == holder.adapterPosition) {
-            holder.binding.root.post {
-                holder.binding.root.requestFocus()
-            }
+            holder.binding.root.requestFocus()
         } else holder.binding.root.clearFocus()
 
         if (focusedAdapter != -1 && focusedAdapter == holder.adapterPosition)

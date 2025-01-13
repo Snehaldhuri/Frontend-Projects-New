@@ -46,9 +46,7 @@ class ChannelAdapter(
         holder.binding.tvChannelNo.text = item?.CNO.toString()
 
         if (focusIndex == holder.adapterPosition) {
-            holder.binding.root.post{
-                holder.binding.root.requestFocus()
-            }
+            holder.binding.root.requestFocus()
         } else holder.binding.root.clearFocus()
 
         holder.binding.root.setOnFocusChangeListener { view, isFocused ->
