@@ -313,7 +313,6 @@ class NewProgramGuideActivity : BaseActivity() {
                         viewHolder?.itemView?.requestFocus()
                     }, 100)
                 }
-                }
                 //setAdapter()
                 adapter.notifyDataSetChanged()
             } else {
